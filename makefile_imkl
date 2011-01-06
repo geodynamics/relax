@@ -1,0 +1,39 @@
+# Makefile including the Intel Math Kernel Library (MKL) FFT and OpenMP parallelization.
+# Successful loading of libraries at runtime upon initialization of environment variable
+# 
+# export DYLD_LIBRARY_PATH="/opt/intel/Compiler/11.1/084/lib:$DYLD_LIBRARY_PATH"
+#
+# in bash_profile or equivalent. Check out the Intel link advisor online
+#
+# http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor/
+#
+# to fit with your environment.
+
+LIBPATH=-L/sw/lib -L/opt/intel/Compiler/11.1/084/Frameworks/mkl/lib/em64t/ -L/opt/intel/Compiler/11.1/084/lib/
+INCPATH=-I/sw/include -I/opt/intel/Compiler/11.1/084/Frameworks/mkl/include
+
+LIBS=-lproj -lgmt -lnetcdf -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -openmp -lpthread 
+
+CC=cc
+F77=ifort
+FC=ifort -openmp
+
+FFLAGS=-cpp $(INCPATH) -zero -warn all
+F77FLAGS=-zero 
+CFLAGS=-I/sw/include 
+
+OBJ = mkl_dfti.o fourier.o green.o elastic3d.o friction3d.o viscoelastic3d.o writegrd4.2.o proj.o export.o getdata.o relax.o
+
+%.o : %.c
+	$(CC) $(CFLAGS) -c $^
+
+%.o : %.f
+	$(F77) $(F77FLAGS) -c $^
+
+%.o : %.f90 include.f90 
+	$(FC) $(FFLAGS) -c $(filter-out include.f90,$^)
+
+relax: $(OBJ) 
+	$(FC) $(FFLAGS) -o $@ $(filter-out include.f90,$^) $(LIBPATH) $(LIBS)
+
+include clean.mk

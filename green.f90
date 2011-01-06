@@ -1,0 +1,1698 @@
+!-----------------------------------------------------------------------
+! Copyright 2007, 2008, 2009 Sylvain Barbot
+!
+! This file is part of RELAX
+!
+! RELAX is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! RELAX is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with RELAX.  If not, see <http://www.gnu.org/licenses/>.
+!-----------------------------------------------------------------------
+
+MODULE green
+
+  USE fourier
+
+  IMPLICIT NONE
+
+#include "include.f90"
+
+#ifdef MPI_IMP
+  INCLUDE 'mpif.h'
+  INCLUDE 'mpiparams.f90'
+#endif
+
+  PUBLIC
+  REAL*8, PRIVATE, PARAMETER :: pi   = 3.141592653589793115997963468544185161_8
+  REAL*8, PRIVATE, PARAMETER :: pi2  = 6.28318530717958623199592693708837032318_8
+  REAL*8, PRIVATE, PARAMETER :: pid2 = 1.57079632679489655799898173427209258079_8
+    
+  INTEGER, PARAMETER :: GRN_IMAGE=1,GRN_HS=0
+
+CONTAINS
+
+  !------------------------------------------------------------------------
+  ! Subroutine ElasticResponse
+  ! apply the 2d elastic (half-space) transfert function
+  ! to the set of body forces.
+  !
+  ! INPUT:
+  ! mu          shear modulus
+  ! f2          equivalent body-forces in the Fourier domain
+  ! sx1, sx3
+  !
+  ! sylvain barbot (04/14/07) - original form
+  !                (02/06/09) - parallel implementation with MPI and OpenMP
+  !------------------------------------------------------------------------
+  SUBROUTINE elasticresponse(lambda,mu,f1,f2,f3,dx1,dx2,dx3)
+    REAL*8, INTENT(IN) :: lambda,mu,dx1,dx2,dx3
+    REAL*4, DIMENSION(:,:,:), INTENT(INOUT) :: f1,f2,f3
+    
+    REAL*8 :: k1,k2,k3,denom,r2,ratio1,ratio2
+    INTEGER :: i1,i2,i3,sx1,sx2,sx3,ubound3
+    COMPLEX(kind=8) :: buf1,buf2,buf3,c1,c2,c3
+#ifdef MPI_IMP
+    INTEGER :: iostatus,maxbuffersize,buffersize,i3m,i3p,position
+    INTEGER, DIMENSION(128) :: displs,counts
+    INTEGER, PARAMETER :: psize=256
+    CHARACTER, DIMENSION(256) :: packed
+    REAL*4, ALLOCATABLE, DIMENSION(:,:,:) :: u1,u2,u3
+#endif
+    
+    sx1=SIZE(f2,1)-2
+    sx2=SIZE(f2,2)
+    sx3=SIZE(f2,3)
+    
+    ratio1=(lambda+mu)/(lambda+2._8*mu)/mu/(pi2**2._8)
+    ratio2=mu/(lambda+mu)
+    
+#ifdef MPI_IMP
+
+    ! assign job to all threads
+    maxbuffersize=CEILING(REAL(sx3)/REAL(nthreads))
+
+    ! values for master thread
+    displs(1)=0
+    counts(1)=maxbuffersize*(sx1+2)*sx2
+
+    ! send computational parameters to dependent threads
+    DO islave=1,nslaves
+
+       ! declare intentions to dependent thread
+       CALL MPI_SEND(iflag_TellSlaveToRecv_ElasResp,1,MPI_INTEGER,islave,tag_MasterSendingData,mcomm,ierr)
+
+       ! computation bounds (slave-number dependent)
+       i3m=maxbuffersize*islave+1
+       IF (islave .NE. nslaves) THEN
+          i3p=maxbuffersize*(islave+1)
+       ELSE
+          i3p=sx3
+       END IF
+       buffersize=i3p-i3m+1
+       counts(islave+1)=buffersize*(sx1+2)*sx2
+       displs(islave+1)=displs(islave)+counts(islave)
+
+       position=0
+       ! send computation parameters
+       CALL MPI_PACK(sx1,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
+       CALL MPI_PACK(sx2,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
+       CALL MPI_PACK(sx3,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
+
+       ! computation bounds
+       CALL MPI_PACK(i3m,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
+       CALL MPI_PACK(i3p,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
+       CALL MPI_PACK(buffersize,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
+
+       ! elastic properties
+       CALL MPI_PACK(lambda,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
+       CALL MPI_PACK(mu    ,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
+
+       ! grid sampling size
+       CALL MPI_PACK(dx1,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
+       CALL MPI_PACK(dx2,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
+       CALL MPI_PACK(dx3,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
+
+       ! sending package
+       CALL MPI_SEND(packed,position,MPI_PACKED,islave,tag_MasterSendingData_ElasResp,mcomm,ierr)
+
+    END DO
+    
+    ! special treatment for master thread (no new memory allocation)
+    counts(1)=0
+
+    ! sending to all threads (except master thread)
+    CALL MPI_SCATTERV(f1,counts,displs,MPI_REAL,u1,counts(1),MPI_REAL,master,mcomm,ierr)
+    CALL MPI_SCATTERV(f2,counts,displs,MPI_REAL,u2,counts(1),MPI_REAL,master,mcomm,ierr)
+    CALL MPI_SCATTERV(f3,counts,displs,MPI_REAL,u3,counts(1),MPI_REAL,master,mcomm,ierr)
+
+    ! setting computation limit for master thread
+    ubound3=maxbuffersize
+
+#else
+    ubound3=sx3
+#endif
+
+    ! serial computation
+!$omp parallel do private(i1,i2,k1,k2,k3,r2,denom,c1,c2,c3,buf1,buf2,buf3)
+    DO i3=1,ubound3
+       CALL wavenumber3(i3,sx3,dx3,k3)
+       DO i2=1,sx2
+          CALL wavenumber2(i2,sx2,dx2,k2)
+          DO i1=1,sx1/2+1
+             CALL wavenumber1(i1,sx1,dx1,k1)
+             
+             r2=k1**2._8+k2**2._8+k3**2._8
+             denom=ratio1/r2**2
+             
+             c1=CMPLX(f1(2*i1-1,i2,i3),f1(2*i1,i2,i3),8)
+             c2=CMPLX(f2(2*i1-1,i2,i3),f2(2*i1,i2,i3),8)
+             c3=CMPLX(f3(2*i1-1,i2,i3),f3(2*i1,i2,i3),8)
+             
+             buf1=((k2**2._8+k3**2._8+ratio2*r2)*c1-k1*(k2*c2+k3*c3))*denom
+             buf2=((k1**2._8+k3**2._8+ratio2*r2)*c2-k2*(k1*c1+k3*c3))*denom
+             buf3=((k1**2._8+k2**2._8+ratio2*r2)*c3-k3*(k1*c1+k2*c2))*denom
+             
+             f1(2*i1-1:2*i1,i2,i3)=REAL((/ REAL(buf1),AIMAG(buf1) /))
+             f2(2*i1-1:2*i1,i2,i3)=REAL((/ REAL(buf2),AIMAG(buf2) /))
+             f3(2*i1-1:2*i1,i2,i3)=REAL((/ REAL(buf3),AIMAG(buf3) /))
+          END DO
+       END DO
+    END DO
+!$omp end parallel do
+
+#ifdef MPI_IMP
+
+    ! getting back computation results from all threads
+    CALL MPI_GATHERV(u1,counts(1),MPI_REAL,f1,counts,displs,MPI_REAL,master,mcomm,ierr)
+    CALL MPI_GATHERV(u2,counts(1),MPI_REAL,f2,counts,displs,MPI_REAL,master,mcomm,ierr)
+    CALL MPI_GATHERV(u3,counts(1),MPI_REAL,f3,counts,displs,MPI_REAL,master,mcomm,ierr)
+
+#endif
+
+    ! zero wavenumber, no net body-force
+    f1(1:2,1,1)=(/ 0._4, 0._4 /)
+    f2(1:2,1,1)=(/ 0._4, 0._4 /)
+    f3(1:2,1,1)=(/ 0._4, 0._4 /)
+
+  END SUBROUTINE elasticresponse
+  
+#ifdef MPI_IMP
+  !---------------------------------------------------------------------
+  ! subroutine ElasticResponseSlave
+  ! computes the core computation corresponding to serial routine
+  ! elasticresponse. implements the MPI standard.
+  !
+  ! sylvain barbot (02/05/09) - original form
+  !---------------------------------------------------------------------
+  SUBROUTINE elasticresponseslave(islave)
+    INTEGER, INTENT(IN) :: islave
+
+    REAL*8 :: k1,k2,k3,denom,r2,ratio1,ratio2,lambda,mu,dx1,dx2,dx3
+    INTEGER :: i1,i2,i3,sx1,sx2,sx3,position,i3m,i3p,buffersize,ib,iostatus
+    COMPLEX(kind=8) :: buf1,buf2,buf3,c1,c2,c3
+    INTEGER, PARAMETER :: psize=256
+    CHARACTER, DIMENSION(256) :: packed
+    INTEGER, DIMENSION(18) :: counts,displs
+    REAL*4, ALLOCATABLE, DIMENSION(:,:,:) :: v1,v2,v3,temp
+
+    ! receive computation parameters
+    CALL MPI_RECV(packed,psize,MPI_PACKED,master,tag_MasterSendingData_ElasResp,mcomm,status,ierr)
+    position=0
+
+    ! retrieve variables from buffer
+    CALL MPI_UNPACK(packed,psize,position,sx1,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
+    CALL MPI_UNPACK(packed,psize,position,sx2,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
+    CALL MPI_UNPACK(packed,psize,position,sx3,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
+
+    ! computational bounds
+    CALL MPI_UNPACK(packed,psize,position,i3m,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
+    CALL MPI_UNPACK(packed,psize,position,i3p,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
+    CALL MPI_UNPACK(packed,psize,position,buffersize,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
+
+    ! elastic parameters
+    CALL MPI_UNPACK(packed,psize,position,lambda,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
+    CALL MPI_UNPACK(packed,psize,position,mu    ,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
+
+    ! grid sampling-size
+    CALL MPI_UNPACK(packed,psize,position,dx1,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
+    CALL MPI_UNPACK(packed,psize,position,dx2,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
+    CALL MPI_UNPACK(packed,psize,position,dx3,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
+
+    ALLOCATE(v1(sx1+2,sx2,buffersize),v2(sx1+2,sx2,buffersize),v3(sx1+2,sx2,buffersize),STAT=iostatus)
+    IF (iostatus /= 0) STOP 21
+
+    ! get data from master thread
+    CALL MPI_SCATTERV(temp,counts,displs,MPI_REAL,v1,(sx1+2)*sx2*buffersize,MPI_REAL,master,mcomm,ierr)
+    CALL MPI_SCATTERV(temp,counts,displs,MPI_REAL,v2,(sx1+2)*sx2*buffersize,MPI_REAL,master,mcomm,ierr)
+    CALL MPI_SCATTERV(temp,counts,displs,MPI_REAL,v3,(sx1+2)*sx2*buffersize,MPI_REAL,master,mcomm,ierr)
+
+    ! core computations
+    ratio1=(lambda+mu)/(lambda+2._8*mu)/mu/(pi2**2._8)
+    ratio2=mu/(lambda+mu)
+
+    ib=1
+    DO i3=i3m,i3m+buffersize-1
+       CALL wavenumber3(i3,sx3,dx3,k3)
+       DO i2=1,sx2
+          CALL wavenumber2(i2,sx2,dx2,k2)
+          DO i1=1,sx1/2+1
+             CALL wavenumber1(i1,sx1,dx1,k1)
+
+             r2=k1**2._8+k2**2._8+k3**2._8
+             denom=ratio1/r2**2
+
+             c1=CMPLX(v1(2*i1-1,i2,ib),v1(2*i1,i2,ib),8)
+             c2=CMPLX(v2(2*i1-1,i2,ib),v2(2*i1,i2,ib),8)
+             c3=CMPLX(v3(2*i1-1,i2,ib),v3(2*i1,i2,ib),8)
+
+             buf1=((k2**2._8+k3**2._8+ratio2*r2)*c1-k1*(k2*c2+k3*c3))*denom
+             buf2=((k1**2._8+k3**2._8+ratio2*r2)*c2-k2*(k1*c1+k3*c3))*denom
+             buf3=((k1**2._8+k2**2._8+ratio2*r2)*c3-k3*(k1*c1+k2*c2))*denom
+
+             v1(2*i1-1:2*i1,i2,ib)=REAL((/ REAL(buf1),AIMAG(buf1) /))
+             v2(2*i1-1:2*i1,i2,ib)=REAL((/ REAL(buf2),AIMAG(buf2) /))
+             v3(2*i1-1:2*i1,i2,ib)=REAL((/ REAL(buf3),AIMAG(buf3) /))
+          END DO
+       END DO
+       ib=ib+1
+    END DO
+
+    CALL MPI_GATHERV(v1,(sx1+2)*sx2*buffersize,MPI_REAL,temp,counts,displs,MPI_REAL,master,mcomm,ierr)
+    CALL MPI_GATHERV(v2,(sx1+2)*sx2*buffersize,MPI_REAL,temp,counts,displs,MPI_REAL,master,mcomm,ierr)
+    CALL MPI_GATHERV(v3,(sx1+2)*sx2*buffersize,MPI_REAL,temp,counts,displs,MPI_REAL,master,mcomm,ierr)
+
+    DEALLOCATE(v1,v2,v3)
+
+  END SUBROUTINE elasticresponseslave
+#endif 
+
+  !---------------------------------------------------------------------
+  ! subroutine SurfaceNormalTraction
+  ! computes the two-dimensional field of surface normal stress
+  ! expressed in the Fourier domain.
+  ! The surface (x3=0) solution is obtained by integrating over the
+  ! wavenumbers in 3-direction in the Fourier domain.
+  !
+  ! sylvain barbot (05-01-07) - original form
+  !---------------------------------------------------------------------
+  SUBROUTINE surfacenormaltraction(lambda, mu, u1, u2, u3, dx1, dx2, dx3, p)
+    REAL*4, INTENT(IN), DIMENSION(:,:,:) :: u1, u2, u3
+    REAL*8, INTENT(IN) :: lambda, mu, dx1, dx2, dx3
+    REAL*4, INTENT(OUT), DIMENSION(:,:) :: p
+    
+    INTEGER :: i1, i2, i3, sx1, sx2, sx3
+    REAL*8 :: k1, k2, k3, modulus
+    COMPLEX*8, PARAMETER :: i = CMPLX(0._8,pi2)
+    COMPLEX*8 :: sum, c1, c2, c3
+    
+    sx1=SIZE(u1,1)-2
+    sx2=SIZE(u1,2)
+    sx3=SIZE(u1,3)
+    
+    modulus=lambda+2*mu
+    
+    p=0
+    DO i3=1,sx3
+       DO i2=1,sx2
+          DO i1=1,sx1/2+1
+             CALL wavenumbers(i1,i2,i3,sx1,sx2,sx3,dx1,dx2,dx3,k1,k2,k3)
+             
+             c1=CMPLX(u1(2*i1-1,i2,i3),u1(2*i1,i2,i3))
+             c2=CMPLX(u2(2*i1-1,i2,i3),u2(2*i1,i2,i3))
+             c3=CMPLX(u3(2*i1-1,i2,i3),u3(2*i1,i2,i3))
+             
+             sum=i*(modulus*k3*c3+lambda*(k1*c1+k2*c2))
+             
+             p(2*i1-1,i2)=p(2*i1-1,i2)+REAL( REAL(sum))
+             p(2*i1  ,i2)=p(2*i1  ,i2)+REAL(AIMAG(sum))
+          END DO
+       END DO
+    END DO
+    p=p/(sx3*dx3)
+    
+  END SUBROUTINE surfacenormaltraction
+
+  !---------------------------------------------------------------------
+  ! subroutine Boussinesq3D
+  ! computes the deformation field in the 3-dimensional grid
+  ! due to a normal stress at the surface. Apply the Fourier domain
+  ! solution of Steketee [1958].
+  !---------------------------------------------------------------------
+  SUBROUTINE boussinesq3d(p,lambda,mu,u1,u2,u3,dx1,dx2,dx3)
+    REAL*4, DIMENSION(:,:), INTENT(IN) :: p
+    REAL*4, DIMENSION(:,:,:), INTENT(INOUT) :: u1, u2, u3
+    REAL*8, INTENT(IN) :: lambda, mu, dx1, dx2, dx3
+
+    INTEGER :: i1, i2, i3, sx1, sx2, sx3, status
+    REAL*8 :: k1, k2, k3, x3, alpha
+    COMPLEX, ALLOCATABLE, DIMENSION(:) :: b1, b2, b3
+    COMPLEX :: load
+
+    sx1=SIZE(u1,1)-2
+    sx2=SIZE(u1,2)
+    sx3=SIZE(u1,3)
+    
+    ALLOCATE(b1(sx3),b2(sx3),b3(sx3),STAT=status)
+    IF (0/=status) STOP "could not allocate arrays for Boussinesq3D"
+    
+    alpha=(lambda+mu)/(lambda+2*mu)
+
+    DO i2=1,sx2
+       DO i1=1,sx1/2+1
+          CALL wavenumbers(i1,i2,1,sx1,sx2,1,dx1,dx2,1._8,k1,k2,k3)
+          load=CMPLX(p(2*i1-1,i2),p(2*i1,i2))
+          DO i3=1,sx3
+             IF (i3<=sx3/2) THEN
+                x3=DBLE(i3-1)*dx3
+             ELSE
+                x3=ABS(DBLE(i3-sx3-1)*dx3)
+             END IF
+             CALL steketeesolution(load,alpha,b1(i3),b2(i3),b3(i3),k1,k2,x3)
+          END DO
+          
+          ! transforms the Steketee solution into a full 3-dimensional
+          ! Fourier transform by 1d transforming in the 3-direction
+          CALL fft1(b1,sx3,dx3,FFT_FORWARD)
+          CALL fft1(b2,sx3,dx3,FFT_FORWARD)
+          CALL fft1(b3,sx3,dx3,FFT_FORWARD)
+          
+          ! add the Boussinesq contribution to the deformation field
+          DO i3=1,sx3
+             u1(2*i1-1:2*i1,i2,i3)=u1(2*i1-1:2*i1,i2,i3)+ &
+                  (/REAL(b1(i3)),AIMAG(b1(i3))/)
+             u2(2*i1-1:2*i1,i2,i3)=u2(2*i1-1:2*i1,i2,i3)+ &
+                  (/REAL(b2(i3)),AIMAG(b2(i3))/)
+             u3(2*i1-1:2*i1,i2,i3)=u3(2*i1-1:2*i1,i2,i3)+ &
+                  (/REAL(b3(i3)),AIMAG(b3(i3))/)
+          END DO
+       END DO
+    END DO
+
+    DEALLOCATE(b1,b2,b3)
+    
+    CONTAINS
+      !-----------------------------------------------------------------
+      ! subroutine SteketeeSolution
+      ! computes the spectrum (two-dimensional Fourier transform)
+      ! of the 3 components of the deformation field u1, u2, u3
+      ! at wavenumbers k1, k2 and position x3. This is the analytical
+      ! solution of [J. A. Steketee, On Volterra's dislocations in a
+      ! semi-infinite elastic medium, Canadian Journal of Physics, 1958]
+      !
+      ! sylvain barbot (05-02-07) - original form
+      !-----------------------------------------------------------------
+      SUBROUTINE steketeesolution(p,alpha,u1,u2,u3,k1,k2,x3)
+        COMPLEX, INTENT(INOUT) :: u1, u2, u3
+        REAL*8, INTENT(IN) :: alpha, k1, k2, x3
+        COMPLEX, INTENT(IN) :: p
+        
+        REAL*8 :: beta, depthdecay
+        COMPLEX, PARAMETER :: i=CMPLX(0,1)
+        COMPLEX :: b
+        
+        beta=pi2*sqrt(k1**2._8+k2**2._8)
+        depthdecay=exp(-beta*abs(x3))
+        
+        IF (0==k1 .AND. 0==k2) THEN
+           u1=CMPLX(0.,0.)
+           u2=CMPLX(0.,0.)
+           u3=CMPLX(0.,0.)
+        ELSE
+           b=p/(2._8*mu*alpha*beta**3._8)
+           u1=i*alpha*pi2*beta*b*(1._8-1._8/alpha+beta*x3)*depthdecay
+           u2=u1
+           u1=u1*k1
+           u2=u2*k2
+           u3=-p/(2*mu*beta)*(1._8/alpha+beta*x3)*depthdecay
+        END IF
+        
+      END SUBROUTINE steketeesolution
+
+  END SUBROUTINE boussinesq3d
+
+  !---------------------------------------------------------------------
+  ! subroutine SurfaceTraction
+  ! computes the two-dimensional field of surface normal stress
+  ! expressed in the Fourier domain.
+  ! The surface (x3=0) solution is obtained by integrating over the
+  ! wavenumbers in 3-direction in the Fourier domain.
+  !
+  ! sylvain barbot (07-07-07) - original form
+  !                (02-09-09) - parallelized with mpi and openmp
+  !---------------------------------------------------------------------
+  SUBROUTINE surfacetraction(lambda,mu,u1,u2,u3,dx1,dx2,dx3,p1,p2,p3)
+    REAL*4, INTENT(IN), DIMENSION(:,:,:) :: u1,u2,u3
+    REAL*8, INTENT(IN) :: lambda,mu,dx1,dx2,dx3
+    REAL*4, INTENT(OUT), DIMENSION(:,:) :: p1,p2,p3
+
+    INTEGER :: i1,i2,i3,sx1,sx2,sx3
+    REAL*8 :: k1,k2,k3,modulus
+    COMPLEX(KIND=8), PARAMETER :: i=CMPLX(0._8,pi2,8)
+    COMPLEX(KIND=8) :: sum1,sum2,sum3,c1,c2,c3
+
+#ifdef MPI_IMP
+    INTEGER :: buffersize,maxbuffersize,iostatus,i3m,position
+    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: temp
+    INTEGER, PARAMETER :: psize=256
+    CHARACTER, DIMENSION(256) :: packed
+#endif
+    
+    sx1=SIZE(u1,1)-2
+    sx2=SIZE(u1,2)
+    sx3=SIZE(u1,3)
+
+#ifdef MPI_IMP
+
+    p1=0;p2=0;p3=0
+
+    ! temp is a buffer used by MPI_REDUCE
+    ALLOCATE(temp(sx1+2,sx2),STAT=iostatus)
+    IF (iostatus /= 0) STOP 15
+
+    ! assign job to all threads
+    maxbuffersize=CEILING(REAL(sx3)/REAL(nslaves))
+
+    DO islave=1,nslaves
+
+       ! declare intentions to dependent thread
+       CALL MPI_SEND(iflag_TellSlaveToRecv_SurfTrac,1,MPI_INTEGER,islave,tag_MasterSendingData,mcomm,ierr)
+
+       ! buffersize (slave-number dependent)
+       i3m=1+(islave-1)*maxbuffersize
+       IF (islave .NE. nslaves) THEN
+          buffersize=maxbuffersize
+       ELSE
+          buffersize=sx3-i3m+1
+       END IF
+
+       position=0
+
+       ! computation parameters
+       CALL MPI_PACK(sx1,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
+       CALL MPI_PACK(sx2,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
+       CALL MPI_PACK(sx3,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
+
+       ! elastic parameters
+       CALL MPI_PACK(lambda,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
+       CALL MPI_PACK(mu    ,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
+
+       ! sampling size
+       CALL MPI_PACK(dx1,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
+       CALL MPI_PACK(dx2,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
+       CALL MPI_PACK(dx3,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
+
+       ! start index of buffer
+       CALL MPI_PACK(i3m,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
+       CALL MPI_PACK(buffersize,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
+
+       ! sending package
+       CALL MPI_SEND(packed,position,MPI_PACKED,islave,tag_MasterSendingData_SurfTrac,mcomm,ierr)
+
+       ! sub arrays
+       CALL MPI_SEND(u1(:,:,i3m),(sx1+2)*sx2*buffersize,MPI_REAL,islave,tag_MasterSendingData_SurfTrac,mcomm,ierr)
+       CALL MPI_SEND(u2(:,:,i3m),(sx1+2)*sx2*buffersize,MPI_REAL,islave,tag_MasterSendingData_SurfTrac,mcomm,ierr)
+       CALL MPI_SEND(u3(:,:,i3m),(sx1+2)*sx2*buffersize,MPI_REAL,islave,tag_MasterSendingData_SurfTrac,mcomm,ierr)
+
+    END DO
+
+    ! cascade results down to master
+    CALL MPI_REDUCE(temp,p1,(sx1+2)*sx2,MPI_REAL,MPI_SUM,master,MPI_COMM_WORLD,ierr)
+    CALL MPI_REDUCE(temp,p2,(sx1+2)*sx2,MPI_REAL,MPI_SUM,master,MPI_COMM_WORLD,ierr)
+    CALL MPI_REDUCE(temp,p3,(sx1+2)*sx2,MPI_REAL,MPI_SUM,master,MPI_COMM_WORLD,ierr) 
+
+    DEALLOCATE(temp)
+
+#else
+
+    modulus=lambda+2._8*mu
+
+    p1=0
+    p2=0
+    p3=0
+
+!$omp parallel do private(i1,i2,k1,k2,k3,c1,c2,c3,sum1,sum2,sum3), &
+!$omp reduction(+:p1,p2,p3)
+    DO i3=1,sx3
+       DO i2=1,sx2
+          DO i1=1,sx1/2+1
+             CALL wavenumbers(i1,i2,i3,sx1,sx2,sx3,dx1,dx2,dx3,k1,k2,k3)
+
+             c1=CMPLX(u1(2*i1-1,i2,i3),u1(2*i1,i2,i3),8)
+             c2=CMPLX(u2(2*i1-1,i2,i3),u2(2*i1,i2,i3),8)
+             c3=CMPLX(u3(2*i1-1,i2,i3),u3(2*i1,i2,i3),8)
+
+             sum1=i*mu*(k3*c1+k1*c3)
+             sum2=i*mu*(k3*c2+k2*c3)
+             sum3=i*(modulus*k3*c3+lambda*(k1*c1+k2*c2))
+
+             p1(2*i1-1:2*i1,i2)=p1(2*i1-1:2*i1,i2) &
+                  +(/REAL(REAL(sum1)),REAL(AIMAG(sum1))/)
+             p2(2*i1-1:2*i1,i2)=p2(2*i1-1:2*i1,i2) &
+                  +(/REAL(REAL(sum2)),REAL(AIMAG(sum2))/)
+             p3(2*i1-1:2*i1,i2)=p3(2*i1-1:2*i1,i2) &
+                  +(/REAL(REAL(sum3)),REAL(AIMAG(sum3))/)
+
+          END DO
+       END DO
+    END DO
+!$omp end parallel do
+
+    p1=p1/(sx3*dx3)
+    p2=p2/(sx3*dx3)
+    p3=p3/(sx3*dx3)
+
+#endif
+
+  END SUBROUTINE surfacetraction
+
+#ifdef MPI_IMP
+
+  !---------------------------------------------------------------------
+  ! subroutine SurfaceTractionSlave
+  ! compute the stress in the Fourier domain for master thread.
+  !
+  ! sylvain barbot (02/04/09) - original form
+  !---------------------------------------------------------------------
+  SUBROUTINE surfacetractionslave(islave)
+    INTEGER, INTENT(IN) :: islave
+
+    REAL*8 :: modulus,lambda,mu,dx1,dx2,dx3,k1,k2,k3
+    INTEGER :: i1,i2,i3,sx1,sx2,sx3,i3m,iostatus,ib,buffersize,position
+    COMPLEX(KIND=8), PARAMETER :: i=CMPLX(0._8,pi2,8)
+    COMPLEX(KIND=8) :: sum1,sum2,sum3,c1,c2,c3
+    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: p1,p2,p3,temp
+    REAL*4, ALLOCATABLE, DIMENSION(:,:,:) :: u1,u2,u3
+    INTEGER, PARAMETER :: psize=256
+    CHARACTER, DIMENSION(256) :: packed
+
+    ! receive computation parameters
+    CALL MPI_RECV(packed,psize,MPI_PACKED,master,tag_MasterSendingData_SurfTrac,mcomm,status,ierr)
+    position=0
+
+    ! grid dimension
+    CALL MPI_UNPACK(packed,psize,position,sx1,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
+    CALL MPI_UNPACK(packed,psize,position,sx2,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
+    CALL MPI_UNPACK(packed,psize,position,sx3,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
+
+    ! elastic parameters
+    CALL MPI_UNPACK(packed,psize,position,lambda,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
+    CALL MPI_UNPACK(packed,psize,position,mu    ,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
+
+    ! sampling size
+    CALL MPI_UNPACK(packed,psize,position,dx1,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
+    CALL MPI_UNPACK(packed,psize,position,dx2,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
+    CALL MPI_UNPACK(packed,psize,position,dx3,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
+
+    ! start index of buffer
+    CALL MPI_UNPACK(packed,psize,position,i3m,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
+    CALL MPI_UNPACK(packed,psize,position,buffersize,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)    
+
+    ALLOCATE(u1(sx1+2,sx2,buffersize),u2(sx1+2,sx2,buffersize),u3(sx1+2,sx2,buffersize), &
+             p1(sx1+2,sx2),p2(sx1+2,sx2),p3(sx1+2,sx2),STAT=iostatus)
+    IF (iostatus /= 0) STOP 18
+
+    ! sub arrays
+    CALL MPI_RECV(u1,(sx1+2)*sx2*buffersize,MPI_REAL,master,tag_MasterSendingData_SurfTrac,mcomm,status,ierr)
+    CALL MPI_RECV(u2,(sx1+2)*sx2*buffersize,MPI_REAL,master,tag_MasterSendingData_SurfTrac,mcomm,status,ierr)
+    CALL MPI_RECV(u3,(sx1+2)*sx2*buffersize,MPI_REAL,master,tag_MasterSendingData_SurfTrac,mcomm,status,ierr)
+
+    modulus=lambda+2._8*mu
+
+    p1=0;p2=0;p3=0
+    ib=1;
+    DO i3=i3m,i3m+buffersize-1
+       DO i2=1,sx2
+          DO i1=1,sx1/2+1
+             CALL wavenumbers(i1,i2,i3,sx1,sx2,sx3,dx1,dx2,dx3,k1,k2,k3)
+
+             c1=CMPLX(u1(2*i1-1,i2,ib),u1(2*i1,i2,ib),8)
+             c2=CMPLX(u2(2*i1-1,i2,ib),u2(2*i1,i2,ib),8)
+             c3=CMPLX(u3(2*i1-1,i2,ib),u3(2*i1,i2,ib),8)
+
+             sum1=i*mu*(k3*c1+k1*c3)
+             sum2=i*mu*(k3*c2+k2*c3)
+             sum3=i*(modulus*k3*c3+lambda*(k1*c1+k2*c2))
+             
+             p1(2*i1-1:2*i1,i2)=p1(2*i1-1:2*i1,i2) &
+                  +(/REAL(REAL(sum1)),REAL(AIMAG(sum1))/)
+             p2(2*i1-1:2*i1,i2)=p2(2*i1-1:2*i1,i2) &
+                  +(/REAL(REAL(sum2)),REAL(AIMAG(sum2))/)
+             p3(2*i1-1:2*i1,i2)=p3(2*i1-1:2*i1,i2) &
+                  +(/REAL(REAL(sum3)),REAL(AIMAG(sum3))/)
+
+          END DO
+       END DO
+       ! update the local counter for buffer array
+       ib=ib+1
+    END DO
+
+    DEALLOCATE(u1,u2,u3)
+
+    p1=p1/(sx3*dx3)
+    p2=p2/(sx3*dx3)
+    p3=p3/(sx3*dx3)
+
+    ! cascade results to master thread
+    CALL MPI_REDUCE(p1,temp,(sx1+2)*sx2,MPI_REAL,MPI_SUM,master,MPI_COMM_WORLD,ierr)
+    CALL MPI_REDUCE(p2,temp,(sx1+2)*sx2,MPI_REAL,MPI_SUM,master,MPI_COMM_WORLD,ierr)
+    CALL MPI_REDUCE(p3,temp,(sx1+2)*sx2,MPI_REAL,MPI_SUM,master,MPI_COMM_WORLD,ierr)
+
+    DEALLOCATE(p1,p2,p3)
+
+  END SUBROUTINE surfacetractionslave
+
+#endif
+
+  !---------------------------------------------------------------------
+  ! subroutine SurfaceTractionCowling
+  ! computes the two-dimensional field of the resulting traction 
+  ! expressed in the Fourier domain in the presence of gravity.
+  !
+  ! The surface solution (x3=0) is obtained from the Fourier domain 
+  ! array by integrating over the wavenumbers in 3-direction.
+  !
+  ! The effective traction at x3=0 is 
+  !
+  !     t_1 = sigma_13
+  !     t_2 = sigma_23
+  !     t_3 = sigma_33 - r g u3
+  !         = sigma_33 - 2 mu alpha gamma u3
+  !
+  ! sylvain barbot (07-07-07) - original form
+  !---------------------------------------------------------------------
+  SUBROUTINE surfacetractioncowling(lambda,mu,gamma,u1,u2,u3,dx1,dx2,dx3, &
+       p1,p2,p3)
+    REAL*4, INTENT(IN), DIMENSION(:,:,:) :: u1,u2,u3
+    REAL*8, INTENT(IN) :: lambda,mu,gamma,dx1,dx2,dx3
+    REAL*4, INTENT(OUT), DIMENSION(:,:) :: p1,p2,p3
+    
+    INTEGER :: i1,i2,i3,sx1,sx2,sx3
+    REAL*8 :: k1,k2,k3,modulus,alpha,grav
+    COMPLEX*8, PARAMETER :: i=CMPLX(0._8,pi2)
+    COMPLEX*8 :: sum1,sum2,sum3,c1,c2,c3
+    
+    sx1=SIZE(u1,1)-2
+    sx2=SIZE(u1,2)
+    sx3=SIZE(u1,3)
+    
+    modulus=lambda+2._8*mu
+    alpha=(lambda+mu)/(lambda+2._8*mu)
+    grav=2._8*mu*alpha*gamma
+    
+    p1=0
+    p2=0
+    p3=0
+
+!$omp parallel do private(i1,i3,k1,k2,k3,c1,c2,c3,sum1,sum2,sum3)
+!!!$omp reduction(+:p1,p2,p3)
+    DO i2=1,sx2
+       DO i3=1,sx3
+          DO i1=1,sx1/2+1
+             CALL wavenumbers(i1,i2,i3,sx1,sx2,sx3,dx1,dx2,dx3,k1,k2,k3)
+             
+             c1=CMPLX(u1(2*i1-1,i2,i3),u1(2*i1,i2,i3))
+             c2=CMPLX(u2(2*i1-1,i2,i3),u2(2*i1,i2,i3))
+             c3=CMPLX(u3(2*i1-1,i2,i3),u3(2*i1,i2,i3))
+
+             sum1=i*mu*(k3*c1+k1*c3)
+             sum2=i*mu*(k3*c2+k2*c3)
+             sum3=i*(modulus*k3*c3+lambda*(k1*c1+k2*c2))-grav*c3
+             
+             p1(2*i1-1:2*i1,i2)=p1(2*i1-1:2*i1,i2)+(/REAL(sum1),AIMAG(sum1)/)
+             p2(2*i1-1:2*i1,i2)=p2(2*i1-1:2*i1,i2)+(/REAL(sum2),AIMAG(sum2)/)
+             p3(2*i1-1:2*i1,i2)=p3(2*i1-1:2*i1,i2)+(/REAL(sum3),AIMAG(sum3)/)
+          END DO
+       END DO
+    END DO
+!$omp end parallel do
+
+    p1=p1/(sx3*dx3)
+    p2=p2/(sx3*dx3)
+    p3=p3/(sx3*dx3)
+    
+  END SUBROUTINE surfacetractioncowling
+
+  !---------------------------------------------------------------------
+  ! subroutine Cerruti3D
+  ! computes the deformation field in the 3-dimensional grid
+  ! due to an arbitrary surface traction.
+  !
+  ! sylvain barbot (07/07/07) - original form
+  !                (02/01/09) - parallelized with MPI and OpenMP
+  !---------------------------------------------------------------------
+  SUBROUTINE cerruti3d(p1,p2,p3,lambda,mu,u1,u2,u3,dx1,dx2,dx3)
+    REAL*4, DIMENSION(:,:), INTENT(IN) :: p1,p2,p3
+    REAL*4, DIMENSION(:,:,:), INTENT(INOUT) :: u1,u2,u3
+    REAL*8, INTENT(IN) :: lambda,mu,dx1,dx2,dx3
+
+    INTEGER :: i1,i2,i3,ib,sx1,sx2,sx3,iostatus,buffersize
+    REAL*8 :: k1,k2,k3,x3,alpha
+#ifdef MPI_IMP
+    LOGICAL :: lflag 
+    INTEGER :: i2m,i2p,index=1
+#else
+    COMPLEX(KIND=4) :: t1,t2,t3
+    INTEGER, PARAMETER :: stride=64
+#endif
+    COMPLEX(KIND=4), ALLOCATABLE, DIMENSION(:,:) :: b1,b2,b3
+
+    sx1=SIZE(u1,1)-2
+    sx2=SIZE(u1,2)
+    sx3=SIZE(u1,3)
+
+    alpha=(lambda+mu)/(lambda+2*mu)
+
+#ifdef MPI_IMP
+
+    nslaves = nthreads-1   
+
+    ALLOCATE(b1(sx3,buffercerruti),b2(sx3,buffercerruti),b3(sx3,buffercerruti),STAT=iostatus)
+    IF (0/=iostatus) STOP "could not allocate arrays for Cerruti3D"
+
+    ! assign job to all threads
+    DO islave=1,nslaves
+       ! declare intentions to dependent thread
+       CALL MPI_SEND(iflag_TellSlaveToRecv_Cerruti3d,1,MPI_INTEGER,islave,tag_MasterSendingData,mcomm,ierr)
+
+       ! send computation parameters
+       CALL MPI_SEND(mu   ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(sx1  ,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(sx2  ,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(sx3  ,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(dx1  ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(dx2  ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(dx3  ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(alpha,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+
+       ! computation bounds (slave-number dependent)
+       IF (islave .NE. nslaves) THEN
+          i2m=CEILING(REAL(sx2)/REAL(nslaves))*(islave-1)+1
+          i2p=CEILING(REAL(sx2)/REAL(nslaves))*islave
+       ELSE
+          i2m=CEILING(REAL(sx2)/REAL(nslaves))*(islave-1)+1
+          i2p=sx2
+       END IF
+
+       ! send computation bounds
+       CALL MPI_SEND(i2m,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(i2p,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+
+       ! send surface traction to all dependent threads
+       CALL MPI_SEND(p1,(sx1/2+1)*sx2,MPI_COMPLEX,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(p2,(sx1/2+1)*sx2,MPI_COMPLEX,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(p3,(sx1/2+1)*sx2,MPI_COMPLEX,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+
+    END DO
+
+    ! listen for results from threads
+    DO
+       ! exit if all points have been processed
+       IF (index .GT. (sx2 * (sx1/2+1))) EXIT
+
+       status=0
+       ! check for a message from any slave without data transfer
+       CALL  MPI_IPROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,lflag,status,ierr)
+        
+       ! if message from thread, receive computation results
+       IF (lflag) THEN
+
+          ! find thread source 
+          islave = status(MPI_SOURCE)
+        
+          ! check intentions of sender
+          IF (status(MPI_TAG) == tag_SlaveSendingData_Cerruti3d) THEN
+              
+             ! receive computation results from slave thread
+             CALL MPI_RECV(i1,1,MPI_INTEGER,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
+             CALL MPI_RECV(i2,1,MPI_INTEGER,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
+
+             CALL MPI_RECV(buffersize,1,MPI_INTEGER,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
+             CALL MPI_RECV(b1,sx3*buffersize,MPI_COMPLEX,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
+             CALL MPI_RECV(b2,sx3*buffersize,MPI_COMPLEX,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
+             CALL MPI_RECV(b3,sx3*buffersize,MPI_COMPLEX,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
+
+             IF (buffersize .GT. buffercerruti) THEN
+                ! incorrect buffersize
+                PRINT *, "buffersize", buffersize,"exceeds upper limit",buffercerruti
+             END IF
+
+             ! update solution displacement
+             DO ib=0,buffersize-1
+                DO i3=1,sx3
+                   u1(2*(i1+ib)-1,i2,i3)=u1(2*(i1+ib)-1,i2,i3)+REAL( REAL(b1(i3,ib+1)))
+                   u1(2*(i1+ib)  ,i2,i3)=u1(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b1(i3,ib+1)))
+                   u2(2*(i1+ib)-1,i2,i3)=u2(2*(i1+ib)-1,i2,i3)+REAL( REAL(b2(i3,ib+1)))
+                   u2(2*(i1+ib)  ,i2,i3)=u2(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b2(i3,ib+1)))
+                   u3(2*(i1+ib)-1,i2,i3)=u3(2*(i1+ib)-1,i2,i3)+REAL( REAL(b3(i3,ib+1)))
+                   u3(2*(i1+ib)  ,i2,i3)=u3(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b3(i3,ib+1)))
+                END DO
+             END DO
+
+             ! count number of returned results
+             index=index+buffersize
+
+          ENDIF
+           
+       ENDIF ! lflag
+
+    END DO
+
+    DEALLOCATE(b1,b2,b3)
+
+#else 
+    ! serial programmation implementation
+!$omp parallel private(b1,b2,b3,iostatus)
+
+    ALLOCATE(b1(sx3,stride),b2(sx3,stride),b3(sx3,stride),STAT=iostatus)
+    IF (0/=iostatus) STOP "could not allocate arrays for Cerruti3D"
+
+!$omp do private(i1,i3,ib,k1,k2,k3,t1,t2,t3,x3,buffersize)
+    DO i2=1,sx2
+       DO i1=1,sx1/2+1,stride
+
+          ! buffer results
+          IF (i1+stride-1 .GT. sx1/2+1) THEN
+             buffersize=sx1/2+1-i1+1
+          ELSE
+             buffersize=stride
+          END IF
+
+          DO ib=0,buffersize-1
+
+             CALL wavenumbers(i1+ib,i2,1,sx1,sx2,1,dx1,dx2,1._8,k1,k2,k3)
+             t1=CMPLX(p1(2*(i1+ib)-1,i2),p1(2*(i1+ib),i2),4)
+             t2=CMPLX(p2(2*(i1+ib)-1,i2),p2(2*(i1+ib),i2),4)
+             t3=CMPLX(p3(2*(i1+ib)-1,i2),p3(2*(i1+ib),i2),4)
+
+             DO i3=1,sx3
+                IF (i3<=sx3/2) THEN
+                   x3=DBLE(i3-1)*dx3
+                ELSE
+                   x3=ABS(DBLE(i3-sx3-1)*dx3)
+                END IF
+                CALL cerrutisolution(mu,t1,t2,t3,alpha,b1(i3,ib+1),b2(i3,ib+1),b3(i3,ib+1),k1,k2,x3)
+             END DO
+
+             ! transforms the Cerruti solution into a full 3-dimensional
+             ! Fourier transform by 1d transforming in the 3-direction
+             CALL fft1(b1(:,ib+1),sx3,dx3,FFT_FORWARD)
+             CALL fft1(b2(:,ib+1),sx3,dx3,FFT_FORWARD)
+             CALL fft1(b3(:,ib+1),sx3,dx3,FFT_FORWARD)
+
+          END DO
+
+          ! update solution displacement
+          DO i3=1,sx3
+             DO ib=0,buffersize-1
+                u1(2*(i1+ib)-1,i2,i3)=u1(2*(i1+ib)-1,i2,i3)+REAL( REAL(b1(i3,ib+1)))
+                u1(2*(i1+ib)  ,i2,i3)=u1(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b1(i3,ib+1)))
+                u2(2*(i1+ib)-1,i2,i3)=u2(2*(i1+ib)-1,i2,i3)+REAL( REAL(b2(i3,ib+1)))
+                u2(2*(i1+ib)  ,i2,i3)=u2(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b2(i3,ib+1)))
+                u3(2*(i1+ib)-1,i2,i3)=u3(2*(i1+ib)-1,i2,i3)+REAL( REAL(b3(i3,ib+1)))
+                u3(2*(i1+ib)  ,i2,i3)=u3(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b3(i3,ib+1)))
+             END DO
+          END DO
+
+       END DO
+    END DO
+
+    DEALLOCATE(b1,b2,b3)
+!$omp end parallel
+
+#endif
+#ifdef MPI_IMP
+  END SUBROUTINE cerruti3d
+
+  !---------------------------------------------------------------------------
+  ! subroutine Cerruti3dSlave
+  ! performs the core of the serial Cerruti3d routine. called only
+  ! by dependent threads.
+  !
+  ! sylvain barbot (01/31/09) - original form
+  !---------------------------------------------------------------------------
+  SUBROUTINE cerruti3dslave(islave)
+    INTEGER, INTENT(IN) :: islave
+
+    INTEGER :: i1,i2,i2m,i2p,i3,ib,sx1,sx2,sx3,iostatus,buffersize
+    REAL*8 :: k1,k2,k3,x3,alpha,dx1,dx2,dx3,mu
+    COMPLEX(KIND=4), ALLOCATABLE, DIMENSION(:,:) :: b1,b2,b3
+    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: p1,p2,p3
+    COMPLEX(KIND=4) :: t1,t2,t3
+
+    ! receive computation parameters
+    CALL MPI_RECV(mu   ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(sx1  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(sx2  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(sx3  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(dx1  ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(dx2  ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(dx3  ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(alpha,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+
+    ! receive computation bounds
+    CALL MPI_RECV(i2m  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(i2p  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+
+    ! receive surface traction (in Fourier domain)
+    ALLOCATE(p1(sx1+2,sx2),p2(sx1+2,sx2),p3(sx1+2,sx2),STAT=iostatus)
+    IF (0/=iostatus) STOP "could not allocate arrays for incoming transferts (Cerruti3dSlave)."
+    
+    CALL MPI_RECV(p1,(sx1+2)*sx2,MPI_REAL,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(p2,(sx1+2)*sx2,MPI_REAL,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(p3,(sx1+2)*sx2,MPI_REAL,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+
+    ! start computation
+    ALLOCATE(b1(sx3,buffercerruti),b2(sx3,buffercerruti),b3(sx3,buffercerruti),STAT=iostatus)
+    IF (0/=iostatus) STOP "could not allocate buffers for computation (Cerruti3dSlave)"
+
+    DO i2=i2m,i2p
+       DO i1=1,sx1/2+1,buffercerruti
+
+          ! buffer results
+          IF (i1+buffercerruti-1 .GT. sx1/2+1) THEN
+             buffersize=sx1/2+1-i1+1
+          ELSE
+             buffersize=buffercerruti
+          END IF
+          DO ib=0,buffersize-1
+
+             CALL wavenumbers(i1+ib,i2,1,sx1,sx2,1,dx1,dx2,1._8,k1,k2,k3)
+             t1=CMPLX(p1(2*(i1+ib)-1,i2),p1(2*(i1+ib),i2),4)
+             t2=CMPLX(p2(2*(i1+ib)-1,i2),p2(2*(i1+ib),i2),4)
+             t3=CMPLX(p3(2*(i1+ib)-1,i2),p3(2*(i1+ib),i2),4)
+
+             DO i3=1,sx3
+                IF (i3<=sx3/2) THEN
+                   x3=DBLE(i3-1)*dx3
+                ELSE
+                   x3=ABS(DBLE(i3-sx3-1)*dx3)
+                END IF
+                CALL cerrutisolution(mu,t1,t2,t3,alpha,b1(i3,ib+1),b2(i3,ib+1),b3(i3,ib+1),k1,k2,x3)
+             END DO
+
+             ! transforms the Cerruti solution into a full 3-dimensional
+             ! Fourier transform by 1d transforming in the 3-direction
+             CALL fft1(b1(:,ib+1),sx3,dx3,FFT_FORWARD)
+             CALL fft1(b2(:,ib+1),sx3,dx3,FFT_FORWARD)
+             CALL fft1(b3(:,ib+1),sx3,dx3,FFT_FORWARD)
+
+          END DO
+
+          ! send the Cerruti's contribution to the master thread
+          CALL MPI_SEND(i1,1,MPI_INTEGER,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
+          CALL MPI_SEND(i2,1,MPI_INTEGER,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
+
+          ! tell the buffersize before sending
+          CALL MPI_SEND(buffersize,1,MPI_INTEGER,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
+          CALL MPI_SEND(b1,sx3*buffersize,MPI_COMPLEX,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
+          CALL MPI_SEND(b2,sx3*buffersize,MPI_COMPLEX,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
+          CALL MPI_SEND(b3,sx3*buffersize,MPI_COMPLEX,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
+
+       END DO
+    END DO
+
+    DEALLOCATE(b1,b2,b3,p1,p2,p3)
+
+#endif
+    CONTAINS
+      !-----------------------------------------------------------------
+      ! subroutine CerrutiSolution
+      ! computes the general solution for the deformation field in an
+      ! elastic half-space due to an arbitrary surface traction.
+      ! the 3 components u1, u2, u3 of the deformation field are
+      ! expressed in the horizontal Fourier at depth x3.
+      ! this combines the solution to the Boussinesq's and the Cerruti's
+      ! problem in a half-space.
+      !
+      ! sylvain barbot (07-07-07) - original form
+      !-----------------------------------------------------------------
+      SUBROUTINE cerrutisolution(mu,p1,p2,p3,alpha,u1,u2,u3,k1,k2,x3)
+        COMPLEX(KIND=4), INTENT(INOUT) :: u1,u2,u3
+        REAL*8, INTENT(IN) :: mu,alpha,k1,k2,x3
+        COMPLEX(KIND=4), INTENT(IN) :: p1,p2,p3
+
+        REAL*8 :: beta, depthdecay
+        COMPLEX(KIND=8), PARAMETER :: i=CMPLX(0._8,pi2,8)
+        REAL*8  :: temp
+        COMPLEX(KIND=8) :: b1,b2,b3,tmp,v1,v2,v3
+
+        beta=pi2*sqrt(k1**2+k2**2)
+        depthdecay=exp(-beta*abs(x3))
+
+        IF (0==k1 .AND. 0==k2) THEN
+           u1=CMPLX(0._4,0._4,4)
+           u2=CMPLX(0._4,0._4,4)
+           u3=CMPLX(0._4,0._4,4)
+        ELSE
+           temp=1._8/(2._8*mu*beta**3)*depthdecay
+           b1=temp*p1
+           b2=temp*p2
+           b3=temp*p3
+
+           ! b3 contribution
+           tmp=i*b3*(beta*(1._8-1._8/alpha+beta*x3))
+           v1=tmp*k1
+           v2=tmp*k2
+           v3=-beta**2*b3*(1._8/alpha+beta*x3)
+
+           ! b1 contribution
+           temp=pi2**2*(2._8-1._8/alpha+beta*x3)
+           v1=v1+b1*(-2._8*beta**2+k1**2*temp)
+           v2=v2+b1*k1*k2*temp
+           v3=v3+b1*i*k1*beta*(1._8/alpha-1._8+beta*x3)
+
+           ! b2 contribution & switch to single-precision
+           u1=v1+b2*k1*k2*temp
+           u2=v2+b2*(-2._8*beta**2+k2**2*temp)
+           u3=v3+b2*i*k2*beta*(1._8/alpha-1._8+beta*x3)
+        END IF
+
+      END SUBROUTINE cerrutisolution
+#ifdef MPI_IMP
+  END SUBROUTINE cerruti3dslave
+#else
+  END SUBROUTINE cerruti3d
+#endif
+
+  !---------------------------------------------------------------------
+  ! subroutine CerrutiCowling
+  ! computes the deformation field in the 3-dimensional grid
+  ! due to an arbitrary surface traction.
+  !
+  ! sylvain barbot - 07/07/07 - original form
+  !                  21/11/08 - gravity effect
+  !                  02/01/09 - parallelized with MPI and OpenMP
+  !---------------------------------------------------------------------
+  SUBROUTINE cerruticowling(p1,p2,p3,lambda,mu,gamma,u1,u2,u3,dx1,dx2,dx3)
+    REAL*4, DIMENSION(:,:), INTENT(IN) :: p1,p2,p3
+    REAL*4, DIMENSION(:,:,:), INTENT(INOUT) :: u1,u2,u3
+    REAL*8, INTENT(IN) :: lambda,mu,gamma,dx1,dx2,dx3
+
+    INTEGER :: i1,i2,i3,ib,sx1,sx2,sx3,iostatus,buffersize
+    REAL*8 :: k1,k2,k3,x3,alpha
+#ifdef MPI_IMP
+    LOGICAL :: lflag 
+    INTEGER :: i2m,i2p,index=1
+#else
+    COMPLEX(KIND=4) :: t1,t2,t3
+    INTEGER, PARAMETER :: stride=64
+#endif
+    COMPLEX(KIND=4), ALLOCATABLE, DIMENSION(:,:) :: b1,b2,b3
+
+    sx1=SIZE(u1,1)-2
+    sx2=SIZE(u1,2)
+    sx3=SIZE(u1,3)
+
+    alpha=(lambda+mu)/(lambda+2*mu)
+
+#ifdef MPI_IMP
+
+    nslaves = nthreads-1   
+
+    ALLOCATE(b1(sx3,buffercerruti),b2(sx3,buffercerruti),b3(sx3,buffercerruti),STAT=iostatus)
+    IF (0/=iostatus) STOP "could not allocate arrays for Cerruti3D"
+
+    ! assign job to all threads
+    DO islave=1,nslaves
+       ! declare intentions to dependent thread
+       CALL MPI_SEND(iflag_TellSlaveToRecv_Cerruti3d,1,MPI_INTEGER,islave,tag_MasterSendingData,mcomm,ierr)
+
+       ! send computation parameters
+       CALL MPI_SEND(mu   ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(sx1  ,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(sx2  ,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(sx3  ,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(dx1  ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(dx2  ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(dx3  ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(alpha,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+
+       ! computation bounds (slave-number dependent)
+       IF (islave .NE. nslaves) THEN
+          i2m=CEILING(REAL(sx2)/REAL(nslaves))*(islave-1)+1
+          i2p=CEILING(REAL(sx2)/REAL(nslaves))*islave
+       ELSE
+          i2m=CEILING(REAL(sx2)/REAL(nslaves))*(islave-1)+1
+          i2p=sx2
+       END IF
+
+       ! send computation bounds
+       CALL MPI_SEND(i2m,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(i2p,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+
+       ! send surface traction to all dependent threads
+       CALL MPI_SEND(p1,(sx1/2+1)*sx2,MPI_COMPLEX,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(p2,(sx1/2+1)*sx2,MPI_COMPLEX,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+       CALL MPI_SEND(p3,(sx1/2+1)*sx2,MPI_COMPLEX,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
+
+    END DO
+
+    ! listen for results from threads
+    DO
+       ! exit if all points have been processed
+       IF (index .GT. (sx2 * (sx1/2+1))) EXIT
+
+       status=0
+       ! check for a message from any slave without data transfer
+       CALL  MPI_IPROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,lflag,status,ierr)
+        
+       ! if message from thread, receive computation results
+       IF (lflag) THEN
+
+          ! find thread source 
+          islave = status(MPI_SOURCE)
+        
+          ! check intentions of sender
+          IF (status(MPI_TAG) == tag_SlaveSendingData_Cerruti3d) THEN
+              
+             ! receive computation results from slave thread
+             CALL MPI_RECV(i1,1,MPI_INTEGER,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
+             CALL MPI_RECV(i2,1,MPI_INTEGER,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
+
+             CALL MPI_RECV(buffersize,1,MPI_INTEGER,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
+             CALL MPI_RECV(b1,sx3*buffersize,MPI_COMPLEX,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
+             CALL MPI_RECV(b2,sx3*buffersize,MPI_COMPLEX,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
+             CALL MPI_RECV(b3,sx3*buffersize,MPI_COMPLEX,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
+
+             IF (buffersize .GT. buffercerruti) THEN
+                ! incorrect buffersize
+                PRINT *, "buffersize", buffersize,"exceeds upper limit",buffercerruti
+             END IF
+
+             ! update solution displacement
+             DO ib=0,buffersize-1
+                DO i3=1,sx3
+                   u1(2*(i1+ib)-1,i2,i3)=u1(2*(i1+ib)-1,i2,i3)+REAL( REAL(b1(i3,ib+1)))
+                   u1(2*(i1+ib)  ,i2,i3)=u1(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b1(i3,ib+1)))
+                   u2(2*(i1+ib)-1,i2,i3)=u2(2*(i1+ib)-1,i2,i3)+REAL( REAL(b2(i3,ib+1)))
+                   u2(2*(i1+ib)  ,i2,i3)=u2(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b2(i3,ib+1)))
+                   u3(2*(i1+ib)-1,i2,i3)=u3(2*(i1+ib)-1,i2,i3)+REAL( REAL(b3(i3,ib+1)))
+                   u3(2*(i1+ib)  ,i2,i3)=u3(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b3(i3,ib+1)))
+                END DO
+             END DO
+
+             ! count number of returned results
+             index=index+buffersize
+
+          ENDIF
+           
+       ENDIF ! lflag
+
+    END DO
+
+    DEALLOCATE(b1,b2,b3)
+
+#else 
+    ! serial programmation implementation
+!$omp parallel private(b1,b2,b3,iostatus)
+
+    ALLOCATE(b1(sx3,stride),b2(sx3,stride),b3(sx3,stride),STAT=iostatus)
+    IF (0/=iostatus) STOP "could not allocate arrays for Cerruti3D"
+
+!$omp do private(i1,i3,ib,k1,k2,k3,t1,t2,t3,x3,buffersize)
+    DO i2=1,sx2
+       DO i1=1,sx1/2+1,stride
+
+          ! buffer results
+          IF (i1+stride-1 .GT. sx1/2+1) THEN
+             buffersize=sx1/2+1-i1+1
+          ELSE
+             buffersize=stride
+          END IF
+
+          DO ib=0,buffersize-1
+
+             CALL wavenumbers(i1+ib,i2,1,sx1,sx2,1,dx1,dx2,1._8,k1,k2,k3)
+             t1=CMPLX(p1(2*(i1+ib)-1,i2),p1(2*(i1+ib),i2),4)
+             t2=CMPLX(p2(2*(i1+ib)-1,i2),p2(2*(i1+ib),i2),4)
+             t3=CMPLX(p3(2*(i1+ib)-1,i2),p3(2*(i1+ib),i2),4)
+
+             DO i3=1,sx3
+                IF (i3<=sx3/2) THEN
+                   x3=DBLE(i3-1)*dx3
+                ELSE
+                   x3=ABS(DBLE(i3-sx3-1)*dx3)
+                END IF
+                CALL cerrutisolcowling(mu,t1,t2,t3,alpha,gamma, &
+                     b1(i3,ib+1),b2(i3,ib+1),b3(i3,ib+1),k1,k2,x3,DBLE(sx3/2)*dx3)
+             END DO
+
+             ! transforms the Cerruti solution into a full 3-dimensional
+             ! Fourier transform by 1d transforming in the 3-direction
+             CALL fft1(b1(:,ib+1),sx3,dx3,FFT_FORWARD)
+             CALL fft1(b2(:,ib+1),sx3,dx3,FFT_FORWARD)
+             CALL fft1(b3(:,ib+1),sx3,dx3,FFT_FORWARD)
+
+          END DO
+
+          ! update solution displacement
+          DO i3=1,sx3
+             DO ib=0,buffersize-1
+                u1(2*(i1+ib)-1,i2,i3)=u1(2*(i1+ib)-1,i2,i3)+REAL( REAL(b1(i3,ib+1)))
+                u1(2*(i1+ib)  ,i2,i3)=u1(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b1(i3,ib+1)))
+                u2(2*(i1+ib)-1,i2,i3)=u2(2*(i1+ib)-1,i2,i3)+REAL( REAL(b2(i3,ib+1)))
+                u2(2*(i1+ib)  ,i2,i3)=u2(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b2(i3,ib+1)))
+                u3(2*(i1+ib)-1,i2,i3)=u3(2*(i1+ib)-1,i2,i3)+REAL( REAL(b3(i3,ib+1)))
+                u3(2*(i1+ib)  ,i2,i3)=u3(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b3(i3,ib+1)))
+             END DO
+          END DO
+
+       END DO
+    END DO
+
+    DEALLOCATE(b1,b2,b3)
+!$omp end parallel
+
+#endif
+#ifdef MPI_IMP
+  END SUBROUTINE cerruticowling
+
+  !---------------------------------------------------------------------------
+  ! subroutine CerrutiCowlingSlave
+  ! performs the core of the serial Cerruti3d routine. called only
+  ! by dependent threads.
+  !
+  ! sylvain barbot (01/31/09) - original form
+  !---------------------------------------------------------------------------
+  SUBROUTINE cerruticowlingslave(islave)
+    INTEGER, INTENT(IN) :: islave
+
+    INTEGER :: i1,i2,i2m,i2p,i3,ib,sx1,sx2,sx3,iostatus,buffersize
+    REAL*8 :: k1,k2,k3,x3,alpha,dx1,dx2,dx3,mu
+    COMPLEX(KIND=4), ALLOCATABLE, DIMENSION(:,:) :: b1,b2,b3
+    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: p1,p2,p3
+    COMPLEX(KIND=4) :: t1,t2,t3
+
+    ! receive computation parameters
+    CALL MPI_RECV(mu   ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(sx1  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(sx2  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(sx3  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(dx1  ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(dx2  ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(dx3  ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(alpha,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+
+    ! receive computation bounds
+    CALL MPI_RECV(i2m  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(i2p  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+
+    ! receive surface traction (in Fourier domain)
+    ALLOCATE(p1(sx1+2,sx2),p2(sx1+2,sx2),p3(sx1+2,sx2),STAT=iostatus)
+    IF (0/=iostatus) STOP "could not allocate arrays for incoming transferts (Cerruti3dSlave)."
+    
+    CALL MPI_RECV(p1,(sx1+2)*sx2,MPI_REAL,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(p2,(sx1+2)*sx2,MPI_REAL,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+    CALL MPI_RECV(p3,(sx1+2)*sx2,MPI_REAL,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
+
+    ! start computation
+    ALLOCATE(b1(sx3,buffercerruti),b2(sx3,buffercerruti),b3(sx3,buffercerruti),STAT=iostatus)
+    IF (0/=iostatus) STOP "could not allocate buffers for computation (Cerruti3dSlave)"
+
+    DO i2=i2m,i2p
+       DO i1=1,sx1/2+1,buffercerruti
+
+          ! buffer results
+          IF (i1+buffercerruti-1 .GT. sx1/2+1) THEN
+             buffersize=sx1/2+1-i1+1
+          ELSE
+             buffersize=buffercerruti
+          END IF
+          DO ib=0,buffersize-1
+
+             CALL wavenumbers(i1+ib,i2,1,sx1,sx2,1,dx1,dx2,1._8,k1,k2,k3)
+             t1=CMPLX(p1(2*(i1+ib)-1,i2),p1(2*(i1+ib),i2),4)
+             t2=CMPLX(p2(2*(i1+ib)-1,i2),p2(2*(i1+ib),i2),4)
+             t3=CMPLX(p3(2*(i1+ib)-1,i2),p3(2*(i1+ib),i2),4)
+
+             DO i3=1,sx3
+                IF (i3<=sx3/2) THEN
+                   x3=DBLE(i3-1)*dx3
+                ELSE
+                   x3=ABS(DBLE(i3-sx3-1)*dx3)
+                END IF
+                CALL cerrutisolcowling(mu,t1,t2,t3,alpha,gamma, &
+                     b1(i3,ib+1),b2(i3,ib+1),b3(i3,ib+1),k1,k2,x3,DBLE(sx3/2)*dx3)
+             END DO
+
+             ! transforms the Cerruti solution into a full 3-dimensional
+             ! Fourier transform by 1d transforming in the 3-direction
+             CALL fft1(b1(:,ib+1),sx3,dx3,FFT_FORWARD)
+             CALL fft1(b2(:,ib+1),sx3,dx3,FFT_FORWARD)
+             CALL fft1(b3(:,ib+1),sx3,dx3,FFT_FORWARD)
+
+          END DO
+
+          ! send the Cerruti's contribution to the master thread
+          CALL MPI_SEND(i1,1,MPI_INTEGER,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
+          CALL MPI_SEND(i2,1,MPI_INTEGER,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
+
+          ! tell the buffersize before sending
+          CALL MPI_SEND(buffersize,1,MPI_INTEGER,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
+          CALL MPI_SEND(b1,sx3*buffersize,MPI_COMPLEX,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
+          CALL MPI_SEND(b2,sx3*buffersize,MPI_COMPLEX,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
+          CALL MPI_SEND(b3,sx3*buffersize,MPI_COMPLEX,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
+
+       END DO
+    END DO
+
+    DEALLOCATE(b1,b2,b3,p1,p2,p3)
+
+#endif
+    CONTAINS
+      !-----------------------------------------------------------------
+      ! subroutine CerrutiSolCowling
+      ! computes the general solution for the deformation field in an
+      ! elastic half-space due to an arbitrary surface traction in the
+      ! presence of gravity.
+      !
+      ! The 3 components u1, u2 and u3 of the deformation field are 
+      ! expressed in the horizontal Fourier at depth x3. 
+      !
+      ! Combines the solution to the Boussinesq's and the Cerruti's 
+      ! problem in a half-space with buoyancy boundary conditions.
+      !
+      ! sylvain barbot (07-07-07) - original form
+      !                (08-30-10) - account for net surface traction
+      !-----------------------------------------------------------------
+      SUBROUTINE cerrutisolcowling(mu,p1,p2,p3,alpha,gamma,u1,u2,u3,k1,k2,x3,L)
+        COMPLEX(KIND=4), INTENT(INOUT) :: u1,u2,u3
+        REAL*8, INTENT(IN) :: mu,alpha,gamma,k1,k2,x3,L
+        COMPLEX(KIND=4), INTENT(IN) :: p1,p2,p3
+        
+        REAL*8 :: beta, depthdecay, h
+        COMPLEX(KIND=8), PARAMETER :: i=CMPLX(0._8,pi2)
+        REAL*8  :: temp
+        COMPLEX(KIND=8) :: b1,b2,b3,tmp,v1,v2,v3
+        
+        beta=pi2*sqrt(k1**2+k2**2)
+        depthdecay=exp(-beta*abs(x3))
+        h=gamma/beta
+        
+        IF (0==k1 .AND. 0==k2) THEN
+           ! the 1/3 ratio is ad hoc
+           u1=CMPLX(REAL(+p1/mu*(x3-L)/3.d0),0._4)
+           u2=CMPLX(REAL(+p2/mu*(x3-L)/3.d0),0._4)
+           u3=CMPLX(REAL(+p3/mu*(x3-L)*(alpha-1.d0)/(1.d0+2.d0*L*alpha*gamma*(1.d0-alpha))/3.d0),0._4)
+           !u1=CMPLX(0._4,0._4)
+           !u2=CMPLX(0._4,0._4)
+           !u3=CMPLX(0._4,0._4)
+        ELSE
+           temp=1._8/(2._8*mu*beta**3)*depthdecay
+           b1=temp*p1
+           b2=temp*p2
+           b3=temp*p3/(1+h)
+           
+           ! b3 contribution
+           tmp=i*b3*(beta*(1._8-1._8/alpha+beta*x3))
+           v1=tmp*k1
+           v2=tmp*k2
+           v3=-beta**2*b3*(1._8/alpha+beta*x3)
+           
+           ! b1 contribution
+           temp=pi2**2*(2._8-1._8/alpha+beta*x3)/(1+h)
+           v1=v1+b1*(-2._8*beta**2+k1**2*temp)
+           v2=v2+b1*k1*k2*temp
+           v3=v3+b1*i*k1*beta*(1._8/alpha-1._8+beta*x3)/(1+h)
+           
+           ! b2 contribution & switch to single-precision
+           u1=v1+b2*k1*k2*temp
+           u2=v2+b2*(-2._8*beta**2+k2**2*temp)
+           u3=v3+b2*i*k2*beta*(1._8/alpha-1._8+beta*x3)/(1+h)
+        END IF
+
+      END SUBROUTINE cerrutisolcowling
+#ifdef MPI_IMP
+  END SUBROUTINE cerruticowlingslave
+#else
+  END SUBROUTINE cerruticowling
+#endif
+
+  !---------------------------------------------------------------------
+  ! subroutine CerrutiCowlingSerial
+  ! computes the deformation field in the 3-dimensional grid
+  ! due to an arbitrary surface traction. No parallel version.
+  !
+  ! sylvain barbot - 07/07/07 - original form
+  !                  21/11/08 - gravity effect
+  !---------------------------------------------------------------------
+  SUBROUTINE cerruticowlingserial(p1,p2,p3,lambda,mu,gamma,u1,u2,u3,dx1,dx2,dx3)
+    REAL*4, DIMENSION(:,:), INTENT(IN) :: p1,p2,p3
+    REAL*4, DIMENSION(:,:,:), INTENT(INOUT) :: u1,u2,u3
+    REAL*8, INTENT(IN) :: lambda,mu,gamma,dx1,dx2,dx3
+
+    INTEGER :: i1,i2,i3,sx1,sx2,sx3,status
+    REAL*8 :: k1,k2,k3,x3,alpha
+    COMPLEX(KIND=4), ALLOCATABLE, DIMENSION(:) :: b1,b2,b3
+    COMPLEX(KIND=4) :: t1,t2,t3
+
+    sx1=SIZE(u1,1)-2
+    sx2=SIZE(u1,2)
+    sx3=SIZE(u1,3)
+    
+    ALLOCATE(b1(sx3),b2(sx3),b3(sx3),STAT=status)
+    IF (0/=status) STOP "could not allocate arrays for Cerruti3D"
+    
+    alpha=(lambda+mu)/(lambda+2*mu)
+
+    DO i2=1,sx2
+       DO i1=1,sx1/2+1
+          CALL wavenumbers(i1,i2,1,sx1,sx2,1,dx1,dx2,1._8,k1,k2,k3)
+          t1=CMPLX(p1(2*i1-1,i2),p1(2*i1,i2))
+          t2=CMPLX(p2(2*i1-1,i2),p2(2*i1,i2))
+          t3=CMPLX(p3(2*i1-1,i2),p3(2*i1,i2))
+          DO i3=1,sx3
+             IF (i3<=sx3/2) THEN
+                x3=DBLE(i3-1)*dx3
+             ELSE
+                x3=ABS(DBLE(i3-sx3-1)*dx3)
+             END IF
+             CALL cerrutisolcowling(t1,t2,t3,alpha,gamma, &
+                  b1(i3),b2(i3),b3(i3),k1,k2,x3)
+          END DO
+          
+          ! transforms the Cerruti solution into a full 3-dimensional
+          ! Fourier transform by 1d transforming in the 3-direction
+          CALL fft1(b1,sx3,dx3,FFT_FORWARD)
+          CALL fft1(b2,sx3,dx3,FFT_FORWARD)
+          CALL fft1(b3,sx3,dx3,FFT_FORWARD)
+          
+          ! add the Cerruti's contribution to the deformation field
+          DO i3=1,sx3
+             u1(2*i1-1,i2,i3)=u1(2*i1-1,i2,i3)+REAL( REAL(b1(i3)))
+             u1(2*i1  ,i2,i3)=u1(2*i1  ,i2,i3)+REAL(AIMAG(b1(i3)))
+             u2(2*i1-1,i2,i3)=u2(2*i1-1,i2,i3)+REAL( REAL(b2(i3)))
+             u2(2*i1  ,i2,i3)=u2(2*i1  ,i2,i3)+REAL(AIMAG(b2(i3)))
+             u3(2*i1-1,i2,i3)=u3(2*i1-1,i2,i3)+REAL( REAL(b3(i3)))
+             u3(2*i1  ,i2,i3)=u3(2*i1  ,i2,i3)+REAL(AIMAG(b3(i3)))
+          END DO
+       END DO
+    END DO
+    
+  CONTAINS
+    !-----------------------------------------------------------------
+    ! subroutine CerrutiSolCowling
+    ! computes the general solution for the deformation field in an
+    ! elastic half-space due to an arbitrary surface traction in the
+    ! presence of gravity.
+    !
+    ! The 3 components u1, u2 and u3 of the deformation field are 
+    ! expressed in the horizontal Fourier at depth x3. 
+    !
+    ! Combines the solution to the Boussinesq's and the Cerruti's 
+    ! problem in a half-space with buoyancy boundary conditions.
+    !
+    ! sylvain barbot (07-07-07) - original form
+    !-----------------------------------------------------------------
+    SUBROUTINE cerrutisolcowling(p1,p2,p3,alpha,gamma,u1,u2,u3,k1,k2,x3)
+      COMPLEX(KIND=4), INTENT(INOUT) :: u1,u2,u3
+      REAL*8, INTENT(IN) :: alpha,gamma,k1,k2,x3
+      COMPLEX(KIND=4), INTENT(IN) :: p1,p2,p3
+        
+      REAL*8 :: beta, depthdecay, h
+      COMPLEX(KIND=8), PARAMETER :: i=CMPLX(0._8,pi2)
+      REAL*8  :: temp
+      COMPLEX(KIND=8) :: b1,b2,b3,tmp,v1,v2,v3
+      
+      beta=pi2*sqrt(k1**2+k2**2)
+      depthdecay=exp(-beta*abs(x3))
+      h=gamma/beta
+      
+      IF (0==k1 .AND. 0==k2) THEN
+         u1=CMPLX(0._4,0._4)
+         u2=CMPLX(0._4,0._4)
+         u3=CMPLX(0._4,0._4)
+      ELSE
+         temp=1._8/(2._8*mu*beta**3)*depthdecay
+         b1=temp*p1
+         b2=temp*p2
+         b3=temp*p3/(1+h)
+           
+         ! b3 contribution
+         tmp=i*b3*(beta*(1._8-1._8/alpha+beta*x3))
+         v1=tmp*k1
+         v2=tmp*k2
+         v3=-beta**2*b3*(1._8/alpha+beta*x3)
+           
+         ! b1 contribution
+         temp=pi2**2*(2._8-1._8/alpha+beta*x3)/(1+h)
+         v1=v1+b1*(-2._8*beta**2+k1**2*temp)
+         v2=v2+b1*k1*k2*temp
+         v3=v3+b1*i*k1*beta*(1._8/alpha-1._8+beta*x3)/(1+h)
+           
+         ! b2 contribution & switch to single-precision
+         u1=v1+b2*k1*k2*temp
+         u2=v2+b2*(-2._8*beta**2+k2**2*temp)
+         u3=v3+b2*i*k2*beta*(1._8/alpha-1._8+beta*x3)/(1+h)
+      END IF
+
+    END SUBROUTINE cerrutisolcowling
+
+  END SUBROUTINE cerruticowlingserial
+
+  !------------------------------------------------------------------
+  ! subroutine GreenFunction
+  ! computes (inplace) the displacement components due to a set of
+  ! 3-D body-forces by application of the semi-analytic Green's
+  ! function. The solution satisfies quasi-static Navier's equation
+  ! including vanishing of normal traction at the surface.
+  !
+  ! The surface traction can be made to vanish by application of
+  !   1) method of images + boussinesq problem (grn_method=GRN_IMAGE)
+  !   2) boussinesq's and cerruti's problems (grn_method=GRN_HS)
+  ! in the first case, the body-forces are supposed by have been
+  ! imaged appropriately.
+  !
+  ! sylvain barbot (07/07/07) - original form
+  !------------------------------------------------------------------
+  SUBROUTINE greenfunction(c1,c2,c3,t1,t2,t3,dx1,dx2,dx3,lambda,mu,grn_method)
+    REAL*4, INTENT(INOUT), DIMENSION(:,:,:) :: c1,c2,c3
+    REAL*4, INTENT(INOUT), DIMENSION(:,:) :: t1,t2,t3
+    REAL*8, INTENT(IN) :: dx1,dx2,dx3
+    REAL*8, INTENT(IN) :: lambda,mu
+    INTEGER, INTENT(IN) :: grn_method
+  
+    INTEGER :: sx1,sx2,sx3,status
+
+    REAL*4, DIMENSION(:,:), ALLOCATABLE :: p1,p2,p3
+
+    sx1=SIZE(c1,1)-2
+    sx2=SIZE(c1,2)
+    sx3=SIZE(c1,3)
+
+    ALLOCATE(p1(sx1+2,sx2),p2(sx1+2,sx2),p3(sx1+2,sx2),STAT=status)
+    IF (status > 0) THEN
+       WRITE_DEBUG_INFO
+       WRITE(0,'("could not allocate memory for green function")')
+       STOP 1
+    ELSE
+       p1=0;p2=0;p3=0;
+    END IF
+
+    ! forward Fourier transform equivalent body-force
+    CALL fft3(c1,sx1,sx2,sx3,dx1,dx2,dx3,FFT_FORWARD)
+    CALL fft3(c2,sx1,sx2,sx3,dx1,dx2,dx3,FFT_FORWARD)
+    CALL fft3(c3,sx1,sx2,sx3,dx1,dx2,dx3,FFT_FORWARD)
+    CALL fft2(t1,sx1,sx2,dx1,dx2,FFT_FORWARD)
+    CALL fft2(t2,sx1,sx2,dx1,dx2,FFT_FORWARD)
+    CALL fft2(t3,sx1,sx2,dx1,dx2,FFT_FORWARD)
+   
+    ! solve for displacement field
+    CALL elasticresponse(lambda,mu,c1,c2,c3,dx1,dx2,dx3)
+    IF (GRN_IMAGE .eq. grn_method) THEN
+       CALL surfacenormaltraction(lambda,mu,c1,c2,c3,dx1,dx2,dx3,p3)
+       p3=t3-p3
+       CALL boussinesq3d(p3,lambda,mu,c1,c2,c3,dx1,dx2,dx3)
+    ELSE
+       CALL surfacetraction(lambda,mu,c1,c2,c3,dx1,dx2,dx3,p1,p2,p3)
+       p1=t1-p1
+       p2=t2-p2
+       p3=t3-p3
+       CALL cerruti3d(p1,p2,p3,lambda,mu,c1,c2,c3,dx1,dx2,dx3)
+    END IF
+
+    ! inverse Fourier transform solution displacement components
+    CALL fft3(c1,sx1,sx2,sx3,dx1,dx2,dx3,FFT_INVERSE)
+    CALL fft3(c2,sx1,sx2,sx3,dx1,dx2,dx3,FFT_INVERSE)
+    CALL fft3(c3,sx1,sx2,sx3,dx1,dx2,dx3,FFT_INVERSE)
+    CALL fft2(t1,sx1,sx2,dx1,dx2,FFT_INVERSE)
+    CALL fft2(t2,sx1,sx2,dx1,dx2,FFT_INVERSE)
+    CALL fft2(t3,sx1,sx2,dx1,dx2,FFT_INVERSE)
+
+    DEALLOCATE(p1,p2,p3)
+    
+  END SUBROUTINE greenfunction
+
+  !------------------------------------------------------------------
+  ! subroutine GreensFunctionCowling
+  ! computes (inplace) the displacement components due to a set of
+  ! 3-D body-forces by application of the semi-analytic Green's
+  ! function. The solution satisfies quasi-static Navier's equation
+  ! with buoyancy boundary condition to simulate the effect of 
+  ! gravity (the Cowling approximation).
+  !
+  ! the importance of gravity depends upon the density contrast rho 
+  ! at the surface, the acceleration of gravity g and the value of 
+  ! shear modulus mu in the crust. effect on the displacement field
+  ! is governed by the gradient
+  !
+  !            gamma = (1 - nu) rho g / mu
+  !                  = rho g / (2 mu alpha)
+  ! 
+  ! where nu is the Poisson's ratio. For a Poisson's solid with 
+  ! nu = 1/4, with a density contrast rho = 3200 kg/m^3 and a shear
+  ! modulus mu = 30 GPa, we have gamma = 0.8e-6 /m.
+  !
+  ! INPUT:
+  !   . c1,c2,c3    is a set of body forces
+  !   . dx1,dx2,dx3 are the sampling size
+  !   . lambda,mu   are the Lame elastic parameters
+  !   . gamma       is the gravity coefficient
+  !
+  ! sylvain barbot (07/07/07) - original function greenfunction
+  !                (11/21/08) - effect of gravity
+  !------------------------------------------------------------------
+  SUBROUTINE greenfunctioncowling(c1,c2,c3,t1,t2,t3,dx1,dx2,dx3, &
+                                  lambda,mu,gamma)
+    REAL*4, INTENT(INOUT), DIMENSION(:,:,:) :: c1,c2,c3
+    REAL*4, INTENT(INOUT), DIMENSION(:,:) :: t1,t2,t3
+    REAL*8, INTENT(IN) :: dx1,dx2,dx3
+    REAL*8, INTENT(IN) :: lambda,mu,gamma
+  
+    INTEGER :: sx1,sx2,sx3,status
+
+    REAL*4, DIMENSION(:,:), ALLOCATABLE :: p1,p2,p3
+
+    sx1=SIZE(c1,1)-2
+    sx2=SIZE(c1,2)
+    sx3=SIZE(c1,3)
+
+    ALLOCATE(p1(sx1+2,sx2),p2(sx1+2,sx2),p3(sx1+2,sx2),STAT=status)
+    IF (status > 0) THEN
+       WRITE_DEBUG_INFO
+       WRITE(0,'("could not allocate memory for green function")')
+       STOP 1
+    ELSE
+       p1=0;p2=0;p3=0;
+    END IF
+
+    ! forward Fourier transform equivalent body-force
+    CALL fft3(c1,sx1,sx2,sx3,dx1,dx2,dx3,FFT_FORWARD)
+    CALL fft3(c2,sx1,sx2,sx3,dx1,dx2,dx3,FFT_FORWARD)
+    CALL fft3(c3,sx1,sx2,sx3,dx1,dx2,dx3,FFT_FORWARD)
+    CALL fft2(t1,sx1,sx2,dx1,dx2,FFT_FORWARD)
+    CALL fft2(t2,sx1,sx2,dx1,dx2,FFT_FORWARD)
+    CALL fft2(t3,sx1,sx2,dx1,dx2,FFT_FORWARD)
+   
+    ! solve for displacement field
+    CALL elasticresponse(lambda,mu,c1,c2,c3,dx1,dx2,dx3)
+
+    CALL surfacetractioncowling(lambda,mu,gamma, &
+         c1,c2,c3,dx1,dx2,dx3,p1,p2,p3)
+    p1=t1-p1
+    p2=t2-p2
+    p3=t3-p3
+    CALL cerruticowling(p1,p2,p3,lambda,mu,gamma, &
+         c1,c2,c3,dx1,dx2,dx3)
+    
+    ! inverse Fourier transform solution displacement components
+    CALL fft3(c1,sx1,sx2,sx3,dx1,dx2,dx3,FFT_INVERSE)
+    CALL fft3(c2,sx1,sx2,sx3,dx1,dx2,dx3,FFT_INVERSE)
+    CALL fft3(c3,sx1,sx2,sx3,dx1,dx2,dx3,FFT_INVERSE)
+    CALL fft2(t1,sx1,sx2,dx1,dx2,FFT_INVERSE)
+    CALL fft2(t2,sx1,sx2,dx1,dx2,FFT_INVERSE)
+    CALL fft2(t3,sx1,sx2,dx1,dx2,FFT_INVERSE)
+
+    DEALLOCATE(p1,p2,p3)
+    
+  END SUBROUTINE greenfunctioncowling
+
+END MODULE green
