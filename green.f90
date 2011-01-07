@@ -25,11 +25,6 @@ MODULE green
 
 #include "include.f90"
 
-#ifdef MPI_IMP
-  INCLUDE 'mpif.h'
-  INCLUDE 'mpiparams.f90'
-#endif
-
   PUBLIC
   REAL*8, PRIVATE, PARAMETER :: pi   = 3.141592653589793115997963468544185161_8
   REAL*8, PRIVATE, PARAMETER :: pi2  = 6.28318530717958623199592693708837032318_8
@@ -51,6 +46,7 @@ CONTAINS
   !
   ! sylvain barbot (04/14/07) - original form
   !                (02/06/09) - parallel implementation with MPI and OpenMP
+  !                (01/06/11) - remove implementation with MPI
   !------------------------------------------------------------------------
   SUBROUTINE elasticresponse(lambda,mu,f1,f2,f3,dx1,dx2,dx3)
     REAL*8, INTENT(IN) :: lambda,mu,dx1,dx2,dx3
@@ -59,13 +55,6 @@ CONTAINS
     REAL*8 :: k1,k2,k3,denom,r2,ratio1,ratio2
     INTEGER :: i1,i2,i3,sx1,sx2,sx3,ubound3
     COMPLEX(kind=8) :: buf1,buf2,buf3,c1,c2,c3
-#ifdef MPI_IMP
-    INTEGER :: iostatus,maxbuffersize,buffersize,i3m,i3p,position
-    INTEGER, DIMENSION(128) :: displs,counts
-    INTEGER, PARAMETER :: psize=256
-    CHARACTER, DIMENSION(256) :: packed
-    REAL*4, ALLOCATABLE, DIMENSION(:,:,:) :: u1,u2,u3
-#endif
     
     sx1=SIZE(f2,1)-2
     sx2=SIZE(f2,2)
@@ -74,71 +63,7 @@ CONTAINS
     ratio1=(lambda+mu)/(lambda+2._8*mu)/mu/(pi2**2._8)
     ratio2=mu/(lambda+mu)
     
-#ifdef MPI_IMP
-
-    ! assign job to all threads
-    maxbuffersize=CEILING(REAL(sx3)/REAL(nthreads))
-
-    ! values for master thread
-    displs(1)=0
-    counts(1)=maxbuffersize*(sx1+2)*sx2
-
-    ! send computational parameters to dependent threads
-    DO islave=1,nslaves
-
-       ! declare intentions to dependent thread
-       CALL MPI_SEND(iflag_TellSlaveToRecv_ElasResp,1,MPI_INTEGER,islave,tag_MasterSendingData,mcomm,ierr)
-
-       ! computation bounds (slave-number dependent)
-       i3m=maxbuffersize*islave+1
-       IF (islave .NE. nslaves) THEN
-          i3p=maxbuffersize*(islave+1)
-       ELSE
-          i3p=sx3
-       END IF
-       buffersize=i3p-i3m+1
-       counts(islave+1)=buffersize*(sx1+2)*sx2
-       displs(islave+1)=displs(islave)+counts(islave)
-
-       position=0
-       ! send computation parameters
-       CALL MPI_PACK(sx1,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
-       CALL MPI_PACK(sx2,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
-       CALL MPI_PACK(sx3,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
-
-       ! computation bounds
-       CALL MPI_PACK(i3m,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
-       CALL MPI_PACK(i3p,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
-       CALL MPI_PACK(buffersize,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
-
-       ! elastic properties
-       CALL MPI_PACK(lambda,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
-       CALL MPI_PACK(mu    ,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
-
-       ! grid sampling size
-       CALL MPI_PACK(dx1,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
-       CALL MPI_PACK(dx2,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
-       CALL MPI_PACK(dx3,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
-
-       ! sending package
-       CALL MPI_SEND(packed,position,MPI_PACKED,islave,tag_MasterSendingData_ElasResp,mcomm,ierr)
-
-    END DO
-    
-    ! special treatment for master thread (no new memory allocation)
-    counts(1)=0
-
-    ! sending to all threads (except master thread)
-    CALL MPI_SCATTERV(f1,counts,displs,MPI_REAL,u1,counts(1),MPI_REAL,master,mcomm,ierr)
-    CALL MPI_SCATTERV(f2,counts,displs,MPI_REAL,u2,counts(1),MPI_REAL,master,mcomm,ierr)
-    CALL MPI_SCATTERV(f3,counts,displs,MPI_REAL,u3,counts(1),MPI_REAL,master,mcomm,ierr)
-
-    ! setting computation limit for master thread
-    ubound3=maxbuffersize
-
-#else
     ubound3=sx3
-#endif
 
     ! serial computation
 !$omp parallel do private(i1,i2,k1,k2,k3,r2,denom,c1,c2,c3,buf1,buf2,buf3)
@@ -168,111 +93,12 @@ CONTAINS
     END DO
 !$omp end parallel do
 
-#ifdef MPI_IMP
-
-    ! getting back computation results from all threads
-    CALL MPI_GATHERV(u1,counts(1),MPI_REAL,f1,counts,displs,MPI_REAL,master,mcomm,ierr)
-    CALL MPI_GATHERV(u2,counts(1),MPI_REAL,f2,counts,displs,MPI_REAL,master,mcomm,ierr)
-    CALL MPI_GATHERV(u3,counts(1),MPI_REAL,f3,counts,displs,MPI_REAL,master,mcomm,ierr)
-
-#endif
-
     ! zero wavenumber, no net body-force
     f1(1:2,1,1)=(/ 0._4, 0._4 /)
     f2(1:2,1,1)=(/ 0._4, 0._4 /)
     f3(1:2,1,1)=(/ 0._4, 0._4 /)
 
   END SUBROUTINE elasticresponse
-  
-#ifdef MPI_IMP
-  !---------------------------------------------------------------------
-  ! subroutine ElasticResponseSlave
-  ! computes the core computation corresponding to serial routine
-  ! elasticresponse. implements the MPI standard.
-  !
-  ! sylvain barbot (02/05/09) - original form
-  !---------------------------------------------------------------------
-  SUBROUTINE elasticresponseslave(islave)
-    INTEGER, INTENT(IN) :: islave
-
-    REAL*8 :: k1,k2,k3,denom,r2,ratio1,ratio2,lambda,mu,dx1,dx2,dx3
-    INTEGER :: i1,i2,i3,sx1,sx2,sx3,position,i3m,i3p,buffersize,ib,iostatus
-    COMPLEX(kind=8) :: buf1,buf2,buf3,c1,c2,c3
-    INTEGER, PARAMETER :: psize=256
-    CHARACTER, DIMENSION(256) :: packed
-    INTEGER, DIMENSION(18) :: counts,displs
-    REAL*4, ALLOCATABLE, DIMENSION(:,:,:) :: v1,v2,v3,temp
-
-    ! receive computation parameters
-    CALL MPI_RECV(packed,psize,MPI_PACKED,master,tag_MasterSendingData_ElasResp,mcomm,status,ierr)
-    position=0
-
-    ! retrieve variables from buffer
-    CALL MPI_UNPACK(packed,psize,position,sx1,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
-    CALL MPI_UNPACK(packed,psize,position,sx2,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
-    CALL MPI_UNPACK(packed,psize,position,sx3,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
-
-    ! computational bounds
-    CALL MPI_UNPACK(packed,psize,position,i3m,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
-    CALL MPI_UNPACK(packed,psize,position,i3p,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
-    CALL MPI_UNPACK(packed,psize,position,buffersize,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
-
-    ! elastic parameters
-    CALL MPI_UNPACK(packed,psize,position,lambda,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
-    CALL MPI_UNPACK(packed,psize,position,mu    ,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
-
-    ! grid sampling-size
-    CALL MPI_UNPACK(packed,psize,position,dx1,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
-    CALL MPI_UNPACK(packed,psize,position,dx2,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
-    CALL MPI_UNPACK(packed,psize,position,dx3,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
-
-    ALLOCATE(v1(sx1+2,sx2,buffersize),v2(sx1+2,sx2,buffersize),v3(sx1+2,sx2,buffersize),STAT=iostatus)
-    IF (iostatus /= 0) STOP 21
-
-    ! get data from master thread
-    CALL MPI_SCATTERV(temp,counts,displs,MPI_REAL,v1,(sx1+2)*sx2*buffersize,MPI_REAL,master,mcomm,ierr)
-    CALL MPI_SCATTERV(temp,counts,displs,MPI_REAL,v2,(sx1+2)*sx2*buffersize,MPI_REAL,master,mcomm,ierr)
-    CALL MPI_SCATTERV(temp,counts,displs,MPI_REAL,v3,(sx1+2)*sx2*buffersize,MPI_REAL,master,mcomm,ierr)
-
-    ! core computations
-    ratio1=(lambda+mu)/(lambda+2._8*mu)/mu/(pi2**2._8)
-    ratio2=mu/(lambda+mu)
-
-    ib=1
-    DO i3=i3m,i3m+buffersize-1
-       CALL wavenumber3(i3,sx3,dx3,k3)
-       DO i2=1,sx2
-          CALL wavenumber2(i2,sx2,dx2,k2)
-          DO i1=1,sx1/2+1
-             CALL wavenumber1(i1,sx1,dx1,k1)
-
-             r2=k1**2._8+k2**2._8+k3**2._8
-             denom=ratio1/r2**2
-
-             c1=CMPLX(v1(2*i1-1,i2,ib),v1(2*i1,i2,ib),8)
-             c2=CMPLX(v2(2*i1-1,i2,ib),v2(2*i1,i2,ib),8)
-             c3=CMPLX(v3(2*i1-1,i2,ib),v3(2*i1,i2,ib),8)
-
-             buf1=((k2**2._8+k3**2._8+ratio2*r2)*c1-k1*(k2*c2+k3*c3))*denom
-             buf2=((k1**2._8+k3**2._8+ratio2*r2)*c2-k2*(k1*c1+k3*c3))*denom
-             buf3=((k1**2._8+k2**2._8+ratio2*r2)*c3-k3*(k1*c1+k2*c2))*denom
-
-             v1(2*i1-1:2*i1,i2,ib)=REAL((/ REAL(buf1),AIMAG(buf1) /))
-             v2(2*i1-1:2*i1,i2,ib)=REAL((/ REAL(buf2),AIMAG(buf2) /))
-             v3(2*i1-1:2*i1,i2,ib)=REAL((/ REAL(buf3),AIMAG(buf3) /))
-          END DO
-       END DO
-       ib=ib+1
-    END DO
-
-    CALL MPI_GATHERV(v1,(sx1+2)*sx2*buffersize,MPI_REAL,temp,counts,displs,MPI_REAL,master,mcomm,ierr)
-    CALL MPI_GATHERV(v2,(sx1+2)*sx2*buffersize,MPI_REAL,temp,counts,displs,MPI_REAL,master,mcomm,ierr)
-    CALL MPI_GATHERV(v3,(sx1+2)*sx2*buffersize,MPI_REAL,temp,counts,displs,MPI_REAL,master,mcomm,ierr)
-
-    DEALLOCATE(v1,v2,v3)
-
-  END SUBROUTINE elasticresponseslave
-#endif 
 
   !---------------------------------------------------------------------
   ! subroutine SurfaceNormalTraction
@@ -438,79 +264,9 @@ CONTAINS
     COMPLEX(KIND=8), PARAMETER :: i=CMPLX(0._8,pi2,8)
     COMPLEX(KIND=8) :: sum1,sum2,sum3,c1,c2,c3
 
-#ifdef MPI_IMP
-    INTEGER :: buffersize,maxbuffersize,iostatus,i3m,position
-    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: temp
-    INTEGER, PARAMETER :: psize=256
-    CHARACTER, DIMENSION(256) :: packed
-#endif
-    
     sx1=SIZE(u1,1)-2
     sx2=SIZE(u1,2)
     sx3=SIZE(u1,3)
-
-#ifdef MPI_IMP
-
-    p1=0;p2=0;p3=0
-
-    ! temp is a buffer used by MPI_REDUCE
-    ALLOCATE(temp(sx1+2,sx2),STAT=iostatus)
-    IF (iostatus /= 0) STOP 15
-
-    ! assign job to all threads
-    maxbuffersize=CEILING(REAL(sx3)/REAL(nslaves))
-
-    DO islave=1,nslaves
-
-       ! declare intentions to dependent thread
-       CALL MPI_SEND(iflag_TellSlaveToRecv_SurfTrac,1,MPI_INTEGER,islave,tag_MasterSendingData,mcomm,ierr)
-
-       ! buffersize (slave-number dependent)
-       i3m=1+(islave-1)*maxbuffersize
-       IF (islave .NE. nslaves) THEN
-          buffersize=maxbuffersize
-       ELSE
-          buffersize=sx3-i3m+1
-       END IF
-
-       position=0
-
-       ! computation parameters
-       CALL MPI_PACK(sx1,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
-       CALL MPI_PACK(sx2,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
-       CALL MPI_PACK(sx3,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
-
-       ! elastic parameters
-       CALL MPI_PACK(lambda,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
-       CALL MPI_PACK(mu    ,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
-
-       ! sampling size
-       CALL MPI_PACK(dx1,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
-       CALL MPI_PACK(dx2,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
-       CALL MPI_PACK(dx3,1,MPI_REAL8,packed,psize,position,mcomm,ierr)
-
-       ! start index of buffer
-       CALL MPI_PACK(i3m,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
-       CALL MPI_PACK(buffersize,1,MPI_INTEGER,packed,psize,position,mcomm,ierr)
-
-       ! sending package
-       CALL MPI_SEND(packed,position,MPI_PACKED,islave,tag_MasterSendingData_SurfTrac,mcomm,ierr)
-
-       ! sub arrays
-       CALL MPI_SEND(u1(:,:,i3m),(sx1+2)*sx2*buffersize,MPI_REAL,islave,tag_MasterSendingData_SurfTrac,mcomm,ierr)
-       CALL MPI_SEND(u2(:,:,i3m),(sx1+2)*sx2*buffersize,MPI_REAL,islave,tag_MasterSendingData_SurfTrac,mcomm,ierr)
-       CALL MPI_SEND(u3(:,:,i3m),(sx1+2)*sx2*buffersize,MPI_REAL,islave,tag_MasterSendingData_SurfTrac,mcomm,ierr)
-
-    END DO
-
-    ! cascade results down to master
-    CALL MPI_REDUCE(temp,p1,(sx1+2)*sx2,MPI_REAL,MPI_SUM,master,MPI_COMM_WORLD,ierr)
-    CALL MPI_REDUCE(temp,p2,(sx1+2)*sx2,MPI_REAL,MPI_SUM,master,MPI_COMM_WORLD,ierr)
-    CALL MPI_REDUCE(temp,p3,(sx1+2)*sx2,MPI_REAL,MPI_SUM,master,MPI_COMM_WORLD,ierr) 
-
-    DEALLOCATE(temp)
-
-#else
 
     modulus=lambda+2._8*mu
 
@@ -549,107 +305,7 @@ CONTAINS
     p2=p2/(sx3*dx3)
     p3=p3/(sx3*dx3)
 
-#endif
-
   END SUBROUTINE surfacetraction
-
-#ifdef MPI_IMP
-
-  !---------------------------------------------------------------------
-  ! subroutine SurfaceTractionSlave
-  ! compute the stress in the Fourier domain for master thread.
-  !
-  ! sylvain barbot (02/04/09) - original form
-  !---------------------------------------------------------------------
-  SUBROUTINE surfacetractionslave(islave)
-    INTEGER, INTENT(IN) :: islave
-
-    REAL*8 :: modulus,lambda,mu,dx1,dx2,dx3,k1,k2,k3
-    INTEGER :: i1,i2,i3,sx1,sx2,sx3,i3m,iostatus,ib,buffersize,position
-    COMPLEX(KIND=8), PARAMETER :: i=CMPLX(0._8,pi2,8)
-    COMPLEX(KIND=8) :: sum1,sum2,sum3,c1,c2,c3
-    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: p1,p2,p3,temp
-    REAL*4, ALLOCATABLE, DIMENSION(:,:,:) :: u1,u2,u3
-    INTEGER, PARAMETER :: psize=256
-    CHARACTER, DIMENSION(256) :: packed
-
-    ! receive computation parameters
-    CALL MPI_RECV(packed,psize,MPI_PACKED,master,tag_MasterSendingData_SurfTrac,mcomm,status,ierr)
-    position=0
-
-    ! grid dimension
-    CALL MPI_UNPACK(packed,psize,position,sx1,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
-    CALL MPI_UNPACK(packed,psize,position,sx2,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
-    CALL MPI_UNPACK(packed,psize,position,sx3,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
-
-    ! elastic parameters
-    CALL MPI_UNPACK(packed,psize,position,lambda,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
-    CALL MPI_UNPACK(packed,psize,position,mu    ,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
-
-    ! sampling size
-    CALL MPI_UNPACK(packed,psize,position,dx1,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
-    CALL MPI_UNPACK(packed,psize,position,dx2,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
-    CALL MPI_UNPACK(packed,psize,position,dx3,1,MPI_REAL8,MPI_COMM_WORLD,ierr)
-
-    ! start index of buffer
-    CALL MPI_UNPACK(packed,psize,position,i3m,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)
-    CALL MPI_UNPACK(packed,psize,position,buffersize,1,MPI_INTEGER,MPI_COMM_WORLD,ierr)    
-
-    ALLOCATE(u1(sx1+2,sx2,buffersize),u2(sx1+2,sx2,buffersize),u3(sx1+2,sx2,buffersize), &
-             p1(sx1+2,sx2),p2(sx1+2,sx2),p3(sx1+2,sx2),STAT=iostatus)
-    IF (iostatus /= 0) STOP 18
-
-    ! sub arrays
-    CALL MPI_RECV(u1,(sx1+2)*sx2*buffersize,MPI_REAL,master,tag_MasterSendingData_SurfTrac,mcomm,status,ierr)
-    CALL MPI_RECV(u2,(sx1+2)*sx2*buffersize,MPI_REAL,master,tag_MasterSendingData_SurfTrac,mcomm,status,ierr)
-    CALL MPI_RECV(u3,(sx1+2)*sx2*buffersize,MPI_REAL,master,tag_MasterSendingData_SurfTrac,mcomm,status,ierr)
-
-    modulus=lambda+2._8*mu
-
-    p1=0;p2=0;p3=0
-    ib=1;
-    DO i3=i3m,i3m+buffersize-1
-       DO i2=1,sx2
-          DO i1=1,sx1/2+1
-             CALL wavenumbers(i1,i2,i3,sx1,sx2,sx3,dx1,dx2,dx3,k1,k2,k3)
-
-             c1=CMPLX(u1(2*i1-1,i2,ib),u1(2*i1,i2,ib),8)
-             c2=CMPLX(u2(2*i1-1,i2,ib),u2(2*i1,i2,ib),8)
-             c3=CMPLX(u3(2*i1-1,i2,ib),u3(2*i1,i2,ib),8)
-
-             sum1=i*mu*(k3*c1+k1*c3)
-             sum2=i*mu*(k3*c2+k2*c3)
-             sum3=i*(modulus*k3*c3+lambda*(k1*c1+k2*c2))
-             
-             p1(2*i1-1:2*i1,i2)=p1(2*i1-1:2*i1,i2) &
-                  +(/REAL(REAL(sum1)),REAL(AIMAG(sum1))/)
-             p2(2*i1-1:2*i1,i2)=p2(2*i1-1:2*i1,i2) &
-                  +(/REAL(REAL(sum2)),REAL(AIMAG(sum2))/)
-             p3(2*i1-1:2*i1,i2)=p3(2*i1-1:2*i1,i2) &
-                  +(/REAL(REAL(sum3)),REAL(AIMAG(sum3))/)
-
-          END DO
-       END DO
-       ! update the local counter for buffer array
-       ib=ib+1
-    END DO
-
-    DEALLOCATE(u1,u2,u3)
-
-    p1=p1/(sx3*dx3)
-    p2=p2/(sx3*dx3)
-    p3=p3/(sx3*dx3)
-
-    ! cascade results to master thread
-    CALL MPI_REDUCE(p1,temp,(sx1+2)*sx2,MPI_REAL,MPI_SUM,master,MPI_COMM_WORLD,ierr)
-    CALL MPI_REDUCE(p2,temp,(sx1+2)*sx2,MPI_REAL,MPI_SUM,master,MPI_COMM_WORLD,ierr)
-    CALL MPI_REDUCE(p3,temp,(sx1+2)*sx2,MPI_REAL,MPI_SUM,master,MPI_COMM_WORLD,ierr)
-
-    DEALLOCATE(p1,p2,p3)
-
-  END SUBROUTINE surfacetractionslave
-
-#endif
 
   !---------------------------------------------------------------------
   ! subroutine SurfaceTractionCowling
@@ -727,6 +383,7 @@ CONTAINS
   !
   ! sylvain barbot (07/07/07) - original form
   !                (02/01/09) - parallelized with MPI and OpenMP
+  !                (01/06/11) - remove parallelized version with MPI
   !---------------------------------------------------------------------
   SUBROUTINE cerruti3d(p1,p2,p3,lambda,mu,u1,u2,u3,dx1,dx2,dx3)
     REAL*4, DIMENSION(:,:), INTENT(IN) :: p1,p2,p3
@@ -735,13 +392,8 @@ CONTAINS
 
     INTEGER :: i1,i2,i3,ib,sx1,sx2,sx3,iostatus,buffersize
     REAL*8 :: k1,k2,k3,x3,alpha
-#ifdef MPI_IMP
-    LOGICAL :: lflag 
-    INTEGER :: i2m,i2p,index=1
-#else
     COMPLEX(KIND=4) :: t1,t2,t3
     INTEGER, PARAMETER :: stride=64
-#endif
     COMPLEX(KIND=4), ALLOCATABLE, DIMENSION(:,:) :: b1,b2,b3
 
     sx1=SIZE(u1,1)-2
@@ -750,104 +402,6 @@ CONTAINS
 
     alpha=(lambda+mu)/(lambda+2*mu)
 
-#ifdef MPI_IMP
-
-    nslaves = nthreads-1   
-
-    ALLOCATE(b1(sx3,buffercerruti),b2(sx3,buffercerruti),b3(sx3,buffercerruti),STAT=iostatus)
-    IF (0/=iostatus) STOP "could not allocate arrays for Cerruti3D"
-
-    ! assign job to all threads
-    DO islave=1,nslaves
-       ! declare intentions to dependent thread
-       CALL MPI_SEND(iflag_TellSlaveToRecv_Cerruti3d,1,MPI_INTEGER,islave,tag_MasterSendingData,mcomm,ierr)
-
-       ! send computation parameters
-       CALL MPI_SEND(mu   ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(sx1  ,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(sx2  ,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(sx3  ,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(dx1  ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(dx2  ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(dx3  ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(alpha,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-
-       ! computation bounds (slave-number dependent)
-       IF (islave .NE. nslaves) THEN
-          i2m=CEILING(REAL(sx2)/REAL(nslaves))*(islave-1)+1
-          i2p=CEILING(REAL(sx2)/REAL(nslaves))*islave
-       ELSE
-          i2m=CEILING(REAL(sx2)/REAL(nslaves))*(islave-1)+1
-          i2p=sx2
-       END IF
-
-       ! send computation bounds
-       CALL MPI_SEND(i2m,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(i2p,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-
-       ! send surface traction to all dependent threads
-       CALL MPI_SEND(p1,(sx1/2+1)*sx2,MPI_COMPLEX,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(p2,(sx1/2+1)*sx2,MPI_COMPLEX,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(p3,(sx1/2+1)*sx2,MPI_COMPLEX,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-
-    END DO
-
-    ! listen for results from threads
-    DO
-       ! exit if all points have been processed
-       IF (index .GT. (sx2 * (sx1/2+1))) EXIT
-
-       status=0
-       ! check for a message from any slave without data transfer
-       CALL  MPI_IPROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,lflag,status,ierr)
-        
-       ! if message from thread, receive computation results
-       IF (lflag) THEN
-
-          ! find thread source 
-          islave = status(MPI_SOURCE)
-        
-          ! check intentions of sender
-          IF (status(MPI_TAG) == tag_SlaveSendingData_Cerruti3d) THEN
-              
-             ! receive computation results from slave thread
-             CALL MPI_RECV(i1,1,MPI_INTEGER,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
-             CALL MPI_RECV(i2,1,MPI_INTEGER,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
-
-             CALL MPI_RECV(buffersize,1,MPI_INTEGER,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
-             CALL MPI_RECV(b1,sx3*buffersize,MPI_COMPLEX,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
-             CALL MPI_RECV(b2,sx3*buffersize,MPI_COMPLEX,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
-             CALL MPI_RECV(b3,sx3*buffersize,MPI_COMPLEX,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
-
-             IF (buffersize .GT. buffercerruti) THEN
-                ! incorrect buffersize
-                PRINT *, "buffersize", buffersize,"exceeds upper limit",buffercerruti
-             END IF
-
-             ! update solution displacement
-             DO ib=0,buffersize-1
-                DO i3=1,sx3
-                   u1(2*(i1+ib)-1,i2,i3)=u1(2*(i1+ib)-1,i2,i3)+REAL( REAL(b1(i3,ib+1)))
-                   u1(2*(i1+ib)  ,i2,i3)=u1(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b1(i3,ib+1)))
-                   u2(2*(i1+ib)-1,i2,i3)=u2(2*(i1+ib)-1,i2,i3)+REAL( REAL(b2(i3,ib+1)))
-                   u2(2*(i1+ib)  ,i2,i3)=u2(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b2(i3,ib+1)))
-                   u3(2*(i1+ib)-1,i2,i3)=u3(2*(i1+ib)-1,i2,i3)+REAL( REAL(b3(i3,ib+1)))
-                   u3(2*(i1+ib)  ,i2,i3)=u3(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b3(i3,ib+1)))
-                END DO
-             END DO
-
-             ! count number of returned results
-             index=index+buffersize
-
-          ENDIF
-           
-       ENDIF ! lflag
-
-    END DO
-
-    DEALLOCATE(b1,b2,b3)
-
-#else 
     ! serial programmation implementation
 !$omp parallel private(b1,b2,b3,iostatus)
 
@@ -907,101 +461,6 @@ CONTAINS
     DEALLOCATE(b1,b2,b3)
 !$omp end parallel
 
-#endif
-#ifdef MPI_IMP
-  END SUBROUTINE cerruti3d
-
-  !---------------------------------------------------------------------------
-  ! subroutine Cerruti3dSlave
-  ! performs the core of the serial Cerruti3d routine. called only
-  ! by dependent threads.
-  !
-  ! sylvain barbot (01/31/09) - original form
-  !---------------------------------------------------------------------------
-  SUBROUTINE cerruti3dslave(islave)
-    INTEGER, INTENT(IN) :: islave
-
-    INTEGER :: i1,i2,i2m,i2p,i3,ib,sx1,sx2,sx3,iostatus,buffersize
-    REAL*8 :: k1,k2,k3,x3,alpha,dx1,dx2,dx3,mu
-    COMPLEX(KIND=4), ALLOCATABLE, DIMENSION(:,:) :: b1,b2,b3
-    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: p1,p2,p3
-    COMPLEX(KIND=4) :: t1,t2,t3
-
-    ! receive computation parameters
-    CALL MPI_RECV(mu   ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(sx1  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(sx2  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(sx3  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(dx1  ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(dx2  ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(dx3  ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(alpha,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-
-    ! receive computation bounds
-    CALL MPI_RECV(i2m  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(i2p  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-
-    ! receive surface traction (in Fourier domain)
-    ALLOCATE(p1(sx1+2,sx2),p2(sx1+2,sx2),p3(sx1+2,sx2),STAT=iostatus)
-    IF (0/=iostatus) STOP "could not allocate arrays for incoming transferts (Cerruti3dSlave)."
-    
-    CALL MPI_RECV(p1,(sx1+2)*sx2,MPI_REAL,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(p2,(sx1+2)*sx2,MPI_REAL,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(p3,(sx1+2)*sx2,MPI_REAL,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-
-    ! start computation
-    ALLOCATE(b1(sx3,buffercerruti),b2(sx3,buffercerruti),b3(sx3,buffercerruti),STAT=iostatus)
-    IF (0/=iostatus) STOP "could not allocate buffers for computation (Cerruti3dSlave)"
-
-    DO i2=i2m,i2p
-       DO i1=1,sx1/2+1,buffercerruti
-
-          ! buffer results
-          IF (i1+buffercerruti-1 .GT. sx1/2+1) THEN
-             buffersize=sx1/2+1-i1+1
-          ELSE
-             buffersize=buffercerruti
-          END IF
-          DO ib=0,buffersize-1
-
-             CALL wavenumbers(i1+ib,i2,1,sx1,sx2,1,dx1,dx2,1._8,k1,k2,k3)
-             t1=CMPLX(p1(2*(i1+ib)-1,i2),p1(2*(i1+ib),i2),4)
-             t2=CMPLX(p2(2*(i1+ib)-1,i2),p2(2*(i1+ib),i2),4)
-             t3=CMPLX(p3(2*(i1+ib)-1,i2),p3(2*(i1+ib),i2),4)
-
-             DO i3=1,sx3
-                IF (i3<=sx3/2) THEN
-                   x3=DBLE(i3-1)*dx3
-                ELSE
-                   x3=ABS(DBLE(i3-sx3-1)*dx3)
-                END IF
-                CALL cerrutisolution(mu,t1,t2,t3,alpha,b1(i3,ib+1),b2(i3,ib+1),b3(i3,ib+1),k1,k2,x3)
-             END DO
-
-             ! transforms the Cerruti solution into a full 3-dimensional
-             ! Fourier transform by 1d transforming in the 3-direction
-             CALL fft1(b1(:,ib+1),sx3,dx3,FFT_FORWARD)
-             CALL fft1(b2(:,ib+1),sx3,dx3,FFT_FORWARD)
-             CALL fft1(b3(:,ib+1),sx3,dx3,FFT_FORWARD)
-
-          END DO
-
-          ! send the Cerruti's contribution to the master thread
-          CALL MPI_SEND(i1,1,MPI_INTEGER,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
-          CALL MPI_SEND(i2,1,MPI_INTEGER,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
-
-          ! tell the buffersize before sending
-          CALL MPI_SEND(buffersize,1,MPI_INTEGER,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
-          CALL MPI_SEND(b1,sx3*buffersize,MPI_COMPLEX,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
-          CALL MPI_SEND(b2,sx3*buffersize,MPI_COMPLEX,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
-          CALL MPI_SEND(b3,sx3*buffersize,MPI_COMPLEX,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
-
-       END DO
-    END DO
-
-    DEALLOCATE(b1,b2,b3,p1,p2,p3)
-
-#endif
     CONTAINS
       !-----------------------------------------------------------------
       ! subroutine CerrutiSolution
@@ -1056,20 +515,17 @@ CONTAINS
         END IF
 
       END SUBROUTINE cerrutisolution
-#ifdef MPI_IMP
-  END SUBROUTINE cerruti3dslave
-#else
   END SUBROUTINE cerruti3d
-#endif
 
   !---------------------------------------------------------------------
   ! subroutine CerrutiCowling
   ! computes the deformation field in the 3-dimensional grid
   ! due to an arbitrary surface traction.
   !
-  ! sylvain barbot - 07/07/07 - original form
-  !                  21/11/08 - gravity effect
-  !                  02/01/09 - parallelized with MPI and OpenMP
+  ! sylvain barbot - (07/07/07) - original form
+  !                  (21/11/08) - gravity effect
+  !                  (02/01/09) - parallelized with MPI and OpenMP
+  !                  (01/06/11) - remove parallelized version with MPI
   !---------------------------------------------------------------------
   SUBROUTINE cerruticowling(p1,p2,p3,lambda,mu,gamma,u1,u2,u3,dx1,dx2,dx3)
     REAL*4, DIMENSION(:,:), INTENT(IN) :: p1,p2,p3
@@ -1078,13 +534,8 @@ CONTAINS
 
     INTEGER :: i1,i2,i3,ib,sx1,sx2,sx3,iostatus,buffersize
     REAL*8 :: k1,k2,k3,x3,alpha
-#ifdef MPI_IMP
-    LOGICAL :: lflag 
-    INTEGER :: i2m,i2p,index=1
-#else
     COMPLEX(KIND=4) :: t1,t2,t3
     INTEGER, PARAMETER :: stride=64
-#endif
     COMPLEX(KIND=4), ALLOCATABLE, DIMENSION(:,:) :: b1,b2,b3
 
     sx1=SIZE(u1,1)-2
@@ -1093,104 +544,6 @@ CONTAINS
 
     alpha=(lambda+mu)/(lambda+2*mu)
 
-#ifdef MPI_IMP
-
-    nslaves = nthreads-1   
-
-    ALLOCATE(b1(sx3,buffercerruti),b2(sx3,buffercerruti),b3(sx3,buffercerruti),STAT=iostatus)
-    IF (0/=iostatus) STOP "could not allocate arrays for Cerruti3D"
-
-    ! assign job to all threads
-    DO islave=1,nslaves
-       ! declare intentions to dependent thread
-       CALL MPI_SEND(iflag_TellSlaveToRecv_Cerruti3d,1,MPI_INTEGER,islave,tag_MasterSendingData,mcomm,ierr)
-
-       ! send computation parameters
-       CALL MPI_SEND(mu   ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(sx1  ,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(sx2  ,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(sx3  ,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(dx1  ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(dx2  ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(dx3  ,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(alpha,1,MPI_REAL8  ,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-
-       ! computation bounds (slave-number dependent)
-       IF (islave .NE. nslaves) THEN
-          i2m=CEILING(REAL(sx2)/REAL(nslaves))*(islave-1)+1
-          i2p=CEILING(REAL(sx2)/REAL(nslaves))*islave
-       ELSE
-          i2m=CEILING(REAL(sx2)/REAL(nslaves))*(islave-1)+1
-          i2p=sx2
-       END IF
-
-       ! send computation bounds
-       CALL MPI_SEND(i2m,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(i2p,1,MPI_INTEGER,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-
-       ! send surface traction to all dependent threads
-       CALL MPI_SEND(p1,(sx1/2+1)*sx2,MPI_COMPLEX,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(p2,(sx1/2+1)*sx2,MPI_COMPLEX,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-       CALL MPI_SEND(p3,(sx1/2+1)*sx2,MPI_COMPLEX,islave,tag_MasterSendingData_Cerruti3d,mcomm,ierr)
-
-    END DO
-
-    ! listen for results from threads
-    DO
-       ! exit if all points have been processed
-       IF (index .GT. (sx2 * (sx1/2+1))) EXIT
-
-       status=0
-       ! check for a message from any slave without data transfer
-       CALL  MPI_IPROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,lflag,status,ierr)
-        
-       ! if message from thread, receive computation results
-       IF (lflag) THEN
-
-          ! find thread source 
-          islave = status(MPI_SOURCE)
-        
-          ! check intentions of sender
-          IF (status(MPI_TAG) == tag_SlaveSendingData_Cerruti3d) THEN
-              
-             ! receive computation results from slave thread
-             CALL MPI_RECV(i1,1,MPI_INTEGER,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
-             CALL MPI_RECV(i2,1,MPI_INTEGER,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
-
-             CALL MPI_RECV(buffersize,1,MPI_INTEGER,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
-             CALL MPI_RECV(b1,sx3*buffersize,MPI_COMPLEX,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
-             CALL MPI_RECV(b2,sx3*buffersize,MPI_COMPLEX,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
-             CALL MPI_RECV(b3,sx3*buffersize,MPI_COMPLEX,islave,tag_SlaveSendingData_Cerruti3d,mcomm,status,ierr)
-
-             IF (buffersize .GT. buffercerruti) THEN
-                ! incorrect buffersize
-                PRINT *, "buffersize", buffersize,"exceeds upper limit",buffercerruti
-             END IF
-
-             ! update solution displacement
-             DO ib=0,buffersize-1
-                DO i3=1,sx3
-                   u1(2*(i1+ib)-1,i2,i3)=u1(2*(i1+ib)-1,i2,i3)+REAL( REAL(b1(i3,ib+1)))
-                   u1(2*(i1+ib)  ,i2,i3)=u1(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b1(i3,ib+1)))
-                   u2(2*(i1+ib)-1,i2,i3)=u2(2*(i1+ib)-1,i2,i3)+REAL( REAL(b2(i3,ib+1)))
-                   u2(2*(i1+ib)  ,i2,i3)=u2(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b2(i3,ib+1)))
-                   u3(2*(i1+ib)-1,i2,i3)=u3(2*(i1+ib)-1,i2,i3)+REAL( REAL(b3(i3,ib+1)))
-                   u3(2*(i1+ib)  ,i2,i3)=u3(2*(i1+ib)  ,i2,i3)+REAL(AIMAG(b3(i3,ib+1)))
-                END DO
-             END DO
-
-             ! count number of returned results
-             index=index+buffersize
-
-          ENDIF
-           
-       ENDIF ! lflag
-
-    END DO
-
-    DEALLOCATE(b1,b2,b3)
-
-#else 
     ! serial programmation implementation
 !$omp parallel private(b1,b2,b3,iostatus)
 
@@ -1251,103 +604,8 @@ CONTAINS
     DEALLOCATE(b1,b2,b3)
 !$omp end parallel
 
-#endif
-#ifdef MPI_IMP
-  END SUBROUTINE cerruticowling
-
-  !---------------------------------------------------------------------------
-  ! subroutine CerrutiCowlingSlave
-  ! performs the core of the serial Cerruti3d routine. called only
-  ! by dependent threads.
-  !
-  ! sylvain barbot (01/31/09) - original form
-  !---------------------------------------------------------------------------
-  SUBROUTINE cerruticowlingslave(islave)
-    INTEGER, INTENT(IN) :: islave
-
-    INTEGER :: i1,i2,i2m,i2p,i3,ib,sx1,sx2,sx3,iostatus,buffersize
-    REAL*8 :: k1,k2,k3,x3,alpha,dx1,dx2,dx3,mu
-    COMPLEX(KIND=4), ALLOCATABLE, DIMENSION(:,:) :: b1,b2,b3
-    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: p1,p2,p3
-    COMPLEX(KIND=4) :: t1,t2,t3
-
-    ! receive computation parameters
-    CALL MPI_RECV(mu   ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(sx1  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(sx2  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(sx3  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(dx1  ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(dx2  ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(dx3  ,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(alpha,1,MPI_REAL8  ,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-
-    ! receive computation bounds
-    CALL MPI_RECV(i2m  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(i2p  ,1,MPI_INTEGER,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-
-    ! receive surface traction (in Fourier domain)
-    ALLOCATE(p1(sx1+2,sx2),p2(sx1+2,sx2),p3(sx1+2,sx2),STAT=iostatus)
-    IF (0/=iostatus) STOP "could not allocate arrays for incoming transferts (Cerruti3dSlave)."
-    
-    CALL MPI_RECV(p1,(sx1+2)*sx2,MPI_REAL,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(p2,(sx1+2)*sx2,MPI_REAL,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-    CALL MPI_RECV(p3,(sx1+2)*sx2,MPI_REAL,master,tag_MasterSendingData_Cerruti3d,mcomm,status,ierr)
-
-    ! start computation
-    ALLOCATE(b1(sx3,buffercerruti),b2(sx3,buffercerruti),b3(sx3,buffercerruti),STAT=iostatus)
-    IF (0/=iostatus) STOP "could not allocate buffers for computation (Cerruti3dSlave)"
-
-    DO i2=i2m,i2p
-       DO i1=1,sx1/2+1,buffercerruti
-
-          ! buffer results
-          IF (i1+buffercerruti-1 .GT. sx1/2+1) THEN
-             buffersize=sx1/2+1-i1+1
-          ELSE
-             buffersize=buffercerruti
-          END IF
-          DO ib=0,buffersize-1
-
-             CALL wavenumbers(i1+ib,i2,1,sx1,sx2,1,dx1,dx2,1._8,k1,k2,k3)
-             t1=CMPLX(p1(2*(i1+ib)-1,i2),p1(2*(i1+ib),i2),4)
-             t2=CMPLX(p2(2*(i1+ib)-1,i2),p2(2*(i1+ib),i2),4)
-             t3=CMPLX(p3(2*(i1+ib)-1,i2),p3(2*(i1+ib),i2),4)
-
-             DO i3=1,sx3
-                IF (i3<=sx3/2) THEN
-                   x3=DBLE(i3-1)*dx3
-                ELSE
-                   x3=ABS(DBLE(i3-sx3-1)*dx3)
-                END IF
-                CALL cerrutisolcowling(mu,t1,t2,t3,alpha,gamma, &
-                     b1(i3,ib+1),b2(i3,ib+1),b3(i3,ib+1),k1,k2,x3,DBLE(sx3/2)*dx3)
-             END DO
-
-             ! transforms the Cerruti solution into a full 3-dimensional
-             ! Fourier transform by 1d transforming in the 3-direction
-             CALL fft1(b1(:,ib+1),sx3,dx3,FFT_FORWARD)
-             CALL fft1(b2(:,ib+1),sx3,dx3,FFT_FORWARD)
-             CALL fft1(b3(:,ib+1),sx3,dx3,FFT_FORWARD)
-
-          END DO
-
-          ! send the Cerruti's contribution to the master thread
-          CALL MPI_SEND(i1,1,MPI_INTEGER,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
-          CALL MPI_SEND(i2,1,MPI_INTEGER,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
-
-          ! tell the buffersize before sending
-          CALL MPI_SEND(buffersize,1,MPI_INTEGER,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
-          CALL MPI_SEND(b1,sx3*buffersize,MPI_COMPLEX,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
-          CALL MPI_SEND(b2,sx3*buffersize,MPI_COMPLEX,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
-          CALL MPI_SEND(b3,sx3*buffersize,MPI_COMPLEX,master,tag_SlaveSendingData_Cerruti3d,mcomm,ierr)
-
-       END DO
-    END DO
-
-    DEALLOCATE(b1,b2,b3,p1,p2,p3)
-
-#endif
     CONTAINS
+
       !-----------------------------------------------------------------
       ! subroutine CerrutiSolCowling
       ! computes the general solution for the deformation field in an
@@ -1410,11 +668,8 @@ CONTAINS
         END IF
 
       END SUBROUTINE cerrutisolcowling
-#ifdef MPI_IMP
-  END SUBROUTINE cerruticowlingslave
-#else
+
   END SUBROUTINE cerruticowling
-#endif
 
   !---------------------------------------------------------------------
   ! subroutine CerrutiCowlingSerial
