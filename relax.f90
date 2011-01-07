@@ -216,20 +216,6 @@ PROGRAM relax
 #endif
 #endif
 
-#ifdef MPI_IMP
-
-  ! initialize MPI:
-  CALL MPI_INIT(ierr)
-  CALL MPI_COMM_RANK(MPI_COMM_WORLD,threadid,ierr)
-  CALL MPI_COMM_SIZE(MPI_COMM_WORLD,nthreads,ierr)
-
-  ! next instructions for master thread only
-  IF (threadid .EQ. 0) THEN
-     nslaves=nthreads-1
-     status=0
-
-#endif
-
   ! read standard input or filename given in argument
   IF (0 .EQ. iargc()) THEN
      ! standard input
@@ -668,21 +654,6 @@ PROGRAM relax
   CALL sfftw_cleanup_threads()
 #endif
 
-#ifdef MPI_IMP
-
-     ! clean exit all slave threads
-     DO islave=1,nslaves
-        CALL MPI_SEND(iflag_TellSlaveToQuit,1,MPI_INTEGER,islave,tag_MasterSendingData,MPI_COMM_WORLD,ierr)
-     ENDDO
-  
-  ELSE ! (myid == 0)
-     CALL mpi_slave_controller(threadid)
-  ENDIF 
-  
-  ! close MPI 
-  CALL MPI_FINALIZE(ierr)
-#endif 
-
 0990 FORMAT (" I  |   Dt   | tm(ve) | tm(pl) | tm(as) |     t/tmax     | power  |  C:E^i | ")
 1000 FORMAT (I3.3,"*",ES9.2E2,"                            ",ES9.2E2,"/",ES7.2E1)
 1100 FORMAT (I3.3," ",ES9.2E2,3ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
@@ -690,66 +661,6 @@ PROGRAM relax
 1200 FORMAT ("----------------------------------------------------------------------------")
 
 CONTAINS
-
-#ifdef MPI_IMP
-
-  !--------------------------------------------------------
-  ! subroutine MPI_Slave_Controller
-  ! is the main program for the dependent threads.
-  ! Listens for instruction from main thread. When an
-  ! instruction is recognized, run the adequate task.
-  !
-  ! sylvain barbot (02/03/09) - original form
-  !--------------------------------------------------------
-  SUBROUTINE mpi_slave_controller(islave)
-    INTEGER, INTENT(IN) :: islave
-
-    INTEGER :: ierr,iflag
-
-    ! infinite while loop for slave controller
-    DO
-       ! check instructions from master thread 
-       CALL MPI_RECV(iflag,1,MPI_INTEGER,master,tag_MasterSendingData,MPI_COMM_WORLD,status,ierr)
-
-       ! Check to see what the master is telling me:
-       SELECT CASE(iflag)
-
-       CASE(iflag_TellSlaveToQuit)
-          PRINT '("thread ",I3.3," is shutting down properly.")', islave
-          RETURN
-
-       CASE(iflag_TellSlaveToRecv_Cerruti3d)
-
-          CALL Cerruti3dSlave(islave)
-
-       CASE(iflag_TellSlaveToRecv_SurfTrac)
-
-          CALL SurfaceTractionSlave(islave)
-
-       CASE(iflag_TellSlaveToRecv_ElasResp)
-
-          CALL ElasticResponseSlave(islave)
-
-       CASE(iflag_TellSlaveToRecv_Stress)
-
-          CALL stressslave(islave)
-
-       CASE(iflag_TellSlaveToRecv_Eqbf)
-
-          CALL stresseqbf(islave)
-
-       CASE DEFAULT
-          WRITE_DEBUG_INFO
-          WRITE(*,*) 'error in slave', islave, ' received unknown command from master'
-          WRITE(*,*) 'iflag is: ',iflag
-          RETURN
-       END SELECT
-
-    END DO
-
-  END SUBROUTINE mpi_slave_controller
-
-#endif
 
   !--------------------------------------------------------------------
   ! subroutine eqbf_mask
@@ -971,9 +882,6 @@ CONTAINS
     PRINT '("     * fourt implementation of the FFT")'
 #endif
 #endif
-#endif
-#ifdef MPI_IMP
-    PRINT '("     * parallel MPI implementation with ",I3.3," threads")',nthreads
 #endif
 !$  PRINT '("     * parallel OpenMP implementation with ",I3.3,"/",I3.3," threads")', &
 !$                  omp_get_max_threads(),omp_get_num_procs()
