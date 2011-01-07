@@ -205,7 +205,6 @@ PROGRAM relax
   TYPE(TENSOR), DIMENSION(:,:,:), ALLOCATABLE :: tau,sig,moment
   TYPE(VECTOR_STRUCT), DIMENSION(:), ALLOCATABLE :: opts
   CHARACTER(LEN=4), DIMENSION(:), ALLOCATABLE :: ptsname
-  REAL*4, DIMENSION(:), ALLOCATABLE :: depthmask
   
 #ifdef FFTW3_THREADS
   CALL sfftw_init_threads(iret)
@@ -243,10 +242,10 @@ PROGRAM relax
             u1(sx1+2,sx2,sx3/2),u2(sx1+2,sx2,sx3/2),u3(sx1+2,sx2,sx3/2), &
             inter1(sx1+2,sx2,2),inter2(sx1+2,sx2,2),inter3(sx1+2,sx2,2), &
             tau(sx1,sx2,sx3/2),gamma(sx1+2,sx2,sx3/2), &
-            depthmask(sx3/2),t1(sx1+2,sx2),t2(sx1+2,sx2),t3(sx1+2,sx2), &
+            t1(sx1+2,sx2),t2(sx1+2,sx2),t3(sx1+2,sx2), &
             STAT=iostatus)
   IF (iostatus>0) STOP "could not allocate memory"
-  v1=0;v2=0;v3=0;u1=0;u2=0;u3=0;gamma=0;depthmask=0;t1=0;t2=0;t3=0
+  v1=0;v2=0;v3=0;u1=0;u2=0;u3=0;gamma=0;t1=0;t2=0;t3=0
   CALL tensorfieldadd(tau,tau,sx1,sx2,sx3/2,c1=0._4,c2=0._4)
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -286,9 +285,6 @@ PROGRAM relax
      DEALLOCATE(faultcreeplayer)
   END IF
 
-  ! flag depths where creep is expected
-  CALL eqbf_mask(depthmask,sx3/2)
-  
   ! first event
   e=1
   ! first output
