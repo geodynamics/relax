@@ -335,8 +335,8 @@ CONTAINS
              ! effective shear stress on fault plane
              tau=taus+friction*taun-cohesion
 
-             ! rake direction test
-             IF (SUM(ts*r).LT.0.d0) CYCLE
+             ! rake direction test only if | rake | < 3*Pi
+             IF (SUM(ts*r).LT.0.d0 .AND. ABS(rake).LT.pi2*1.5d0) CYCLE
 
              ! warning for wrong input
              IF ((tau/tauc) .gt. 20) THEN

@@ -156,6 +156,9 @@ PROGRAM relax
   !                  (02-28-11) - add constraints on the broad direction of 
   !                               afterslip, export faults to GMT xy format
   !                               and allow scaling of computed time steps.
+  !                  (04-11-11) - make the constraint on the broad direction
+  !                               of afterslip optional and fixes the case
+  !                               of dip-slip afterslip.
   !-----------------------------------------------------------------------
 
   USE green
@@ -1372,7 +1375,14 @@ CONTAINS
                 WRITE (0,'("error in input file: plane index misfit")')
                 STOP 1
              END IF
-             
+
+             ! modify rake for consistency with slip model
+             IF (n(k)%rake .GE. 0.d0) THEN
+                n(k)%rake=n(k)%rake-180.d0
+             ELSE             
+                n(k)%rake=n(k)%rake+180.d0
+             END IF
+
              ! comply to Wang's convention
              CALL wangconvention(dummy,n(k)%x,n(k)%y,n(k)%z,&
                   n(k)%length,n(k)%width,n(k)%strike,n(k)%dip,n(k)%rake,rot)
