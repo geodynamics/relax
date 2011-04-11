@@ -22,7 +22,7 @@ FFLAGS=-cpp $(INCPATH) -zero -warn all
 F77FLAGS=-zero 
 CFLAGS=-I/sw/include 
 
-OBJ = mkl_dfti.o fourier.o green.o elastic3d.o friction3d.o viscoelastic3d.o writegrd4.2.o proj.o export.o getdata.o relax.o
+OBJ = mkl_dfti.o fourier.o green.o elastic3d.o friction3d.o viscoelastic3d.o writegrd4.2.o proj.o export.o getdata.o getopt.o relax.o
 
 %.o : %.c
 	$(CC) $(CFLAGS) -c $^
