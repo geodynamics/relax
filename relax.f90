@@ -156,9 +156,6 @@ PROGRAM relax
   !                  (02-28-11) - add constraints on the broad direction of 
   !                               afterslip, export faults to GMT xy format
   !                               and allow scaling of computed time steps.
-  !                  (04-11-11) - make the constraint on the broad direction
-  !                               of afterslip optional and fixes the case
-  !                               of dip-slip afterslip.
   !-----------------------------------------------------------------------
 
   USE green
@@ -1635,7 +1632,7 @@ CONTAINS
           rffilename=wdir(1:j-1)//"/rfaults-"//digit//".vtp"
           CALL exportvtk_rfaults(events(e),rffilename)
 #endif
-          rffilename=wdir(1:j-1)//"/rfaults-"//digit//".dat"
+          rffilename=wdir(1:j-1)//"/rfaults-"//digit//".xy"
           CALL exportxy_rfaults(events(e),rffilename)
 
           PRINT 2000
