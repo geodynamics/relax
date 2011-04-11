@@ -733,7 +733,7 @@ END SUBROUTINE exporteigenstrain
 
     DO k=1,np
        CALL monitorfriction(n(k)%x,n(k)%y,n(k)%z, &
-            n(k)%width,n(k)%length,n(k)%strike,n(k)%dip,beta, &
+            n(k)%width,n(k)%length,n(k)%strike,n(k)%dip,n(k)%rake,beta, &
             sx1,sx2,sx3,dx1,dx2,dx3,sig,structure,slippatch)
 
        ns1=SIZE(slippatch,1)
@@ -1022,6 +1022,83 @@ END SUBROUTINE exportcreep
     CLOSE(15)
 
   END SUBROUTINE exportvtk_grid
+
+  !------------------------------------------------------------------
+  ! subroutine ExportXY_RFaults
+  ! creates a .xy file (in the GMT closed-polygon format) containing
+  ! the rectangular faults. Each fault segemnt is described by a
+  ! closed polygon (rectangle) associated with a slip amplitude.
+  ! use pxzy with the -Cpalette.cpt -L -M options to color rectangles 
+  ! by slip.
+  !
+  ! sylvain barbot 03/05/11 - original form
+  !------------------------------------------------------------------
+  SUBROUTINE exportxy_rfaults(e,rffilename)
+    TYPE(EVENT_STRUC), INTENT(IN) :: e
+    CHARACTER(80), INTENT(IN) :: rffilename
+
+    INTEGER :: iostatus,k
+    CHARACTER :: q
+
+    REAL*8 :: strike,dip,x1,x2,x3,cstrike,sstrike,cdip,sdip,L,W,slip
+         
+    REAL*8, DIMENSION(3) :: s,d
+
+    ! double-quote character
+    q=char(34)
+
+    OPEN (UNIT=15,FILE=rffilename,IOSTAT=iostatus,FORM="FORMATTED")
+    IF (iostatus>0) THEN
+       WRITE_DEBUG_INFO
+       PRINT '(a)', rffilename
+       STOP "could not open file for export"
+    END IF
+
+    DO k=1,e%ns
+
+       ! fault slip
+       slip=e%s(k)%slip
+
+       ! fault orientation
+       strike=e%s(k)%strike
+       dip=e%s(k)%dip
+
+       ! fault center position
+       x1=e%s(k)%x
+       x2=e%s(k)%y
+       x3=e%s(k)%z
+
+       ! fault dimension
+       W=e%s(k)%width
+       L=e%s(k)%length
+
+       cstrike=cos(strike)
+       sstrike=sin(strike)
+       cdip=cos(dip)
+       sdip=sin(dip)
+ 
+       ! strike-slip unit direction
+       s(1)=sstrike
+       s(2)=cstrike
+       s(3)=0._8
+
+       ! dip-slip unit direction
+       d(1)=+cstrike*sdip
+       d(2)=-sstrike*sdip
+       d(3)=+cdip
+
+       ! fault edge coordinates
+       WRITE (15,'("> -Z",3ES11.2)') ABS(slip)
+       WRITE (15,'(3ES11.2)') x1-d(1)*W/2-s(1)*L/2, x2-d(2)*W/2-s(2)*L/2
+       WRITE (15,'(3ES11.2)') x1-d(1)*W/2+s(1)*L/2, x2-d(2)*W/2+s(2)*L/2
+       WRITE (15,'(3ES11.2)') x1+d(1)*W/2+s(1)*L/2, x2+d(2)*W/2+s(2)*L/2
+       WRITE (15,'(3ES11.2)') x1+d(1)*W/2-s(1)*L/2, x2+d(2)*W/2-s(2)*L/2
+
+    END DO
+
+    CLOSE(15)
+
+  END SUBROUTINE exportxy_rfaults
 
   !------------------------------------------------------------------
   ! subroutine ExportVTK_RFaults

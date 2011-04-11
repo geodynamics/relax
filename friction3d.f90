@@ -33,32 +33,35 @@ CONTAINS
 
   !-----------------------------------------------------------------
   ! subroutine FrictionPlaneExpEigenStress
+  !
+  ! *** this function is deprecated ***
+  !
   ! compute the eigen-stress (forcing moment) to be relaxed by
   ! rate-dependent inelastic deformation in the case of a frictional
   ! surface:
   !
-  !        sigma^i = C:F:sigma
+  !       sigma^i = C:F:sigma
   !
   ! where C is the elastic moduli tensor, F is the heterogeneous
   ! fluidity moduli tensor and sigma is the instantaneous stress
   ! tensor. for a frictional surface, the eigenstrain-rate is given
   ! by
   !
-  !  epsilon^i^dot = F:sigma = gamma^dot R
+  !       epsilon^i^dot = F:sigma = gamma^dot R
   !
   ! where gamma^dot is the slip rate (a scalar) and R is the
   ! deviatoric, symmetric, and unitary, tensor:
   !
-  !           R_ij = 1/2 ( t_i n_j + t_j n_i )
+  !       R_ij = 1/2 ( t_i n_j + t_j n_i ) / sqrt( t_j t_j )
   !
   ! where the shear traction t_i is the projection of the traction
   ! vector on the plane surface. the strain amplitude is given by
   !
-  !      gamma^dot = 2 vo sinh( taus / (t_c )
+  !       gamma^dot = vo sinh( taus / (t_c )
   !
   ! where taus is the effective shear on the fault plane,
   !
-  !           taus = tau + mu*sigma
+  !       taus = tau + mu*sigma
   !
   ! where tau is the shear and sigma the normal stress. tau and sigma
   ! assumed to be the co-seismic change only, not the absolute
@@ -66,12 +69,13 @@ CONTAINS
   ! stress, corresponds to (a-b)*sigma in the framework of rate-and-
   ! state friction. the effective viscosity eta* and the fluidity
   !
-  !           eta* = tau / gamma^dot
+  !       eta* = tau / gamma^dot
   !       fluidity = 1 / eta*
   !
-  ! are used to compute the optimal time-step. 
+  ! are used to compute the optimal time-step.
   !
   ! sylvain barbot (07/24/07) - original form
+  !                (07/24/07) - deprecated (see frictioneigenstress)
   !-----------------------------------------------------------------
   SUBROUTINE frictionplaneeigenstress(sig,mu,structure, &
        n1,n2,n3,sx1,sx2,sx3,dx1,dx2,dx3,moment,maxwelltime,gamma,dt)
@@ -187,21 +191,21 @@ CONTAINS
   ! tensor. for a frictional surface, the eigenstrain-rate is given
   ! by
   !
-  !  epsilon^i^dot = F:sigma = gamma^dot R
+  !        epsilon^i^dot = F:sigma = gamma^dot R
   !
   ! where gamma^dot is the slip rate (a scalar) and R is the
   ! deviatoric, symmetric, and unitary, tensor:
   !
-  !           R_ij = 1/2 ( t_i n_j + t_j n_i )
+  !        R_ij = 1/2 ( t_i n_j + t_j n_i ) / sqrt( t_j t_j )
   !
   ! where the shear traction t_i is the projection of the traction
   ! vector on the plane surface. the strain amplitude is given by
   !
-  !      gamma^dot = 2 vo sinh( taus / (t_c )
+  !        gamma^dot = H( t_j r_j ) 2 vo sinh( taus / (t_c )
   !
   ! where taus is the effective shear on the fault plane,
   !
-  !           taus = tau + mu*sigma
+  !        taus = tau + mu*sigma
   !
   ! where tau is the shear and sigma the normal stress. tau and sigma
   ! assumed to be the co-seismic change only, not the absolute
@@ -209,17 +213,22 @@ CONTAINS
   ! stress, corresponds to (a-b)*sigma in the framework of rate-and-
   ! state friction. the effective viscosity eta* and the fluidity
   !
-  !           eta* = tau / gamma^dot
-  !       fluidity = 1 / eta*
+  !        eta* = tau / gamma^dot
+  !        fluidity = 1 / eta*
   !
-  ! are used to compute the optimal time-step. 
+  ! are used to compute the optimal time-step. H( x ) is the 
+  ! Heaviside function and r_i is the rake vector. I impose
+  ! gamma^dot to be zero is t_j r_j < 0. This constraint is
+  ! enforced to ensure that no back slip occurs on faults.
   !
   ! sylvain barbot (07/24/07) - original form
+  !                (02/28/11) - add constraints on the direction of 
+  !                             afterslip
   !-----------------------------------------------------------------
-  SUBROUTINE frictioneigenstress(x,y,z,L,W,strike,dip,beta, &
+  SUBROUTINE frictioneigenstress(x,y,z,L,W,strike,dip,rake,beta, &
        sig,mu,structure,sx1,sx2,sx3,dx1,dx2,dx3,moment,maxwelltime,vel)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
-    REAL*8, INTENT(IN) :: mu,dx1,dx2,dx3,x,y,z,L,W,strike,dip,beta
+    REAL*8, INTENT(IN) :: mu,dx1,dx2,dx3,x,y,z,L,W,strike,dip,rake,beta
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(TENSOR), INTENT(INOUT), DIMENSION(sx1,sx2,sx3) :: moment
@@ -232,11 +241,11 @@ CONTAINS
 
     INTEGER :: i1,i2,i3
     TYPE(TENSOR) :: s
-    REAL*8, DIMENSION(3) :: t,ts,n
+    REAL*8, DIMENSION(3) :: t,ts,n,r
     REAL*8 :: vo,tauc,taun,taus,gammadot,impulse, &
          friction,tau,scaling,cohesion
     REAL*8 :: x1,x2,x3,x1s,x2s,x3s,x1i,x3i, &
-         cstrike,sstrike,cdip,sdip,x2r,&
+         cstrike,sstrike,cdip,sdip,cr,sr,x2r,&
          temp1,temp2,temp3,sourc,image,xr,yr,zr,Wp,Lp,dum
     REAL*4 :: tm
 
@@ -253,6 +262,8 @@ CONTAINS
     sstrike=sin(strike)
     cdip=cos(dip)
     sdip=sin(dip)
+    cr=cos(rake)
+    sr=sin(rake)
     
     ! effective tapered dimensions
     Wp=W*(1._8+2._8*beta)/2._8
@@ -269,6 +280,11 @@ CONTAINS
     n(2)=-cdip*sstrike
     n(3)=-sdip
              
+    ! rake vector component
+    r(1)=sstrike*cr+cstrike*sdip*sr
+    r(2)=cstrike*cr-sstrike*sdip*sr
+    r(3)=+cdip*sr
+
     DO i3=1,sx3
        x3=DBLE(i3-1)*dx3
        IF ((abs(x3-z).gt.Lp) .and. (abs(x3+z).gt.Lp)) CYCLE
@@ -292,8 +308,8 @@ CONTAINS
              x3s= sdip*x2r+cdip*x3
              x3i=-sdip*x2r+cdip*x3
 
-             !integrate at depth and along strike with raised cosine taper
-             !and shift sources to x,y,z coordinate
+             ! integrate at depth and along strike with raised cosine taper
+             ! and shift sources to x,y,z coordinate
              temp1=gauss(x1s-xr,dx1)
              temp2=omega((x2s-yr)/W,beta)
              temp3=omega((x3s-zr)/L,beta)
@@ -318,6 +334,9 @@ CONTAINS
              
              ! effective shear stress on fault plane
              tau=taus+friction*taun-cohesion
+
+             ! rake direction test
+             IF (SUM(ts*r).LT.0.d0) CYCLE
 
              ! warning for wrong input
              IF ((tau/tauc) .gt. 20) THEN
@@ -381,26 +400,28 @@ CONTAINS
   ! 
   ! sylvain barbot (10-16-07) - original form
   !---------------------------------------------------------------------
-  SUBROUTINE monitorfriction(x,y,z,L,W,strike,dip,beta, &
+  SUBROUTINE monitorfriction(x,y,z,L,W,strike,dip,rake,beta, &
        sx1,sx2,sx3,dx1,dx2,dx3,sig,structure,patch)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
-    REAL*8, INTENT(IN) :: x,y,z,L,W,strike,dip,beta,dx1,dx2,dx3
+    REAL*8, INTENT(IN) :: x,y,z,L,W,strike,rake,dip,beta,dx1,dx2,dx3
     TYPE(TENSOR), DIMENSION(sx1,sx2,sx3), INTENT(IN) :: sig
     TYPE(SLIPPATCH_STRUCT), ALLOCATABLE, DIMENSION(:,:), INTENT(OUT) :: patch
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
 
     INTEGER :: i1,i2,i3,px2,px3,j2,j3,status
-    REAL*8 :: cstrike,sstrike,cdip,sdip,slip,ss,ds
+    REAL*8 :: cstrike,sstrike,cdip,sdip,slip,ss,ds,cr,sr
     REAL*8 :: vo,tauc,taun,taus, &
          friction,tau,cohesion
     REAL*8 :: x1,x2,x3,xr,yr,zr,Wp,Lp
     TYPE(TENSOR) :: s
-    REAL*8, DIMENSION(3) :: t,ts,n,sv,dv
+    REAL*8, DIMENSION(3) :: t,ts,n,sv,dv,r
 
     cstrike=cos(strike)
     sstrike=sin(strike)
     cdip=cos(dip)
     sdip=sin(dip)
+    cr=cos(rake)
+    sr=sin(rake)
 
     ! strike direction vector
     sv=(/ sstrike, cstrike, 0._8 /)
@@ -425,6 +446,11 @@ CONTAINS
     n(2)=-cdip*sstrike
     n(3)=-sdip
              
+    ! rake vector component
+    r(1)=sstrike*cr+cstrike*sdip*sr
+    r(2)=cstrike*cr-sstrike*sdip*sr
+    r(3)=+cdip*sr
+
     ! loop in the dip direction
     DO j3=1,px3+1
        ! loop in the strike direction
@@ -469,13 +495,15 @@ CONTAINS
              ! effective shear stress on fault plane
              tau=taus+friction*taun-cohesion
 
-             ! yield surface test
-             IF ((0._8 .GE. taus) .OR. (tau .LE. 0._8)) THEN
+             ! shear traction direction
+             ts=ts/taus
+
+             ! yield surface rake direction tests
+             IF ((0._8 .GE. taus) .OR. &
+                 (tau .LE. 0._8)  .OR. &
+                 (SUM(ts*r).LT.0.d0)) THEN
                 ss=0;ds=0;slip=0;
              ELSE
-                ! shear traction direction
-                ts=ts/taus
-
                 ! creep rate
                 slip=vo*2._8*sinh(tau/tauc)
 

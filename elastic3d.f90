@@ -37,7 +37,7 @@ MODULE elastic3d
 
   TYPE PLANE_STRUCT
      SEQUENCE
-     REAL*8 :: x,y,z,width,length,strike,dip
+     REAL*8 :: x,y,z,width,length,strike,dip,rake
   END TYPE PLANE_STRUCT
 
   TYPE LAYER_STRUCT
@@ -73,7 +73,7 @@ MODULE elastic3d
 
   TYPE EVENT_STRUC
      REAL*8 :: time
-     INTEGER*4 :: ns,nt,nm,nl
+     INTEGER*4 :: i,ns,nt,nm,nl
      TYPE(SOURCE_STRUCT), DIMENSION(:), ALLOCATABLE :: s,sc,ts,tsc,m,mc,l,lc
   END TYPE EVENT_STRUC
   

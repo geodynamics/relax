@@ -21,11 +21,11 @@
 
 ! export amplitude of scalar fields 
 ! along a plane in GRD binary format
-!#define GRD_EXPORTEIGENSTRAIN 1
+#define GRD_EXPORTEIGENSTRAIN 1
 
 ! export creep velocity along a frictional 
 ! plane in GRD binary format
-!#define GRD_EXPORTCREEP 1
+#define GRD_EXPORTCREEP 1
 
 ! export data to the TXT format
 !#define TXT 1
@@ -35,7 +35,7 @@
 
 ! export amplitude of scalar fields along 
 ! an observation plane in text format
-!#define TXT_EXPORTEIGENSTRAIN 1
+#define TXT_EXPORTEIGENSTRAIN 1
 
 ! export creep velocity along a frictional 
 ! plane in text format

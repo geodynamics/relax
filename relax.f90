@@ -72,7 +72,7 @@ PROGRAM relax
   !                 N (x1)
   !                /
   !               /| Strike
-  !       Pos:-> @------------------------      (x2)
+  !   x1,x2,x3 ->@------------------------      (x2)
   !              |\        p .            \ W
   !              :-\      i .              \ i
   !              |  \    l .                \ d
@@ -86,6 +86,11 @@ PROGRAM relax
   !   Dislocations are converted to double-couple equivalent body-force
   !   analytically. Solution displacement is obtained by application of
   !   the Greens functions in the Fourier domain.
+  !
+  !   For friction faults where slip rates are evaluated from stress and
+  !   a constitutive law, the rake corresponds to the orientation of slip. 
+  !   That is, if r_i is the rake vector and v_i is the instantaneous 
+  !   velocity vector, then r_j v_j >= 0. 
   !
   ! OUTPUT:
   !   The vector-valued deformation is computed everywhere in a cartesian
@@ -148,6 +153,9 @@ PROGRAM relax
   !                               and output components of stress tensor
   !                  (07-19-10) - includes surface tractions initial condition
   !                               output geometry in VTK format for Paraview
+  !                  (02-28-11) - add constraints on the broad direction of 
+  !                               afterslip, export faults to GMT xy format
+  !                               and allow scaling of computed time steps.
   !-----------------------------------------------------------------------
 
   USE green
@@ -161,7 +169,7 @@ PROGRAM relax
   IMPLICIT NONE
   
   REAL*8, PARAMETER :: DEG2RAD = 0.01745329251994329547437168059786927_8
-  INTEGER, PARAMETER :: ITERATION_MAX = 900
+  INTEGER, PARAMETER :: ITERATION_MAX = 9900
   REAL*8, PARAMETER :: STEP_MAX = 1e7
 
   INTEGER :: i,k,sx1,sx2,sx3,e,ne,nv,np,nop,npl,nps,oi,nfc, &
@@ -183,7 +191,7 @@ PROGRAM relax
   CHARACTER(80) :: rffilename,vcfilename,cgfilename
   CHARACTER(3) :: digit
 #endif
-  REAL*8 :: dx1,dx2,dx3,oz,ozs,t,Dt,tm,odt
+  REAL*8 :: dx1,dx2,dx3,oz,ozs,t,Dt,tm,odt,tscale
   ! coseismic events
   TYPE(EVENT_STRUC), DIMENSION(:), ALLOCATABLE :: events
   TYPE(EVENT_STRUC) :: inter
@@ -371,14 +379,16 @@ PROGRAM relax
      CALL tensorfieldadd(sig,tau,sx1,sx2,sx3/2,c1=0._4,c2=-1._4)
      CALL stressupdate(u1,u2,u3,lambda,mu,dx1,dx2,dx3,sx1,sx2,sx3/2,sig)
 
-     ! export stress
+     IF (isoutput(skip,t,i,odt,oi,events(e)%time)) THEN
+        ! export stress
 #ifdef GRD
-     CALL exportstressgrd(sig,sx1,sx2,sx3/2,dx1,dx2,dx3,ozs,x0,y0,wdir,i-1)
+        CALL exportstressgrd(sig,sx1,sx2,sx3/2,dx1,dx2,dx3,ozs,x0,y0,wdir,i-1)
 #endif
 #ifdef PROJ
-     CALL exportstressproj(sig,sx1,sx2,sx3/2,dx1,dx2,dx3,ozs, &
-                           x0,y0,lon0,lat0,zone,umult,wdir,i-1)
+        CALL exportstressproj(sig,sx1,sx2,sx3/2,dx1,dx2,dx3,ozs, &
+                              x0,y0,lon0,lat0,zone,umult,wdir,i-1)
 #endif
+     END IF
 
      ! initialize large time step
      tm=STEP_MAX;
@@ -410,7 +420,7 @@ PROGRAM relax
      IF (ALLOCATED(faultcreepstruc)) THEN
         DO k=1,np
            CALL frictioneigenstress(n(k)%x,n(k)%y,n(k)%z, &
-                n(k)%width,n(k)%length,n(k)%strike,n(k)%dip,beta, &
+                n(k)%width,n(k)%length,n(k)%strike,n(k)%dip,n(k)%rake,beta, &
                 sig,mu,faultcreepstruc,sx1,sx2,sx3/2,dx1,dx2,dx3,moment, &
                 maxwelltime=maxwell(3))
         END DO
@@ -433,7 +443,7 @@ PROGRAM relax
      END IF
      
      ! choose an integration time step
-     CALL integrationstep(tm,Dt,t,oi,odt,events,e,ne)
+     CALL integrationstep(tm,Dt,t,oi,odt,skip,tscale,events,e,ne)
 
      CALL tensorfieldadd(sig,moment,sx1,sx2,sx3/2,c1=0.0_4,c2=1._4)
      
@@ -480,17 +490,21 @@ PROGRAM relax
         ! use v1 as placeholders for the afterslip planes
         v1=0
         DO k=1,np
+           ! one may use optional arguments ...,VEL=v1) to convert
+           ! fault slip to eigenstrain (scalar)
            CALL frictioneigenstress(n(k)%x,n(k)%y,n(k)%z, &
-                n(k)%width,n(k)%length,n(k)%strike,n(k)%dip,beta, &
-                sig,mu,faultcreepstruc,sx1,sx2,sx3/2,dx1,dx2,dx3,moment,VEL=v1)
+                n(k)%width,n(k)%length,n(k)%strike,n(k)%dip,n(k)%rake,beta, &
+                sig,mu,faultcreepstruc,sx1,sx2,sx3/2,dx1,dx2,dx3,moment)
         END DO
         
         ! update slip history
         CALL fieldadd(gamma,v1,sx1+2,sx2,sx3/2,c2=REAL(Dt))
 
         ! export strike and dip creep velocity
-        CALL exportcreep(np,n,beta,sig,faultcreepstruc, &
-                         sx1,sx2,sx3/2,dx1,dx2,dx3,x0,y0,wdir,oi)
+        IF (isoutput(skip,t,i,odt,oi,events(e)%time)) THEN
+           CALL exportcreep(np,n,beta,sig,faultcreepstruc, &
+                            sx1,sx2,sx3/2,dx1,dx2,dx3,x0,y0,wdir,oi)
+        END IF
      END IF
      
      ! interseismic loading
@@ -536,6 +550,7 @@ PROGRAM relax
      IF (e .LT. ne) THEN
         IF (abs(t-events(e+1)%time) .LT. 1e-6) THEN
            e=e+1
+           events(e)%i=i
            PRINT '("coseismic event ",I3.3)', e
            PRINT 0990
            
@@ -555,7 +570,7 @@ PROGRAM relax
         END IF
      END IF
 
-     ! points are exported systematically
+     ! points are exported at all time steps
      IF (ALLOCATED(ptsname)) THEN
         CALL exportpoints(u1,u2,u3,sx1,sx2,sx3/2,dx1,dx2,dx3, &
              opts,ptsname,t,wdir,.false.,x0,y0,rot)
@@ -851,7 +866,7 @@ CONTAINS
 #endif
     INTEGER :: iunit
 !$  INTEGER :: omp_get_num_procs,omp_get_max_threads
-    REAL*8 :: dummy
+    REAL*8 :: dummy,dum1,dum2
 
     ! default is standard input
     IF (.NOT. PRESENT(unit)) THEN
@@ -919,7 +934,7 @@ CONTAINS
        WRITE_DEBUG_INFO
        WRITE (0,'("invalid UTM zone ",I," (1<=zone<=60. exiting.)")') zone
        STOP 1
-    ENDIF
+    END IF
 #endif
 
     PRINT '(a)', "observation depth (displacement and stress)"
@@ -962,14 +977,16 @@ CONTAINS
     READ (dataline,*) lambda,mu,gam
     PRINT '(3ES10.2E2)',lambda,mu,gam
 
-    PRINT '(a)', "integration time and time step"
+    PRINT '(a)', "time interval, (positive time step) or (negative skip, scaling)"
     CALL getdata(unit,dataline)
     READ  (dataline,*) interval, odt
     IF (odt .LT. 0.) THEN
-       skip=fix(-odt)
-       PRINT '(ES9.2E1," (output every ",I3.3," computational steps)")', interval,skip
+       READ  (dataline,*) dum1, dum2, tscale
+       skip=ceiling(-odt)
+       PRINT '(ES9.2E1," (output every ",I3.3," steps, dt scaled by ",ES7.2E1,")")', &
+             interval,skip,tscale
     ELSE
-       PRINT '(2ES9.2E1)', interval,odt
+       PRINT '(ES9.2E1," (output every ",ES9.2E1," time unit)")', interval,odt
     END IF
 
     
@@ -1338,17 +1355,17 @@ CONTAINS
           IF (iostatus>0) STOP "could not allocate the plane list"
        
           PRINT 2000
-          PRINT 2100
+          PRINT 2500
           PRINT 2000
           
           DO k=1,np
              CALL getdata(unit,dataline)
              READ  (dataline,*) i,n(k)%x,n(k)%y,n(k)%z,&
-                  n(k)%length,n(k)%width,n(k)%strike,n(k)%dip
+                  n(k)%length,n(k)%width,n(k)%strike,n(k)%dip,n(k)%rake
              
-             PRINT '(I3.3," ",5ES9.2E1,2f7.1)',i, &
+             PRINT '(I3.3," ",5ES9.2E1,3f7.1)',i, &
                   n(k)%x,n(k)%y,n(k)%z, &
-                  n(k)%length,n(k)%width,n(k)%strike,n(k)%dip
+                  n(k)%length,n(k)%width,n(k)%strike,n(k)%dip,n(k)%rake
 
              IF (i .ne. k) THEN
                 WRITE_DEBUG_INFO
@@ -1358,7 +1375,7 @@ CONTAINS
              
              ! comply to Wang's convention
              CALL wangconvention(dummy,n(k)%x,n(k)%y,n(k)%z,&
-                  n(k)%length,n(k)%width,n(k)%strike,n(k)%dip,dummy,rot)
+                  n(k)%length,n(k)%width,n(k)%strike,n(k)%dip,n(k)%rake,rot)
 
 #ifdef VTK
              ! export the afterslip segment in VTK format
@@ -1535,6 +1552,7 @@ CONTAINS
           END IF
        ELSE
           events(1)%time=0._8
+          events(1)%i=0
        END IF
 
        ! - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1607,6 +1625,8 @@ CONTAINS
           rffilename=wdir(1:j-1)//"/rfaults-"//digit//".vtp"
           CALL exportvtk_rfaults(events(e),rffilename)
 #endif
+          rffilename=wdir(1:j-1)//"/rfaults-"//digit//".dat"
+          CALL exportxy_rfaults(events(e),rffilename)
 
           PRINT 2000
        END IF
@@ -1764,6 +1784,7 @@ CONTAINS
 2200 FORMAT ("no. slip        x1         x2         x3    length   width strike  dip  rake")
 2300 FORMAT ("no. name       x1       x2       x3 (name is a 4-character string)")
 2400 FORMAT ("no. strain       x1       x2       x3 (positive for extension)")
+2500 FORMAT ("no.        x1       x2       x3   length    width strike    dip   rake")
 
   END SUBROUTINE init
 
@@ -1784,7 +1805,7 @@ CONTAINS
     INTEGER, INTENT(IN) :: skip,i,oi
     REAL*8, INTENT(IN) :: t,odt,etime
 
-    IF (((0 .EQ. skip) .AND. (abs(t-oi*odt) .LT. 1e-6)) .OR. &
+    IF (((0 .EQ. skip) .AND. (abs(t-oi*odt) .LT. 1e-6*odt)) .OR. &
         ((0 .LT. skip) .AND. (MOD(i-1,skip) .EQ. 0)) .OR. &
          (abs(t-etime) .LT. 1e-6)) THEN
        isoutput=.TRUE.
@@ -1796,29 +1817,69 @@ CONTAINS
 
   !--------------------------------------------------------------------
   ! subroutine IntegrationStep
-  ! find the time-integration forward step based on user-defined
-  ! conditions. by default, time step is five times smaller than the
-  ! instantaneous Maxwell relaxation time. Time step can be reduced
-  ! so that next step corresponds to a following coseismic event.
+  ! find the time-integration forward step for the predictor-corrector
+  ! scheme.
+  !
+  ! input file line
+  !
+  !    time interval, (positive dt step) or (negative skip and scaling)
+  !
+  ! can be filled by either 1)
+  !
+  !   T, dt
+  !
+  ! where T is the time interval of the simulation and dt is the
+  ! output time step, or 2)
+  !
+  !   T, -n, t_s
+  !
+  ! where n indicates the number of computational steps before 
+  ! outputing results, t_s is a scaling applied to internally
+  ! computed time step.
+  !
+  ! for case 1), an optimal time step is evaluated internally to
+  ! ensure stability (t_m/10) of time integration. The actual
+  ! time step Dt is chosen as
+  !
+  !    Dt = min( t_m/10, ((t%odt)+1)*odt-t )
+  !
+  ! where t is the current time in the simulation. regardless of 
+  ! time step Dt, results are output if t is a multiple of dt.
+  !
+  ! for case 2), the time step is chosen internally based on an 
+  ! estimate of the relaxation time (t_m/10). Results are output
+  ! every n steps. The actual time step is chosen as
+  !
+  !    Dt = min( t_m/10*t_s, t(next event)-t )
+  !
+  ! where index is the number of computational steps after a coseismic
+  ! event and t(next event) is the time of the next coseismic event.
   !
   ! sylvain barbot (01/01/08) - original form 
   !--------------------------------------------------------------------
-  SUBROUTINE integrationstep(tm,Dt,t,oi,odt,events,e,ne)
-    REAL*8, INTENT(INOUT) :: tm,Dt
-    REAL*8, INTENT(IN) :: t,odt
-    INTEGER, INTENT(IN) :: oi,e,ne
+  SUBROUTINE integrationstep(tm,Dt,t,oi,odt,skip,tscale,events,e,ne)
+    REAL*8, INTENT(INOUT) :: tm,Dt,odt
+    REAL*8, INTENT(IN) :: t,tscale
+    INTEGER, INTENT(IN) :: oi,e,ne,skip
     TYPE(EVENT_STRUC), INTENT(IN), DIMENSION(:) :: events
 
+    ! output at optimal computational intervals
     Dt=tm/10._8
+
+    ! reduce time in case something happens in [ t, t+Dt ]
     IF (0 .EQ. skip) THEN
-       ! uniform output interval 
-       IF ((t+Dt) .GE. (dble(oi)*odt)-Dt*0.04) THEN
+       ! reduce time step so that t+Dt is time at next 
+       ! user-required output time
+       IF ((t+Dt) .GE. (dble(oi)*odt)-Dt*0.04d0) THEN
           ! pick a smaller time step to reach :
           ! integers of odt
           Dt=dble(oi)*odt-t
        END IF
     ELSE
-       ! output at optimal computational intervals
+       ! scale the estimate of optimal time step
+       Dt=Dt*tscale
+
+       ! reduce time step so that t+Dt is time to next event
        IF (e .LT. ne) THEN
           IF ((t+Dt-events(e+1)%time) .GE. 0._8) THEN
              ! pick a smaller time step to reach 
