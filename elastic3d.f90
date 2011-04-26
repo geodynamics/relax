@@ -19,6 +19,7 @@
 
 MODULE elastic3d
 
+  USE types
   USE fourier
 
   IMPLICIT NONE
@@ -30,53 +31,6 @@ MODULE elastic3d
   REAL*8, PRIVATE, PARAMETER :: pid2 = 1.57079632679489655799898173427209258079_8
   REAL*8, PRIVATE, PARAMETER :: DEG2RAD = 0.01745329251994329547437168059786927_8
     
-  TYPE SOURCE_STRUCT
-     SEQUENCE
-     REAL*8 :: slip,x,y,z,width,length,strike,dip,rake
-  END TYPE SOURCE_STRUCT
-
-  TYPE PLANE_STRUCT
-     SEQUENCE
-     REAL*8 :: x,y,z,width,length,strike,dip,rake
-  END TYPE PLANE_STRUCT
-
-  TYPE LAYER_STRUCT
-     SEQUENCE
-     REAL*8 :: z,gammadot0,stressexponent,cohesion,friction
-  END TYPE LAYER_STRUCT
-
-  TYPE WEAK_STRUCT
-     SEQUENCE
-     REAL*8 :: dgammadot0,x,y,z,width,length,thickness,strike,dip
-  END TYPE WEAK_STRUCT
-
-  TYPE VECTOR_STRUCT
-     SEQUENCE
-     REAL*8 :: v1,v2,v3
-  END TYPE VECTOR_STRUCT
-
-  TYPE TENSOR
-     SEQUENCE
-     REAL*4 :: s11,s12,s13,s22,s23,s33
-  END TYPE TENSOR
-
-  TYPE TENSOR_LAYER_STRUCT
-     SEQUENCE
-     REAL*4 :: z,dum
-     TYPE(TENSOR) :: t
-  END TYPE TENSOR_LAYER_STRUCT
-
-  TYPE SLIPPATCH_STRUCT
-     SEQUENCE
-     REAL*8 :: x1,x2,x3,lx,lz,slip,ss,ds
-  END TYPE SLIPPATCH_STRUCT
-
-  TYPE EVENT_STRUC
-     REAL*8 :: time
-     INTEGER*4 :: i,ns,nt,nm,nl
-     TYPE(SOURCE_STRUCT), DIMENSION(:), ALLOCATABLE :: s,sc,ts,tsc,m,mc,l,lc
-  END TYPE EVENT_STRUC
-  
   INTERFACE OPERATOR (.times.)
      MODULE PROCEDURE tensorscalarprod
   END INTERFACE

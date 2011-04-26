@@ -20,21 +20,23 @@
 
 # type map.sh for a description of command-line options.
 
-time ../relax <<EOF
+time ../relax <<EOF | tee output1/in.param
 # grid size (sx1,sx2,sx3)
 256 256 256
 # sampling size, smoothing & nyquist (dx1,dx2,dx3,beta,nq)
 0.05 0.05 0.05 0.2 2
 # origin position & rotation
 0 0 0
+# geographic origin, UTM zone and length unit
+120 22 51 1e3
 # observation depth (displacement and stress) (stress in only exported in GRD)
 0 0.5
 # output directory
 ./output1
 # elastic parameters and gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
 1 1 8.33e-4
-# integration time (t1)
-20 -1
+# integration time (t1), step and scaling
+20 -1 1
 # number of observation planes
 0
 # number of observation points
@@ -65,6 +67,8 @@ time ../relax <<EOF
 0
 # number of dilatation sources
 0
+# number of surface traction
+0
 # time of second event
 1
 # number of shear dislocations
@@ -74,5 +78,7 @@ time ../relax <<EOF
 # number of tensile cracks
 0
 # number of dilatation sources
+0
+# number of surface traction
 0
 EOF
