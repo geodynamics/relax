@@ -156,6 +156,7 @@ PROGRAM relax
   !                  (02-28-11) - add constraints on the broad direction of 
   !                               afterslip, export faults to GMT xy format
   !                               and allow scaling of computed time steps.
+  !                  (04-26-11) - include command-line arguments
   !-----------------------------------------------------------------------
 
   USE types
@@ -204,6 +205,8 @@ PROGRAM relax
   ! read input parameters
   CALL init(in)
 
+  ! abort calculation after help message
+  ! or for dry runs
   IF (in%isdryrun) THEN
      PRINT '("abort calculation")'
   END IF

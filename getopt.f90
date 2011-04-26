@@ -172,7 +172,7 @@ character function process_long( longopts, arg )
 					call getarg( optind, optarg )
 					optind = optind + 1
 				elseif ( opterr ) then
-					 print '(a,a,a)', "Error: option '", trim(arg), "' requires an argument"
+					 WRITE (0,'(a,a,a)')  "error: option '", trim(arg), "' requires an argument"
 				endif
 			endif
 			return
@@ -181,7 +181,7 @@ character function process_long( longopts, arg )
 	! else not found
 	process_long = '?'
 	if ( opterr ) then
-		print '(a,a,a)', "Error: unrecognized option '", trim(arg), "'"
+		WRITE (0,'(a,a,a)'), "error: unrecognized option '", trim(arg), "'"
 	endif
 end function process_long
 
@@ -217,7 +217,7 @@ character function process_short( optstring, arg )
 			call getarg( optind, optarg )
 			optind = optind + 1
 		elseif ( opterr ) then
-			print '(a,a,a)', "Error: option '-", optopt, "' requires an argument"
+			WRITE (0,'(a,a,a)') "error: option '-", optopt, "' requires an argument"
 		endif
 		grpind = 2
 	elseif ( arglen > grpind ) then
