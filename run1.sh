@@ -1,6 +1,6 @@
 #!/bin/sh
 
-time ./relax <<EOF
+time ./relax $* --no-proj-output <<EOF
 # grid size (sx1,sx2,sx3)
 256 256 256
 # sampling size & smoothing (dx1,dx2,dx3,beta,nyquist)
@@ -16,7 +16,7 @@ time ./relax <<EOF
 # elastic parameters and gamma 
 1 1 0
 # integration time (t1) and time steps
-0 -1
+0 -1 1.000
 # number of observation planes
 0
 # number of observation points

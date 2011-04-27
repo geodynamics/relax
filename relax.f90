@@ -208,7 +208,7 @@ PROGRAM relax
   ! abort calculation after help message
   ! or for dry runs
   IF (in%isdryrun) THEN
-     PRINT '("abort calculation")'
+     PRINT '("dry run: abort calculation")'
   END IF
   IF (in%isdryrun .OR. in%ishelp) THEN
      ! exit program
@@ -657,12 +657,19 @@ PROGRAM relax
   ! free memory
   IF (ALLOCATED(gamma)) DEALLOCATE(gamma)
   IF (ALLOCATED(in%opts)) DEALLOCATE(in%opts)
+  IF (ALLOCATED(in%ptsname)) DEALLOCATE(in%ptsname)
   IF (ALLOCATED(in%op)) DEALLOCATE(in%op)
   IF (ALLOCATED(in%n)) DEALLOCATE(in%n)
   IF (ALLOCATED(in%stressstruc)) DEALLOCATE(in%stressstruc)
+  IF (ALLOCATED(in%stresslayer)) DEALLOCATE(in%stresslayer)
   IF (ALLOCATED(in%linearstruc)) DEALLOCATE(in%linearstruc)
+  IF (ALLOCATED(in%linearlayer)) DEALLOCATE(in%linearlayer)
+  IF (ALLOCATED(in%linearweakzone)) DEALLOCATE(in%linearweakzone)
   IF (ALLOCATED(in%nonlinearstruc)) DEALLOCATE(in%nonlinearstruc)
+  IF (ALLOCATED(in%nonlinearlayer)) DEALLOCATE(in%nonlinearlayer)
+  IF (ALLOCATED(in%nonlinearweakzone)) DEALLOCATE(in%nonlinearweakzone)
   IF (ALLOCATED(in%faultcreepstruc)) DEALLOCATE(in%faultcreepstruc)
+  IF (ALLOCATED(in%faultcreeplayer)) DEALLOCATE(in%faultcreeplayer)
   IF (ALLOCATED(sig)) DEALLOCATE(sig)
   IF (ALLOCATED(tau)) DEALLOCATE(tau)
   IF (ALLOCATED(moment)) DEALLOCATE(moment)
