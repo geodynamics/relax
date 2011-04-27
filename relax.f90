@@ -367,13 +367,13 @@ PROGRAM relax
      IF (isoutput(in%skip,t,i,in%odt,oi,in%events(e)%time)) THEN
         ! export stress
 #ifdef GRD
-        IF (in%isoutputgrd) THEN
+        IF (in%isoutputgrd .AND. in%isoutputstress) THEN
            CALL exportstressgrd(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
                                 in%ozs,in%x0,in%y0,in%wdir,i-1)
         END IF
 #endif
 #ifdef PROJ
-        IF (in%isoutputproj) THEN
+        IF (in%isoutputproj .AND. in%isoutputstress) THEN
            CALL exportstressproj(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%ozs, &
                                  in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,i-1)
         END IF

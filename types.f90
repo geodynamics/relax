@@ -179,6 +179,7 @@ MODULE types
      LOGICAL :: isoutputvtk=.TRUE.
      LOGICAL :: isoutputgrd=.TRUE.
      LOGICAL :: isoutputxyz=.TRUE.
+     LOGICAL :: isoutputstress=.TRUE.
 
      ! other options
      LOGICAL :: isdryrun=.FALSE.
