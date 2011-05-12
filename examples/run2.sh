@@ -1,19 +1,29 @@
 #!/bin/sh
 
 # nonlinear viscoelastic relaxation (power exponent n=3)
-# following a strike-slip fault
-
-# output every computational step (Dt = -2)
-
+# following slip on a strike-slip fault
+#
+# output every computational step (Dt = -2). 
+# The time step is computed automatically and the value unchanged (scale = 1)
+#
 # to visualize coseismic deformation (requires GRD output, or manual conversion to GRD format):
 # map.sh -b -3/3/-3/3 output2/000
-
+#
 # to visualize postseismic deformation (requires GRD output): 
 # map.sh -b -5/5/-5/5 output2/0{02,04,06,08}-relax
-
+#
 # type map.sh for a description of command-line options.
+#
+# the output projected in geographical coordinates is cancelled (--no-proj-output)
 
-time ../relax <<EOF
+WDIR=./output2
+
+if [ ! -e $WDIR ]; then
+	echo adding directory $WDIR
+	mkdir $WDIR
+fi
+
+time ../relax --no-proj-output $* <<EOF | tee output2/in.param
 # grid size (sx1,sx2,sx3)
 256 256 256
 # sampling size, smoothing & nyquist (dx1,dx2,dx3,beta,nq)
@@ -23,11 +33,11 @@ time ../relax <<EOF
 # observation depth (displacements and stress) (stress is only exported in GRD)
 0 0.5
 # output directory
-./output2
+$WDIR
 # elastic parameters and gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
 1 1 8.33e-4
 # integration time (t1)
-50 -2
+50 -2 1
 # number of observation planes
 0
 # number of observation points
@@ -57,5 +67,7 @@ time ../relax <<EOF
 # number of tensile cracks
 0
 # number of dilatation sources
+0
+# number of surface loads
 0
 EOF

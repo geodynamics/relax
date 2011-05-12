@@ -1,10 +1,26 @@
 #!/bin/sh
 
-# viscoelastic relaxation following a dilatation source
+# viscoelastic relaxation following a dilatation (Mogi) source
 # viscous flow governed by a power-law viscosity with
 # stress exponent of n = 3.
+#
+# run this example with
+#
+#   ./mogi.sh
+#
+# or with
+#
+#   ./mogi.sh --no-grd-output
+#
 
-time ../relax <<EOF
+WDIR=./mogi
+
+if [ ! -e $WDIR ]; then
+	echo adding directory $WDIR
+	mkdir $WDIR
+fi
+
+time ../relax --no-stress-output --no-proj-output $* <<EOF
 # grid size (sx1,sx2,sx3)
 256 256 256
 # sampling size & smoothing (dx1,dx2,dx3,beta) & nyquist
@@ -14,10 +30,10 @@ time ../relax <<EOF
 # observation depth (displacement and stress)
 0 0.5
 # output directory
-./mogi
+$WDIR
 # elastic parameters (lambda,mu) and gravity effect
 1 1 0
-# integration time (t1)
+# integration time and time step
 10 0.257
 # number of observation planes
 0
@@ -50,4 +66,6 @@ time ../relax <<EOF
 1
 # no dilatation xs ys zs
    1          1  0  0  1
+# number of surface loads
+0
 EOF

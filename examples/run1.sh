@@ -7,21 +7,33 @@
 # followed by a second strike-slip event and a relaxation of
 # both stress perturbations.
 #
+# run this example with:
+#
+#   ./run1.sh
+#
+# you can also abort computation to produce only geometry information with:
+#
+#   ./run1.sh --dry-run
+#
 # viscous substrate starts at 3 times the seismogenic depth.
 # output at each computation step (Dt = -1)
 #
 # to visualize coseismic deformation (requires GRD output, or manual conversion to GRD format):
-# map.sh -b -3/3/-3/3 output1/000
+#
+#   map.sh -b -3/3/-3/3 output1/000
 #
 # to convert .xyz output in .grd output in post processing, type (requires GMT installed on your machine)
-# xyz2grd.sh output1/000
+#
+#   xyz2grd.sh output1/000
 #
 # to visualize a time series of postseismic deformation (requires GRD output): 
-# map.sh -b -5/5/-5/5 -p -0.002/0.002/0.0001 -v 0.005 output1/0{01,02,03,04,05,06,07,08,09,10}-relax
-# or simply
-# map.sh -b -5/5/-5/5 -p -0.002/0.002/0.0001 -v 0.005 output1/0??-relax
 #
-# type map.sh for a description of command-line options.
+#   map.sh -b -5/5/-5/5 -p -0.002/0.002/0.0001 -v 0.005 output1/0{01,02,03,04,05,06,07,08,09,10}-relax
+#
+# type map.sh for a description of command-line options. 
+# the command used to generate a map can be retrieve from the .ps file with
+#
+#   tail -n 1 output1/000-plot.ps
 #
 # to visualize in 3-D with Paraview (www.paraview.org),
 # load the following files:
@@ -38,8 +50,24 @@
 #
 # type relax --help to display options.
 #
+# modify the number of threads used with
+#
+#   export OMP_NUM_THREADS=N with sh and ksh shells
+#
+# or
+#
+#  setenv OMP_NUM_THREADS N with csh
+#
 
-time ../relax <<EOF | tee output1/in.param
+WDIR=./output1
+
+if [ ! -e $WDIR ]; then
+	echo adding directory $WDIR
+	mkdir $WDIR
+fi
+
+time ../relax $* <<EOF | tee output1/in.param
+# use '#' character to include comments in your input file
 # grid size (sx1,sx2,sx3)
 256 256 256
 # sampling size (in unit of length), smoothing (0-0.5) & nyquist (dx1,dx2,dx3,beta,nq)
@@ -51,7 +79,7 @@ time ../relax <<EOF | tee output1/in.param
 # observation depth for displacement and for stress (stress in only exported in GRD)
 0 0.5
 # output directory (all output written here)
-./output1
+$WDIR
 # elastic parameters and gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
 1 1 8.33e-4
 # integration time (in unit of time), step (negative for automatic) and scaling of computed value
