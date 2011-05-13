@@ -17,147 +17,171 @@
 ! along with RELAX.  If not, see <http://www.gnu.org/licenses/>.
 !-----------------------------------------------------------------------
 
+  !-----------------------------------------------------------------------
+  !> \mainpage 
+  !! program relax
+  !! <hr>
+  !! PURPOSE:
+  !!   The program RELAX computes nonlinear time-dependent viscoelastic
+  !!   deformation with powerlaw rheology and rate-strengthening friction 
+  !!   in a cubic, periodic grid due to coseismic stress changes, initial
+  !!   stress, surface loads, and/or moving faults.
+  !! 
+  !! ONLINE DOCUMENTATION:
+  !!   generate html documentation from the source directory with the 
+  !!   doxygen (http://www.stack.nl/~dimitri/doxygen/index.html) 
+  !!   program with command:
+  !!
+  !!     doxygen .doxygen
+  !!
+  !! DESCRIPTION:
+  !!   Computation is done semi-analytically inside a cartesian grid.
+  !!   The grid is defined by its size sx1*sx2*sx3 and the sampling
+  !!   intervals dx1, dx2 and dx3. rule of thumb is to allow for at least
+  !!   five samples per fault length or width, and to have the tip of any 
+  !!   fault at least 10 fault widths away from any edge of the 
+  !!   computational grid.
+  !!
+  !!   Coseismic stress changes and initial coseismic deformation results
+  !!   from the presence of dislocations in the brittle layer. Fault
+  !!   geometry is prescribed following Okada or Wang's convention, with the
+  !!   usual slip, strike, dip and rake and is converted to a double-couple
+  !!   equivalent body-force analytically. Current implementation allows 
+  !!   shear fault (strike slip and dip slip), dykes, Mogi source, and
+  !!   surface traction. Faults and dykes can be of arbitrary orientation 
+  !!   in the half space.
+  !!
+  !! <hr>
+  !!
+  !! METHOD:
+  !!   The current implementation is organized to integrate stress/strain-
+  !!   rate constitutive laws (rheologies) of the form
+  !! \f[
+  !!       \dot{\epsilon} = f(\sigma)
+  !! \f]
+  !!   as opposed to epsilon^dot = f(sigma,epsilon) wich would include work-
+  !!   hardening (or weakening). The time-stepping implements a second-order
+  !!   Runge-Kutta numerical integration scheme with a variable time-step.
+  !!   The Runge-Kutta method integrating the ODE y'=f(x,y) can be summarized
+  !!   as follows:
+  !! \f[
+  !!          y_(n+1) = y_n + k_2
+  !!              k_1 = h * f(x_n, y_n)
+  !!              k_2 = h * f(x_n + h, y_n + k_1)
+  !! \f]
+  !!   where h is the time-step and n is the time-index. The elastic response
+  !!   in the computational grid is obtained using elastic Greens functions.
+  !!   The Greens functions are applied in the Fourier domain. Strain,
+  !!   stress and body-forces are obtained by application of a finite impulse
+  !!   response (FIR) differentiator filter in the space domain.
+  !!
+  !! <hr>
+  !!
+  !! INPUT:
+  !!   Static dislocation sources are discretized into a series of planar
+  !!   segments. Slip patches are defined in terms of position, orientation,
+  !!   and slip, as illustrated in the following figure:
+  !!\verbatim
+  !!                 N (x1)
+  !!                /
+  !!               /| Strike
+  !!   x1,x2,x3 ->@------------------------      (x2)
+  !!              |\        p .            \ W
+  !!              :-\      i .              \ i
+  !!              |  \    l .                \ d
+  !!              :90 \  S .                  \ t
+  !!              |-Dip\  .                    \ h
+  !!              :     \. | Rake               \
+  !!              |      -------------------------
+  !!              :             L e n g t h
+  !!              Z (x3)
+  !!\endverbatim
+  !!   Dislocations are converted to double-couple equivalent body-force
+  !!   analytically. Solution displacement is obtained by application of
+  !!   the Greens functions in the Fourier domain.
+  !!
+  !!   For friction faults where slip rates are evaluated from stress and
+  !!   a constitutive law, the rake corresponds to the orientation of slip. 
+  !!   That is, if r_i is the rake vector and v_i is the instantaneous 
+  !!   velocity vector, then r_j v_j >= 0. 
+  !!
+  !! <hr>
+  !!
+  !! OUTPUT:
+  !!   The vector-valued deformation is computed everywhere in a cartesian
+  !!   grid. The vector field is sampled 1) along a horizontal surface at a
+  !!   specified depth and 2) at specific points. Format is always North (x1), 
+  !!   East (x2) and Down (x3) components, following the right-handed reference 
+  !!   system convention. North corresponds to x1-direction, East to the 
+  !!   x2-direction and down to the x3-direction. The Generic Mapping Tool 
+  !!   output files are labeled explicitely ???-north.grd, ???-east.grd and 
+  !!   ???-up.grd (or say, ???-geo-up.grd for outputs in geographic 
+  !!   coordinates), where ??? stands for an output index: 001, 002, ...
+  !!
+  !!   The amplitude of the inelastic (irreversible) deformation is also
+  !!   tracked and can be output along a plane of arbitrary orientation.
+  !!   The inelastic deformation includes the initial, constrained, slip on
+  !!   fault surfaces, the time-dependent slip on frictional surfaces and
+  !!   the cumulative amplitude of bulk strain in viscoelastic regions.
+  !!   Slip is provided as a function of local coordinates along strike and 
+  !!   dip as well as a function of the Cartesian coordinates for three-
+  !!   dimensional display.
+  !!
+  !!   Time integration uses adaptive time steps to ensure accuracy but
+  !!   results can be output either 1) at specified uniform time intervals 
+  !!   or 2) at the same intervals as computed. In the later case, output 
+  !!   intervals is chosen internally depending on instantaneous relaxation 
+  !!   rates.
+  !!
+  !! <hr>
+  !!
+  !! TECHNICAL ASPECTS:
+  !!   Most of the computational burden comes from 1) applying the elastic
+  !!   Green function and 2) computing the current strain from a displacement
+  !!   field. The convolution of body forces with the Green function is 
+  !!   performed in the Fourier domain and the efficiency of the computation
+  !!   depends essentially upon a choice of the discrete Fourier transform.
+  !!   Current implementation is compatible with the Couley-Tuckey, the
+  !!   Fast Fourier transform of the West (FFTW), the SGI FFT and the intel
+  !!   FFT from the intel MKL library. Among these choices, the MKL FFT is
+  !!   the most efficient. The FFTW, SGI FFT and MKL FFT can all be ran
+  !!   in parallel on shared-memory computers.
+  !!
+  !!   Strain is computed using a Finite Impulse Response differentiator
+  !!   filter in the space domain. Use of FIR filter give rise to very
+  !!   accurate derivatives but is computationally expensive. The filter
+  !!   kernels are provided in the kernel???.inc files. Use of a compact
+  !!   kernel may accelerate computation significantly.
+  !!
+  !!   Compilation options are defined in the include.f90 file and specify
+  !!   for instance the choice of DFT and the kind of output provided.
+  !!
+  !! MODIFICATIONS:
+  !! \author Sylvain Barbot 
+  !! (07-06-07) - original form
+  !! (08-28-08) - FFTW/SGI_FFT support, FIR derivatives,
+  !!              Runge-Kutta integration, tensile cracks,
+  !!              GMT output, comments in input file
+  !! (10-24-08) - interseismic loading, postseismic signal
+  !!              output in separate files
+  !! (12-08-09) - slip distribution smoothing
+  !! (05-05-10) - lateral variations in viscous properties
+  !!              Intel MKL implementation of the FFT
+  !! (06-04-10) - output in geographic coordinates
+  !!              and output components of stress tensor
+  !! (07-19-10) - includes surface tractions initial condition
+  !!              output geometry in VTK format for Paraview
+  !! (02-28-11) - add constraints on the broad direction of 
+  !!              afterslip, export faults to GMT xy format
+  !!              and allow scaling of computed time steps.
+  !! (04-26-11) - include command-line arguments
+  !!
+  !! \todo 
+  !!   - export VTK in binary instead of ascii format
+  !!   - homogenize VTK output so that geometry of events match event index
+  !!   - evaluate Green function, stress and body forces in GPU
+  !------------------------------------------------------------------------
 PROGRAM relax
-  !-----------------------------------------------------------------------
-  ! PURPOSE:
-  !   The program RELAX computes nonlinear time-dependent viscoelastic
-  !   deformation with powerlaw rheology and rate-strengthening friction 
-  !   in a cubic, periodic grid due to coseismic stress changes, initial
-  !   stress, surface loads, and/or moving faults.
-  !
-  ! DESCRIPTION:
-  !   Computation is done semi-analytically inside a cartesian grid.
-  !   The grid is defined by its size sx1*sx2*sx3 and the sampling
-  !   intervals dx1, dx2 and dx3. rule of thumb is to allow for at least
-  !   five samples per fault length or width, and to have the tip of any 
-  !   fault at least 10 fault widths away from any edge of the 
-  !   computational grid.
-  !
-  !   Coseismic stress changes and initial coseismic deformation results
-  !   from the presence of dislocations in the brittle layer. Fault
-  !   geometry is prescribed following Okada or Wang's convention, with the
-  !   usual slip, strike, dip and rake and is converted to a double-couple
-  !   equivalent body-force analytically. Current implementation allows 
-  !   shear fault (strike slip and dip slip), dykes, Mogi source, and
-  !   surface traction. Faults and dykes can be of arbitrary orientation 
-  !   in the half space.
-  !
-  ! METHOD:
-  !   The current implementation is organized to integrate stress/strain-
-  !   rate constitutive laws (rheologies) of the form
-  !
-  !       epsilon^dot = f(sigma)
-  !
-  !   as opposed to epsilon^dot = f(sigma,epsilon) wich would include work-
-  !   hardening (or weakening). The time-stepping implements a second-order
-  !   Runge-Kutta numerical integration scheme with a variable time-step.
-  !   The Runge-Kutta method integrating the ODE y'=f(x,y) can be summarized
-  !   as follows:
-  !
-  !          y_(n+1) = y_n + k_2
-  !              k_1 = h * f(x_n, y_n)
-  !              k_2 = h * f(x_n + h, y_n + k_1)
-  !
-  !   where h is the time-step and n is the time-index. The elastic response
-  !   in the computational grid is obtained using elastic Greens functions.
-  !   The Greens functions are applied in the Fourier domain. Strain,
-  !   stress and body-forces are obtained by application of a finite impulse
-  !   response (FIR) differentiator filter in the space domain.
-  !
-  ! INPUT:
-  !   Static dislocation sources are discretized into a series of planar
-  !   segments. Slip patches are defined in terms of position, orientation,
-  !   and slip, as illustrated in the following figure:
-  !
-  !                 N (x1)
-  !                /
-  !               /| Strike
-  !   x1,x2,x3 ->@------------------------      (x2)
-  !              |\        p .            \ W
-  !              :-\      i .              \ i
-  !              |  \    l .                \ d
-  !              :90 \  S .                  \ t
-  !              |-Dip\  .                    \ h
-  !              :     \. | Rake               \
-  !              |      -------------------------
-  !              :             L e n g t h
-  !              Z (x3)
-  !
-  !   Dislocations are converted to double-couple equivalent body-force
-  !   analytically. Solution displacement is obtained by application of
-  !   the Greens functions in the Fourier domain.
-  !
-  !   For friction faults where slip rates are evaluated from stress and
-  !   a constitutive law, the rake corresponds to the orientation of slip. 
-  !   That is, if r_i is the rake vector and v_i is the instantaneous 
-  !   velocity vector, then r_j v_j >= 0. 
-  !
-  ! OUTPUT:
-  !   The vector-valued deformation is computed everywhere in a cartesian
-  !   grid. The vector field is sampled 1) along a horizontal surface at a
-  !   specified depth and 2) at specific points. Format is always North (x1), 
-  !   East (x2) and Down (x3) components, following the right-handed reference 
-  !   system convention. North corresponds to x1-direction, East to the 
-  !   x2-direction and down to the x3-direction. The Generic Mapping Tool 
-  !   output files are labeled explicitely ???-north.grd, ???-east.grd and 
-  !   ???-up.grd (or say, ???-geo-up.grd for outputs in geographic 
-  !   coordinates), where ??? stands for an output index: 001, 002, ...
-  !
-  !   The amplitude of the inelastic (irreversible) deformation is also
-  !   tracked and can be output along a plane of arbitrary orientation.
-  !   The inelastic deformation includes the initial, constrained, slip on
-  !   fault surfaces, the time-dependent slip on frictional surfaces and
-  !   the cumulative amplitude of bulk strain in viscoelastic regions.
-  !   Slip is provided as a function of local coordinates along strike and 
-  !   dip as well as a function of the Cartesian coordinates for three-
-  !   dimensional display.
-  !
-  !   Time integration uses adaptive time steps to ensure accuracy but
-  !   results can be output either 1) at specified uniform time intervals 
-  !   or 2) at the same intervals as computed. In the later case, output 
-  !   intervals is chosen internally depending on instantaneous relaxation 
-  !   rates.
-  !
-  ! TECHNICAL ASPECTS:
-  !   Most of the computational burden comes from 1) applying the elastic
-  !   Green function and 2) computing the current strain from a displacement
-  !   field. The convolution of body forces with the Green function is 
-  !   performed in the Fourier domain and the efficiency of the computation
-  !   depends essentially upon a choice of the discrete Fourier transform.
-  !   Current implementation is compatible with the Couley-Tuckey, the
-  !   Fast Fourier transform of the West (FFTW), the SGI FFT and the intel
-  !   FFT from the intel MKL library. Among these choices, the MKL FFT is
-  !   the most efficient. The FFTW, SGI FFT and MKL FFT can all be ran
-  !   in parallel on shared-memory computers.
-  !
-  !   Strain is computed using a Finite Impulse Response differentiator
-  !   filter in the space domain. Use of FIR filter give rise to very
-  !   accurate derivatives but is computationally expensive. The filter
-  !   kernels are provided in the kernel???.inc files. Use of a compact
-  !   kernel may accelerate computation significantly.
-  !
-  !   Compilation options are defined in the include.f90 file and specify
-  !   for instance the choice of DFT and the kind of output provided.
-  !
-  ! MODIFICATIONS:
-  !   sylvain barbot (07-06-07) - original form
-  !                  (08-28-08) - FFTW/SGI_FFT support, FIR derivatives,
-  !                               Runge-Kutta integration, tensile cracks,
-  !                               GMT output, comments in input file
-  !                  (10-24-08) - interseismic loading, postseismic signal
-  !                               output in separate files
-  !                  (12-08-09) - slip distribution smoothing
-  !                  (05-05-10) - lateral variations in viscous properties
-  !                               Intel MKL implementation of the FFT
-  !                  (06-04-10) - output in geographic coordinates
-  !                               and output components of stress tensor
-  !                  (07-19-10) - includes surface tractions initial condition
-  !                               output geometry in VTK format for Paraview
-  !                  (02-28-11) - add constraints on the broad direction of 
-  !                               afterslip, export faults to GMT xy format
-  !                               and allow scaling of computed time steps.
-  !                  (04-26-11) - include command-line arguments
-  !-----------------------------------------------------------------------
 
   USE types
   USE input
@@ -695,10 +719,10 @@ PROGRAM relax
 CONTAINS
 
   !---------------------------------------------------------------------
-  ! subroutine Traction 
-  ! assigns the traction vector at the surface
-  !
-  ! sylvain barbot (07-19-07) - original form
+  !> subroutine Traction 
+  !! assigns the traction vector at the surface
+  !!
+  !! \author sylvain barbot (07-19-07) - original form
   !---------------------------------------------------------------------
   SUBROUTINE traction(mu,e,sx1,sx2,dx1,dx2,t3)
     TYPE(EVENT_STRUC), INTENT(IN) :: e
@@ -722,11 +746,11 @@ CONTAINS
   END SUBROUTINE traction
 
   !--------------------------------------------------------------------
-  ! subroutine dislocations
-  ! assigns equivalent body forces or moment density to simulate
-  ! shear dislocations and fault opening. add the corresponding moment
-  ! density in the cumulative relaxed moment so that fault slip does
-  ! not reverse in the postseismic time.
+  !> subroutine dislocations
+  !! assigns equivalent body forces or moment density to simulate
+  !! shear dislocations and fault opening. add the corresponding moment
+  !! density in the cumulative relaxed moment so that fault slip does
+  !! not reverse in the postseismic time.
   !--------------------------------------------------------------------
   SUBROUTINE dislocations(event,lambda,mu,beta,sx1,sx2,sx3,dx1,dx2,dx3, &
                           v1,v2,v3,t1,t2,t3,tau,factor,eigenstress)
@@ -844,15 +868,15 @@ CONTAINS
   END SUBROUTINE dislocations
 
   !--------------------------------------------------------------------
-  ! function IsOutput
-  ! checks if output should be written based on user choices: if output
-  ! time interval (odt) is positive, output is written only if time
-  ! is an integer of odt. If odt is negative output is written at times
-  ! corresponding to internally chosen time steps.
-  !
-  ! IsOutput is true only at discrete intervals (skip=0,odt>0),
-  ! or at every "skip" computational steps (skip>0,odt<0),
-  ! or anytime a coseismic event occurs
+  !> function IsOutput
+  !! checks if output should be written based on user choices: if output
+  !! time interval (odt) is positive, output is written only if time
+  !! is an integer of odt. If odt is negative output is written at times
+  !! corresponding to internally chosen time steps.
+  !!
+  !! @return IsOutput is true only at discrete intervals (skip=0,odt>0),
+  !! or at every "skip" computational steps (skip>0,odt<0),
+  !! or anytime a coseismic event occurs
   !
   ! Sylvain Barbot (07/06/09) - original form
   !--------------------------------------------------------------------
@@ -871,46 +895,46 @@ CONTAINS
   END FUNCTION isoutput
 
   !--------------------------------------------------------------------
-  ! subroutine IntegrationStep
-  ! find the time-integration forward step for the predictor-corrector
-  ! scheme.
-  !
-  ! input file line
-  !
-  !    time interval, (positive dt step) or (negative skip and scaling)
-  !
-  ! can be filled by either 1)
-  !
-  !   T, dt
-  !
-  ! where T is the time interval of the simulation and dt is the
-  ! output time step, or 2)
-  !
-  !   T, -n, t_s
-  !
-  ! where n indicates the number of computational steps before 
-  ! outputing results, t_s is a scaling applied to internally
-  ! computed time step.
-  !
-  ! for case 1), an optimal time step is evaluated internally to
-  ! ensure stability (t_m/10) of time integration. The actual
-  ! time step Dt is chosen as
-  !
-  !    Dt = min( t_m/10, ((t%odt)+1)*odt-t )
-  !
-  ! where t is the current time in the simulation. regardless of 
-  ! time step Dt, results are output if t is a multiple of dt.
-  !
-  ! for case 2), the time step is chosen internally based on an 
-  ! estimate of the relaxation time (t_m/10). Results are output
-  ! every n steps. The actual time step is chosen as
-  !
-  !    Dt = min( t_m/10*t_s, t(next event)-t )
-  !
-  ! where index is the number of computational steps after a coseismic
-  ! event and t(next event) is the time of the next coseismic event.
-  !
-  ! sylvain barbot (01/01/08) - original form 
+  !> subroutine IntegrationStep
+  !! find the time-integration forward step for the predictor-corrector
+  !! scheme.
+  !!
+  !! input file line
+  !!
+  !!    time interval, (positive dt step) or (negative skip and scaling)
+  !!
+  !! can be filled by either 1)
+  !!
+  !!   T, dt
+  !!
+  !! where T is the time interval of the simulation and dt is the
+  !! output time step, or 2)
+  !!
+  !!   T, -n, t_s
+  !!
+  !! where n indicates the number of computational steps before 
+  !! outputing results, t_s is a scaling applied to internally
+  !! computed time step.
+  !!
+  !! for case 1), an optimal time step is evaluated internally to
+  !! ensure stability (t_m/10) of time integration. The actual
+  !! time step Dt is chosen as
+  !!
+  !!    Dt = min( t_m/10, ((t%odt)+1)*odt-t )
+  !!
+  !! where t is the current time in the simulation. regardless of 
+  !! time step Dt, results are output if t is a multiple of dt.
+  !!
+  !! for case 2), the time step is chosen internally based on an 
+  !! estimate of the relaxation time (t_m/10). Results are output
+  !! every n steps. The actual time step is chosen as
+  !!
+  !!    Dt = min( t_m/10*t_s, t(next event)-t )
+  !!
+  !! where index is the number of computational steps after a coseismic
+  !! event and t(next event) is the time of the next coseismic event.
+  !!
+  !! \author sylvain barbot (01/01/08) - original form 
   !--------------------------------------------------------------------
   SUBROUTINE integrationstep(tm,Dt,t,oi,odt,skip,tscale,events,e,ne)
     REAL*8, INTENT(INOUT) :: tm,Dt,odt

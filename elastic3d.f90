@@ -54,9 +54,9 @@ MODULE elastic3d
 CONTAINS
 
   !------------------------------------------------------------
-  ! function SIGN
-  ! returns the sign of the input -1 for negtive, 0 for zero
-  ! and +1 for positive arguments.
+  !> function SIGN
+  !! returns the sign of the input -1 for negtive, 0 for zero
+  !! and +1 for positive arguments.
   !------------------------------------------------------------
   REAL*8 FUNCTION sign(x)
     REAL*8, INTENT(IN) :: x
@@ -73,8 +73,8 @@ CONTAINS
   END FUNCTION sign
 
   !------------------------------------------------------------
-  ! function fix
-  ! returns the closest integer scalar
+  !> function fix
+  !! returns the closest integer scalar
   !
   ! sylvain barbot (08/25/07) - original form
   !------------------------------------------------------------
@@ -94,8 +94,8 @@ CONTAINS
   END FUNCTION fix
 
   !------------------------------------------------------------
-  ! function SINH
-  ! computes the hyperbolic sine
+  !> function SINH
+  !! computes the hyperbolic sine
   !------------------------------------------------------------
   REAL*8 FUNCTION sinh(x)
     REAL*8, INTENT(IN) :: x
@@ -108,8 +108,8 @@ CONTAINS
   END FUNCTION sinh
 
   !------------------------------------------------------------
-  ! function ASINH
-  ! computes the inverse hyperbolic sine
+  !> function ASINH
+  !! computes the inverse hyperbolic sine
   !------------------------------------------------------------
   REAL*8 FUNCTION asinh(x)
     REAL*8, INTENT(IN) :: x
@@ -117,14 +117,14 @@ CONTAINS
   END FUNCTION asinh
 
   !-----------------------------------------------------------------
-  ! subroutine Neighbor
-  ! computes the indices of neighbor samples (l points away)
-  ! bracketing the current samples location i1,i2,i3 and
-  ! assuming periodic boundary condition.
-  !
-  !           i1m < i1 < i1p
-  !           i2m < i2 < i2p
-  !           i3m < i3 < i3p
+  !> subroutine Neighbor
+  !! computes the indices of neighbor samples (l points away)
+  !! bracketing the current samples location i1,i2,i3 and
+  !! assuming periodic boundary condition.
+  !!
+  !!           i1m < i1 < i1p
+  !!           i2m < i2 < i2p
+  !!           i3m < i3 < i3p
   !-----------------------------------------------------------------
   SUBROUTINE neighbor(i1,i2,i3,sx1,sx2,sx3,l,i1m,i1p,i2m,i2p,i3m,i3p)
     INTEGER, INTENT(IN) :: i1,i2,i3,sx1,sx2,sx3,l
@@ -140,9 +140,9 @@ CONTAINS
   END SUBROUTINE neighbor
 
   !---------------------------------------------------------------
-  ! subroutine IsotropicStressStrain
-  ! computes in place the isotropic stress tensor from a given
-  ! strain tensor using Hooke's law stress-strain relationship.
+  !> subroutine IsotropicStressStrain
+  !! computes in place the isotropic stress tensor from a given
+  !! strain tensor using Hooke's law stress-strain relationship.
   !
   ! sylvain barbot (10/14/07) - original form
   !---------------------------------------------------------------
@@ -162,8 +162,8 @@ CONTAINS
   END SUBROUTINE isotropicstressstrain
 
   !------------------------------------------------------------
-  ! function TensorDiff
-  ! computes the difference between two tensors: t=t1-t2
+  !> function TensorDiff
+  !! computes the difference between two tensors: t=t1-t2
   !
   ! sylvain barbot (07/09/07) - original form
   !------------------------------------------------------------
@@ -180,8 +180,8 @@ CONTAINS
   END FUNCTION tensordiff
 
   !------------------------------------------------------------
-  ! function TensorPlus
-  ! computes the sum of two tensors: t=t1-t2
+  !> function TensorPlus
+  !! computes the sum of two tensors: t=t1-t2
   !
   ! sylvain barbot (07/09/07) - original form
   !------------------------------------------------------------
@@ -198,8 +198,8 @@ CONTAINS
   END FUNCTION tensorplus
 
   !------------------------------------------------------------
-  ! function TensorScalarProd
-  ! multiplies a tensor with a scalar
+  !> function TensorScalarProd
+  !! multiplies a tensor with a scalar
   !
   ! sylvain barbot (07/09/07) - original form
   !------------------------------------------------------------
@@ -217,9 +217,9 @@ CONTAINS
   END FUNCTION tensorscalarprod
 
   !------------------------------------------------------------
-  ! function TensorSymmetricDyadProd
-  ! computes the dyadic product of two vectors to obtain a
-  ! symmetric second order tensor
+  !> function TensorSymmetricDyadProd
+  !! computes the dyadic product of two vectors to obtain a
+  !! symmetric second order tensor
   !
   ! sylvain barbot (07/09/07) - original form
   !------------------------------------------------------------
@@ -238,9 +238,9 @@ CONTAINS
   END FUNCTION tensorsymmetricdyadprod
 
   !------------------------------------------------------------
-  ! function TensorVectorDotProd
-  ! compute the dot product T.v where T is a second-order
-  ! tensor and v is a vector.
+  !> function TensorVectorDotProd
+  !! compute the dot product T.v where T is a second-order
+  !! tensor and v is a vector.
   !
   ! sylvain barbot (07/09/07) - original form
   !------------------------------------------------------------
@@ -257,9 +257,9 @@ CONTAINS
   END FUNCTION tensorvectordotprod
 
   !------------------------------------------------------------
-  ! function TensorVectorDotProd
-  ! compute the dot product T.v where T is a second-order
-  ! tensor and v is a vector.
+  !> function TensorVectorDotProd
+  !! compute the dot product T.v where T is a second-order
+  !! tensor and v is a vector.
   !
   ! sylvain barbot (07/09/07) - original form
   !------------------------------------------------------------
@@ -281,8 +281,8 @@ CONTAINS
   END FUNCTION tensordeviatoric
 
   !------------------------------------------------------------
-  ! function TensorTrace
-  ! computes the trace of a second order tensor
+  !> function TensorTrace
+  !! computes the trace of a second order tensor
   !
   ! sylvain barbot (07/09/07) - original form
   !------------------------------------------------------------
@@ -294,8 +294,8 @@ CONTAINS
   END FUNCTION tensortrace
 
   !------------------------------------------------------------
-  ! function TensorNorm
-  ! computes the Frobenius norm of a second order tensor
+  !> function TensorNorm
+  !! computes the Frobenius norm of a second order tensor
   !
   ! sylvain barbot (07/09/07) - original form
   !------------------------------------------------------------
@@ -310,13 +310,13 @@ CONTAINS
   END FUNCTION tensornorm
 
   !------------------------------------------------------------
-  ! function TensorDecomposition
-  ! writes a tensor t as the product of a norm and a direction
-  !
-  !         t = gamma * R
-  !
-  ! where gamma is a scalar, the norm of t, and R is a unitary
-  ! tensor. t is assumed to be a deviatoric tensor.
+  !> function TensorDecomposition
+  !! writes a tensor t as the product of a norm and a direction
+  !!
+  !!         t = gamma * R
+  !!
+  !! where gamma is a scalar, the norm of t, and R is a unitary
+  !! tensor. t is assumed to be a deviatoric tensor.
   !
   ! sylvain barbot (07/09/07) - original form
   !------------------------------------------------------------
@@ -338,8 +338,8 @@ CONTAINS
 
 
   !------------------------------------------------------------
-  ! function TensorForbeniusNorm
-  ! computes the Frobenius norm of a second order tensor
+  !> function TensorForbeniusNorm
+  !! computes the Frobenius norm of a second order tensor
   !
   ! sylvain barbot (07/09/07) - original form
   !------------------------------------------------------------
@@ -354,8 +354,8 @@ CONTAINS
   END FUNCTION tensorfrobeniusnorm
 
   !------------------------------------------------------------
-  ! function VectorFieldNormMax
-  ! computes the maximum value of the norm of a vector field
+  !> function VectorFieldNormMax
+  !! computes the maximum value of the norm of a vector field
   !------------------------------------------------------------
   SUBROUTINE vectorfieldnormmax(v1,v2,v3,sx1,sx2,sx3,maximum,location)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
@@ -386,8 +386,8 @@ CONTAINS
   END SUBROUTINE vectorfieldnormmax
 
   !------------------------------------------------------------
-  ! function TensorMean
-  ! computesthe mean of the norm of a tensor field
+  !> function TensorMean
+  !! computesthe mean of the norm of a tensor field
   !------------------------------------------------------------
   REAL*8 FUNCTION tensormean(t)
     TYPE(TENSOR), INTENT(IN), DIMENSION(:,:,:) :: t
@@ -409,8 +409,8 @@ CONTAINS
   END FUNCTION tensormean
 
   !------------------------------------------------------------
-  ! function TensorAmplitude
-  ! computes the integral of the norm of a tensor field
+  !> function TensorAmplitude
+  !! computes the integral of the norm of a tensor field
   !------------------------------------------------------------
   REAL*8 FUNCTION tensoramplitude(t,dx1,dx2,dx3)
     TYPE(TENSOR), INTENT(IN), DIMENSION(:,:,:) :: t
@@ -435,8 +435,8 @@ CONTAINS
   END FUNCTION tensoramplitude
 
   !------------------------------------------------------------
-  ! function TensorMeanTrace
-  ! computesthe mean of the norm of a tensor field
+  !> function TensorMeanTrace
+  !! computesthe mean of the norm of a tensor field
   !------------------------------------------------------------
   REAL*8 FUNCTION tensormeantrace(t)
     TYPE(TENSOR), INTENT(IN), DIMENSION(:,:,:) :: t
@@ -459,8 +459,8 @@ CONTAINS
   END FUNCTION tensormeantrace
 
   !------------------------------------------------------------
-  ! sinc function
-  ! computes sin(pi*x)/(pi*x)
+  !> sinc function
+  !! computes sin(pi*x)/(pi*x)
   !
   ! sylvain barbot (04-14-07) - original form
   !------------------------------------------------------------
@@ -475,7 +475,7 @@ CONTAINS
   END FUNCTION sinc
   
   !-------------------------------------------------------------------------
-  ! function gauss computes the normalized gaussian function
+  !> function gauss computes the normalized gaussian function
   !
   ! Sylvain Barbot (06-29-07)
   !-------------------------------------------------------------------------
@@ -487,7 +487,7 @@ CONTAINS
   END FUNCTION gauss
   
   !-------------------------------------------------------------------------
-  ! function gaussp computes the normalized gaussian derivative
+  !> function gaussp computes the normalized gaussian derivative
   !
   ! Sylvain Barbot (06-29-07)
   !-------------------------------------------------------------------------
@@ -499,7 +499,7 @@ CONTAINS
   END FUNCTION gaussp
 
   !-------------------------------------------------------------------------
-  ! function omega computes raised-cosine taper in the space domain
+  !> function omega computes raised-cosine taper in the space domain
   !
   ! Sylvain Barbot (06-29-07)
   !-------------------------------------------------------------------------
@@ -519,8 +519,8 @@ CONTAINS
   END FUNCTION omega
 
   !-------------------------------------------------------------------------
-  ! function omegap computes raised-cosine taper derivative 
-  ! in the space domain
+  !> function omegap computes raised-cosine taper derivative 
+  !! in the space domain
   !
   ! Sylvain Barbot (06-29-07)
   !-------------------------------------------------------------------------
@@ -538,13 +538,13 @@ CONTAINS
   END FUNCTION omegap
   
   !-------------------------------------------------------------------------
-  ! tapered step function (raised-cosine) of unit area in the Fourier domain
-  !
-  ! INPUT
-  ! k        wavenumber
-  ! beta     roll-off parameter 0<beta<0.5
-  !          no smoothing for beta close to 0
-  !          string smoothing for beta close to 0.5
+  !> tapered step function (raised-cosine) of unit area in the Fourier domain
+  !!
+  !! INPUT
+  !! @param k        wavenumber
+  !! @param beta     roll-off parameter 0<beta<0.5
+  !!                 no smoothing for beta close to 0
+  !!                 string smoothing for beta close to 0.5
   !
   ! sylvain barbot (04-14-07) - original form
   !-------------------------------------------------------------------------
@@ -562,10 +562,10 @@ CONTAINS
   END FUNCTION omegak
 
   !----------------------------------------------------------------
-  ! subroutine TensorStructure
-  ! constructs a vertically-stratified tensor field.
-  ! The structure is defined by its interfaces: changes can be
-  ! gradual or discontinuous.
+  !> subroutine TensorStructure
+  !! constructs a vertically-stratified tensor field.
+  !! The structure is defined by its interfaces: changes can be
+  !! gradual or discontinuous.
   !
   ! sylvain barbot (10/25/08) - original form
   !----------------------------------------------------------------
@@ -643,31 +643,31 @@ CONTAINS
 
 
   !----------------------------------------------------------------
-  ! subroutine ViscoElasticStructure
-  ! constructs a vertically-stratified viscoelastic structure.
-  ! The structure is defined by its interfaces: changes can be
-  ! gradual or discontinuous.
-  !
-  ! EXAMPLE INPUTS:
-  !
-  ! 1- elastic plate over linear viscous half-space
-  !    1
-  !    1 1.0 1.0 1.0
-  !
-  ! 2- elastic plate over powerlaw viscous half-space (n=3)
-  !    1
-  !    1 1.0 1.0 3.0
-  !
-  ! 3- elastic plate over viscous half-space with depth-dependent
-  !    viscosity
-  !    2
-  !    1 01.0 1.0 1.0
-  !    2 10.0 6.0 1.0
-  !
-  !    in this last example, the grid does not have to reach down
-  !    to x3=10.
-  !
-  ! sylvain barbot (08/07/07) - original form
+  !> subroutine ViscoElasticStructure
+  !! constructs a vertically-stratified viscoelastic structure.
+  !! The structure is defined by its interfaces: changes can be
+  !! gradual or discontinuous.
+  !!
+  !! EXAMPLE INPUTS:
+  !!
+  !! 1- elastic plate over linear viscous half-space
+  !!    1
+  !!    1 1.0 1.0 1.0
+  !!
+  !! 2- elastic plate over powerlaw viscous half-space (n=3)
+  !!    1
+  !!    1 1.0 1.0 3.0
+  !!
+  !! 3- elastic plate over viscous half-space with depth-dependent
+  !!    viscosity
+  !!    2
+  !!    1 01.0 1.0 1.0
+  !!    2 10.0 6.0 1.0
+  !!
+  !!    in this last example, the grid does not have to reach down
+  !!    to x3=10.
+  !!
+  !! \author sylvain barbot (08/07/07) - original form
   !----------------------------------------------------------------
   SUBROUTINE viscoelasticstructure(vstruct,layers,dx3)
     TYPE(LAYER_STRUCT), INTENT(IN), DIMENSION(:) :: layers
@@ -762,16 +762,16 @@ CONTAINS
 
 
   !------------------------------------------------------------------
-  ! function OptimalFilter
-  ! load predefined Finite Impulse Response (FIR) filters of various
-  ! lengths and select the most appropriate ones based on the
-  ! computational grid size. result is filter kernels always smaller
-  ! than available computational length.
-  ! this is useful in the special cases of infinite faults where
-  ! deformation is essentially two-dimensional, despite the actual
-  ! three-dimensional computation. in the direction of symmetry,
-  ! no strain occurs and high accuracy derivative estimates are not
-  ! needed.
+  !> function OptimalFilter
+  !! load predefined Finite Impulse Response (FIR) filters of various
+  !! lengths and select the most appropriate ones based on the
+  !! computational grid size. result is filter kernels always smaller
+  !! than available computational length.
+  !! this is useful in the special cases of infinite faults where
+  !! deformation is essentially two-dimensional, despite the actual
+  !! three-dimensional computation. in the direction of symmetry,
+  !! no strain occurs and high accuracy derivative estimates are not
+  !! needed.
   !
   ! Sylvain Barbot (03/05/08) - original form
   !------------------------------------------------------------------
@@ -839,48 +839,51 @@ CONTAINS
   END SUBROUTINE optimalfilter
 
   !-----------------------------------------------------------------
-  ! subroutine StressUpdate
-  ! computes the 3-d stress tensor sigma_ij' from the current
-  ! deformation field. Strain is the second order tensor
-  !
-  !  epsilon_ij = 1/2 ( u_i,j + u_j,i )
-  !
-  ! The displacement derivatives are approximated numerically by the
-  ! application of a differentiator space-domain finite impulse
-  ! response filter. Coefficients of the filter can be obtained with
-  ! the MATLAB command line
-  !
-  ! firpm(14, ...
-  !    [0 7.0e-1 8.000000e-1 8.500000e-1 9.000000e-1 1.0e+0],...
-  !    [0 7.0e-1 5.459372e-1 3.825260e-1 2.433534e-1 0.0e+0]*pi,...
-  !    'differentiator');
-  !
-  ! The kernel is odd and antisymmetric and only half the numbers
-  ! are stored in this code. Kernels of different sizes are readilly
-  ! available in the 'kernelX.inc' files. Stress tensor field is
-  ! obtained by application of Hooke's law
-  !
-  !  sigma' = - C' : E
-  !
-  ! or in indicial notation
-  !
-  !  sigma_ij' = -lambda'*delta_ij*epsilon_kk - 2*mu'*epsilon_ij
-  !
-  ! where C' is the heterogeneous elastic moduli tensor and lambda'
-  ! and mu' are the inhomogeneous lame parameters
-  !
-  !  C' = C(x) - C_0
-  !
-  ! For isotropic materials
-  !
-  !  mu'(x) = mu(x) - mu_0
-  !  lambda'(x) = lambda(x) - lambda_0
-  !
-  ! Optionally, the surface traction sigma_i3 can be sampled.
-  !
-  ! sylvain barbot (10/10/07) - original form
-  !                           - optional sample of normal stress
-  !                (02/12/09) - OpemMP parallel implementation
+  !> subroutine StressUpdate
+  !! computes the 3-d stress tensor sigma_ij' from the current
+  !! deformation field. Strain is the second order tensor
+  !!
+  !!  \f[ \epsilon_{ij} = \frac{1}{2} ( u_{i,j} + u_{j,i} ) \f]
+  !!
+  !! The displacement derivatives are approximated numerically by the
+  !! application of a differentiator space-domain finite impulse
+  !! response filter. Coefficients of the filter can be obtained with
+  !! the MATLAB command line
+  !!
+  !!\verbatim
+  !! firpm(14, ...
+  !!    [0 7.0e-1 8.000000e-1 8.500000e-1 9.000000e-1 1.0e+0],...
+  !!    [0 7.0e-1 5.459372e-1 3.825260e-1 2.433534e-1 0.0e+0]*pi,...
+  !!    'differentiator');
+  !!\endverbatim
+  !!
+  !! The kernel is odd and antisymmetric and only half the numbers
+  !! are stored in this code. Kernels of different sizes are readilly
+  !! available in the 'kernelX.inc' files. Stress tensor field is
+  !! obtained by application of Hooke's law
+  !!
+  !!  \f[ \sigma' = - C' : E \f]
+  !!
+  !! or in indicial notation
+  !!
+  !!
+  !!  \f[ \sigma_{ij}' = -\lambda'*\delta_{ij}*\epsilon_{kk} - 2*\mu'*\epsilon_{ij}\f]
+  !!
+  !! where C' is the heterogeneous elastic moduli tensor and lambda'
+  !! and mu' are the inhomogeneous lame parameters
+  !!
+  !!  \f[ C' = C(x) - C_0 \f]
+  !!
+  !! For isotropic materials
+  !!
+  !!  \f[ \mu'(x) = \mu(x) - \mu_0 \f]
+  !!  \f[ \lambda'(x) = \lambda(x) - \lambda_0 \f]
+  !!
+  !! Optionally, the surface traction sigma_i3 can be sampled.
+  !!
+  !! \author sylvain barbot (10/10/07) - original form
+  !!                                   - optional sample of normal stress
+  !!                        (02/12/09) - OpemMP parallel implementation
   !-----------------------------------------------------------------
   SUBROUTINE stressupdate(v1,v2,v3,lambda,mu,dx1,dx2,dx3,sx1,sx2,sx3,sig)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
@@ -948,13 +951,13 @@ CONTAINS
   CONTAINS
 
     !---------------------------------------------------------------
-    ! LocalStrain_FIR2
-    ! implements a finite impulse response filter (FIR) to estimate
-    ! derivatives and strain components. the compatibility with the
-    ! OpenMP parallel execution requires that all variable be 
-    ! tractable from the calling routine.
-    !
-    ! sylvain barbot (10/10/07) - original form
+    !> LocalStrain_FIR2
+    !! implements a finite impulse response filter (FIR) to estimate
+    !! derivatives and strain components. the compatibility with the
+    !! OpenMP parallel execution requires that all variable be 
+    !! tractable from the calling routine.
+    !!
+    !! \author sylvain barbot (10/10/07) - original form
     !                (03/05/08) - implements 3 filters
     !                (02/12/09) - compatibility with OpenMP (scope)
     !---------------------------------------------------------------
@@ -1007,12 +1010,12 @@ CONTAINS
     END SUBROUTINE localstrain_fir2
 
     !---------------------------------------------------------------
-    ! LocalStrain_FIR
-    ! implements a finite impulse response filter (FIR) to estimate
-    ! derivatives and strain components.
-    !
-    ! sylvain barbot (10/10/07) - original form
-    !                (03/05/08) - implements 3 filters
+    !> LocalStrain_FIR
+    !! implements a finite impulse response filter (FIR) to estimate
+    !! derivatives and strain components.
+    !!
+    !! \author sylvain barbot (10/10/07) - original form
+    !!                        (03/05/08) - implements 3 filters
     !---------------------------------------------------------------
     SUBROUTINE localstrain_fir(e)
       TYPE(TENSOR), INTENT(OUT) :: e
@@ -1058,10 +1061,10 @@ CONTAINS
     END SUBROUTINE localstrain_fir
 
     !---------------------------------------------------------------
-    ! LocalStrain_ANI
-    ! implements a different finite impulse response filter (FIR)
-    ! in each direction (ANIsotropy) to estimate derivatives and
-    ! strain components.
+    !> LocalStrain_ANI
+    !! implements a different finite impulse response filter (FIR)
+    !! in each direction (ANIsotropy) to estimate derivatives and
+    !! strain components.
     !
     ! sylvain barbot (10/10/07) - original form
     !                (03/05/09) - implements 3 filters
@@ -1109,36 +1112,36 @@ CONTAINS
   END SUBROUTINE stressupdate
 
   !-----------------------------------------------------------------
-  ! subroutine EquivalentBodyForce
-  ! computes and updates the equivalent body-force
-  !
-  !         f = - div.( C : E^i )
-  !
-  ! and the equivalent surface traction
-  !
-  !         t = n . C : E^i
-  !
-  ! with n = (0,0,-1). In indicial notations
-  !
-  !         f_i = - (C_ijkl E^i_kl),j
-  !
-  ! and
-  !
-  !         t_1 = n_j C_ijkl E^i_kl
-  !
-  ! where f is the equivalent body-force, t is the equivalent surface
-  ! traction, C is the elastic moduli tensor and E^i is the moment
-  ! density tensor tensor.
-  !
-  ! Divergence is computed with a mixed numerical scheme including
-  ! centered finite-difference (in the vertical direction) and
-  ! finite impulse response differentiator filter for derivatives
-  ! estimates. see function 'stress' for further explanations.
-  !
-  ! sylvain barbot (07/09/07) - original form
-  !                (10/09/07) - upgrade the finite difference scheme
-  !                             to a finite impulse response filter
-  !                (02/12/09) - OpenMP parallel implementation
+  !> subroutine EquivalentBodyForce
+  !! computes and updates the equivalent body-force
+  !!
+  !!         f = - div.( C : E^i )
+  !!
+  !! and the equivalent surface traction
+  !!
+  !!         t = n . C : E^i
+  !!
+  !! with n = (0,0,-1). In indicial notations
+  !!
+  !!         f_i = - (C_ijkl E^i_kl),j
+  !!
+  !! and
+  !!
+  !!         t_1 = n_j C_ijkl E^i_kl
+  !!
+  !! where f is the equivalent body-force, t is the equivalent surface
+  !! traction, C is the elastic moduli tensor and E^i is the moment
+  !! density tensor tensor.
+  !!
+  !! Divergence is computed with a mixed numerical scheme including
+  !! centered finite-difference (in the vertical direction) and
+  !! finite impulse response differentiator filter for derivatives
+  !! estimates. see function 'stress' for further explanations.
+  !!
+  !! \author sylvain barbot (07/09/07) - original form
+  !!                        (10/09/07) - upgrade the finite difference scheme
+  !!                                     to a finite impulse response filter
+  !!                        (02/12/09) - OpenMP parallel implementation
   !-----------------------------------------------------------------
   SUBROUTINE equivalentbodyforce(sig,dx1,dx2,dx3,sx1,sx2,sx3, &
                                  c1,c2,c3,t1,t2,t3,mask)
@@ -1436,12 +1439,12 @@ CONTAINS
 
 
   !---------------------------------------------------------------------
-  ! function SourceSpectrum
-  ! computes the equivalent body-forces for a buried dislocation,
-  ! with strike-slip and dip-slip components,
-  ! slip s, width W, length L in a rigidity mu
-  !
-  ! sylvain barbot (06-25-07) - original form
+  !> function SourceSpectrum
+  !! computes the equivalent body-forces for a buried dislocation,
+  !! with strike-slip and dip-slip components,
+  !! slip s, width W, length L in a rigidity mu
+  !!
+  !! \author sylvain barbot (06-25-07) - original form
   !---------------------------------------------------------------------
   SUBROUTINE sourcespectrum(mu,s,x,y,d, &
        L,W,strike,dip,rake,beta,dx1,dx2,dx3,f1,f2,f3)
@@ -1524,12 +1527,12 @@ CONTAINS
 
 
   !---------------------------------------------------------------------
-  ! function SourceSpectrumHalfSpace
-  ! computes the equivalent body-forces for a buried dislocation,
-  ! with strike-slip and dip-slip components,
-  ! slip s, width W, length L in a rigidity mu; sources are not imaged
-  !
-  ! sylvain barbot (06-25-07) - original form
+  !> function SourceSpectrumHalfSpace
+  !! computes the equivalent body-forces for a buried dislocation,
+  !! with strike-slip and dip-slip components,
+  !! slip s, width W, length L in a rigidity mu; sources are not imaged
+  !!
+  !! \author sylvain barbot (06-25-07) - original form
   !---------------------------------------------------------------------
   SUBROUTINE sourcespectrumhalfspace(mu,s,x,y,d, &
        L,W,strike,dip,rake,beta,dx1,dx2,dx3,f1,f2,f3)
@@ -1600,23 +1603,27 @@ CONTAINS
   END SUBROUTINE sourcespectrumhalfspace
 
   !---------------------------------------------------------------------
-  ! function Source computes the equivalent body-forces
-  ! in the space domain for a buried dislocation with strike-slip
-  ! and dip-slip components, slip s, width W, length L in a rigidity mu
-  !
-  ! Default (strike=0, dip=0, rake=0) is a vertical left-lateral
-  ! strike-slip fault along the x2 axis. Default fault slip is
-  ! represented with the double-couple equivalent body forces:
-  !
-  !                   x1
-  !                   |
-  !                   |   ^  f2
-  !                   |   |<-----
-  !                   +---+------+---- x2
-  !                        ----->|
-  !                              v  f1
-  !
-  ! sylvain barbot (06-29-07) - original form
+  !> function Source computes the equivalent body-forces
+  !! in the space domain for a buried dislocation with strike-slip
+  !! and dip-slip components, slip s, width W, length L in a rigidity mu
+  !!
+  !! Default (strike=0, dip=0, rake=0) is a vertical left-lateral
+  !! strike-slip fault along the x2 axis. Default fault slip is
+  !! represented with the double-couple equivalent body forces:
+  !!
+  !!\verbatim
+  !!
+  !!                   x1
+  !!                   |
+  !!                   |   ^  f2
+  !!                   |   |<-----
+  !!                   +---+------+---- x2
+  !!                        ----->|
+  !!                              v  f1
+  !!
+  !!\endverbatim
+  !!
+  !! \author sylvain barbot (06-29-07) - original form
   !---------------------------------------------------------------------
   SUBROUTINE source(mu,s,x,y,z,L,W,strike,dip,rake, &
        beta,sx1,sx2,sx3,dx1,dx2,dx3,f1,f2,f3,t1,t2,t3)
@@ -1802,53 +1809,65 @@ CONTAINS
   END SUBROUTINE source
 
   !---------------------------------------------------------------------
-  ! function TensileSource
-  ! computes the equivalent body-forces in the space domain for a buried
-  ! tensile crack with opening s, width W, length L and Lame parameters
-  ! lambda, mu.
-  !
-  ! Default (strike=0, dip=0) is a vertical opening along the x2 axis.
-  ! Default fault opening is represented with the double-couple
-  ! equivalent body forces:
-  !
-  !           x1           f1
-  !           |         ^^^^^^^
-  !           |         |||||||
-  !           | -f2 <--+-------+--> f2
-  !           |         |||||||
-  !           |         vvvvvvv
-  !           |           -f1
-  !           |
-  !           +----------------------------- x2
-  !
-  ! The eigenstrain/potency tensor for a point source is
-  !
-  !         | 1 0 0 |
-  !   E^i = | 0 0 0 |
-  !         | 0 0 0 |
-  !
-  ! and the corresponding moment density for a point source is
-  !
-  !                 | lambda+2*mu    0      0   |
-  !   m = C : E^i = |      0      lambda    0   |
-  !                 |      0         0   lambda |
-  !
-  ! Moment density is integrated along the planar surface
-  !
-  !   box(x2) delta (x1) box(x3)
-  !
-  ! where box(x) and delta(x) are the boxcar and the dirac delta
-  ! functions, respectively. We use a tapered boxcar, omega_beta(x) and
-  ! approximate the delta function by a small gaussian function.
-  ! Finally, the equivalent body force is the divergence of the moment
-  ! density tensor
-  !
-  !   f_i = - ( m_ij ),j
-  !
-  ! derivatives are performed analytically on the gaussian and
-  ! omega_beta functions.
-  !
-  ! sylvain barbot (05-09-08) - original form
+  !> function TensileSource
+  !! computes the equivalent body-forces in the space domain for a buried
+  !! tensile crack with opening s, width W, length L and Lame parameters
+  !! lambda, mu.
+  !!
+  !! Default (strike=0, dip=0) is a vertical opening along the x2 axis.
+  !! Default fault opening is represented with the double-couple
+  !! equivalent body forces:
+  !!
+  !!\verbatim
+  !!
+  !!           x1           f1
+  !!           |         ^^^^^^^
+  !!           |         |||||||
+  !!           | -f2 <--+-------+--> f2
+  !!           |         |||||||
+  !!           |         vvvvvvv
+  !!           |           -f1
+  !!           |
+  !!           +----------------------------- x2
+  !!
+  !!\endverbatim
+  !!
+  !! The eigenstrain/potency tensor for a point source is
+  !!
+  !!\verbatim
+  !!
+  !!         | 1 0 0 |
+  !!   E^i = | 0 0 0 |
+  !!         | 0 0 0 |
+  !!
+  !!\endverbatim
+  !!
+  !! and the corresponding moment density for a point source is
+  !!
+  !!\verbatim
+  !!
+  !!                 | lambda+2*mu    0      0   |
+  !!   m = C : E^i = |      0      lambda    0   |
+  !!                 |      0         0   lambda |
+  !!
+  !!\endverbatim
+  !!
+  !! Moment density is integrated along the planar surface
+  !!
+  !!   \f[ box(x2) \delta(x1) box(x3) \f]
+  !!
+  !! where box(x) and delta(x) are the boxcar and the dirac delta
+  !! functions, respectively. We use a tapered boxcar, omega_beta(x) and
+  !! approximate the delta function by a small gaussian function.
+  !! Finally, the equivalent body force is the divergence of the moment
+  !! density tensor
+  !!
+  !!   \f[ f_i = - ( m_{ij} )_{,j} \f]
+  !!
+  !! derivatives are performed analytically on the gaussian and
+  !! omega_beta functions.
+  !!
+  !! \author sylvain barbot (05-09-08) - original form
   !---------------------------------------------------------------------
   SUBROUTINE tensilesource(lambda,mu,s,x,y,z,L,W,strike,dip, &
        beta,sx1,sx2,sx3,dx1,dx2,dx3,f1,f2,f3)
@@ -1949,45 +1968,49 @@ CONTAINS
   END SUBROUTINE tensilesource
 
   !---------------------------------------------------------------------
-  ! function MogiSource 
-  ! computes the equivalent body-forces in the space domain for a buried 
-  ! dilatation point source.
-  !
-  ! The point-source opening o with at position xs in the half space is
-  ! associated with eigenstrain
-  !
-  !      E^i = o 1/3 I delta(x-xs)
-  !
-  ! where I is the diagonal tensor and delta is the Dirac delta function
-  ! (or in index notation E^i_{ij} = o delta_{ij} / 3 delta(xs) ) and 
-  ! with the moment density
-  !
-  !      m = C : E^i = K o I delta(x-xs)
-  !
-  ! The equivalent body-force density is
-  !
-  !      f = - Nabla . m = K o nabla delta(x-xs)
-  !
-  ! where nabla is the gradient operator. Default source opening is 
-  ! represented with the isotropic equivalent body-force density:
-  !
-  !                   x1
-  !                   |      f1
-  !                   |      ^
-  !                   |  f2  |  f2
-  !                   +---<--+-->---- x2
-  !                          |
-  !                          v  f1
-  !
-  !                   x3
-  !                   |      f3
-  !                   |      ^
-  !                   |  f2  |  f2
-  !                   +---<--+-->---- x2
-  !                          |
-  !                          v  f3
-  !
-  ! sylvain barbot (03-24-09) - original form
+  !! function MogiSource 
+  !! computes the equivalent body-forces in the space domain for a buried 
+  !! dilatation point source.
+  !!
+  !! The point-source opening o with at position xs in the half space is
+  !! associated with eigenstrain
+  !!
+  !!      \f[ E^i = o \frac{1}{3} I \delta(x-x_s) \f]
+  !!
+  !! where I is the diagonal tensor and delta is the Dirac delta function
+  !! (or in index notation E^i_{ij} = o delta_{ij} / 3 delta(xs) ) and 
+  !! with the moment density
+  !!
+  !!      \f[ m = C : E^i = K o I \delta(x-x_s) \f]
+  !!
+  !! The equivalent body-force density is
+  !!
+  !!      \f[ f = - \nabla \cdot m = K o \nabla \delta(x-x_s) \f]
+  !!
+  !! where nabla is the gradient operator. Default source opening is 
+  !! represented with the isotropic equivalent body-force density:
+  !!
+  !!\verbatim
+  !!
+  !!                   x1
+  !!                   |      f1
+  !!                   |      ^
+  !!                   |  f2  |  f2
+  !!                   +---<--+-->---- x2
+  !!                          |
+  !!                          v  f1
+  !!
+  !!                   x3
+  !!                   |      f3
+  !!                   |      ^
+  !!                   |  f2  |  f2
+  !!                   +---<--+-->---- x2
+  !!                          |
+  !!                          v  f3
+  !!
+  !!\endverbatim
+  !!
+  !! \author sylvain barbot (03-24-09) - original form
   !---------------------------------------------------------------------
   SUBROUTINE mogisource(lambda,mu,o,xs,ys,zs,sx1,sx2,sx3,dx1,dx2,dx3,f1,f2,f3)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
@@ -2043,61 +2066,73 @@ CONTAINS
   END SUBROUTINE mogisource
 
   !---------------------------------------------------------------------
-  ! function MomentDensityShear
-  ! computes the inelastic irreversible moment density in the space
-  ! domain corresponding to a buried dislocation with strike-slip and
-  ! dip-slip components (pure shear). A fault along a surface of normal
-  ! n_i with a burger vector s_i, is associated with the eigenstrain
-  !
-  !   E^i_ij = 1/2 ( n_i s_j + s_i n_j )
-  !
-  ! In a heterogeneous medium of elastic moduli tensor C_ijkl, the
-  ! corresponding moment density tensor is
-  !
-  !   m_ij = C_ijkl E^i_kl
-  !
-  ! where C = C(x) is a function of space. Equivalent body forces
-  ! representing the set of dislocations can be obtained by evaluating
-  ! the divergence of the moment density tensor
-  !
-  !   f_i = - ( m_ji ),j
-  !
-  ! using the function "EquivalentBodyForce" in this module.
-  !
-  ! The default dislocation extends in the x2 direction, with a normal
-  ! in the x1 direction. Using the following angular convention,
-  !
-  !           x1            !           x1
-  !   n  theta |            !   n   phi  |
-  !     \  ____|            !     \  ____|
-  !       \    |            !       \    |
-  !         \  |            !         \  |
-  !      -----\+------ x2   !      -----\+------ x3
-  !        (x3 down)        !         (x2 up)
-  !
-  ! where theta is the strike and phi is the dip (internal convention),
-  ! and introducting the rotation matrices
-  !
-  !        |  cos(theta)   sin(theta)    0 |
-  !   R1 = | -sin(theta)   cos(theta)    0 |
-  !        |      0             0        1 |
-  !
-  !        |  cos(phi)     0     sin(phi)  |
-  !   R2 = |     0         1        0      |
-  !        | -sin(phi)     0     cos(phi)  |
-  !
-  ! a normal vector n of arbitrary orientation and the corresponding
-  ! strike-slip and dip-slip vector, s and d respectively, are
-  !
-  !             | 1 |             | 0 |             | 0 |
-  !   n = R1 R2 | 0 |,  s = R1 R2 | 1 |,  d = R1 R2 | 0 |
-  !             | 0 |             | 0 |             | 1 |
-  !
-  ! vector n, s and d are orthogonal and the corresponding moment
-  ! density second order tensor is deviatoric. The method of images is
-  ! used to avoid tapering of the fault at the surface.
-  !
-  ! sylvain barbot (03-02-08) - original form
+  !! function MomentDensityShear
+  !! computes the inelastic irreversible moment density in the space
+  !! domain corresponding to a buried dislocation with strike-slip and
+  !! dip-slip components (pure shear). A fault along a surface of normal
+  !! n_i with a burger vector s_i, is associated with the eigenstrain
+  !!
+  !!   E^i_ij = 1/2 ( n_i s_j + s_i n_j )
+  !!
+  !! In a heterogeneous medium of elastic moduli tensor C_ijkl, the
+  !! corresponding moment density tensor is
+  !!
+  !!   m_ij = C_ijkl E^i_kl
+  !!
+  !! where C = C(x) is a function of space. Equivalent body forces
+  !! representing the set of dislocations can be obtained by evaluating
+  !! the divergence of the moment density tensor
+  !!
+  !!   f_i = - ( m_ji ),j
+  !!
+  !! using the function "EquivalentBodyForce" in this module.
+  !!
+  !! The default dislocation extends in the x2 direction, with a normal
+  !! in the x1 direction. Using the following angular convention,
+  !!
+  !!\verbatim
+  !!
+  !!           x1            !           x1
+  !!   n  theta |            !   n   phi  |
+  !!     \  ____|            !     \  ____|
+  !!       \    |            !       \    |
+  !!         \  |            !         \  |
+  !!      -----\+------ x2   !      -----\+------ x3
+  !!        (x3 down)        !         (x2 up)
+  !!
+  !!\endverbatim
+  !!
+  !! where theta is the strike and phi is the dip (internal convention),
+  !! and introducting the rotation matrices
+  !!
+  !!\verbatim
+  !!
+  !!        |  cos(theta)   sin(theta)    0 |
+  !!   R1 = | -sin(theta)   cos(theta)    0 |
+  !!        |      0             0        1 |
+  !!
+  !!        |  cos(phi)     0     sin(phi)  |
+  !!   R2 = |     0         1        0      |
+  !!        | -sin(phi)     0     cos(phi)  |
+  !!
+  !!\endverbatim
+  !!
+  !! a normal vector n of arbitrary orientation and the corresponding
+  !! strike-slip and dip-slip vector, s and d respectively, are
+  !!
+  !!\verbatim
+  !!
+  !!             | 1 |             | 0 |             | 0 |
+  !!   n = R1 R2 | 0 |,  s = R1 R2 | 1 |,  d = R1 R2 | 0 |
+  !!             | 0 |             | 0 |             | 1 |
+  !!
+  !!\endverbatim
+  !!
+  !! vector n, s and d are orthogonal and the corresponding moment
+  !! density second order tensor is deviatoric. The method of images is
+  !! used to avoid tapering of the fault at the surface.
+  !!
+  !! \author sylvain barbot (03-02-08) - original form
   !---------------------------------------------------------------------
   SUBROUTINE momentdensityshear(mu,slip,x,y,z,L,W,strike,dip,rake, &
        beta,sx1,sx2,sx3,dx1,dx2,dx3,sig)
@@ -2191,88 +2226,107 @@ CONTAINS
   END SUBROUTINE momentdensityshear
 
   !---------------------------------------------------------------------
-  ! function MomentDensityTensile
-  ! computes the inelastic irreversible moment density in the space
-  ! domain corresponding to a buried dislocation with opening (open
-  ! crack). A fault along a surface of normal n_i with a burger vector
-  ! s_i, is associated with the eigenstrain
-  !
-  !   E^i_ij = 1/2 ( n_i s_j + s_i n_j )
-  !
-  ! The eigenstrain/potency tensor for a point source opening crack is
-  !
-  !         | 1 0 0 |
-  !   E^i = | 0 0 0 |
-  !         | 0 0 0 |
-
-  !
-  ! In a heterogeneous medium of elastic moduli tensor C_ijkl, the
-  ! corresponding moment density tensor is
-  !
-  !   m_ij = C_ijkl E^i_kl = lambda E^i_kk delta_ij + 2 mu E^i_ij
-  !
-  ! where C = C(x) is a function of space. (We use isotropic elastic
-  ! solid, and heterogeneous elastic moduli tensor simplifies to
-  ! mu=mu(x) and lambda = lambda(x).) The moment density for a point
-  ! source opening crack is
-  !
-  !          | lambda+2*mu    0      0   |
-  !   m(x) = |      0      lambda    0   |
-  !          |      0         0   lambda |
-  !
-  ! Moment density m(x) is integrated along the planar surface
-  !
-  !   box(x2) delta (x1) box(x3)
-  !
-  ! where box(x) and delta(x) are the boxcar and the dirac delta
-  ! functions, respectively. Equivalent body forces representing the
-  ! set of dislocations can be obtained by evaluating the divergence
-  ! of the moment density tensor
-  !
-  !   f_i = - ( m_ji ),j
-  !
-  ! The corresponding equivalent surface traction is simply
-  !
-  !   t_i = m_ij n_j
-  !
-  ! Both equivalent body forces and equivalent surface traction are
-  ! computed using the function "EquivalentBodyForce" in this module.
-  !
-  ! The default dislocation extends in the x2 direction, with a normal
-  ! in the x1 direction. Using the following angular convention,
-  !
-  !           x1            !           x1
-  !   n  theta |            !   n   phi  |
-  !     \  ____|            !     \  ____|
-  !       \    |            !       \    |
-  !         \  |            !         \  |
-  !      -----\+------ x2   !      -----\+------ x3
-  !        (x3 down)        !         (x2 up)
-  !
-  ! where theta is the strike and phi is the dip, in internal
-  ! convention. (Internal angular convention does not correspond to
-  ! usual angular convention of geology and conversion between the two
-  ! standard is necessary.) Introducting the rotation matrices,
-  !
-  !        |  cos(theta)   sin(theta)    0 |
-  !   R1 = | -sin(theta)   cos(theta)    0 |
-  !        |      0             0        1 |
-  !
-  !        |  cos(phi)     0     sin(phi)  |
-  !   R2 = |     0         1        0      |
-  !        | -sin(phi)     0     cos(phi)  |
-  !
-  ! a normal vector n of arbitrary orientation and the corresponding
-  ! slip vector s are
-  !
-  !             | 1 |                 | 1 |
-  !   n = R1 R2 | 0 |,  s = n = R1 R2 | 0 |
-  !             | 0 |                 | 0 |
-  !
-  ! The method of images is used to avoid tapering of the fault at
-  ! the surface.
-  !
-  ! sylvain barbot (03-02-08) - original form
+  !> function MomentDensityTensile
+  !! computes the inelastic irreversible moment density in the space
+  !! domain corresponding to a buried dislocation with opening (open
+  !! crack). A fault along a surface of normal n_i with a burger vector
+  !! s_i, is associated with the eigenstrain
+  !!
+  !!   \f[ E^i_{ij} = \frac{1}{2} ( n_i s_j + s_i n_j ) \f]
+  !!
+  !! The eigenstrain/potency tensor for a point source opening crack is
+  !!
+  !!\verbatim
+  !!
+  !!         | 1 0 0 |
+  !!   E^i = | 0 0 0 |
+  !!         | 0 0 0 |
+  !!
+  !!\endverbatim
+  !!
+  !! In a heterogeneous medium of elastic moduli tensor C_ijkl, the
+  !! corresponding moment density tensor is
+  !!
+  !!   \f[ m_{ij} = C_{ijkl} E^i_{kl} = \lambda E^i_{kk} \delta_{ij} + 2 \mu E^i_{ij} \f]
+  !!
+  !! where C = C(x) is a function of space. (We use isotropic elastic
+  !! solid, and heterogeneous elastic moduli tensor simplifies to
+  !! mu=mu(x) and lambda = lambda(x).) The moment density for a point
+  !! source opening crack is
+  !!
+  !!\verbatim
+  !!
+  !!          | lambda+2*mu    0      0   |
+  !!   m(x) = |      0      lambda    0   |
+  !!          |      0         0   lambda |
+  !!
+  !!\endverbatim
+  !!
+  !! Moment density m(x) is integrated along the planar surface
+  !!
+  !!   box(x2) delta (x1) box(x3)
+  !!
+  !! where box(x) and delta(x) are the boxcar and the dirac delta
+  !! functions, respectively. Equivalent body forces representing the
+  !! set of dislocations can be obtained by evaluating the divergence
+  !! of the moment density tensor
+  !!
+  !!   \f[ f_i = - ( m_{ji} ),j \f]
+  !!
+  !! The corresponding equivalent surface traction is simply
+  !!
+  !!   \f[ t_i = m_{ij} n_j \f]
+  !!
+  !! Both equivalent body forces and equivalent surface traction are
+  !! computed using the function "EquivalentBodyForce" in this module.
+  !!
+  !! The default dislocation extends in the x2 direction, with a normal
+  !! in the x1 direction. Using the following angular convention,
+  !!
+  !!\verbatim
+  !!
+  !!           x1            !           x1
+  !!   n  theta |            !   n   phi  |
+  !!     \  ____|            !     \  ____|
+  !!       \    |            !       \    |
+  !!         \  |            !         \  |
+  !!      -----\+------ x2   !      -----\+------ x3
+  !!        (x3 down)        !         (x2 up)
+  !!
+  !!\endverbatim
+  !!
+  !! where theta is the strike and phi is the dip, in internal
+  !! convention. (Internal angular convention does not correspond to
+  !! usual angular convention of geology and conversion between the two
+  !! standard is necessary.) Introducting the rotation matrices,
+  !!
+  !!\verbatim
+  !!
+  !!        |  cos(theta)   sin(theta)    0 |
+  !!   R1 = | -sin(theta)   cos(theta)    0 |
+  !!        |      0             0        1 |
+  !!
+  !!        |  cos(phi)     0     sin(phi)  |
+  !!   R2 = |     0         1        0      |
+  !!        | -sin(phi)     0     cos(phi)  |
+  !!
+  !!\endverbatim
+  !!
+  !! a normal vector n of arbitrary orientation and the corresponding
+  !! slip vector s are
+  !!
+  !!\verbatim
+  !!
+  !!             | 1 |                 | 1 |
+  !!   n = R1 R2 | 0 |,  s = n = R1 R2 | 0 |
+  !!             | 0 |                 | 0 |
+  !!
+  !!\endverbatim
+  !!
+  !! The method of images is used to avoid tapering of the fault at
+  !! the surface.
+  !!
+  !! \author sylvain barbot (03-02-08) - original form
   !---------------------------------------------------------------------
   SUBROUTINE momentdensitytensile(lambda,mu,slip,x,y,z,L,W,strike,dip,rake, &
        beta,sx1,sx2,sx3,dx1,dx2,dx3,sig)
@@ -2355,27 +2409,27 @@ CONTAINS
   END SUBROUTINE momentdensitytensile
 
   !---------------------------------------------------------------------
-  ! function MomentDensityMogi
-  ! computes the inelastic irreversible moment density in the space
-  ! domain corresponding to a buried Mogi source. 
-  ! The Mogi source is associated with the eigenstrain
-  !
-  !   E^i_ij = o 1/3 delta_ij
-  !
-  ! In a heterogeneous medium of elastic moduli tensor C_ijkl, the
-  ! corresponding moment density tensor is
-  !
-  !   m_ij = C_ijkl E^i_kl
-  !
-  ! where C = C(x) is a function of space. Equivalent body forces
-  ! representing the set of dislocations can be obtained by evaluating
-  ! the divergence of the moment density tensor
-  !
-  !   f_i = - ( m_ji ),j
-  !
-  ! using the function "EquivalentBodyForce" in this module.
-  !
-  ! sylvain barbot (03-24-09) - original form
+  !! function MomentDensityMogi
+  !! computes the inelastic irreversible moment density in the space
+  !! domain corresponding to a buried Mogi source. 
+  !! The Mogi source is associated with the eigenstrain
+  !!
+  !!   \f[ E^i_{ij} = o \frac{1}{3} \delta_{ij} \f]
+  !!
+  !! In a heterogeneous medium of elastic moduli tensor C_ijkl, the
+  !! corresponding moment density tensor is
+  !!
+  !!   \f[ m_{ij} = C_{ijkl} E^i_{kl} \f]
+  !!
+  !! where C = C(x) is a function of space. Equivalent body forces
+  !! representing the set of dislocations can be obtained by evaluating
+  !! the divergence of the moment density tensor
+  !!
+  !!   \f[ f_i = - ( m_{ji} ),j \f]
+  !!
+  !! using the function "EquivalentBodyForce" in this module.
+  !!
+  !! \author sylvain barbot (03-24-09) - original form
   !---------------------------------------------------------------------
   SUBROUTINE momentdensitymogi(lambda,mu,o,xs,ys,zs,sx1,sx2,sx3,dx1,dx2,dx3,sig)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
@@ -2426,36 +2480,44 @@ CONTAINS
   END SUBROUTINE momentdensitymogi
 
   !---------------------------------------------------------------------
-  ! function Plane
-  ! computes the three components, n1, n2 and n3, of the normal vector
-  ! corresponding to a rectangular surface of finite size. The plane
-  ! is defined by its orientation (strike and dip) and dimension.
-  !
-  !              W
-  !       +-------------+
-  !       |             |
-  !     L |      +      | - - - > along strike direction
-  !       |   (x,y,z)   |
-  !       +-------------|
-  !              |
-  !              v
-  !      down-dip direction
-  !
-  ! in the default orientation, for which strike=0 and dip=0, the plane
-  ! is vertical along the x2 axis, such as n2(x) = n3(x) = 0 for all x.
-  ! internal angular conventions are as follows:
-  !
-  !             n   x1                          n   x1
-  !              \   |                           \   |
-  !               \  |                            \  |
-  !   90 - strike  \ |                  90 - dip   \ |
-  !               ( \|                            ( \|
-  !        ----------+------ x2            ----------+------ x3
-  !              (x3 down)                       (x2 up)
-  !
-  ! edges of the rectangle are tapered.
-  !
-  ! sylvain barbot (09-15-07) - original form
+  !> function Plane
+  !! computes the three components, n1, n2 and n3, of the normal vector
+  !! corresponding to a rectangular surface of finite size. The plane
+  !! is defined by its orientation (strike and dip) and dimension.
+  !!
+  !!\verbatim
+  !!
+  !!              W
+  !!       +-------------+
+  !!       |             |
+  !!     L |      +      | - - - > along strike direction
+  !!       |   (x,y,z)   |
+  !!       +-------------|
+  !!              |
+  !!              v
+  !!      down-dip direction
+  !!
+  !!\endverbatim
+  !!
+  !! in the default orientation, for which strike=0 and dip=0, the plane
+  !! is vertical along the x2 axis, such as n2(x) = n3(x) = 0 for all x.
+  !! internal angular conventions are as follows:
+  !!
+  !!\verbatim
+  !!
+  !!             n   x1                          n   x1
+  !!              \   |                           \   |
+  !!               \  |                            \  |
+  !!   90 - strike  \ |                  90 - dip   \ |
+  !!               ( \|                            ( \|
+  !!        ----------+------ x2            ----------+------ x3
+  !!              (x3 down)                       (x2 up)
+  !!
+  !!\endverbatim
+  !!
+  !! edges of the rectangle are tapered.
+  !!
+  !! \author sylvain barbot (09-15-07) - original form
   !---------------------------------------------------------------------
   SUBROUTINE plane(x,y,z,L,W,strike,dip, &
        beta,sx1,sx2,sx3,dx1,dx2,dx3,n1,n2,n3)
@@ -2528,10 +2590,10 @@ CONTAINS
   END SUBROUTINE plane
 
   !---------------------------------------------------------------------
-  ! function MonitorField
-  ! samples a scalar field along a specified planar surface.
-  !
-  ! sylvain barbot (10-16-07) - original form
+  !> function MonitorField
+  !! samples a scalar field along a specified planar surface.
+  !!
+  !! \author sylvain barbot (10-16-07) - original form
   !---------------------------------------------------------------------
   SUBROUTINE monitorfield(x,y,z,L,W,strike,dip,beta, &
        sx1,sx2,sx3,dx1,dx2,dx3,slip,patch)
@@ -2591,13 +2653,13 @@ CONTAINS
   CONTAINS
 
     !--------------------------------------------------------------
-    ! subroutine sample
-    ! interpolates the value of a discretized 3-dimensional field
-    ! at a subpixel location. method consists in correlating the
-    ! 3D field with a delta function filter. the delta function is
-    ! approximated with a narrow normalized gaussian.
-    !
-    ! sylvain barbot (10-17-07) - original form
+    !> subroutine sample
+    !! interpolates the value of a discretized 3-dimensional field
+    !! at a subpixel location. method consists in correlating the
+    !! 3D field with a delta function filter. the delta function is
+    !! approximated with a narrow normalized gaussian.
+    !!
+    !! \author sylvain barbot (10-17-07) - original form
     !--------------------------------------------------------------
     SUBROUTINE sample(x1,x2,x3,dx1,dx2,dx3,sx1,sx2,sx3,field,value)
       INTEGER, INTENT(IN) :: sx1,sx2,sx3
@@ -2799,13 +2861,13 @@ CONTAINS
   END SUBROUTINE sliceadd
 
   !-----------------------------------------------------------------
-  ! subroutine TensorFieldAdd
-  ! computes the linear combination of two tensor fields
-  !
-  !     t1 = c1 * t1 + c2 * t2
-  !
-  ! where t1 and t2 are two tensor fields and c1 and c2 are scalars.
-  ! only tensor field t1 is modified.
+  !> subroutine TensorFieldAdd
+  !! computes the linear combination of two tensor fields
+  !!
+  !!     t1 = c1 * t1 + c2 * t2
+  !!
+  !! where t1 and t2 are two tensor fields and c1 and c2 are scalars.
+  !! only tensor field t1 is modified.
   !
   ! sylvain barbot (07/27/07) - original form
   !-----------------------------------------------------------------
@@ -2900,8 +2962,8 @@ CONTAINS
   END SUBROUTINE tensorintegrate
 
   !---------------------------------------------------------------------
-  ! subroutine coordinates computes the xi coordinates from the
-  ! array index and sampling interval
+  !> subroutine coordinates computes the xi coordinates from the
+  !! array index and sampling interval
   !---------------------------------------------------------------------
   SUBROUTINE coordinates(i1,i2,i3,sx1,sx2,sx3,dx1,dx2,dx3,x1,x2,x3)
     INTEGER, INTENT(IN) :: i1,i2,i3,sx1,sx2,sx3
@@ -2914,11 +2976,11 @@ CONTAINS
   END SUBROUTINE coordinates
 
   !---------------------------------------------------------------------
-  ! subroutine ShiftedCoordinates
-  ! computes the xi coordinates from the array index and sampling
-  ! interval assuming data is order like fftshift.
-  !
-  ! sylvain barbot (07/31/07) - original form
+  !> subroutine ShiftedCoordinates
+  !! computes the xi coordinates from the array index and sampling
+  !! interval assuming data is order like fftshift.
+  !!
+  !! \author sylvain barbot (07/31/07) - original form
   !---------------------------------------------------------------------
   SUBROUTINE shiftedcoordinates(i1,i2,i3,sx1,sx2,sx3,dx1,dx2,dx3,x1,x2,x3)
     INTEGER, INTENT(IN) :: i1,i2,i3,sx1,sx2,sx3
@@ -2944,17 +3006,17 @@ CONTAINS
   END SUBROUTINE shiftedcoordinates
 
   !----------------------------------------------------------------------
-  ! subroutine ShiftedIndex
-  ! returns the integer index corresponding to the specified coordinates
-  ! assuming the data are ordered following fftshift. input coordinates
-  ! are assumed bounded -sx/2 <= x <= sx/2-1. out of bound input
-  ! purposefully triggers a fatal error. in the x3 direction, coordinates
-  ! are assumed bounded by 0 <= x3 <= (sx3-1)*dx3
-  !
-  ! CALLED BY:
-  !   monitorfield/sample
-  !
-  ! sylvain barbot (07/31/07) - original form
+  !> subroutine ShiftedIndex
+  !! returns the integer index corresponding to the specified coordinates
+  !! assuming the data are ordered following fftshift. input coordinates
+  !! are assumed bounded -sx/2 <= x <= sx/2-1. out of bound input
+  !! purposefully triggers a fatal error. in the x3 direction, coordinates
+  !! are assumed bounded by 0 <= x3 <= (sx3-1)*dx3
+  !!
+  !! CALLED BY:
+  !!   monitorfield/sample
+  !!
+  !! \author sylvain barbot (07/31/07) - original form
   !----------------------------------------------------------------------
   SUBROUTINE shiftedindex(x1,x2,x3,sx1,sx2,sx3,dx1,dx2,dx3,i1,i2,i3)
     REAL*8, INTENT(IN) :: x1,x2,x3,dx1,dx2,dx3
@@ -3050,11 +3112,11 @@ CONTAINS
   END SUBROUTINE exportslice
 
   !-----------------------------------------------------------------
-  ! subroutine ExportSpatial
-  ! transfer a horizontal layer from array 'data' to smaller array
-  ! 'p' and shift center position so that coordinates (0,0) are in
-  ! center of array 'p'. optional parameter 'doflip' generates
-  ! output compatible with grd binary format.
+  !> subroutine ExportSpatial
+  !! transfer a horizontal layer from array 'data' to smaller array
+  !! 'p' and shift center position so that coordinates (0,0) are in
+  !! center of array 'p'. optional parameter 'doflip' generates
+  !! output compatible with grd binary format.
   !
   ! sylvain barbot (07/09/07) - original form
   !                (03/19/08) - compatibility with grd output

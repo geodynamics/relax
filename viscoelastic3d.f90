@@ -32,20 +32,20 @@ MODULE viscoelastic3d
 CONTAINS
 
   !-----------------------------------------------------------------
-  ! subroutine ViscoElasticDeviatoricStress
-  ! computes the instantaneous deviatoric stress tensor sigma_ij'
-  !
-  !  sigma_ij' = 2*mu*(-delta_ij epsilon_kk/3 + epsilon_ij) - tau_ij 
-  !
-  ! such as
-  ! 
-  !  sigma_kk'= 0
-  !
-  ! where tau_ij is a second-order deviatoric symmetric tensor 
-  ! that integrates the history of the relaxed stress. strain is
-  ! estimated using a centered finite difference derivative.
-  !
-  ! sylvain barbot (07/07/07) - original form
+  !> subroutine ViscoElasticDeviatoricStress
+  !! computes the instantaneous deviatoric stress tensor sigma_ij'
+  !!
+  !!  sigma_ij' = 2*mu*(-delta_ij epsilon_kk/3 + epsilon_ij) - tau_ij 
+  !!
+  !! such as
+  !! 
+  !!  sigma_kk'= 0
+  !!
+  !! where tau_ij is a second-order deviatoric symmetric tensor 
+  !! that integrates the history of the relaxed stress. strain is
+  !! estimated using a centered finite difference derivative.
+  !!
+  !! \author sylvain barbot (07/07/07) - original form
   !-----------------------------------------------------------------
   SUBROUTINE viscoelasticdeviatoricstress(mu,u1,u2,u3,tau,&
        dx1,dx2,dx3,sx1,sx2,sx3,sig)
@@ -108,17 +108,17 @@ CONTAINS
   END SUBROUTINE viscoelasticdeviatoricstress
 
   !-----------------------------------------------------------------
-  ! subroutine ViscousEigenstress
-  ! computes the moment density rate due to a layered viscoelastic
-  ! structure with powerlaw creep
-  !
-  !     d Ei / dt = C:F:sigma'
-  !
-  ! where C is the elastic moduli tensor, F is the heterogeneous
-  ! fluidity tensor and sigma' is the instantaneous deviatoric 
-  ! stress. F is stress dependent (powerlaw creep.)
-  !
-  ! sylvain barbot (08/30/08) - original form
+  !> subroutine ViscousEigenstress
+  !! computes the moment density rate due to a layered viscoelastic
+  !! structure with powerlaw creep
+  !!
+  !!     d Ei / dt = C:F:sigma'
+  !!
+  !! where C is the elastic moduli tensor, F is the heterogeneous
+  !! fluidity tensor and sigma' is the instantaneous deviatoric 
+  !! stress. F is stress dependent (powerlaw creep.)
+  !!
+  !! \author sylvain barbot (08/30/08) - original form
   !-----------------------------------------------------------------
   SUBROUTINE viscouseigenstress(mu,structure,ductilezones,sig,sx1,sx2,sx3, &
        dx1,dx2,dx3,moment,beta,maxwelltime,gamma)
@@ -214,12 +214,12 @@ CONTAINS
   CONTAINS
 
     !---------------------------------------------------------
-    ! function dgammadot0
-    ! evaluates the change of fluidity at position x1,x2,x3
-    ! due to the presence of weak ductile zones. the extent
-    ! and magnitude of ductile zones is tapered (beta).
-    !
-    ! sylvain barbot (3/29/10) - original form
+    !> function dgammadot0
+    !! evaluates the change of fluidity at position x1,x2,x3
+    !! due to the presence of weak ductile zones. the extent
+    !! and magnitude of ductile zones is tapered (beta).
+    !!
+    !! \author sylvain barbot (3/29/10) - original form
     !---------------------------------------------------------
     REAL*8 FUNCTION dgammadot0(zones,x1,x2,x3,beta)
        TYPE(WEAK_STRUCT), INTENT(IN), DIMENSION(:) :: zones

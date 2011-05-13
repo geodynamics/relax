@@ -171,21 +171,21 @@ CONTAINS
 
 #ifdef PROJ
   !------------------------------------------------------------------
-  ! subroutine ExportStressPROJ
-  ! export a map view of stress with coordinates in 
-  ! longitude/latitude. Text format output is the GMT-compatible
-  ! .xyz file format where data in each file is organized as follows
-  !
-  ! longitude latitude s11 
-  ! longitude latitude s12
-  ! longitude latitude s13
-  ! longitude latitude s22
-  ! longitude latitude s23
-  ! longitude latitude s33
-  !
-  ! this is an interface to exportproj.
-  !
-  ! sylvain barbot (05/22/10) - original form
+  !> subroutine ExportStressPROJ
+  !! export a map view of stress with coordinates in 
+  !! longitude/latitude. Text format output is the GMT-compatible
+  !! .xyz file format where data in each file is organized as follows
+  !!
+  !! longitude latitude s11 
+  !! longitude latitude s12
+  !! longitude latitude s13
+  !! longitude latitude s22
+  !! longitude latitude s23
+  !! longitude latitude s33
+  !!
+  !! this is an interface to exportproj.
+  !!
+  !! \author sylvain barbot (05/22/10) - original form
   !------------------------------------------------------------------
   SUBROUTINE exportstressproj(sig,sx1,sx2,sx3,dx1,dx2,dx3,oz, &
                               x0,y0,lon0,lat0,zone,scale,wdir,index)
@@ -238,20 +238,20 @@ CONTAINS
   END SUBROUTINE exportstressproj
 
   !------------------------------------------------------------------
-  ! subroutine ExportPROJ
-  ! export a map view of displacements with coordinates in 
-  ! longitude/latitude. Text format output is the GMT-compatible
-  ! .xyz file format where data in each file is organized as follows
-  !
-  ! longitude latitude u1, 
-  ! longitude latitude u2 and 
-  ! longitude latitude -u3
-  !
-  ! for index-geo-north.xyz, 
-  !     index-geo-east.xyz and 
-  !     index-geo-up.xyz, respectively.
-  !
-  ! sylvain barbot (05/22/10) - original form
+  !> subroutine ExportPROJ
+  !! export a map view of displacements with coordinates in 
+  !! longitude/latitude. Text format output is the GMT-compatible
+  !! .xyz file format where data in each file is organized as follows
+  !!
+  !! longitude latitude u1, 
+  !! longitude latitude u2 and 
+  !! longitude latitude -u3
+  !!
+  !! for index-geo-north.xyz, 
+  !!     index-geo-east.xyz and 
+  !!     index-geo-up.xyz, respectively.
+  !!
+  !! \author sylvain barbot (05/22/10) - original form
   !------------------------------------------------------------------
   SUBROUTINE exportproj(c1,c2,c3,sx1,sx2,sx3,dx1,dx2,dx3,oz, &
                         x0,y0,lon0,lat0,zone,scale,wdir,i,convention)
@@ -335,16 +335,16 @@ CONTAINS
 
 #ifdef XYZ
   !------------------------------------------------------------------
-  ! subroutine ExportXYZ
-  ! export a map view of surface displacement into the GMT-compatible
-  ! .xyz file format where data in each file is organized as follows
-  !
-  ! x1 x2 u1, x1 x2 u2 and x1 x2 -u3
-  !
-  ! for index-north.xyz, index-east.xyz and index-up.xyz, 
-  ! respectively.
-  !
-  ! sylvain barbot (06/10/09) - original form
+  !> subroutine ExportXYZ
+  !! export a map view of surface displacement into the GMT-compatible
+  !! .xyz file format where data in each file is organized as follows
+  !!
+  !! x1 x2 u1, x1 x2 u2 and x1 x2 -u3
+  !!
+  !! for index-north.xyz, index-east.xyz and index-up.xyz, 
+  !! respectively.
+  !!
+  !! \author sylvain barbot (06/10/09) - original form
   !------------------------------------------------------------------
   SUBROUTINE exportxyz(c1,c2,c3,sx1,sx2,sx3,oz,dx1,dx2,dx3,i,wdir)
     INTEGER, INTENT(IN) :: i,sx1,sx2,sx3
@@ -435,16 +435,16 @@ CONTAINS
 #endif
 
   !------------------------------------------------------------------
-  ! subroutine exportpoints
-  ! sample a vector field at a series of points for export.
-  ! each location is attributed a file in which the time evolution
-  ! of the vector value is listed in the format:
-  !
-  !                t_0 u(t_0) v(t_0) w(t_0)
-  !                t_1 u(t_1) v(t_1) w(t_1)
-  !                ...
-  !
-  ! sylvain barbot (11/10/07) - original form
+  !> subroutine exportpoints
+  !! sample a vector field at a series of points for export.
+  !! each location is attributed a file in which the time evolution
+  !! of the vector value is listed in the format:
+  !!
+  !!                t_0 u(t_0) v(t_0) w(t_0)
+  !!                t_1 u(t_1) v(t_1) w(t_1)
+  !!                ...
+  !!
+  !! \author sylvain barbot (11/10/07) - original form
   !------------------------------------------------------------------
   SUBROUTINE exportpoints(c1,c2,c3,sx1,sx2,sx3,dx1,dx2,dx3, &
        opts,ptsname,time,wdir,isnew,x0,y0,rot)
@@ -542,28 +542,28 @@ CONTAINS
   END SUBROUTINE exportpoints
 
   !---------------------------------------------------------------------
-  ! subroutine exportEigenstrain
-  ! samples the value of an input scalar field at the location of 
-  ! defined plane (position, strike, dip, length and width).
-  !
-  ! input variables
-  ! field      - sampled scalar array
-  ! nop        - number of observation planes
-  ! op         - structure of observation planes (position, orientation)
-  ! x0, y0     - origin position of coordinate system
-  ! dx1,2,3    - sampling size
-  ! sx1,2,3    - size of the scalar field
-  ! wdir       - output directory for writing
-  ! i          - loop index to suffix file names
-  !
-  ! creates files 
-  !
-  !    wdir/index.s00001.estrain.txt with TXT_EXPORTEIGENSTRAIN option
-  !
-  !    wdir/index.s00001.estrain.grd with GRD_EXPORTEIGENSTRAIN option
-  ! 
-  ! sylvain barbot (01/01/07) - original form
-  !                (02/25/10) - output in TXT and GRD formats
+  !> subroutine exportEigenstrain
+  !! samples the value of an input scalar field at the location of 
+  !! defined plane (position, strike, dip, length and width).
+  !!
+  !! input variables
+  !! @param field      - sampled scalar array
+  !! @param nop        - number of observation planes
+  !! @param op         - structure of observation planes (position, orientation)
+  !! @param x0, y0 - origin position of coordinate system
+  !! @param dx1,2,3    - sampling size
+  !! @param sx1,2,3    - size of the scalar field
+  !! @param wdir       - output directory for writing
+  !! @param i          - loop index to suffix file names
+  !!
+  !! creates files 
+  !!
+  !!    wdir/index.s00001.estrain.txt with TXT_EXPORTEIGENSTRAIN option
+  !!
+  !!    wdir/index.s00001.estrain.grd with GRD_EXPORTEIGENSTRAIN option
+  !! 
+  !! \author sylvain barbot (01/01/07) - original form
+  !                         (02/25/10) - output in TXT and GRD formats
   !---------------------------------------------------------------------
   SUBROUTINE exporteigenstrain(field,nop,op,x0,y0,dx1,dx2,dx3,sx1,sx2,sx3,wdir,i)
     INTEGER, INTENT(IN) :: nop,sx1,sx2,sx3,i
@@ -662,43 +662,43 @@ CONTAINS
 END SUBROUTINE exporteigenstrain
 
   !---------------------------------------------------------------------
-  ! subroutine exportCreep
-  ! evaluates the value of creep velocity at the location of 
-  ! defined plane (position, strike, dip, length and width).
-  !
-  ! input variables
-  ! np         - number of frictional planes
-  ! n          - array of frictional planes (position, orientation)
-  ! structure  - array of depth-dependent frictional properties
-  ! x0, y0     - origin position of coordinate system
-  ! dx1,2,3    - sampling size
-  ! sx1,2,3    - size of the stress tensor field
-  ! beta       - smoothing factor controlling the extent of planes
-  ! wdir       - output directory for writing
-  ! i          - loop index to suffix file names
-  !
-  ! creates files 
-  !
-  !    wdir/index.s00001.creep.txt 
-  !
-  ! containing
-  !
-  !    x,y,z,x',y',sqrt(vx'^2+vy'^2),vx',vy'
-  !
-  ! with TXT_EXPORTCREEP option and
-  !
-  !    wdir/index.s00001.creep-north.grd 
-  !    wdir/index.s00001.creep-east.grd 
-  !    wdir/index.s00001.creep-up.grd 
-  !
-  ! with GRD_EXPORTCREEP option where the suffix -north stands for
-  ! dip slip, -east for strike slip and -up for amplitude of slip.
-  !
-  ! file wdir/index.s00001.creep.txt is subsampled by a factor "skip"
-  ! compared to the grd files.
-  ! 
-  ! sylvain barbot (01/01/07) - original form
-  !                (02/25/10) - output in TXT and GRD formats
+  !> subroutine exportCreep
+  !! evaluates the value of creep velocity at the location of 
+  !! defined plane (position, strike, dip, length and width).
+  !!
+  !! input variables
+  !! @param np         - number of frictional planes
+  !! @param n          - array of frictional planes (position, orientation)
+  !! @param structure  - array of depth-dependent frictional properties
+  !! @param x0, y0     - origin position of coordinate system
+  !! @param dx1,2,3    - sampling size
+  !! @param sx1,2,3    - size of the stress tensor field
+  !! @param beta       - smoothing factor controlling the extent of planes
+  !! @param wdir       - output directory for writing
+  !! @param i          - loop index to suffix file names
+  !!
+  !! creates files 
+  !!
+  !!    wdir/index.s00001.creep.txt 
+  !!
+  !! containing
+  !!
+  !!    x,y,z,x',y',sqrt(vx'^2+vy'^2),vx',vy'
+  !!
+  !! with TXT_EXPORTCREEP option and
+  !!
+  !!    wdir/index.s00001.creep-north.grd 
+  !!    wdir/index.s00001.creep-east.grd 
+  !!    wdir/index.s00001.creep-up.grd 
+  !!
+  !! with GRD_EXPORTCREEP option where the suffix -north stands for
+  !! dip slip, -east for strike slip and -up for amplitude of slip.
+  !!
+  !! file wdir/index.s00001.creep.txt is subsampled by a factor "skip"
+  !! compared to the grd files.
+  !! 
+  !! \author sylvain barbot (01/01/07) - original form
+  !!                        (02/25/10) - output in TXT and GRD formats
   !---------------------------------------------------------------------
   SUBROUTINE exportcreep(np,n,beta,sig,structure, &
                          sx1,sx2,sx3,dx1,dx2,dx3,x0,y0,wdir,i)
@@ -802,12 +802,12 @@ END SUBROUTINE exportcreep
 
 #ifdef GRD
   !------------------------------------------------------------------
-  ! subroutine ExportStressGRD
-  ! writes the 6 components of deformation in map view in the GMT
-  ! (Generic Mapping Tools) GRD binary format. This is an interface
-  ! to exportgrd.
-  !
-  ! sylvain barbot 03/19/08 - original form
+  !> subroutine ExportStressGRD
+  !! writes the 6 components of deformation in map view in the GMT
+  !! (Generic Mapping Tools) GRD binary format. This is an interface
+  !! to exportgrd.
+  !!
+  !! \author sylvain barbot 03/19/08 - original form
   !------------------------------------------------------------------
   SUBROUTINE exportstressgrd(sig,sx1,sx2,sx3,dx1,dx2,dx3, &
                              oz,origx,origy,wdir,index)
@@ -861,11 +861,11 @@ END SUBROUTINE exportcreep
 
 
   !------------------------------------------------------------------
-  ! subroutine ExportGRD
-  ! writes the 3 components of deformation in map view in the GMT
-  ! (Generic Mapping Tools) GRD binary format.
-  !
-  ! sylvain barbot 03/19/08 - original form
+  !> subroutine ExportGRD
+  !! writes the 3 components of deformation in map view in the GMT
+  !! (Generic Mapping Tools) GRD binary format.
+  !!
+  !! \author sylvain barbot 03/19/08 - original form
   !------------------------------------------------------------------
   SUBROUTINE exportgrd(c1,c2,c3,sx1,sx2,sx3,dx1,dx2,dx3,oz,origx,origy,&
        wdir,i,convention)
@@ -956,11 +956,11 @@ END SUBROUTINE exportcreep
 
 #ifdef VTK
   !------------------------------------------------------------------
-  ! subroutine ExportVTK_Grid
-  ! creates a .vtp file (in the VTK PolyData XML format) containing
-  ! the dimension of the computational grid
-  !
-  ! sylvain barbot 06/24/09 - original form
+  !> subroutine ExportVTK_Grid
+  !! creates a .vtp file (in the VTK PolyData XML format) containing
+  !! the dimension of the computational grid
+  !!
+  !! \author sylvain barbot 06/24/09 - original form
   !------------------------------------------------------------------
   SUBROUTINE exportvtk_grid(sx1,sx2,sx3,dx1,dx2,dx3,origx,origy,cgfilename)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
@@ -1024,14 +1024,14 @@ END SUBROUTINE exportcreep
   END SUBROUTINE exportvtk_grid
 
   !------------------------------------------------------------------
-  ! subroutine ExportXY_RFaults
-  ! creates a .xy file (in the GMT closed-polygon format) containing
-  ! the rectangular faults. Each fault segemnt is described by a
-  ! closed polygon (rectangle) associated with a slip amplitude.
-  ! use pxzy with the -Cpalette.cpt -L -M options to color rectangles 
-  ! by slip.
-  !
-  ! sylvain barbot 03/05/11 - original form
+  !> subroutine ExportXY_RFaults
+  !! creates a .xy file (in the GMT closed-polygon format) containing
+  !! the rectangular faults. Each fault segemnt is described by a
+  !! closed polygon (rectangle) associated with a slip amplitude.
+  !! use pxzy with the -Cpalette.cpt -L -M options to color rectangles 
+  !! by slip.
+  !!
+  !! \author sylvain barbot 03/05/11 - original form
   !------------------------------------------------------------------
   SUBROUTINE exportxy_rfaults(e,rffilename)
     TYPE(EVENT_STRUC), INTENT(IN) :: e
@@ -1101,12 +1101,12 @@ END SUBROUTINE exportcreep
   END SUBROUTINE exportxy_rfaults
 
   !------------------------------------------------------------------
-  ! subroutine ExportVTK_RFaults
-  ! creates a .vtp file (in the VTK PolyData XML format) containing
-  ! the rectangular faults. The faults are characterized with a set
-  ! of subsegments (rectangles) each associated with a slip vector. 
-  !
-  ! sylvain barbot 06/24/09 - original form
+  !> subroutine ExportVTK_RFaults
+  !! creates a .vtp file (in the VTK PolyData XML format) containing
+  !! the rectangular faults. The faults are characterized with a set
+  !! of subsegments (rectangles) each associated with a slip vector. 
+  !!
+  !! \author sylvain barbot 06/24/09 - original form
   !------------------------------------------------------------------
   SUBROUTINE exportvtk_rfaults(e,rffilename)
     TYPE(EVENT_STRUC), INTENT(IN) :: e
@@ -1222,11 +1222,11 @@ END SUBROUTINE exportcreep
   END SUBROUTINE exportvtk_rfaults
 
   !------------------------------------------------------------------
-  ! subroutine ExportVTK_Rectangle
-  ! creates a .vtp file (in the VTK PolyData XML format) containing
-  ! a rectangle.
-  !
-  ! sylvain barbot 06/24/09 - original form
+  !> subroutine ExportVTK_Rectangle
+  !! creates a .vtp file (in the VTK PolyData XML format) containing
+  !! a rectangle.
+  !!
+  !! \author sylvain barbot 06/24/09 - original form
   !------------------------------------------------------------------
   SUBROUTINE exportvtk_rectangle(x1,x2,x3,L,W,strike,dip,filename)
     REAL*8 :: x1,x2,x3,L,W,strike,dip
@@ -1310,11 +1310,11 @@ END SUBROUTINE exportcreep
   END SUBROUTINE exportvtk_rectangle
 
   !------------------------------------------------------------------
-  ! subroutine ExportVTK_Brick
-  ! creates a .vtp file (in the VTK PolyData XML format) containing
-  ! a brick (3d rectangle, cuboid).
-  !
-  ! sylvain barbot 06/24/09 - original form
+  !> subroutine ExportVTK_Brick
+  !! creates a .vtp file (in the VTK PolyData XML format) containing
+  !! a brick (3d rectangle, cuboid).
+  !!
+  !! \author sylvain barbot 06/24/09 - original form
   !------------------------------------------------------------------
   SUBROUTINE exportvtk_brick(x1,x2,x3,L,W,T,strike,dip,filename)
     REAL*8 :: x1,x2,x3,L,W,T,strike,dip
@@ -1443,11 +1443,11 @@ END SUBROUTINE exportcreep
   END SUBROUTINE exportvtk_brick
 
   !------------------------------------------------------------------
-  ! subroutine ExportVTK_Vectors
-  ! creates a .vtr file (in the VTK Rectilinear XML format) 
-  ! containing a vector field.
-  !
-  ! sylvain barbot 06/25/09 - original form
+  !> subroutine ExportVTK_Vectors
+  !! creates a .vtr file (in the VTK Rectilinear XML format) 
+  !! containing a vector field.
+  !!
+  !! \author sylvain barbot 06/25/09 - original form
   !------------------------------------------------------------------
   SUBROUTINE exportvtk_vectors(u1,u2,u3,sx1,sx2,sx3,dx1,dx2,dx3,j1,j2,j3,vcfilename)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3,j1,j2,j3
@@ -1571,11 +1571,11 @@ END SUBROUTINE exportcreep
   END SUBROUTINE exportvtk_vectors
 
   !------------------------------------------------------------------
-  ! subroutine ExportVTK_Vectors_Slice
-  ! creates a .vtr file (in the VTK Rectilinear XML format) 
-  ! containing a vector field.
-  !
-  ! sylvain barbot 06/25/09 - original form
+  !> subroutine ExportVTK_Vectors_Slice
+  !! creates a .vtr file (in the VTK Rectilinear XML format) 
+  !! containing a vector field.
+  !!
+  !! \author sylvain barbot 06/25/09 - original form
   !------------------------------------------------------------------
   SUBROUTINE exportvtk_vectors_slice(u1,u2,u3,sx1,sx2,sx3,dx1,dx2,dx3,oz,j1,j2,vcfilename)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3,j1,j2

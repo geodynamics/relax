@@ -38,20 +38,28 @@ MODULE fourier
 CONTAINS
 
   !---------------------------------------------------------------------
-  ! subroutine wavenumbers 
-  ! computes the values of the wavenumbers
-  ! in the sequential order required when using subroutine FOURT
-  ! to perform forward and backward inverse transforms.
-  !
-  ! INPUT
-  ! i1 i3     running index in the discrete Fourier domain array
-  ! sx1 sx3  number of elements in the 2 directions
-  ! dx1 dx3  sampling interval in the 2 directions
-  !
-  ! OUTPUT
-  ! k1 k3     wavenumbers in the 2 direction
-  !
-  ! sylvain barbot (04-14-07) - original form
+  !> subroutine wavenumbers 
+  !! computes the values of the wavenumbers
+  !! in the sequential order required when using subroutine FOURT
+  !! to perform forward and backward inverse transforms.
+  !!
+  !! INPUT
+  !! @param i1 running index in the discrete Fourier domain array
+  !! @param i2 running index in the discrete Fourier domain array
+  !! @param i3 running index in the discrete Fourier domain array
+  !! @param sx1 number of elements in the x1-direction
+  !! @param sx2 number of elements in the x2-direction
+  !! @param sx3 number of elements in the x3-direction
+  !! @param dx1 sampling interval in the x1-direction
+  !! @param dx2 sampling interval in the x2-direction
+  !! @param dx3 sampling interval in the x3-direction
+  !!
+  !! OUTPUT
+  !! @param k1 wavenumber in the x1 direction
+  !! @param k2 wavenumber in the x2 direction
+  !! @param k3 wavenumber in the x3 direction
+  !!
+  !! \author sylvain barbot (04-14-07) - original form
   !---------------------------------------------------------------------
   SUBROUTINE wavenumbers(i1,i2,i3,sx1,sx2,sx3,dx1,dx2,dx3,k1,k2,k3)
     INTEGER, INTENT(IN) :: i1, i2, i3, sx1, sx2, sx3
@@ -147,16 +155,17 @@ CONTAINS
   END SUBROUTINE fftshift_tf
 
   !----------------------------------------------------------------------
-  ! subroutine FFT3 performs normalized forward and
-  ! inverse fourier transforms of real 3d data
+  !> subroutine FFT3 performs normalized forward and
+  !! inverse fourier transforms of real 3d data
   !
-  ! USES
-  ! ctfft (Brenner, 1968) by default
-  ! fftw3 (Frigo & Jonhson) with preproc FFTW3 flag
-  ! scfft (SGI library) with preproc SGI_FFT flag
-  !
-  ! for real array the fourier transform returns a sx1/2+1 complex array
-  ! and the enough space must be reserved
+  !! USES
+  !! ctfft (Brenner, 1968) by default
+  !! fftw3 (Frigo & Jonhson) with preproc FFTW3 flag
+  !! scfft (SGI library) with preproc SGI_FFT flag
+  !! ctfft (Cooley-Tuckey) by default (slowest FFT)
+  !!
+  !! for real array the fourier transform returns a sx1/2+1 complex array
+  !! and the enough space must be reserved
   !----------------------------------------------------------------------
 #ifdef FFTW3
   !--------------------------------------------------------
@@ -323,16 +332,16 @@ CONTAINS
 #endif
 #endif
   !----------------------------------------------------------------------
-  ! subroutine FFT2 performs normalized forward and
-  ! inverse fourier transforms of real 2d data
-  !
-  ! USES subroutine FOURT
-  ! ctfft(data,n,ndim,isign,iform,work,nwork)
-  ! or
-  ! fftw3
-  !
-  ! for real array the fourier transform returns a sx1/2+1 complex array
-  ! and the enough space must be reserved
+  !> subroutine FFT2 performs normalized forward and
+  !! inverse fourier transforms of real 2d data
+  !!
+  !! USES subroutine FOURT
+  !! ctfft(data,n,ndim,isign,iform,work,nwork)
+  !! or
+  !! fftw3
+  !!
+  !! for real array the fourier transform returns a sx1/2+1 complex array
+  !! and the enough space must be reserved
   !----------------------------------------------------------------------
 #ifdef FFTW3
   SUBROUTINE fft2(data,sx1,sx2,dx1,dx2,direction)
@@ -479,14 +488,14 @@ CONTAINS
 #endif
 
   !-----------------------------------------------------------------
-  ! subroutine FFT1
-  ! performs a one dimensional complex to complex Fourier
-  ! transform
-  !
-  ! uses complex DFT ctfft (N. Brenner, 1968) by default
-  ! or CCFFT (SGI library) with compile flag SGI_FFT
-  !
-  ! sylvain barbot (05-02-07) - original form
+  !> subroutine FFT1
+  !! performs a one dimensional complex to complex Fourier
+  !! transform
+  !!
+  !! uses complex DFT ctfft (N. Brenner, 1968) by default
+  !! or CCFFT (SGI library) with compile flag SGI_FFT
+  !!
+  !! \author sylvain barbot (05-02-07) - original form
   !-----------------------------------------------------------------
 #ifdef SGI_FFT
   !------------------------------------------------------

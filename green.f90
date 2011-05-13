@@ -35,18 +35,18 @@ MODULE green
 CONTAINS
 
   !------------------------------------------------------------------------
-  ! Subroutine ElasticResponse
-  ! apply the 2d elastic (half-space) transfert function
-  ! to the set of body forces.
-  !
-  ! INPUT:
-  ! mu          shear modulus
-  ! f2          equivalent body-forces in the Fourier domain
-  ! sx1, sx3
-  !
-  ! sylvain barbot (04/14/07) - original form
-  !                (02/06/09) - parallel implementation with MPI and OpenMP
-  !                (01/06/11) - remove implementation with MPI
+  !> Subroutine ElasticResponse
+  !! apply the 2d elastic (half-space) transfert function
+  !! to the set of body forces.
+  !!
+  !! INPUT:
+  !! @param mu          shear modulus
+  !! @param f1,2,3      equivalent body-forces in the Fourier domain
+  !! @param dx1,2,3     sampling size
+  !!
+  !! \author sylvain barbot (04/14/07) - original form
+  !!                        (02/06/09) - parallel implementation with MPI and OpenMP
+  !!                        (01/06/11) - remove implementation with MPI
   !------------------------------------------------------------------------
   SUBROUTINE elasticresponse(lambda,mu,f1,f2,f3,dx1,dx2,dx3)
     REAL*8, INTENT(IN) :: lambda,mu,dx1,dx2,dx3
@@ -101,13 +101,13 @@ CONTAINS
   END SUBROUTINE elasticresponse
 
   !---------------------------------------------------------------------
-  ! subroutine SurfaceNormalTraction
-  ! computes the two-dimensional field of surface normal stress
-  ! expressed in the Fourier domain.
-  ! The surface (x3=0) solution is obtained by integrating over the
-  ! wavenumbers in 3-direction in the Fourier domain.
-  !
-  ! sylvain barbot (05-01-07) - original form
+  !> subroutine SurfaceNormalTraction
+  !! computes the two-dimensional field of surface normal stress
+  !! expressed in the Fourier domain.
+  !! The surface (x3=0) solution is obtained by integrating over the
+  !! wavenumbers in 3-direction in the Fourier domain.
+  !!
+  !! \author sylvain barbot (05-01-07) - original form
   !---------------------------------------------------------------------
   SUBROUTINE surfacenormaltraction(lambda, mu, u1, u2, u3, dx1, dx2, dx3, p)
     REAL*4, INTENT(IN), DIMENSION(:,:,:) :: u1, u2, u3
@@ -147,10 +147,10 @@ CONTAINS
   END SUBROUTINE surfacenormaltraction
 
   !---------------------------------------------------------------------
-  ! subroutine Boussinesq3D
-  ! computes the deformation field in the 3-dimensional grid
-  ! due to a normal stress at the surface. Apply the Fourier domain
-  ! solution of Steketee [1958].
+  !> subroutine Boussinesq3D
+  !! computes the deformation field in the 3-dimensional grid
+  !! due to a normal stress at the surface. Apply the Fourier domain
+  !! solution of Steketee [1958].
   !---------------------------------------------------------------------
   SUBROUTINE boussinesq3d(p,lambda,mu,u1,u2,u3,dx1,dx2,dx3)
     REAL*4, DIMENSION(:,:), INTENT(IN) :: p
@@ -206,14 +206,14 @@ CONTAINS
     
     CONTAINS
       !-----------------------------------------------------------------
-      ! subroutine SteketeeSolution
-      ! computes the spectrum (two-dimensional Fourier transform)
-      ! of the 3 components of the deformation field u1, u2, u3
-      ! at wavenumbers k1, k2 and position x3. This is the analytical
-      ! solution of [J. A. Steketee, On Volterra's dislocations in a
-      ! semi-infinite elastic medium, Canadian Journal of Physics, 1958]
-      !
-      ! sylvain barbot (05-02-07) - original form
+      !> subroutine SteketeeSolution
+      !! computes the spectrum (two-dimensional Fourier transform)
+      !! of the 3 components of the deformation field u1, u2, u3
+      !! at wavenumbers k1, k2 and position x3. This is the analytical
+      !! solution of [J. A. Steketee, On Volterra's dislocations in a
+      !! semi-infinite elastic medium, Canadian Journal of Physics, 1958]
+      !!
+      !! \author sylvain barbot (05-02-07) - original form
       !-----------------------------------------------------------------
       SUBROUTINE steketeesolution(p,alpha,u1,u2,u3,k1,k2,x3)
         COMPLEX, INTENT(INOUT) :: u1, u2, u3
@@ -245,14 +245,14 @@ CONTAINS
   END SUBROUTINE boussinesq3d
 
   !---------------------------------------------------------------------
-  ! subroutine SurfaceTraction
-  ! computes the two-dimensional field of surface normal stress
-  ! expressed in the Fourier domain.
-  ! The surface (x3=0) solution is obtained by integrating over the
-  ! wavenumbers in 3-direction in the Fourier domain.
-  !
-  ! sylvain barbot (07-07-07) - original form
-  !                (02-09-09) - parallelized with mpi and openmp
+  !> subroutine SurfaceTraction
+  !! computes the two-dimensional field of surface normal stress
+  !! expressed in the Fourier domain.
+  !! The surface (x3=0) solution is obtained by integrating over the
+  !! wavenumbers in 3-direction in the Fourier domain.
+  !!
+  !! \author sylvain barbot (07-07-07) - original form
+  !                         (02-09-09) - parallelized with mpi and openmp
   !---------------------------------------------------------------------
   SUBROUTINE surfacetraction(lambda,mu,u1,u2,u3,dx1,dx2,dx3,p1,p2,p3)
     REAL*4, INTENT(IN), DIMENSION(:,:,:) :: u1,u2,u3
@@ -308,21 +308,21 @@ CONTAINS
   END SUBROUTINE surfacetraction
 
   !---------------------------------------------------------------------
-  ! subroutine SurfaceTractionCowling
-  ! computes the two-dimensional field of the resulting traction 
-  ! expressed in the Fourier domain in the presence of gravity.
-  !
-  ! The surface solution (x3=0) is obtained from the Fourier domain 
-  ! array by integrating over the wavenumbers in 3-direction.
-  !
-  ! The effective traction at x3=0 is 
-  !
-  !     t_1 = sigma_13
-  !     t_2 = sigma_23
-  !     t_3 = sigma_33 - r g u3
-  !         = sigma_33 - 2 mu alpha gamma u3
-  !
-  ! sylvain barbot (07-07-07) - original form
+  !> subroutine SurfaceTractionCowling
+  !! computes the two-dimensional field of the resulting traction 
+  !! expressed in the Fourier domain in the presence of gravity.
+  !!
+  !! The surface solution (x3=0) is obtained from the Fourier domain 
+  !! array by integrating over the wavenumbers in 3-direction.
+  !!
+  !! The effective traction at x3=0 is 
+  !!
+  !!     t_1 = sigma_13
+  !!     t_2 = sigma_23
+  !!     t_3 = sigma_33 - r g u3
+  !!         = sigma_33 - 2 mu alpha gamma u3
+  !!
+  !! \author sylvain barbot (07-07-07) - original form
   !---------------------------------------------------------------------
   SUBROUTINE surfacetractioncowling(lambda,mu,gamma,u1,u2,u3,dx1,dx2,dx3, &
        p1,p2,p3)
@@ -377,11 +377,11 @@ CONTAINS
   END SUBROUTINE surfacetractioncowling
 
   !---------------------------------------------------------------------
-  ! subroutine Cerruti3D
-  ! computes the deformation field in the 3-dimensional grid
-  ! due to an arbitrary surface traction.
-  !
-  ! sylvain barbot (07/07/07) - original form
+  !> subroutine Cerruti3D
+  !! computes the deformation field in the 3-dimensional grid
+  !! due to an arbitrary surface traction.
+  !!
+  !! \author sylvain barbot (07/07/07) - original form
   !                (02/01/09) - parallelized with MPI and OpenMP
   !                (01/06/11) - remove parallelized version with MPI
   !---------------------------------------------------------------------
@@ -463,15 +463,15 @@ CONTAINS
 
     CONTAINS
       !-----------------------------------------------------------------
-      ! subroutine CerrutiSolution
-      ! computes the general solution for the deformation field in an
-      ! elastic half-space due to an arbitrary surface traction.
-      ! the 3 components u1, u2, u3 of the deformation field are
-      ! expressed in the horizontal Fourier at depth x3.
-      ! this combines the solution to the Boussinesq's and the Cerruti's
-      ! problem in a half-space.
-      !
-      ! sylvain barbot (07-07-07) - original form
+      !> subroutine CerrutiSolution
+      !! computes the general solution for the deformation field in an
+      !! elastic half-space due to an arbitrary surface traction.
+      !! the 3 components u1, u2, u3 of the deformation field are
+      !! expressed in the horizontal Fourier at depth x3.
+      !! this combines the solution to the Boussinesq's and the Cerruti's
+      !! problem in a half-space.
+      !!
+      !! \author sylvain barbot (07-07-07) - original form
       !-----------------------------------------------------------------
       SUBROUTINE cerrutisolution(mu,p1,p2,p3,alpha,u1,u2,u3,k1,k2,x3)
         COMPLEX(KIND=4), INTENT(INOUT) :: u1,u2,u3
@@ -518,14 +518,14 @@ CONTAINS
   END SUBROUTINE cerruti3d
 
   !---------------------------------------------------------------------
-  ! subroutine CerrutiCowling
-  ! computes the deformation field in the 3-dimensional grid
-  ! due to an arbitrary surface traction.
-  !
-  ! sylvain barbot - (07/07/07) - original form
-  !                  (21/11/08) - gravity effect
-  !                  (02/01/09) - parallelized with MPI and OpenMP
-  !                  (01/06/11) - remove parallelized version with MPI
+  !> subroutine CerrutiCowling
+  !! computes the deformation field in the 3-dimensional grid
+  !! due to an arbitrary surface traction.
+  !!
+  !! \author sylvain barbot - (07/07/07) - original form
+  !!                          (21/11/08) - gravity effect
+  !!                          (02/01/09) - parallelized with MPI and OpenMP
+  !!                          (01/06/11) - remove parallelized version with MPI
   !---------------------------------------------------------------------
   SUBROUTINE cerruticowling(p1,p2,p3,lambda,mu,gamma,u1,u2,u3,dx1,dx2,dx3)
     REAL*4, DIMENSION(:,:), INTENT(IN) :: p1,p2,p3
@@ -607,16 +607,16 @@ CONTAINS
     CONTAINS
 
       !-----------------------------------------------------------------
-      ! subroutine CerrutiSolCowling
-      ! computes the general solution for the deformation field in an
-      ! elastic half-space due to an arbitrary surface traction in the
-      ! presence of gravity.
-      !
-      ! The 3 components u1, u2 and u3 of the deformation field are 
-      ! expressed in the horizontal Fourier at depth x3. 
-      !
-      ! Combines the solution to the Boussinesq's and the Cerruti's 
-      ! problem in a half-space with buoyancy boundary conditions.
+      !> subroutine CerrutiSolCowling
+      !! computes the general solution for the deformation field in an
+      !! elastic half-space due to an arbitrary surface traction in the
+      !! presence of gravity.
+      !!
+      !! The 3 components u1, u2 and u3 of the deformation field are 
+      !! expressed in the horizontal Fourier at depth x3. 
+      !!
+      !! Combines the solution to the Boussinesq's and the Cerruti's 
+      !! problem in a half-space with buoyancy boundary conditions.
       !
       ! sylvain barbot (07-07-07) - original form
       !                (08-30-10) - account for net surface traction
@@ -672,9 +672,9 @@ CONTAINS
   END SUBROUTINE cerruticowling
 
   !---------------------------------------------------------------------
-  ! subroutine CerrutiCowlingSerial
-  ! computes the deformation field in the 3-dimensional grid
-  ! due to an arbitrary surface traction. No parallel version.
+  !> subroutine CerrutiCowlingSerial
+  !! computes the deformation field in the 3-dimensional grid
+  !! due to an arbitrary surface traction. No parallel version.
   !
   ! sylvain barbot - 07/07/07 - original form
   !                  21/11/08 - gravity effect
@@ -734,16 +734,16 @@ CONTAINS
     
   CONTAINS
     !-----------------------------------------------------------------
-    ! subroutine CerrutiSolCowling
-    ! computes the general solution for the deformation field in an
-    ! elastic half-space due to an arbitrary surface traction in the
-    ! presence of gravity.
-    !
-    ! The 3 components u1, u2 and u3 of the deformation field are 
-    ! expressed in the horizontal Fourier at depth x3. 
-    !
-    ! Combines the solution to the Boussinesq's and the Cerruti's 
-    ! problem in a half-space with buoyancy boundary conditions.
+    !> subroutine CerrutiSolCowling
+    !! computes the general solution for the deformation field in an
+    !! elastic half-space due to an arbitrary surface traction in the
+    !! presence of gravity.
+    !!
+    !! The 3 components u1, u2 and u3 of the deformation field are 
+    !! expressed in the horizontal Fourier at depth x3. 
+    !!
+    !! Combines the solution to the Boussinesq's and the Cerruti's 
+    !! problem in a half-space with buoyancy boundary conditions.
     !
     ! sylvain barbot (07-07-07) - original form
     !-----------------------------------------------------------------
@@ -794,17 +794,17 @@ CONTAINS
   END SUBROUTINE cerruticowlingserial
 
   !------------------------------------------------------------------
-  ! subroutine GreenFunction
-  ! computes (inplace) the displacement components due to a set of
-  ! 3-D body-forces by application of the semi-analytic Green's
-  ! function. The solution satisfies quasi-static Navier's equation
-  ! including vanishing of normal traction at the surface.
-  !
-  ! The surface traction can be made to vanish by application of
-  !   1) method of images + boussinesq problem (grn_method=GRN_IMAGE)
-  !   2) boussinesq's and cerruti's problems (grn_method=GRN_HS)
-  ! in the first case, the body-forces are supposed by have been
-  ! imaged appropriately.
+  !> subroutine GreenFunction
+  !! computes (inplace) the displacement components due to a set of
+  !! 3-D body-forces by application of the semi-analytic Green's
+  !! function. The solution satisfies quasi-static Navier's equation
+  !! including vanishing of normal traction at the surface.
+  !!
+  !! The surface traction can be made to vanish by application of
+  !!   1) method of images + boussinesq problem (grn_method=GRN_IMAGE)
+  !!   2) boussinesq's and cerruti's problems (grn_method=GRN_HS)
+  !! in the first case, the body-forces are supposed by have been
+  !! imaged appropriately.
   !
   ! sylvain barbot (07/07/07) - original form
   !------------------------------------------------------------------
@@ -867,30 +867,30 @@ CONTAINS
   END SUBROUTINE greenfunction
 
   !------------------------------------------------------------------
-  ! subroutine GreensFunctionCowling
-  ! computes (inplace) the displacement components due to a set of
-  ! 3-D body-forces by application of the semi-analytic Green's
-  ! function. The solution satisfies quasi-static Navier's equation
-  ! with buoyancy boundary condition to simulate the effect of 
-  ! gravity (the Cowling approximation).
-  !
-  ! the importance of gravity depends upon the density contrast rho 
-  ! at the surface, the acceleration of gravity g and the value of 
-  ! shear modulus mu in the crust. effect on the displacement field
-  ! is governed by the gradient
-  !
-  !            gamma = (1 - nu) rho g / mu
-  !                  = rho g / (2 mu alpha)
-  ! 
-  ! where nu is the Poisson's ratio. For a Poisson's solid with 
-  ! nu = 1/4, with a density contrast rho = 3200 kg/m^3 and a shear
-  ! modulus mu = 30 GPa, we have gamma = 0.8e-6 /m.
-  !
-  ! INPUT:
-  !   . c1,c2,c3    is a set of body forces
-  !   . dx1,dx2,dx3 are the sampling size
-  !   . lambda,mu   are the Lame elastic parameters
-  !   . gamma       is the gravity coefficient
+  !> subroutine GreensFunctionCowling
+  !! computes (inplace) the displacement components due to a set of
+  !! 3-D body-forces by application of the semi-analytic Green's
+  !! function. The solution satisfies quasi-static Navier's equation
+  !! with buoyancy boundary condition to simulate the effect of 
+  !! gravity (the Cowling approximation).
+  !!
+  !! the importance of gravity depends upon the density contrast rho 
+  !! at the surface, the acceleration of gravity g and the value of 
+  !! shear modulus mu in the crust. effect on the displacement field
+  !! is governed by the gradient
+  !!
+  !!            gamma = (1 - nu) rho g / mu
+  !!                  = rho g / (2 mu alpha)
+  !! 
+  !! where nu is the Poisson's ratio. For a Poisson's solid with 
+  !! nu = 1/4, with a density contrast rho = 3200 kg/m^3 and a shear
+  !! modulus mu = 30 GPa, we have gamma = 0.8e-6 /m.
+  !!
+  !! INPUT:
+  !!   @param c1,c2,c3    is a set of body forces
+  !!   @param dx1,dx2,dx3 are the sampling size
+  !!   @param lambda,mu   are the Lame elastic parameters
+  !!   @param gamma       is the gravity coefficient
   !
   ! sylvain barbot (07/07/07) - original function greenfunction
   !                (11/21/08) - effect of gravity

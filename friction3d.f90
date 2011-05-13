@@ -32,9 +32,9 @@ MODULE friction3d
 CONTAINS
 
   !-----------------------------------------------------------------
-  ! subroutine FrictionPlaneExpEigenStress
-  !
-  ! *** this function is deprecated ***
+  !> subroutine FrictionPlaneExpEigenStress
+  !!
+  !! *** this function is deprecated ***
   !
   ! compute the eigen-stress (forcing moment) to be relaxed by
   ! rate-dependent inelastic deformation in the case of a frictional
@@ -179,51 +179,51 @@ CONTAINS
   END SUBROUTINE frictionplaneeigenstress
 
   !-----------------------------------------------------------------
-  ! subroutine FrictionEigenStress
-  ! compute the eigen-stress (forcing moment) to be relaxed by
-  ! rate-dependent inelastic deformation in the case of a frictional
-  ! surface:
-  !
-  !        sigma^i = C:F:sigma
-  !
-  ! where C is the elastic moduli tensor, F is the heterogeneous
-  ! fluidity moduli tensor and sigma is the instantaneous stress
-  ! tensor. for a frictional surface, the eigenstrain-rate is given
-  ! by
-  !
-  !        epsilon^i^dot = F:sigma = gamma^dot R
-  !
-  ! where gamma^dot is the slip rate (a scalar) and R is the
-  ! deviatoric, symmetric, and unitary, tensor:
-  !
-  !        R_ij = 1/2 ( t_i n_j + t_j n_i ) / sqrt( t_j t_j )
-  !
-  ! where the shear traction t_i is the projection of the traction
-  ! vector on the plane surface. the strain amplitude is given by
-  !
-  !        gamma^dot = H( t_j r_j ) 2 vo sinh( taus / (t_c )
-  !
-  ! where taus is the effective shear on the fault plane,
-  !
-  !        taus = tau + mu*sigma
-  !
-  ! where tau is the shear and sigma the normal stress. tau and sigma
-  ! assumed to be the co-seismic change only, not the absolute
-  ! stress. vo is a reference slip velocity, and t_c, the critical
-  ! stress, corresponds to (a-b)*sigma in the framework of rate-and-
-  ! state friction. the effective viscosity eta* and the fluidity
-  !
-  !        eta* = tau / gamma^dot
-  !        fluidity = 1 / eta*
-  !
-  ! are used to compute the optimal time-step. H( x ) is the 
-  ! Heaviside function and r_i is the rake vector. I impose
-  ! gamma^dot to be zero is t_j r_j < 0. This constraint is
-  ! enforced to ensure that no back slip occurs on faults.
-  !
-  ! sylvain barbot (07/24/07) - original form
-  !                (02/28/11) - add constraints on the direction of 
-  !                             afterslip
+  !> subroutine FrictionEigenStress
+  !! compute the eigen-stress (forcing moment) to be relaxed by
+  !! rate-dependent inelastic deformation in the case of a frictional
+  !! surface:
+  !!
+  !!        sigma^i = C:F:sigma
+  !!
+  !! where C is the elastic moduli tensor, F is the heterogeneous
+  !! fluidity moduli tensor and sigma is the instantaneous stress
+  !! tensor. for a frictional surface, the eigenstrain-rate is given
+  !! by
+  !!
+  !!        epsilon^i^dot = F:sigma = gamma^dot R
+  !!
+  !! where gamma^dot is the slip rate (a scalar) and R is the
+  !! deviatoric, symmetric, and unitary, tensor:
+  !!
+  !!        R_ij = 1/2 ( t_i n_j + t_j n_i ) / sqrt( t_j t_j )
+  !!
+  !! where the shear traction t_i is the projection of the traction
+  !! vector on the plane surface. the strain amplitude is given by
+  !!
+  !!        gamma^dot = H( t_j r_j ) 2 vo sinh( taus / (t_c )
+  !!
+  !! where taus is the effective shear on the fault plane,
+  !!
+  !!        taus = tau + mu*sigma
+  !!
+  !! where tau is the shear and sigma the normal stress. tau and sigma
+  !! assumed to be the co-seismic change only, not the absolute
+  !! stress. vo is a reference slip velocity, and t_c, the critical
+  !! stress, corresponds to (a-b)*sigma in the framework of rate-and-
+  !! state friction. the effective viscosity eta* and the fluidity
+  !!
+  !!        eta* = tau / gamma^dot
+  !!        fluidity = 1 / eta*
+  !!
+  !! are used to compute the optimal time-step. H( x ) is the 
+  !! Heaviside function and r_i is the rake vector. I impose
+  !! gamma^dot to be zero is t_j r_j < 0. This constraint is
+  !! enforced to ensure that no back slip occurs on faults.
+  !!
+  !! \author sylvain barbot (07/24/07) - original form
+  !!                        (02/28/11) - add constraints on the direction
+  !!                                     of afterslip
   !-----------------------------------------------------------------
   SUBROUTINE frictioneigenstress(x,y,z,L,W,strike,dip,rake,beta, &
        sig,mu,structure,sx1,sx2,sx3,dx1,dx2,dx3,moment,maxwelltime,vel)
@@ -381,24 +381,24 @@ CONTAINS
   END SUBROUTINE frictioneigenstress
 
   !---------------------------------------------------------------------
-  ! function MonitorFriction
-  ! samples a scalar field along a specified planar surface.
-  !
-  ! input:
-  ! x,y,z       coordinates of the creeping segment
-  ! L           dimension of segment in the depth direction
-  ! W           dimension of segment in the strike direction
-  ! beta        smoothing factor
-  ! sx1,2,3     dimension of the stress tensor array
-  ! dx1,2,3     sampling size
-  ! sig         stress tensor array
-  ! structure   frictional properties as a function of depth
-  !
-  ! output:
-  ! patch       list of strike- and dip-slip as a function of position
-  !             on the fault.     
-  ! 
-  ! sylvain barbot (10-16-07) - original form
+  !> function MonitorFriction
+  !! samples a scalar field along a specified planar surface.
+  !!
+  !! input:
+  !! @param x,y,z       coordinates of the creeping segment
+  !! @param L           dimension of segment in the depth direction
+  !! @param W           dimension of segment in the strike direction
+  !! @param beta        smoothing factor
+  !! @param sx1,2,3     dimension of the stress tensor array
+  !! @param dx1,2,3     sampling size
+  !! @param sig         stress tensor array
+  !! @param structure   frictional properties as a function of depth
+  !!
+  !! output:
+  !! @param patch       list of strike- and dip-slip as a function of position
+  !!                    on the fault.     
+  !! 
+  !! \author sylvain barbot (10-16-07) - original form
   !---------------------------------------------------------------------
   SUBROUTINE monitorfriction(x,y,z,L,W,strike,dip,rake,beta, &
        sx1,sx2,sx3,dx1,dx2,dx3,sig,structure,patch)
