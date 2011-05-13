@@ -75,6 +75,10 @@ time ../relax $* <<EOF | tee output1/in.param
 # origin position & rotation
 0 0 0
 # geographic origin (longitude and latitude), UTM zone and real length unit (usually m or km)
+# displacements and stress are converted to lon/lat geographic coordinates
+# unit corresponds to a scaling from dx1,dx2,dx3 to real unit
+# use unit = 1   if dimensions are described in units of m
+# use unit = 1e3 if dimensions are described in units of km
 120 22 51 1e3
 # observation depth for displacement and for stress (stress in only exported in GRD)
 0 0.5
