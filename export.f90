@@ -1571,6 +1571,79 @@ END SUBROUTINE exportcreep
   END SUBROUTINE exportvtk_vectors
 
   !------------------------------------------------------------------
+  !> subroutine ExportVTK_Vectors_Legacy
+  !! creates a .vtk file in the VTK Legacy binary format with 
+  !! structured points containing a vector field.
+  !!
+  !! \author sylvain barbot 05/23/11 - original form
+  !------------------------------------------------------------------
+  SUBROUTINE exportvtk_vectors_legacy(u1,u2,u3,sx1,sx2,sx3,dx1,dx2,dx3, &
+                                      j1,j2,j3,vcfilename,title,name)
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3,j1,j2,j3
+#ifdef ALIGN_DATA
+    REAL*4, INTENT(IN), DIMENSION(sx1+2,sx2,sx3) :: u1,u2,u3
+#else
+    REAL*4, INTENT(IN), DIMENSION(sx1,sx2,sx3) :: u1,u2,u3
+#endif
+    REAL*8, INTENT(IN) :: dx1,dx2,dx3
+    CHARACTER(80), INTENT(IN) :: vcfilename,title,name
+
+    INTEGER :: iostatus,idum,i1,i2,i3
+    CHARACTER :: q,end_rec
+    CHARACTER(LEN=180) :: s_buffer
+    REAL*8 :: x1,x2,x3
+
+    ! double-quote character
+    q=char(34)
+    ! end-character for binary-record finalize
+    end_rec=char(10)
+
+    ! open file for mixed binary/ascii writing in VTK legacy format
+    OPEN(UNIT=15,FILE=vcfilename,form='UNFORMATTED',ACCESS='SEQUENTIAL', &
+         ACTION='WRITE',CONVERT='BIG_ENDIAN',RECORDTYPE='STREAM', &
+         BUFFERED='YES',IOSTAT=iostatus)
+    IF (iostatus>0) THEN
+       WRITE_DEBUG_INFO
+       PRINT '(a)', vcfilename
+       STOP "could not open file in mixed binary/ascii for export in legacy format"
+    END IF
+
+    ! writing header of file (INIT)
+    WRITE(UNIT=15,IOSTAT=iostatus) '# vtk DataFile Version 3.0'//end_rec
+    WRITE(UNIT=15,IOSTAT=iostatus) TRIM(title)//end_rec
+    WRITE(UNIT=15,IOSTAT=iostatus) 'BINARY'//end_rec
+    WRITE(UNIT=15,IOSTAT=iostatus) 'DATASET '//'STRUCTURED_POINTS'//end_rec
+
+    ! structured points grid (GEO)
+    WRITE(s_buffer,FMT='(A,3I12)',IOSTAT=iostatus) 'DIMENSIONS ',sx1/j1,sx2/j2,sx3/j3
+    WRITE(UNIT=15,IOSTAT=iostatus) TRIM(s_buffer)//end_rec
+    WRITE(s_buffer,FMT='(A,3E14.6E2)',IOSTAT=iostatus) 'ORIGIN ',-dx1*(sx1/2),-dx2*(sx2/2),0.d0
+    WRITE(UNIT=15,IOSTAT=iostatus) TRIM(s_buffer)//end_rec
+    WRITE(s_buffer,FMT='(A,3E14.6E2)',IOSTAT=iostatus) 'SPACING ',dx1*j1,dx2*j2,dx3*j3
+    WRITE(UNIT=15,IOSTAT=iostatus) TRIM(s_buffer)//end_rec
+
+    ! data header for this grid (DAT)
+    WRITE(s_buffer,FMT='(A,I12)',IOSTAT=iostatus) 'POINT_DATA ', (sx1/j1)*(sx2/j2)*(sx3/j3)
+    WRITE(UNIT=15,IOSTAT=iostatus) TRIM(s_buffer)//end_rec
+
+    ! data array (VAR)
+    WRITE(UNIT=15,IOSTAT=iostatus) 'VECTORS '//TRIM(name)//' float'//end_rec
+    DO x3=0,sx3-1,j3
+       DO x2=-sx2/2,sx2/2-1,j2
+          DO x1=-sx1/2,sx1/2-1,j1
+             CALL shiftedindex(x1,x2,1._8,sx1,sx2,sx3,1._8,1._8,1._8,i1,i2,idum)
+             WRITE (UNIT=15,IOSTAT=iostatus) REAL(u1(i1,i2,x3+1)),REAL(u2(i1,i2,x3+1)),REAL(u3(i1,i2,x3+1))
+          END DO
+       END DO
+    END DO
+    WRITE(UNIT=15,IOSTAT=iostatus) end_rec
+
+    ! close binary file (END)
+    CLOSE(15)
+
+  END SUBROUTINE exportvtk_vectors_legacy
+
+  !------------------------------------------------------------------
   !> subroutine ExportVTK_Vectors_Slice
   !! creates a .vtr file (in the VTK Rectilinear XML format) 
   !! containing a vector field.

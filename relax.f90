@@ -181,6 +181,7 @@
   !!   - homogenize VTK output so that geometry of events match event index
   !!   - evaluate Green function, stress and body forces in GPU
   !!   - create a ./configure ./install framework
+  !!   - input a list of planes to compute Coulomb stress
   !------------------------------------------------------------------------
 PROGRAM relax
 
@@ -207,7 +208,7 @@ PROGRAM relax
   REAL*8 :: maxwell(3)
   TYPE(SIMULATION_STRUC) :: in
 #ifdef VTK
-  CHARACTER(80) :: vcfilename
+  CHARACTER(80) :: vcfilename,title,name
   CHARACTER(3) :: digit
 #endif
   REAL*8 :: t,Dt,tm
@@ -356,8 +357,13 @@ PROGRAM relax
 #endif
 #ifdef VTK
   IF (in%isoutputvtk) THEN
-     vcfilename=trim(in%wdir)//"/disp-000.vtr"
-     CALL exportvtk_vectors(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,vcfilename)
+     !vcfilename=trim(in%wdir)//"/disp-000.vtr"
+     !CALL exportvtk_vectors(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,vcfilename)
+     vcfilename=trim(in%wdir)//"/disp-000.vtk"
+     title="coseismic displacement vector field"
+     name="displacement"
+     CALL exportvtk_vectors_legacy(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
+                                   4,4,8,vcfilename,title,name)
      !CALL exportvtk_vectors_slice(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,vcfilename)
   END IF
 #endif
@@ -546,8 +552,13 @@ PROGRAM relax
 #ifdef VTK_EQBF
         IF (in%isoutputvtk) THEN
            WRITE (digit,'(I3.3)') oi
-           vcfilename=trim(in%wdir)//"/eqbf-"//digit//".vtr"
-           CALL exportvtk_vectors(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,vcfilename)
+           !vcfilename=trim(in%wdir)//"/eqbf-"//digit//".vtr"
+           !CALL exportvtk_vectors(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,vcfilename)
+           vcfilename=trim(in%wdir)//"/eqbf-"//digit//".vtk"
+           title="instantaneous equivalent body-force rate vector field"
+           name="body-force-rate"
+           CALL exportvtk_vectors_legacy(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
+                                         4,4,8,vcfilename,title,name)
         END IF
 #endif
 #ifdef GRD_EQBF
@@ -646,13 +657,23 @@ PROGRAM relax
         IF (in%isoutputvtk) THEN
            WRITE (digit,'(I3.3)') oi
            ! export total displacement in VTK XML format
-           vcfilename=trim(in%wdir)//"/disp-"//digit//".vtr"
-           CALL exportvtk_vectors(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,vcfilename)
+           !vcfilename=trim(in%wdir)//"/disp-"//digit//".vtr"
+           !CALL exportvtk_vectors(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,vcfilename)
+           vcfilename=trim(in%wdir)//"/disp-"//digit//".vtk"
+           title="cumulative displacement vector field"
+           name="displacement"
+           CALL exportvtk_vectors_legacy(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
+                                         4,4,8,vcfilename,title,name)
            !CALL exportvtk_vectors_slice(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,vcfilename)
 
            ! export instantaneous velocity in VTK XML format
-           vcfilename=trim(in%wdir)//"/vel-"//digit//".vtr"
-           CALL exportvtk_vectors(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,vcfilename)
+           !vcfilename=trim(in%wdir)//"/vel-"//digit//".vtr"
+           !CALL exportvtk_vectors(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,vcfilename)
+           vcfilename=trim(in%wdir)//"/vel-"//digit//".vtk"
+           title="instantaneous velocity vector field"
+           name="velocity"
+           CALL exportvtk_vectors_legacy(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
+                                         8,8,16,vcfilename,title,name)
            !CALL exportvtk_vectors_slice(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,vcfilename)
         END IF
 #endif

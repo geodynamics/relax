@@ -3,7 +3,7 @@
 # nonlinear viscoelastic relaxation (power exponent n=3)
 # following slip on a strike-slip fault
 #
-# output every computational step (Dt = -2). 
+# output every two computational steps (Dt = -2). 
 # The time step is computed automatically and the value unchanged (scale = 1)
 #
 # to visualize coseismic deformation (requires GRD output, or manual conversion to GRD format):
@@ -37,7 +37,7 @@ $WDIR
 # elastic parameters and gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
 1 1 8.33e-4
 # integration time (t1)
-50 -2 1
+100 -2 1
 # number of observation planes
 0
 # number of observation points
@@ -63,7 +63,7 @@ $WDIR
 # number of shear dislocations
 1
 # index slip x1 x2 x3 length width strike dip rake
-      1    1  1  0  0      2     1      0  90    0
+      1    1 -1  0  0      2     1      0  90    0
 # number of tensile cracks
 0
 # number of dilatation sources
