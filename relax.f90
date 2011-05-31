@@ -158,22 +158,22 @@
   !!
   !! MODIFICATIONS:
   !! \author Sylvain Barbot 
-  !! (07-06-07) - original form
+  !! (07-06-07) - original form                                    <br>
   !! (08-28-08) - FFTW/SGI_FFT support, FIR derivatives,
   !!              Runge-Kutta integration, tensile cracks,
-  !!              GMT output, comments in input file
+  !!              GMT output, comments in input file               <br>
   !! (10-24-08) - interseismic loading, postseismic signal
-  !!              output in separate files
-  !! (12-08-09) - slip distribution smoothing
+  !!              output in separate files                         <br>
+  !! (12-08-09) - slip distribution smoothing                      <br>
   !! (05-05-10) - lateral variations in viscous properties
-  !!              Intel MKL implementation of the FFT
+  !!              Intel MKL implementation of the FFT              <br>
   !! (06-04-10) - output in geographic coordinates
-  !!              and output components of stress tensor
+  !!              and output components of stress tensor           <br>
   !! (07-19-10) - includes surface tractions initial condition
-  !!              output geometry in VTK format for Paraview
+  !!              output geometry in VTK format for Paraview       <br>
   !! (02-28-11) - add constraints on the broad direction of 
   !!              afterslip, export faults to GMT xy format
-  !!              and allow scaling of computed time steps.
+  !!              and allow scaling of computed time steps.        <br>
   !! (04-26-11) - include command-line arguments
   !!
   !! \todo 
@@ -182,6 +182,8 @@
   !!   - evaluate Green function, stress and body forces in GPU
   !!   - create a ./configure ./install framework
   !!   - input a list of planes to compute Coulomb stress
+  !!   - export a .xy list of observation points with names 
+  !!   - fix output index
   !------------------------------------------------------------------------
 PROGRAM relax
 
@@ -400,13 +402,23 @@ PROGRAM relax
 #ifdef GRD
         IF (in%isoutputgrd .AND. in%isoutputstress) THEN
            CALL exportstressgrd(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                in%ozs,in%x0,in%y0,in%wdir,i-1)
+                                in%ozs,in%x0,in%y0,in%wdir,oi-1)
         END IF
 #endif
 #ifdef PROJ
         IF (in%isoutputproj .AND. in%isoutputstress) THEN
            CALL exportstressproj(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%ozs, &
-                                 in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,i-1)
+                                 in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,oi-1)
+        END IF
+#endif
+#ifdef VTK
+        IF (in%isoutputvtk) THEN
+           WRITE (digit,'(I3.3)') oi-1
+           vcfilename=trim(in%wdir)//"/sigma-"//digit//".vtk"
+           title="stress tensor field"
+           name="stress"
+           CALL exportvtk_tensors_legacy(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
+                                         4,4,8,vcfilename,title,name)
         END IF
 #endif
      END IF
@@ -451,6 +463,17 @@ PROGRAM relax
         END DO
         mech(3)=1
      END IF
+
+#ifdef VTK
+     IF (in%isoutputvtk) THEN
+        WRITE (digit,'(I3.3)') oi-1
+        vcfilename=trim(in%wdir)//"/power-"//digit//".vtk"
+        title="stress rate tensor field"
+        name="power"
+        CALL exportvtk_tensors_legacy(moment,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
+                                      4,4,8,vcfilename,title,name)
+     END IF
+#endif
 
      ! identify the required time step
      tm=1._8/(REAL(mech(1))/maxwell(1)+ &
