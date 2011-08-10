@@ -351,6 +351,10 @@ CONTAINS
           END IF
        END DO
 
+       ! export the lits of observation points for display
+       filename=trim(in%wdir)//"/opts.dat"
+       CALL exportoptsdat(in%npts,in%opts,in%ptsname,filename)
+
     END IF
 
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

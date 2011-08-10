@@ -542,6 +542,40 @@ CONTAINS
   END SUBROUTINE exportpoints
 
   !---------------------------------------------------------------------
+  !> subroutine exportoptsdat
+  !! export the coordinates and name of the observation points (often
+  !! coordinates of GPS instruments or such) for display with GMT in the
+  !! ASCII format. The file contains a list of x1,x2,x3 coordinates and
+  !! a 4-character name string.
+  !!
+  !! input variables
+  !! @param n          - number of observation points
+  !! @param opts       - coordinates of observation points
+  !! @param ptsname    - name of obs. points
+  !! @param filename   - output file (example: wdir/opts.xy)
+  !!
+  !! \author sylvain barbot (08/10/11) - original form
+  !---------------------------------------------------------------------
+  SUBROUTINE exportoptsdat(n,opts,ptsname,filename)
+    INTEGER, INTENT(IN) :: n
+    TYPE(VECTOR_STRUCT), DIMENSION(n) :: opts
+    CHARACTER(LEN=4), DIMENSION(n) :: ptsname
+    CHARACTER(80) :: filename
+
+    INTEGER :: k,iostatus
+
+    IF (n.LE.0) RETURN
+
+    OPEN (UNIT=15,FILE=filename,IOSTAT=iostatus,FORM="FORMATTED")
+    IF (iostatus>0) STOP "could not open .xy file to export observation points"
+    DO k=1,n
+       WRITE (15,'(3ES11.4E1,X,a)') opts(k)%v1,opts(k)%v2,opts(k)%v3,ptsname(k)
+    END DO
+    CLOSE(15)
+    
+  END SUBROUTINE exportoptsdat
+    
+  !---------------------------------------------------------------------
   !> subroutine exportEigenstrain
   !! samples the value of an input scalar field at the location of 
   !! defined plane (position, strike, dip, length and width).

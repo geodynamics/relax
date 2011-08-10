@@ -182,7 +182,6 @@
   !!   - evaluate Green function, stress and body forces in GPU
   !!   - create a ./configure ./install framework
   !!   - input a list of planes to compute Coulomb stress
-  !!   - export a .xy list of observation points with names 
   !!   - fix output index
   !------------------------------------------------------------------------
 PROGRAM relax
