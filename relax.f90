@@ -412,8 +412,8 @@ PROGRAM relax
         END IF
 #endif
 #ifdef VTK
+        WRITE (digit4,'(I4.4)') oi-1
         IF (in%isoutputvtk) THEN
-           WRITE (digit4,'(I4.4)') oi-1
            filename=trim(in%wdir)//"/sigma-"//digit4//".vtk"
            title="stress tensor field"
            name="stress"
