@@ -177,7 +177,6 @@
   !! (04-26-11) - include command-line arguments
   !!
   !! \todo 
-  !!   - export VTK in binary instead of ascii format
   !!   - homogenize VTK output so that geometry of events match event index
   !!   - evaluate Green function, stress and body forces in GPU
   !!   - create a ./configure ./install framework
