@@ -48,10 +48,10 @@ CONTAINS
 
     CHARACTER :: ch
     CHARACTER(180) :: dataline
-    CHARACTER(80) :: inputfilename
-    CHARACTER(80) :: rffilename,cgfilename
+    CHARACTER(80) :: rffilename,filename
 #ifdef VTK
     CHARACTER(3) :: digit
+    CHARACTER(4) :: digit4
 #endif
     INTEGER :: iunit
 !$  INTEGER :: omp_get_num_procs,omp_get_max_threads
@@ -237,7 +237,6 @@ CONTAINS
 
     in%reporttimefilename=trim(in%wdir)//"/time.txt"
     in%reportfilename=trim(in%wdir)//"/report.txt"
-    inputfilename=trim(in%wdir)//"/relax.inp"
 #ifdef TXT
     PRINT '(" ",a," (report: ",a,")")', trim(in%wdir),trim(in%reportfilename)
 #else
@@ -256,9 +255,8 @@ CONTAINS
     ! end test
 
 #ifdef VTK
-    cgfilename=trim(in%wdir)//"/cgrid.vtp"
-    CALL exportvtk_grid(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                        in%x0,in%y0,cgfilename)
+    filename=trim(in%wdir)//"/cgrid.vtp"
+    CALL exportvtk_grid(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,filename)
 #endif
 
     PRINT '(a)', "lambda, mu, gamma (gamma = (1 - nu) rho g / mu)"
@@ -352,6 +350,61 @@ CONTAINS
              STOP 1
           END IF
        END DO
+
+    END IF
+
+    ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    !   C O U L O M B      O B S E R V A T I O N      S E G M E N T S
+    ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    PRINT '(a)', "number of stress observation segments"
+    CALL getdata(iunit,dataline)
+    READ  (dataline,*) in%nsop
+    PRINT '(I5)', in%nsop
+    IF (in%nsop .gt. 0) THEN
+       ALLOCATE(in%sop(in%nsop),STAT=iostatus)
+       IF (iostatus>0) STOP "could not allocate the segment list"
+       PRINT 2000
+       PRINT '(a)',"no.        xs       ys       zs  length   width strike   dip friction"
+       PRINT 2000
+       DO k=1,in%nsop
+          CALL getdata(iunit,dataline)
+          READ (dataline,*) i, &
+               in%sop(k)%x,in%sop(k)%y,in%sop(k)%z, &
+               in%sop(k)%length,in%sop(k)%width, &
+               in%sop(k)%strike,in%sop(k)%dip,in%sop(k)%friction
+          in%sop(k)%sig0=TENSOR(0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
+
+          PRINT '(I4.4,3ES9.2E1,2ES8.2E1,f7.1,f6.1,f7.1)',i, &
+               in%sop(k)%x,in%sop(k)%y,in%sop(k)%z, &
+               in%sop(k)%length,in%sop(k)%width, &
+               in%sop(k)%strike,in%sop(k)%dip, &
+               in%sop(k)%friction
+             
+          IF (i .ne. k) THEN
+             WRITE_DEBUG_INFO
+             WRITE (0,'("invalid segment definition ")')
+             WRITE (0,'("error in input file: source index misfit")')
+             STOP 1
+          END IF
+          IF (MAX(in%sop(k)%length,in%sop(k)%width) .LE. 0._8) THEN
+             WRITE_DEBUG_INFO
+             WRITE (0,'("error in input file: length and width must be positive.")')
+             STOP 1
+          END IF
+
+          ! comply to Wang's convention
+          CALL wangconvention(dummy, &
+                     in%sop(k)%x,in%sop(k)%y,in%sop(k)%z, &
+                     in%sop(k)%length,in%sop(k)%width, &
+                     in%sop(k)%strike,in%sop(k)%dip, &
+                     dummy, &
+                     in%x0,in%y0,in%rot)
+       END DO
+
+       ! export patches to vtk/vtp
+       filename=trim(in%wdir)//"/rfaults-dsigma-0000.vtp"
+       CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
+                                     in%nsop,in%sop,filename,convention=1)
 
     END IF
 
@@ -682,9 +735,9 @@ CONTAINS
 
 #ifdef VTK
              ! export the afterslip segment in VTK format
-             WRITE (digit,'(I3.3)') k
+             WRITE (digit4,'(I4.4)') k
 
-             rffilename=trim(in%wdir)//"/aplane-"//digit//".vtp"
+             rffilename=trim(in%wdir)//"/aplane-"//digit4//".vtp"
              CALL exportvtk_rectangle(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
                                       in%n(k)%length,in%n(k)%width, &
                                       in%n(k)%strike,in%n(k)%dip,rffilename)

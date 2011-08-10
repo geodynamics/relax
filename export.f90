@@ -962,9 +962,9 @@ END SUBROUTINE exportcreep
   !!
   !! \author sylvain barbot 06/24/09 - original form
   !------------------------------------------------------------------
-  SUBROUTINE exportvtk_grid(sx1,sx2,sx3,dx1,dx2,dx3,origx,origy,cgfilename)
+  SUBROUTINE exportvtk_grid(sx1,sx2,sx3,dx1,dx2,dx3,cgfilename)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
-    REAL*8, INTENT(IN) :: dx1,dx2,dx3,origx,origy
+    REAL*8, INTENT(IN) :: dx1,dx2,dx3
     CHARACTER(80), INTENT(IN) :: cgfilename
 
     INTEGER :: iostatus
@@ -1220,6 +1220,241 @@ END SUBROUTINE exportcreep
     CLOSE(15)
 
   END SUBROUTINE exportvtk_rfaults
+
+  !------------------------------------------------------------------
+  !> subroutine ExportVTK_RFaults_Stress_Init
+  !! creates a .vtp file (in the VTK PolyData XML format) containing
+  !! the rectangular faults. The faults are characterized with a set
+  !! of subsegments (rectangles) each associated with stress values. 
+  !!
+  !! \author sylvain barbot 06/06/11 - original form
+  !------------------------------------------------------------------
+  SUBROUTINE exportvtk_rfaults_stress_init(sig,sx1,sx2,sx3,dx1,dx2,dx3, &
+                                           nsop,sop)
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3,nsop
+    TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
+    REAL*8, INTENT(IN) :: dx1,dx2,dx3
+    TYPE(SEGMENT_STRUCT), INTENT(INOUT), DIMENSION(nsop) :: sop
+
+    INTEGER :: k,i1,i2,i3
+    REAL*8 :: x1,x2,x3
+    ! local value of stress
+    TYPE(TENSOR) :: lsig
+
+    DO k=1,nsop
+       ! fault center position
+       x1=sop(k)%x
+       x2=sop(k)%y
+       x3=sop(k)%z
+
+       CALL shiftedindex(x1,x2,x3,sx1,sx2,sx3,dx1,dx2,dx3,i1,i2,i3)
+       lsig=sig(i1,i2,i3)
+
+       sop(k)%sig0%s11=lsig%s11
+       sop(k)%sig0%s12=lsig%s12
+       sop(k)%sig0%s13=lsig%s13
+       sop(k)%sig0%s22=lsig%s22
+       sop(k)%sig0%s23=lsig%s23
+       sop(k)%sig0%s33=lsig%s33
+
+    END DO
+
+  END SUBROUTINE exportvtk_rfaults_stress_init
+
+  !------------------------------------------------------------------
+  !> subroutine ExportVTK_RFaults_Stress
+  !! creates a .vtp file (in the VTK PolyData XML format) containing
+  !! the rectangular faults. The faults are characterized with a set
+  !! of subsegments (rectangles) each associated with stress values. 
+  !!
+  !! \author sylvain barbot 06/06/11 - original form
+  !------------------------------------------------------------------
+  SUBROUTINE exportvtk_rfaults_stress(sx1,sx2,sx3,dx1,dx2,dx3, &
+                          nsop,sop,rffilename,convention,sig)
+    USE elastic3d
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3,nsop
+    REAL*8, INTENT(IN) :: dx1,dx2,dx3
+    TYPE(SEGMENT_STRUCT), INTENT(INOUT), DIMENSION(nsop) :: sop
+    CHARACTER(80), INTENT(IN) :: rffilename
+    INTEGER, INTENT(IN), OPTIONAL :: convention
+    TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3), OPTIONAL :: sig
+
+    INTEGER :: iostatus,k,i1,i2,i3,conv
+    CHARACTER :: q
+    REAL*8 :: strike,dip,x1,x2,x3,cstrike,sstrike,cdip,sdip,L,W
+    ! segment normal vector, strike direction, dip direction
+    REAL*8, DIMENSION(3) :: n,s,d
+    ! local value of stress
+    TYPE(TENSOR) :: lsig
+    ! stress components
+    REAL*8 :: taun,taus,taustrike,taudip,taucoulomb
+    ! friction coefficient
+    REAL*8 :: friction
+    ! traction components
+    REAL*8, DIMENSION(3) :: t,ts
+
+    ! double-quote character
+    q=char(34)
+
+    IF (PRESENT(convention)) THEN
+       conv=convention
+    ELSE
+       conv=0
+    END IF
+
+    OPEN (UNIT=15,FILE=rffilename,IOSTAT=iostatus,FORM="FORMATTED")
+    IF (iostatus>0) THEN
+       WRITE_DEBUG_INFO
+       PRINT '(a)', rffilename
+       STOP "could not open file for export"
+    END IF
+
+    WRITE (15,'("<?xml version=",a,"1.0",a,"?>")') q,q
+    WRITE (15,'("<VTKFile type=",a,"PolyData",a," version=",a,"0.1",a,">")') q,q,q,q
+    WRITE (15,'("  <PolyData>")')
+
+    DO k=1,nsop
+       ! friction coefficient
+       friction=sop(k)%friction
+
+       ! fault orientation
+       strike=sop(k)%strike
+       dip=sop(k)%dip
+
+       ! fault center position
+       x1=sop(k)%x
+       x2=sop(k)%y
+       x3=sop(k)%z
+
+       IF (PRESENT(sig)) THEN
+
+          CALL shiftedindex(x1,x2,x3,sx1,sx2,sx3,dx1,dx2,dx3,i1,i2,i3)
+          lsig=sig(i1,i2,i3)
+
+          IF (1.EQ.conv) THEN
+             lsig%s11=lsig%s11-sop(k)%sig0%s11
+             lsig%s12=lsig%s12-sop(k)%sig0%s12
+             lsig%s13=lsig%s13-sop(k)%sig0%s13
+             lsig%s22=lsig%s22-sop(k)%sig0%s22
+             lsig%s23=lsig%s23-sop(k)%sig0%s23
+             lsig%s33=lsig%s33-sop(k)%sig0%s33
+          END IF
+       ELSE
+          lsig=TENSOR(0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
+       END IF
+
+       ! fault dimension
+       W=sop(k)%width
+       L=sop(k)%length
+
+       cstrike=cos(strike)
+       sstrike=sin(strike)
+       cdip=cos(dip)
+       sdip=sin(dip)
+ 
+       ! surface normal vector components
+       n(1)=+cdip*cstrike
+       n(2)=-cdip*sstrike
+       n(3)=-sdip
+
+       ! strike-slip unit direction
+       s(1)=sstrike
+       s(2)=cstrike
+       s(3)=0._8
+
+       ! dip-slip unit direction
+       d(1)=+cstrike*sdip
+       d(2)=-sstrike*sdip
+       d(3)=+cdip
+
+       ! traction vector
+       t=lsig .tdot. n
+
+       ! signed normal component
+       taun=SUM(t*n)
+
+       ! shear traction
+       ts=t-taun*n
+
+       ! absolute value of shear component
+       taus=SQRT(SUM(ts*ts))
+
+       ! strike-direction shear component
+       taustrike=SUM(ts*s)
+
+       ! dip-direction shear component
+       taudip=SUM(ts*d)
+
+       ! Coulomb stress 
+       taucoulomb=taus+friction*taun
+
+       WRITE (15,'("    <Piece NumberOfPoints=",a,"4",a," NumberOfPolys=",a,"1",a,">")'),q,q,q,q
+       WRITE (15,'("      <Points>")')
+       WRITE (15,'("        <DataArray type=",a,"Float32",a, &
+                            " Name=",a,"Fault Patch",a, &
+                            " NumberOfComponents=",a,"3",a, &
+                            " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
+       ! fault edge coordinates
+       WRITE (15,'(12ES11.2)') &
+                     x1-d(1)*W/2-s(1)*L/2,x2-d(2)*W/2-s(2)*L/2,x3-d(3)*W/2-s(3)*L/2, &
+                     x1-d(1)*W/2+s(1)*L/2,x2-d(2)*W/2+s(2)*L/2,x3-d(3)*W/2+s(3)*L/2, &
+                     x1+d(1)*W/2+s(1)*L/2,x2+d(2)*W/2+s(2)*L/2,x3+d(3)*W/2+s(3)*L/2, &
+                     x1+d(1)*W/2-s(1)*L/2,x2+d(2)*W/2-s(2)*L/2,x3+d(3)*W/2-s(3)*L/2
+       WRITE (15,'("        </DataArray>")')
+
+       WRITE (15,'("      </Points>")')
+       WRITE (15,'("      <Polys>")')
+       WRITE (15,'("        <DataArray type=",a,"Int32",a, &
+                             " Name=",a,"connectivity",a, &
+                             " format=",a,"ascii",a, &
+                             " RangeMin=",a,"0",a, &
+                             " RangeMax=",a,"3",a,">")'), q,q,q,q,q,q,q,q,q,q
+       WRITE (15,'("0 1 2 3")')
+       WRITE (15,'("        </DataArray>")')
+       WRITE (15,'("        <DataArray type=",a,"Int32",a, &
+                                  " Name=",a,"offsets",a, &
+                                  " format=",a,"ascii",a, &
+                                  " RangeMin=",a,"4",a, &
+                                  " RangeMax=",a,"4",a,">")'), q,q,q,q,q,q,q,q,q,q
+       WRITE (15,'("          4")')
+       WRITE (15,'("        </DataArray>")')
+       WRITE (15,'("      </Polys>")')
+
+       WRITE (15,'("      <CellData Normals=",a,"stress",a,">")'), q,q
+
+       WRITE (15,'("        <DataArray type=",a,"Float32",a, &
+                           	" Name=",a,"stress tensor",a, &
+                                " NumberOfComponents=",a,"6",a, &
+                                " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+       WRITE (15,'(6ES11.2)'), lsig%s11,lsig%s12,lsig%s13,lsig%s22,lsig%s23,lsig%s33
+       WRITE (15,'("        </DataArray>")')
+
+       WRITE (15,'("        <DataArray type=",a,"Float32",a, &
+                           	" Name=",a,"shear stress",a, &
+                                " NumberOfComponents=",a,"1",a, &
+                                " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+       WRITE (15,'(ES11.2)'), taus
+       WRITE (15,'("        </DataArray>")')
+
+       WRITE (15,'("        <DataArray type=",a,"Float32",a, &
+                           	" Name=",a,"normal stress",a, &
+                                " NumberOfComponents=",a,"1",a, &
+                                " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+       WRITE (15,'(ES11.2)'), taun
+       WRITE (15,'("        </DataArray>")')
+
+       WRITE (15,'("      </CellData>")')
+
+       WRITE (15,'("    </Piece>")')
+
+    END DO
+
+    WRITE (15,'("  </PolyData>")')
+    WRITE (15,'("</VTKFile>")')
+
+    CLOSE(15)
+
+  END SUBROUTINE exportvtk_rfaults_stress
 
   !------------------------------------------------------------------
   !> subroutine ExportVTK_Rectangle
@@ -1588,7 +1823,7 @@ END SUBROUTINE exportcreep
     REAL*8, INTENT(IN) :: dx1,dx2,dx3
     CHARACTER(80), INTENT(IN) :: vcfilename,title,name
 
-    INTEGER :: iostatus,idum,i1,i2,i3
+    INTEGER :: iostatus,idum,i1,i2
     CHARACTER :: q,end_rec
     CHARACTER(LEN=180) :: s_buffer
     REAL*8 :: x1,x2,x3
@@ -1657,7 +1892,7 @@ END SUBROUTINE exportcreep
     REAL*8, INTENT(IN) :: dx1,dx2,dx3
     CHARACTER(80), INTENT(IN) :: vcfilename,title,name
 
-    INTEGER :: iostatus,idum,i1,i2,i3
+    INTEGER :: iostatus,idum,i1,i2
     CHARACTER :: q,end_rec
     CHARACTER(LEN=180) :: s_buffer
     REAL*8 :: x1,x2,x3

@@ -34,7 +34,7 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time ../relax --no-proj-output --no-stress-output $* <<EOF | tee output3/in.param
+time ../relax --no-proj-output --no-stress-output $* <<EOF | tee $WDIR/in.param
 # grid size (sx1,sx2,sx3)
 256 256 256 
 # sampling size, smoothing & nyquist (dx1,dx2,dx3,beta,nq)
@@ -59,13 +59,15 @@ $WDIR
 0
 # number of observation points
 0
+# number of Coulomb patches
+0
 # number of prestress interfaces
 0
 # number of linear viscous interfaces
 0
 # number of powerlaw viscous interfaces
 0
-# number of friction faults
+# number of friction interfaces
 1
 # no    depth   gamma0 (a-b)sig friction cohesion
    1       1      1e3      1e3      0.6        0

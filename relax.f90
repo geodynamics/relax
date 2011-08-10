@@ -210,8 +210,9 @@ PROGRAM relax
   REAL*8 :: maxwell(3)
   TYPE(SIMULATION_STRUC) :: in
 #ifdef VTK
-  CHARACTER(80) :: vcfilename,title,name
+  CHARACTER(80) :: filename,title,name
   CHARACTER(3) :: digit
+  CHARACTER(4) :: digit4
 #endif
   REAL*8 :: t,Dt,tm
   
@@ -321,7 +322,8 @@ PROGRAM relax
   ! test the presence of dislocations for coseismic calculation
   IF ((in%events(e)%nt .NE. 0) .OR. &
       (in%events(e)%ns .NE. 0) .OR. &
-      (in%events(e)%nm .NE. 0)) THEN
+      (in%events(e)%nm .NE. 0) .OR. &
+      (in%events(e)%nl .NE. 0)) THEN
 
      ! apply the 3d elastic transfer function
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3, &
@@ -359,14 +361,14 @@ PROGRAM relax
 #endif
 #ifdef VTK
   IF (in%isoutputvtk) THEN
-     !vcfilename=trim(in%wdir)//"/disp-000.vtr"
-     !CALL exportvtk_vectors(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,vcfilename)
-     vcfilename=trim(in%wdir)//"/disp-000.vtk"
+     !filename=trim(in%wdir)//"/disp-000.vtr"
+     !CALL exportvtk_vectors(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,filename)
+     filename=trim(in%wdir)//"/disp-000.vtk"
      title="coseismic displacement vector field"
      name="displacement"
      CALL exportvtk_vectors_legacy(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
-                                   4,4,8,vcfilename,title,name)
-     !CALL exportvtk_vectors_slice(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,vcfilename)
+                                   4,4,8,filename,title,name)
+     !CALL exportvtk_vectors_slice(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,filename)
   END IF
 #endif
   IF (ALLOCATED(in%ptsname)) THEN
@@ -413,12 +415,24 @@ PROGRAM relax
 #endif
 #ifdef VTK
         IF (in%isoutputvtk) THEN
-           WRITE (digit,'(I3.3)') oi-1
-           vcfilename=trim(in%wdir)//"/sigma-"//digit//".vtk"
+           WRITE (digit4,'(I4.4)') oi-1
+           filename=trim(in%wdir)//"/sigma-"//digit4//".vtk"
            title="stress tensor field"
            name="stress"
            CALL exportvtk_tensors_legacy(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                         4,4,8,vcfilename,title,name)
+                                         4,4,8,filename,title,name)
+        END IF
+        filename=trim(in%wdir)//"/rfaults-sigma-"//digit4//".vtp"
+        CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
+                                      in%nsop,in%sop,filename,sig=sig)
+        IF (0.EQ.(oi-1)) THEN
+           ! initialize stress conditions
+           CALL exportvtk_rfaults_stress_init(sig,in%sx1,in%sx2,in%sx3, &
+                                      in%dx1,in%dx2,in%dx3,in%nsop,in%sop)
+        ELSE
+           filename=trim(in%wdir)//"/rfaults-dsigma-"//digit4//".vtp"
+           CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
+                                         in%nsop,in%sop,filename,convention=1,sig=sig)
         END IF
 #endif
      END IF
@@ -467,11 +481,11 @@ PROGRAM relax
 #ifdef VTK
      IF (in%isoutputvtk) THEN
         WRITE (digit,'(I3.3)') oi-1
-        vcfilename=trim(in%wdir)//"/power-"//digit//".vtk"
+        filename=trim(in%wdir)//"/power-"//digit//".vtk"
         title="stress rate tensor field"
         name="power"
         CALL exportvtk_tensors_legacy(moment,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                      4,4,8,vcfilename,title,name)
+                                      4,4,8,filename,title,name)
      END IF
 #endif
 
@@ -575,13 +589,13 @@ PROGRAM relax
 #ifdef VTK_EQBF
         IF (in%isoutputvtk) THEN
            WRITE (digit,'(I3.3)') oi
-           !vcfilename=trim(in%wdir)//"/eqbf-"//digit//".vtr"
-           !CALL exportvtk_vectors(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,vcfilename)
-           vcfilename=trim(in%wdir)//"/eqbf-"//digit//".vtk"
+           !filename=trim(in%wdir)//"/eqbf-"//digit//".vtr"
+           !CALL exportvtk_vectors(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,filename)
+           filename=trim(in%wdir)//"/eqbf-"//digit//".vtk"
            title="instantaneous equivalent body-force rate vector field"
            name="body-force-rate"
            CALL exportvtk_vectors_legacy(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
-                                         4,4,8,vcfilename,title,name)
+                                         4,4,8,filename,title,name)
         END IF
 #endif
 #ifdef GRD_EQBF
@@ -680,24 +694,24 @@ PROGRAM relax
         IF (in%isoutputvtk) THEN
            WRITE (digit,'(I3.3)') oi
            ! export total displacement in VTK XML format
-           !vcfilename=trim(in%wdir)//"/disp-"//digit//".vtr"
-           !CALL exportvtk_vectors(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,vcfilename)
-           vcfilename=trim(in%wdir)//"/disp-"//digit//".vtk"
+           !filename=trim(in%wdir)//"/disp-"//digit//".vtr"
+           !CALL exportvtk_vectors(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,filename)
+           filename=trim(in%wdir)//"/disp-"//digit//".vtk"
            title="cumulative displacement vector field"
            name="displacement"
            CALL exportvtk_vectors_legacy(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
-                                         4,4,8,vcfilename,title,name)
-           !CALL exportvtk_vectors_slice(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,vcfilename)
+                                         4,4,8,filename,title,name)
+           !CALL exportvtk_vectors_slice(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,filename)
 
            ! export instantaneous velocity in VTK XML format
-           !vcfilename=trim(in%wdir)//"/vel-"//digit//".vtr"
-           !CALL exportvtk_vectors(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,vcfilename)
-           vcfilename=trim(in%wdir)//"/vel-"//digit//".vtk"
+           !filename=trim(in%wdir)//"/vel-"//digit//".vtr"
+           !CALL exportvtk_vectors(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,filename)
+           filename=trim(in%wdir)//"/vel-"//digit//".vtk"
            title="instantaneous velocity vector field"
            name="velocity"
            CALL exportvtk_vectors_legacy(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                         8,8,16,vcfilename,title,name)
-           !CALL exportvtk_vectors_slice(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,vcfilename)
+                                         8,8,16,filename,title,name)
+           !CALL exportvtk_vectors_slice(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,filename)
         END IF
 #endif
 
@@ -728,6 +742,7 @@ PROGRAM relax
   IF (ALLOCATED(in%opts)) DEALLOCATE(in%opts)
   IF (ALLOCATED(in%ptsname)) DEALLOCATE(in%ptsname)
   IF (ALLOCATED(in%op)) DEALLOCATE(in%op)
+  IF (ALLOCATED(in%sop)) DEALLOCATE(in%sop)
   IF (ALLOCATED(in%n)) DEALLOCATE(in%n)
   IF (ALLOCATED(in%stressstruc)) DEALLOCATE(in%stressstruc)
   IF (ALLOCATED(in%stresslayer)) DEALLOCATE(in%stresslayer)

@@ -14,7 +14,7 @@ INCPATH=-I/sw/include -I/opt/intel/Compiler/11.1/084/Frameworks/mkl/include
 
 LIBS=-lproj -lgmt -lnetcdf -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -openmp -lpthread 
 
-CC=cc
+CC=cc -em64
 F77=ifort
 FC=ifort -openmp
 

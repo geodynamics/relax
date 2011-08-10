@@ -57,6 +57,12 @@ MODULE types
      TYPE(TENSOR) :: t
   END TYPE TENSOR_LAYER_STRUCT
 
+  TYPE SEGMENT_STRUCT
+     SEQUENCE
+     REAL*8 :: x,y,z,width,length,strike,dip,friction
+     TYPE(TENSOR) :: sig0
+  END TYPE SEGMENT_STRUCT
+
   TYPE SLIPPATCH_STRUCT
      SEQUENCE
      REAL*8 :: x1,x2,x3,lx,lz,slip,ss,ds
@@ -112,6 +118,12 @@ MODULE types
 
      ! observation planes
      TYPE(PLANE_STRUCT), DIMENSION(:), ALLOCATABLE :: op
+
+     ! number of stress observation planes
+     INTEGER :: nsop
+
+     ! stress observation planes
+     TYPE(SEGMENT_STRUCT), DIMENSION(:), ALLOCATABLE :: sop
 
      ! number of observation points
      INTEGER :: npts

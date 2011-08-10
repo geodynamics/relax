@@ -66,7 +66,7 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time ../relax $* <<EOF | tee output1/in.param
+time ../relax $* <<EOF | tee $WDIR/in.param
 # use '#' character to include comments in your input file
 # grid size (sx1,sx2,sx3)
 256 256 256
@@ -91,6 +91,8 @@ $WDIR
 # number of observation planes
 0
 # number of observation points
+0
+# number of Coulomb patches
 0
 # number of prestress interfaces
 0
