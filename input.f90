@@ -769,7 +769,7 @@ CONTAINS
        ALLOCATE(in%inter%s(in%inter%ns),in%inter%sc(in%inter%ns),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate the source list"
        PRINT 2000
-       PRINT '(a)',"no.  slip  xs ys zs  length width  strike dip rake"
+       PRINT '(a)',"no.  slip/time  xs ys zs  length width  strike dip rake"
        PRINT 2000
        DO k=1,in%inter%ns
           CALL getdata(iunit,dataline)

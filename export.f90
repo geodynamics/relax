@@ -1327,6 +1327,8 @@ END SUBROUTINE exportcreep
     ! traction components
     REAL*8, DIMENSION(3) :: t,ts
 
+    IF (0.GE.nsop) RETURN
+
     ! double-quote character
     q=char(34)
 

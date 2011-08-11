@@ -413,7 +413,7 @@ PROGRAM relax
 #endif
 #ifdef VTK
         WRITE (digit4,'(I4.4)') oi-1
-        IF (in%isoutputvtk) THEN
+        IF (in%isoutputvtk .AND. in%isoutputstress) THEN
            filename=trim(in%wdir)//"/sigma-"//digit4//".vtk"
            title="stress tensor field"
            name="stress"
@@ -477,7 +477,7 @@ PROGRAM relax
      END IF
 
 #ifdef VTK
-     IF (in%isoutputvtk) THEN
+     IF (in%isoutputvtk .AND. in%isoutputstress) THEN
         WRITE (digit,'(I3.3)') oi-1
         filename=trim(in%wdir)//"/power-"//digit//".vtk"
         title="stress rate tensor field"
@@ -576,7 +576,7 @@ PROGRAM relax
      IF ((in%inter%ns .GT. 0) .OR. (in%inter%nt .GT. 0)) THEN
         ! vectors v1,v2,v3 are not affected.
         CALL dislocations(in%inter,in%lambda,in%mu,in%beta,in%sx1,in%sx2,in%sx3, &
-             in%dx1,in%dx2,in%dx3,v1,v2,v3,t1,t2,t3,tau,factor=Dt,eigenstress=moment)
+             in%dx1,in%dx2,in%dx3,v1,v2,v3,t1,t2,t3,tau,eigenstress=moment)
      END IF
      
      v1=0;v2=0;v3=0;t1=0;t2=0;t3=0;
@@ -599,7 +599,7 @@ PROGRAM relax
 #ifdef GRD_EQBF
         IF (in%isoutputgrd) THEN
            CALL exportgrd(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                          in%oz,in%x0,y0,in%wdir,oi,convention=3)
+                          in%oz,in%x0,in%y0,in%wdir,oi,convention=3)
         END IF
 #endif
      END IF
@@ -625,9 +625,10 @@ PROGRAM relax
         IF (abs(t-in%events(e+1)%time) .LT. 1e-6) THEN
            e=e+1
            in%events(e)%i=i
+
            PRINT '("coseismic event ",I3.3)', e
            PRINT 0990
-           
+
            v1=0;v2=0;v3=0;t1=0;t2=0;t3=0;
            CALL dislocations(in%events(e),in%lambda,in%mu, &
                 in%beta,in%sx1,in%sx2,in%sx3, &
@@ -792,7 +793,7 @@ CONTAINS
     REAL*4, DIMENSION(sx1,sx2), INTENT(INOUT) :: t3
 #endif
 
-    INTEGER :: i1,i2,i3
+    INTEGER :: i,i1,i2,i3
 
     DO i=1,e%nl
        CALL shiftedindex(e%l(i)%x,e%l(i)%y,0._8,sx1,sx2,1,dx1,dx2,1._8,i1,i2,i3)
@@ -822,7 +823,7 @@ CONTAINS
     TYPE(TENSOR), DIMENSION(:,:,:), INTENT(INOUT), OPTIONAL :: eigenstress
     
     INTEGER :: i
-    REAL*8 :: slip_factor=1._8
+    REAL*8 :: slip_factor
     
     IF (PRESENT(factor)) THEN
        slip_factor=factor
