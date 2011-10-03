@@ -1,0 +1,9 @@
+syntax: glob
+
+relax
+*~
+*.o
+*.mod
+examples/.gmtcommands4
+examples/.gmtdefaults4
+examples/loads1

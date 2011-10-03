@@ -23,7 +23,7 @@ MODULE types
 
   TYPE SOURCE_STRUCT
      SEQUENCE
-     REAL*8 :: slip,x,y,z,width,length,strike,dip,rake
+     REAL*8 :: slip,x,y,z,width,length,strike,dip,rake,period,phase
   END TYPE SOURCE_STRUCT
 
   TYPE PLANE_STRUCT

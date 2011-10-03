@@ -180,8 +180,7 @@
   !!   - homogenize VTK output so that geometry of events match event index
   !!   - evaluate Green function, stress and body forces in GPU
   !!   - create a ./configure ./install framework
-  !!   - input a list of planes to compute Coulomb stress
-  !!   - fix output index
+  !!   - output stress in observation points for help model seismicity
   !------------------------------------------------------------------------
 PROGRAM relax
 
@@ -294,11 +293,13 @@ PROGRAM relax
   e=1
   ! first output
   oi=1;
+  ! initial condition
+  t=0
 
   ! sources
   CALL dislocations(in%events(e),in%lambda,in%mu,in%beta,in%sx1,in%sx2,in%sx3, &
        in%dx1,in%dx2,in%dx3,v1,v2,v3,t1,t2,t3,tau)
-  CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t3)
+  CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,t3)
   
   PRINT '("coseismic event ",I3.3)', e
   PRINT 0990
@@ -386,7 +387,6 @@ PROGRAM relax
   CALL tensorfieldadd(sig,sig,in%sx1,in%sx2,in%sx3/2,c1=0._4,c2=0._4)
   CALL tensorfieldadd(moment,moment,in%sx1,in%sx2,in%sx3/2,c1=0._4,c2=0._4)  
 
-  t=0
   DO i=1,ITERATION_MAX
      IF (t > (in%interval+1e-6)) GOTO 100 ! proper exit
      
@@ -509,6 +509,10 @@ PROGRAM relax
      
      v1=0;v2=0;v3=0;t1=0;t2=0;t3=0;
      CALL equivalentbodyforce(sig,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,v1,v2,v3,t1,t2,t3)
+
+     ! add time-dependent surface loads
+     CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,t3)
+
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3,in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
      
      ! v1,v2,v3 contain the predictor displacement
@@ -582,6 +586,9 @@ PROGRAM relax
      v1=0;v2=0;v3=0;t1=0;t2=0;t3=0;
      CALL equivalentbodyforce(moment,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,v1,v2,v3,t1,t2,t3)
 
+     ! add time-dependent surface loads
+     CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t+Dt/2.d8,t3)
+
      ! export equivalent body forces
      IF (isoutput(in%skip,t,i,in%odt,oi,in%events(e)%time)) THEN
 #ifdef VTK_EQBF
@@ -633,7 +640,7 @@ PROGRAM relax
            CALL dislocations(in%events(e),in%lambda,in%mu, &
                 in%beta,in%sx1,in%sx2,in%sx3, &
                 in%dx1,in%dx2,in%dx3,v1,v2,v3,t1,t2,t3,tau)
-           CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t3)
+           CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,t3)
 
            ! apply the 3d elastic transfert function
            CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3, &
@@ -779,14 +786,14 @@ CONTAINS
 
   !---------------------------------------------------------------------
   !> subroutine Traction 
-  !! assigns the traction vector at the surface
+  !! assigns the traction vector at the surface.
   !!
   !! \author sylvain barbot (07-19-07) - original form
   !---------------------------------------------------------------------
-  SUBROUTINE traction(mu,e,sx1,sx2,dx1,dx2,t3)
+  SUBROUTINE traction(mu,e,sx1,sx2,dx1,dx2,t,t3)
     TYPE(EVENT_STRUC), INTENT(IN) :: e
     INTEGER, INTENT(IN) :: sx1,sx2
-    REAL*8, INTENT(IN) :: mu,dx1,dx2
+    REAL*8, INTENT(IN) :: mu,dx1,dx2,t
 #ifdef ALIGN_DATA
     REAL*4, DIMENSION(sx1+2,sx2), INTENT(INOUT) :: t3
 #else
@@ -794,12 +801,26 @@ CONTAINS
 #endif
 
     INTEGER :: i,i1,i2,i3
+    REAL*8 :: period,phi
+    REAL*8, PARAMETER :: pi=3.141592653589793115997963468544185161_8
 
     DO i=1,e%nl
        CALL shiftedindex(e%l(i)%x,e%l(i)%y,0._8,sx1,sx2,1,dx1,dx2,1._8,i1,i2,i3)
 
-       ! surface tractions
-       t3(i1,i2)=t3(i1,i2)-e%l(i)%slip*mu
+       IF (e%l(i)%period .LE. 0) THEN
+          ! surface tractions
+          t3(i1,i2)=t3(i1,i2)-mu*e%l(i)%slip
+          PRINT *, "should not print this!!!"
+       ELSE
+          ! velocity for t>0 only
+          IF (t.GT.0) THEN
+             ! surface tractions rate
+             period=e%l(i)%period
+             phi=e%l(i)%phase
+
+             t3(i1,i2)=t3(i1,i2)-mu*e%l(i)%slip*2*pi/period*cos(2*pi*t/period)
+          END IF
+       END IF
     END DO
              
   END SUBROUTINE traction

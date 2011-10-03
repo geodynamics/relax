@@ -140,7 +140,7 @@ CONTAINS
        RETURN
     END IF
     PRINT 2000
-    PRINT '("     nonlinear postseismic relaxation with Fourier-domain Green function")'
+    PRINT '(" RELAX: nonlinear postseismic relaxation with Fourier-domain Green''s function")'
 #ifdef FFTW3
 #ifdef FFTW3_THREADS
     PRINT '("     * FFTW3 (multi-threaded) implementation of the FFT")'
@@ -279,7 +279,7 @@ CONTAINS
 
     
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    !         O B S E R V A T I O N       P L A N E S
+    ! O B S E R V A T I O N   P L A N E S ( C O U L O M B   S T R E S S)
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     PRINT '(a)', "number of observation planes"
     CALL getdata(iunit,dataline)
@@ -1098,17 +1098,21 @@ CONTAINS
                STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the load list"
           PRINT 2000
-          PRINT '(a)',"no. xs ys t3 (force/surface/rigidity, positive down)"
+          PRINT '(a)',"t3 in units of force/surface/rigidity, positive down"
+          PRINT '(a)',"T>0 for t3 sin(2pi/T+phi), T<=0 for t3 H(t)"
+          PRINT '(a)',"no.       xs       ys       t3        T      phi"
           PRINT 2000
           DO k=1,in%events(e)%nl
              CALL getdata(iunit,dataline)
              READ  (dataline,*) i, &
-                  in%events(e)%l(k)%x,in%events(e)%l(k)%y,in%events(e)%l(k)%slip
+                  in%events(e)%l(k)%x,in%events(e)%l(k)%y,in%events(e)%l(k)%slip, &
+                  in%events(e)%l(k)%period,in%events(e)%l(k)%phase
              ! copy the input format for display
              in%events(e)%lc(k)=in%events(e)%l(k)
              
-             PRINT '(I3.3,4ES9.2E1)',k, &
-                  in%events(e)%lc(k)%x,in%events(e)%lc(k)%y,in%events(e)%lc(k)%slip
+             PRINT '(I3.3,6ES9.2E1)',k, &
+                  in%events(e)%lc(k)%x,in%events(e)%lc(k)%y,in%events(e)%lc(k)%slip, &
+                  in%events(e)%lc(k)%period,in%events(e)%lc(k)%phase
              
              IF (i .NE. k) THEN
                 PRINT *, "error in input file: source index misfit"
