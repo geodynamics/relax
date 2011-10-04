@@ -64,6 +64,8 @@ $WDIR
 0
 # number of observation points
 0
+# number of Coulomb patches
+0
 # number of prestress interfaces
 0
 # number of linear viscous interfaces

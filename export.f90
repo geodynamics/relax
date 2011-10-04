@@ -446,7 +446,7 @@ CONTAINS
   !!
   !! \author sylvain barbot (11/10/07) - original form
   !------------------------------------------------------------------
-  SUBROUTINE exportpoints(c1,c2,c3,sx1,sx2,sx3,dx1,dx2,dx3, &
+  SUBROUTINE exportpoints(c1,c2,c3,sig,sx1,sx2,sx3,dx1,dx2,dx3, &
        opts,ptsname,time,wdir,isnew,x0,y0,rot)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
 #ifdef ALIGN_DATA
@@ -454,6 +454,7 @@ CONTAINS
 #else
     REAL*4, INTENT(IN), DIMENSION(sx1,sx2,sx3) :: c1,c2,c3
 #endif
+    TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(VECTOR_STRUCT), INTENT(IN), DIMENSION(:) :: opts
     CHARACTER(LEN=4), INTENT(IN), DIMENSION(:) :: ptsname
     REAL*8, INTENT(IN) :: dx1,dx2,dx3,time,x0,y0,rot
@@ -462,6 +463,7 @@ CONTAINS
 
     INTEGER :: i1,i2,i3,n,k
     REAL*8 :: u1,u2,u3,v1,v2,v3,x1,x2,x3,y1,y2,y3
+    TYPE(TENSOR) :: lsig
     INTEGER :: i,iostatus
     CHARACTER(80) :: file1,file2
 
@@ -474,6 +476,8 @@ CONTAINS
 
        IF (isnew) THEN
           OPEN (UNIT=15,FILE=file1,IOSTAT=iostatus,FORM="FORMATTED")
+          WRITE (15,'("#         t         u1         u2         u3        ", &
+                      "s11        s12        s13        s22        s23        s33")')
           OPEN (UNIT=16,FILE=file2,IOSTAT=iostatus,FORM="FORMATTED")
        ELSE
           OPEN (UNIT=15,FILE=file1,POSITION="APPEND",&
@@ -492,6 +496,7 @@ CONTAINS
        u1=c1(i1,i2,i3)
        u2=c2(i1,i2,i3)
        u3=c3(i1,i2,i3)
+       lsig=sig(i1,i2,i3)
 
        ! change from computational reference frame to user reference system
        y1=x1;v1=u1
@@ -506,7 +511,9 @@ CONTAINS
        x1=x1+x0
        x2=x2+y0
 
-       WRITE (15,'(7ES11.3E2)') y1,y2,y3,time,v1,v2,v3
+       WRITE (15,'(13ES11.3E2)') time,v1,v2,v3, &
+                                 lsig%s11,lsig%s12,lsig%s13, &
+                                 lsig%s22,lsig%s23,lsig%s33
        WRITE (16,'(7ES11.3E2)') x1,x2,x3,time,u1,u2,u3
 
        CLOSE(15)
