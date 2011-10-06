@@ -243,11 +243,15 @@ PROGRAM relax
   ! allocate memory
   ALLOCATE (v1(in%sx1+2,in%sx2,in%sx3),v2(in%sx1+2,in%sx2,in%sx3),v3(in%sx1+2,in%sx2,in%sx3), &
             u1(in%sx1+2,in%sx2,in%sx3/2),u2(in%sx1+2,in%sx2,in%sx3/2),u3(in%sx1+2,in%sx2,in%sx3/2), &
-            inter1(in%sx1+2,in%sx2,2),inter2(in%sx1+2,in%sx2,2),inter3(in%sx1+2,in%sx2,2), &
             tau(in%sx1,in%sx2,in%sx3/2),sig(in%sx1,in%sx2,in%sx3/2),gamma(in%sx1+2,in%sx2,in%sx3/2), &
             t1(in%sx1+2,in%sx2),t2(in%sx1+2,in%sx2),t3(in%sx1+2,in%sx2), &
             STAT=iostatus)
   IF (iostatus>0) STOP "could not allocate memory"
+
+  IF (in%isoutputrelax) THEN
+     ALLOCATE(inter1(in%sx1+2,in%sx2,2),inter2(in%sx1+2,in%sx2,2),inter3(in%sx1+2,in%sx2,2),STAT=iostatus)
+     IF (iostatus>0) STOP "could not allocate memory for postseismic displacement"
+  END IF
 
   v1=0;v2=0;v3=0;u1=0;u2=0;u3=0;gamma=0;t1=0;t2=0;t3=0
   CALL tensorfieldadd(tau,tau,in%sx1,in%sx2,in%sx3/2,c1=0._4,c2=0._4)
@@ -298,7 +302,7 @@ PROGRAM relax
 
   ! sources
   CALL dislocations(in%events(e),in%lambda,in%mu,in%beta,in%sx1,in%sx2,in%sx3, &
-       in%dx1,in%dx2,in%dx3,v1,v2,v3,t1,t2,t3,tau)
+                    in%dx1,in%dx2,in%dx3,v1,v2,v3,t1,t2,t3,tau)
   CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,0.d0,t3)
   
   PRINT '("coseismic event ",I3.3)', e
@@ -353,8 +357,10 @@ PROGRAM relax
 #ifdef GRD
   IF (in%isoutputgrd) THEN
      CALL exportgrd(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0,in%wdir,0)
-     CALL exportgrd(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2, &
-          in%dx1,in%dx2,in%dx3,0._8,in%x0,in%y0,in%wdir,0,convention=2)
+     IF (in%isoutputrelax) THEN
+        CALL exportgrd(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2, &
+                       in%dx1,in%dx2,in%dx3,0._8,in%x0,in%y0,in%wdir,0,convention=2)
+     END IF
   END IF
 #endif
 #ifdef PROJ
@@ -605,9 +611,11 @@ PROGRAM relax
      CALL tensorfieldadd(tau,moment,in%sx1,in%sx2,in%sx3/2,c2=REAL(Dt))
      
      ! keep track of the viscoelastic contribution alone
-     CALL sliceadd(inter1(:,:,1),v1,in%sx1+2,in%sx2,in%sx3,int(in%oz/in%dx3)+1,c2=REAL(Dt))
-     CALL sliceadd(inter2(:,:,1),v2,in%sx1+2,in%sx2,in%sx3,int(in%oz/in%dx3)+1,c2=REAL(Dt))
-     CALL sliceadd(inter3(:,:,1),v3,in%sx1+2,in%sx2,in%sx3,int(in%oz/in%dx3)+1,c2=REAL(Dt))
+     IF (in%isoutputrelax) THEN
+        CALL sliceadd(inter1(:,:,1),v1,in%sx1+2,in%sx2,in%sx3,int(in%oz/in%dx3)+1,c2=REAL(Dt))
+        CALL sliceadd(inter2(:,:,1),v2,in%sx1+2,in%sx2,in%sx3,int(in%oz/in%dx3)+1,c2=REAL(Dt))
+        CALL sliceadd(inter3(:,:,1),v3,in%sx1+2,in%sx2,in%sx3,int(in%oz/in%dx3)+1,c2=REAL(Dt))
+     END IF
 
      ! time increment
      t=t+Dt
@@ -665,22 +673,28 @@ PROGRAM relax
 #ifdef XYZ
         IF (in%isoutputxyz) THEN
            CALL exportxyz(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%oz,in%dx1,in%dx2,in%dx3,i,in%wdir)
-           !CALL exportxyz(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2,0.0_8,in%dx1,in%dx2,in%dx3,i,in%wdir)
+           IF (in%isoutputrelax) THEN
+              !CALL exportxyz(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2,0.0_8,in%dx1,in%dx2,in%dx3,i,in%wdir)
+           END IF
         END IF
 #endif
         CALL exporteigenstrain(gamma,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
 #ifdef GRD
         IF (in%isoutputgrd) THEN
-           CALL exportgrd(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2, &
-                          in%dx1,in%dx2,in%dx3,0._8,in%x0,in%y0,in%wdir,oi,convention=2)
+           IF (in%isoutputrelax) THEN
+              CALL exportgrd(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2, &
+                             in%dx1,in%dx2,in%dx3,0._8,in%x0,in%y0,in%wdir,oi,convention=2)
+           END IF
            CALL exportgrd(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0,in%wdir,oi)
         END IF
 #endif
 #ifdef PROJ
         IF (in%isoutputproj) THEN
-           CALL exportproj(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2, &
-                           in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0, &
-                           in%lon0,in%lat0,in%zone,in%umult,in%wdir,oi,convention=2)
+           IF (in%isoutputrelax) THEN
+              CALL exportproj(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2, &
+                              in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0, &
+                              in%lon0,in%lat0,in%zone,in%umult,in%wdir,oi,convention=2)
+           END IF
            CALL exportproj(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0, &
                            in%lon0,in%lat0,in%zone,in%umult,in%wdir,oi)
         END IF
@@ -803,54 +817,6 @@ PROGRAM relax
 
 CONTAINS
 
-  !---------------------------------------------------------------------
-  !> subroutine Traction 
-  !! assigns the traction vector at the surface.
-  !!
-  !! \author sylvain barbot (07-19-07) - original form
-  !---------------------------------------------------------------------
-  SUBROUTINE traction(mu,e,sx1,sx2,dx1,dx2,t,Dt,t3,rate)
-    TYPE(EVENT_STRUC), INTENT(IN) :: e
-    INTEGER, INTENT(IN) :: sx1,sx2
-    REAL*8, INTENT(IN) :: mu,dx1,dx2,t,Dt
-#ifdef ALIGN_DATA
-    REAL*4, DIMENSION(sx1+2,sx2), INTENT(INOUT) :: t3
-#else
-    REAL*4, DIMENSION(sx1,sx2), INTENT(INOUT) :: t3
-#endif
-    LOGICAL, INTENT(IN), OPTIONAL :: rate
-
-    INTEGER :: i,i1,i2,i3,israte
-    REAL*8 :: period,phi
-    REAL*8, PARAMETER :: pi=3.141592653589793115997963468544185161_8
-
-    IF (PRESENT(rate)) THEN
-       israte=rate
-    ELSE
-       israte=.FALSE.
-    END IF
-
-    DO i=1,e%nl
-       CALL shiftedindex(e%l(i)%x,e%l(i)%y,0._8,sx1,sx2,1,dx1,dx2,1._8,i1,i2,i3)
-
-       IF (e%l(i)%period .LE. 0) THEN
-          ! surface tractions
-          t3(i1,i2)=t3(i1,i2)-mu*e%l(i)%slip
-
-       ELSE
-          ! velocity for t>0 only
-          IF (israte) THEN
-             ! surface tractions rate
-             period=e%l(i)%period
-             phi=e%l(i)%phase
-
-             t3(i1,i2)=t3(i1,i2)-mu*e%l(i)%slip*(sin(2*pi*(t+Dt)/period+phi)-sin(2*pi*t/period+phi))
-          END IF
-       END IF
-    END DO
-             
-  END SUBROUTINE traction
-
   !--------------------------------------------------------------------
   !> subroutine dislocations
   !! assigns equivalent body forces or moment density to simulate
@@ -889,7 +855,7 @@ CONTAINS
                event%s(i)%x,event%s(i)%y,event%s(i)%z, &
                event%s(i)%width,event%s(i)%length, &
                event%s(i)%strike,event%s(i)%dip,event%s(i)%rake, &
-               beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3,t1,t2,t3)
+               event%s(i)%beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3,t1,t2,t3)
        END DO
     ELSE
        ! forcing term in moment density
@@ -898,7 +864,7 @@ CONTAINS
                event%s(i)%x,event%s(i)%y,event%s(i)%z, &
                event%s(i)%width,event%s(i)%length, &
                event%s(i)%strike,event%s(i)%dip,event%s(i)%rake, &
-               beta,sx1,sx2,sx3/2,dx1,dx2,dx3,eigenstress)
+               event%s(i)%beta,sx1,sx2,sx3/2,dx1,dx2,dx3,eigenstress)
        END DO
     END IF
 
@@ -908,7 +874,7 @@ CONTAINS
             event%s(i)%x,event%s(i)%y,event%s(i)%z, &
             event%s(i)%width,event%s(i)%length, &
             event%s(i)%strike,event%s(i)%dip,event%s(i)%rake, &
-            beta,sx1,sx2,sx3/2,dx1,dx2,dx3,tau)
+            event%s(i)%beta,sx1,sx2,sx3/2,dx1,dx2,dx3,tau)
     END DO
     
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

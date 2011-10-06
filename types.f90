@@ -23,7 +23,7 @@ MODULE types
 
   TYPE SOURCE_STRUCT
      SEQUENCE
-     REAL*8 :: slip,x,y,z,width,length,strike,dip,rake,period,phase
+     REAL*8 :: slip,x,y,z,width,length,strike,dip,rake,period,phase,beta
   END TYPE SOURCE_STRUCT
 
   TYPE PLANE_STRUCT
@@ -187,6 +187,7 @@ MODULE types
 
      ! overrides output to formats
      LOGICAL :: isoutputproj=.TRUE.
+     LOGICAL :: isoutputrelax=.TRUE.
      LOGICAL :: isoutputtxt=.TRUE.
      LOGICAL :: isoutputvtk=.TRUE.
      LOGICAL :: isoutputgrd=.TRUE.

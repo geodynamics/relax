@@ -57,7 +57,7 @@ CONTAINS
 !$  INTEGER :: omp_get_num_procs,omp_get_max_threads
     REAL*8 :: dummy,dum1,dum2
     REAL*8 :: minlength,minwidth
-    TYPE(OPTION_S) :: opts(8)
+    TYPE(OPTION_S) :: opts(9)
 
     INTEGER :: k,iostatus,i,e
 
@@ -70,13 +70,14 @@ CONTAINS
 
     ! parse the command line for options
     opts(1)=OPTION_S("no-proj-output",.FALSE.,CHAR(20))
-    opts(2)=OPTION_S("no-txt-output",.FALSE.,CHAR(21))
-    opts(3)=OPTION_S("no-vtk-output",.FALSE.,CHAR(22))
-    opts(4)=OPTION_S("no-grd-output",.FALSE.,CHAR(23))
-    opts(5)=OPTION_S("no-xyz-output",.FALSE.,CHAR(24))
-    opts(5)=OPTION_S("no-stress-output",.FALSE.,CHAR(25))
-    opts(6)=OPTION_S("dry-run",.FALSE.,CHAR(26))
-    opts(7)=OPTION_S("help",.FALSE.,'h')
+    opts(2)=OPTION_S("no-relax-output",.FALSE.,CHAR(21))
+    opts(3)=OPTION_S("no-txt-output",.FALSE.,CHAR(22))
+    opts(4)=OPTION_S("no-vtk-output",.FALSE.,CHAR(23))
+    opts(5)=OPTION_S("no-grd-output",.FALSE.,CHAR(24))
+    opts(6)=OPTION_S("no-xyz-output",.FALSE.,CHAR(25))
+    opts(7)=OPTION_S("no-stress-output",.FALSE.,CHAR(26))
+    opts(8)=OPTION_S("dry-run",.FALSE.,CHAR(27))
+    opts(9)=OPTION_S("help",.FALSE.,'h')
 
     DO
        ch=getopt("h",opts)
@@ -87,21 +88,24 @@ CONTAINS
           ! option no-proj-output
           in%isoutputproj=.FALSE.
        CASE(CHAR(21))
+          ! option no-relax-output
+          in%isoutputrelax=.FALSE.
+       CASE(CHAR(22))
           ! option no-txt-output
           in%isoutputtxt=.FALSE.
-       CASE(CHAR(22))
+       CASE(CHAR(23))
           ! option no-vtk-output
           in%isoutputvtk=.FALSE.
-       CASE(CHAR(23))
+       CASE(CHAR(24))
           ! option no-grd-output
           in%isoutputgrd=.FALSE.
-       CASE(CHAR(24))
+       CASE(CHAR(25))
           ! option no-xyz-output
           in%isoutputxyz=.FALSE.
-       CASE(CHAR(25))
+       CASE(CHAR(26))
           ! option stress output
           in%isoutputstress=.FALSE.
-       CASE(CHAR(26))
+       CASE(CHAR(27))
           ! option dry-run
           in%isdryrun=.TRUE.
        CASE('h')
@@ -120,21 +124,24 @@ CONTAINS
 
     IF (in%ishelp) THEN
        PRINT '("usage:")'
-       PRINT '("relax [-h] [--dry-run] [--help] [--no-grd-output] [--no-stress-output]")' 
-       PRINT '("      [--no-txt-output] [--no-vtk-output] [--no-xyz-output]")'
+       PRINT '("relax [-h] [--dry-run] [--help] [--no-grd-output] [--no-proj-output]")' 
+       PRINT '("      [--no-relax-output] [--no-stress-output] [--no-txt-output]")'
+       PRINT '("      [--no-vtk-output] [--no-xyz-output]")'
        PRINT '("")'
        PRINT '("options:")'
        PRINT '("   -h                 prints this message and aborts calculation")'
        PRINT '("   --dry-run          abort calculation, only output geometry")'
        PRINT '("   --help             prints this message and aborts calculation")'
        PRINT '("   --no-grd-output    cancel output in GMT grd binary format")'
+       PRINT '("   --no-proj-output   cancel output in geographic projection")'
+       PRINT '("   --no-relax-output  cancel output of the postseismic contribution")'
        PRINT '("   --no-stress-output cancel output of stress tensor in any format")'
        PRINT '("   --no-txt-output    cancel output in text format")'
        PRINT '("   --no-vtk-output    cancel output in Paraview VTK format")'
        PRINT '("   --no-xyz-output    cancel output in GMT xyz format")'
        PRINT '("")'
        PRINT '("description:")'
-       PRINT '("   Evaluates the deformation due to fault slip, surfacial loading")'
+       PRINT '("   Evaluates the deformation due to fault slip, surface loading")'
        PRINT '("   or inflation and the time series of postseismic relaxation")'
        PRINT '("   that follows due to fault creep or viscoelastic flow.")'
        RETURN
@@ -777,6 +784,7 @@ CONTAINS
                in%inter%s(k)%x,in%inter%s(k)%y,in%inter%s(k)%z, &
                in%inter%s(k)%length,in%inter%s(k)%width, &
                in%inter%s(k)%strike,in%inter%s(k)%dip,in%inter%s(k)%rake
+
           ! copy the input format for display
           in%inter%sc(k)=in%inter%s(k)
              
@@ -933,19 +941,44 @@ CONTAINS
           PRINT 2000
           DO k=1,in%events(e)%ns
              CALL getdata(iunit,dataline)
-             READ (dataline,*) i,in%events(e)%s(k)%slip, &
+             READ (dataline,*,IOSTAT=iostatus) i,in%events(e)%s(k)%slip, &
                   in%events(e)%s(k)%x,in%events(e)%s(k)%y,in%events(e)%s(k)%z, &
                   in%events(e)%s(k)%length,in%events(e)%s(k)%width, &
-                  in%events(e)%s(k)%strike,in%events(e)%s(k)%dip,in%events(e)%s(k)%rake
+                  in%events(e)%s(k)%strike,in%events(e)%s(k)%dip,in%events(e)%s(k)%rake, &
+                  in%events(e)%s(k)%beta
+
+             SELECT CASE(iostatus)
+             CASE (1:)
+                WRITE_DEBUG_INFO
+                WRITE (0,'("invalid shear source definition at line")')
+                WRITE (0,'(a)') dataline
+                STOP 1
+             CASE (0)
+                IF (in%events(e)%s(k)%beta.GT.0.5d8) STOP "invalid smoothing parameter (beta)."
+             CASE (:-1)
+                ! use default value for smoothing
+                in%events(e)%s(k)%beta=in%beta
+             END SELECT
+
              ! copy the input format for display
              in%events(e)%sc(k)=in%events(e)%s(k)
              
-             PRINT '(I3.3,4ES9.2E1,2ES8.2E1,f7.1,f6.1,f7.1)',i, &
-                  in%events(e)%sc(k)%slip,&
-                  in%events(e)%sc(k)%x,in%events(e)%sc(k)%y,in%events(e)%sc(k)%z, &
-                  in%events(e)%sc(k)%length,in%events(e)%sc(k)%width, &
-                  in%events(e)%sc(k)%strike,in%events(e)%sc(k)%dip, &
-                  in%events(e)%sc(k)%rake
+             IF (iostatus.NE.0) THEN
+                PRINT '(I3.3,4ES9.2E1,2ES8.2E1,f7.1,f6.1,f7.1)',i, &
+                     in%events(e)%sc(k)%slip,&
+                     in%events(e)%sc(k)%x,in%events(e)%sc(k)%y,in%events(e)%sc(k)%z, &
+                     in%events(e)%sc(k)%length,in%events(e)%sc(k)%width, &
+                     in%events(e)%sc(k)%strike,in%events(e)%sc(k)%dip, &
+                     in%events(e)%sc(k)%rake
+             ELSE
+                ! print the smoothing value for this patch
+                PRINT '(I3.3,4ES9.2E1,2ES8.2E1,f7.1,f6.1,f7.1,f6.1)',i, &
+                     in%events(e)%sc(k)%slip,&
+                     in%events(e)%sc(k)%x,in%events(e)%sc(k)%y,in%events(e)%sc(k)%z, &
+                     in%events(e)%sc(k)%length,in%events(e)%sc(k)%width, &
+                     in%events(e)%sc(k)%strike,in%events(e)%sc(k)%dip, &
+                     in%events(e)%sc(k)%rake,in%events(e)%sc(k)%beta
+             END IF
              
              IF (i .ne. k) THEN
                 WRITE_DEBUG_INFO
@@ -1100,20 +1133,48 @@ CONTAINS
           PRINT 2000
           PRINT '(a)',"t3 in units of force/surface/rigidity, positive down"
           PRINT '(a)',"T>0 for t3 sin(2pi/T+phi), T<=0 for t3 H(t)"
-          PRINT '(a)',"no.       xs       ys       t3        T      phi"
+          PRINT '(a)',"no.       xs       ys   length    width       t3        T      phi"
           PRINT 2000
           DO k=1,in%events(e)%nl
              CALL getdata(iunit,dataline)
-             READ  (dataline,*) i, &
-                  in%events(e)%l(k)%x,in%events(e)%l(k)%y,in%events(e)%l(k)%slip, &
-                  in%events(e)%l(k)%period,in%events(e)%l(k)%phase
+             READ  (dataline,*,IOSTAT=iostatus) i, &
+                  in%events(e)%l(k)%x,in%events(e)%l(k)%y, &
+                  in%events(e)%l(k)%length,in%events(e)%l(k)%width, &
+                  in%events(e)%l(k)%slip, &
+                  in%events(e)%l(k)%period,in%events(e)%l(k)%phase, &
+                  in%events(e)%l(k)%beta
+             
+             SELECT CASE(iostatus)
+             CASE (1:)
+                WRITE_DEBUG_INFO
+                WRITE (0,'("invalid surface load definition at line")')
+                WRITE (0,'(a)') dataline
+                STOP 1
+             CASE (0)
+                IF (in%events(e)%l(k)%beta.GT.0.5d8) STOP "invalid smoothing parameter beta."
+             CASE (:-1)
+                ! use default value for smoothing
+                in%events(e)%l(k)%beta=in%beta
+             END SELECT
+
              ! copy the input format for display
              in%events(e)%lc(k)=in%events(e)%l(k)
-             
-             PRINT '(I3.3,6ES9.2E1)',k, &
-                  in%events(e)%lc(k)%x,in%events(e)%lc(k)%y,in%events(e)%lc(k)%slip, &
-                  in%events(e)%lc(k)%period,in%events(e)%lc(k)%phase
-             
+
+             IF (iostatus.EQ.0) THEN
+                PRINT '(I3.3,9ES9.2E1)',k, &
+                     in%events(e)%lc(k)%x,in%events(e)%lc(k)%y, &
+                     in%events(e)%lc(k)%length,in%events(e)%lc(k)%width, &
+                     in%events(e)%lc(k)%slip, &
+                     in%events(e)%lc(k)%period,in%events(e)%lc(k)%phase, &
+                     in%events(e)%lc(k)%beta
+             ELSE
+                PRINT '(I3.3,8ES9.2E1)',k, &
+                     in%events(e)%lc(k)%x,in%events(e)%lc(k)%y, &
+                     in%events(e)%lc(k)%length,in%events(e)%lc(k)%width, &
+                     in%events(e)%lc(k)%slip, &
+                     in%events(e)%lc(k)%period,in%events(e)%lc(k)%phase
+             END IF
+
              IF (i .NE. k) THEN
                 PRINT *, "error in input file: source index misfit"
                 STOP 1

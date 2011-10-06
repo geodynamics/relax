@@ -2066,6 +2066,79 @@ CONTAINS
   END SUBROUTINE mogisource
 
   !---------------------------------------------------------------------
+  !> subroutine Traction 
+  !! assigns the traction vector at the surface.
+  !!
+  !! \author sylvain barbot (07-19-07) - original form
+  !---------------------------------------------------------------------
+  SUBROUTINE traction(mu,e,sx1,sx2,dx1,dx2,t,Dt,t3,rate)
+    TYPE(EVENT_STRUC), INTENT(IN) :: e
+    INTEGER, INTENT(IN) :: sx1,sx2
+    REAL*8, INTENT(IN) :: mu,dx1,dx2,t,Dt
+#ifdef ALIGN_DATA
+    REAL*4, DIMENSION(sx1+2,sx2), INTENT(INOUT) :: t3
+#else
+    REAL*4, DIMENSION(sx1,sx2), INTENT(INOUT) :: t3
+#endif
+    LOGICAL, INTENT(IN), OPTIONAL :: rate
+
+    INTEGER :: i,i1,i2,i3,israte
+    REAL*8 :: period,phi,amp,L,W,Lp,Wp,x1,x2,x3,x,y,beta
+
+    REAL*8, PARAMETER :: pi=3.141592653589793115997963468544185161_8
+
+    IF (PRESENT(rate)) THEN
+       israte=rate
+    ELSE
+       israte=.FALSE.
+    END IF
+
+    ! loop over traction sources
+    DO i=1,e%nl
+
+       x=e%l(i)%x
+       y=e%l(i)%y
+
+       L=e%l(i)%length
+       W=e%l(i)%width
+
+       beta=e%l(i)%beta
+
+       ! effective tapered dimensions
+       Lp=L*(1._8+2._8*beta)/2._8
+       Wp=W*(1._8+2._8*beta)/2._8
+
+       i3=1
+       DO i2=1,sx2
+          DO i1=1,sx1
+             CALL shiftedcoordinates(i1,i2,i3,sx1,sx2,1, &
+                                     dx1,dx2,1.d8,x1,x2,x3)
+
+             IF ((ABS(x1-x).GT.MAX(Lp,Wp)).OR.(ABS(x2-y).GT.MAX(Lp,Wp))) CYCLE
+
+             amp=omega((x1-x)/L,beta)* &
+                 omega((x2-y)/W,beta)* &
+                 mu*e%l(i)%slip
+
+             IF (israte) THEN
+                ! surface tractions rate
+                period=e%l(i)%period
+                phi=e%l(i)%phase
+
+                t3(i1,i2)=t3(i1,i2)-amp*(sin(2*pi*(t+Dt)/period+phi)-sin(2*pi*t/period+phi))
+             ELSE
+                IF (e%l(i)%period .LE. 0) THEN
+                   ! surface tractions
+                   t3(i1,i2)=t3(i1,i2)-amp
+                END IF
+             END IF
+          END DO
+       END DO
+    END DO
+
+  END SUBROUTINE traction
+
+  !---------------------------------------------------------------------
   !! function MomentDensityShear
   !! computes the inelastic irreversible moment density in the space
   !! domain corresponding to a buried dislocation with strike-slip and
