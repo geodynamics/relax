@@ -286,7 +286,7 @@ CONTAINS
 
     
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    ! O B S E R V A T I O N   P L A N E S ( C O U L O M B   S T R E S S)
+    !           O B S E R V A T I O N          P L A N E S 
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     PRINT '(a)', "number of observation planes"
     CALL getdata(iunit,dataline)

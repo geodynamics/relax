@@ -1486,6 +1486,13 @@ END SUBROUTINE exportcreep
        WRITE (15,'(ES11.2)'), taun
        WRITE (15,'("        </DataArray>")')
 
+       WRITE (15,'("        <DataArray type=",a,"Float32",a, &
+                           	" Name=",a,"Coulomb stress",a, &
+                                " NumberOfComponents=",a,"1",a, &
+                                " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+       WRITE (15,'(ES11.2)'), taucoulomb
+       WRITE (15,'("        </DataArray>")')
+
        WRITE (15,'("      </CellData>")')
 
        WRITE (15,'("    </Piece>")')
@@ -1498,6 +1505,140 @@ END SUBROUTINE exportcreep
     CLOSE(15)
 
   END SUBROUTINE exportvtk_rfaults_stress
+
+  !--------------------------------------------------------------------------------
+  !> subroutine ExportCoulombStress
+  !! sample the stress tensor, shear and normal stress and Coulomb
+  !! stress at a series of locations.
+  !!
+  !! each fault patch is attributed to a file in which the time 
+  !! evolution is listed in the following format:
+  !!
+  !! #t     s11     s12     s13     s22     s23     s33     taus     taud     tau     taun     Coulomb
+  !! t0 s11(t0) s12(t0) s13(t0) s22(t0) s23(t0) s33(t0) taus(t0) taud(t0) tau(t0) taun(t0) Coulomb(t0)
+  !! t1 s11(t1) s12(t1) s13(t1) s22(t1) s23(t1) s33(t1) taus(t1) taud(t1) tau(t1) taun(t1) Coulomb(t0)
+  !!    ...
+  !!
+  !! where sij(t0) is the component ij of the stress tensor at time t0, taus is
+  !! the component of shear in the strike direction, taud is the component of shear
+  !! in the fault dip direction, tau^2=taus^2+taud^2, taun is the fault normal
+  !! stress and Coulomb(t0) is the Coulomb stress tau+mu*taun. 
+  !!
+  !! \author sylvain barbot (10/05/11) - original form
+  !--------------------------------------------------------------------------------
+  SUBROUTINE exportcoulombstress(sig,sx1,sx2,sx3,dx1,dx2,dx3, &
+                          nsop,sop,time,wdir,isnew)
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3,nsop
+    TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
+    TYPE(SEGMENT_STRUCT), INTENT(INOUT), DIMENSION(nsop) :: sop
+    REAL*8, INTENT(IN) :: dx1,dx2,dx3,time
+    CHARACTER(80), INTENT(IN) :: wdir
+    LOGICAL, INTENT(IN) :: isnew
+
+    INTEGER :: iostatus,k,i1,i2,i3
+    CHARACTER :: q
+    CHARACTER(4) :: digit4
+    CHARACTER(80) :: file
+    REAL*8 :: strike,dip,x1,x2,x3,cstrike,sstrike,cdip,sdip,L,W
+    ! segment normal vector, strike direction, dip direction
+    REAL*8, DIMENSION(3) :: n,s,d
+    ! local value of stress
+    TYPE(TENSOR) :: lsig
+    ! stress components
+    REAL*8 :: taun,taus,taustrike,taudip,taucoulomb
+    ! friction coefficient
+    REAL*8 :: friction
+    ! traction components
+    REAL*8, DIMENSION(3) :: t,ts
+
+    IF (0.GE.nsop) RETURN
+
+    ! double-quote character
+    q=char(34)
+
+    DO k=1,nsop
+       WRITE (digit4,'(I4.4)') k
+       file=trim(wdir)//"/cfaults-sigma-"//digit4//".txt"
+
+       ! fault center position
+       x1=sop(k)%x
+       x2=sop(k)%y
+       x3=sop(k)%z
+
+       IF (isnew) THEN
+          OPEN (UNIT=15,FILE=file,IOSTAT=iostatus,FORM="FORMATTED")
+          WRITE (15,'("# center position (north, east, down): ",3ES9.2)') x1,x2,x3
+          WRITE (15,'("#         t        s11        s12        s13        ", &
+          "s22        s23        s33       taus       taud        tau       taun    Coulomb")')
+       ELSE
+          OPEN (UNIT=15,FILE=file,POSITION="APPEND",&
+               IOSTAT=iostatus,FORM="FORMATTED")
+       END IF
+       IF (iostatus>0) STOP "could not open point file for writing"
+
+       ! friction coefficient
+       friction=sop(k)%friction
+
+       ! fault orientation
+       strike=sop(k)%strike
+       dip=sop(k)%dip
+
+       CALL shiftedindex(x1,x2,x3,sx1,sx2,sx3,dx1,dx2,dx3,i1,i2,i3)
+       lsig=sig(i1,i2,i3)
+
+       ! fault dimension
+       W=sop(k)%width
+       L=sop(k)%length
+
+       cstrike=cos(strike)
+       sstrike=sin(strike)
+       cdip=cos(dip)
+       sdip=sin(dip)
+ 
+       ! surface normal vector components
+       n(1)=+cdip*cstrike
+       n(2)=-cdip*sstrike
+       n(3)=-sdip
+
+       ! strike-slip unit direction
+       s(1)=sstrike
+       s(2)=cstrike
+       s(3)=0._8
+
+       ! dip-slip unit direction
+       d(1)=+cstrike*sdip
+       d(2)=-sstrike*sdip
+       d(3)=+cdip
+
+       ! traction vector
+       t=lsig .tdot. n
+
+       ! signed normal component
+       taun=SUM(t*n)
+
+       ! shear traction
+       ts=t-taun*n
+
+       ! absolute value of shear component
+       taus=SQRT(SUM(ts*ts))
+
+       ! strike-direction shear component
+       taustrike=SUM(ts*s)
+
+       ! dip-direction shear component
+       taudip=SUM(ts*d)
+
+       ! Coulomb stress 
+       taucoulomb=taus+friction*taun
+
+       WRITE (15,'(12ES11.3E2)') time, &
+                                 lsig%s11,lsig%s12,lsig%s13, &
+                                 lsig%s22,lsig%s23,lsig%s33, &
+                                 taustrike,taudip,taus,taun,taucoulomb
+       CLOSE(15)
+    END DO
+
+  END SUBROUTINE exportcoulombstress
 
   !------------------------------------------------------------------
   !> subroutine ExportVTK_Rectangle

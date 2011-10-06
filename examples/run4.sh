@@ -43,15 +43,13 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time ../relax --no-stress-output $* <<EOF
+time ../relax --no-stress-output --no-proj-output $* <<EOF
 # grid size (sx1,sx2,sx3)
 256 256 256 
 # sampling size, smoothing & nyquist (dx1,dx2,dx3,beta,nq)
 0.05 0.05 0.05 0.2 1
 # origin position & rotation
 0 0 0
-# geographic origin (longitude, latitude, UTM zone, unit)
--120 34 11 1e3
 # observation depth (displacement and stress) (stress in only exported in GRD)
 0 0
 # output directory
@@ -65,7 +63,13 @@ $WDIR
 # number of observation points
 0
 # number of Coulomb patches
-0
+5
+# no.   x1 x2  x3 length width strike dip friction
+    1 -1.0  1 0.5    0.1   0.1      0  90      0.6
+    2 -0.5  1 0.5    0.1   0.1     90  90      0.6
+    3  0.0  1 0.5    0.1   0.1      0  90      0.6
+    4 +0.5  1 0.5    0.1   0.1     45  90      0.6
+    5 +1.0  1 0.5    0.1   0.1      0  90      0.6
 # number of prestress interfaces
 0
 # number of linear viscous interfaces

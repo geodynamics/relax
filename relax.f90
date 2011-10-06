@@ -406,6 +406,8 @@ PROGRAM relax
   CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
                                 in%nsop,in%sop,filename)
 #endif
+  CALL exportcoulombstress(sig,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
+                    in%nsop,in%sop,0._8,in%wdir,.TRUE.)
   CALL reporttime(0,0._8,in%reporttimefilename)
 
   PRINT 1101,0,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
@@ -654,7 +656,7 @@ PROGRAM relax
      ! points are exported at all time steps
      IF (ALLOCATED(in%ptsname)) THEN
         CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-             in%opts,in%ptsname,t,in%wdir,.false.,in%x0,in%y0,in%rot)
+             in%opts,in%ptsname,t,in%wdir,.FALSE.,in%x0,in%y0,in%rot)
      END IF
 
      ! output only at discrete intervals (skip=0, odt>0),
@@ -753,6 +755,8 @@ PROGRAM relax
         CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
                                       in%nsop,in%sop,filename,convention=1,sig=sig)
 #endif
+        CALL exportcoulombstress(sig,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
+                          in%nsop,in%sop,t,in%wdir,.FALSE.)
 
         PRINT 1101,i,Dt,maxwell,t,in%interval, &
              tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
