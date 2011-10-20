@@ -17,7 +17,7 @@
 ! along with RELAX.  If not, see <http://www.gnu.org/licenses/>.
 !-----------------------------------------------------------------------
 
-#include 'include.f90'
+#include "include.f90"
 
 MODULE input
 
@@ -227,7 +227,7 @@ CONTAINS
        PRINT '(2ES9.2E1,I3.2,ES9.2E1)',in%lon0,in%lat0,in%zone,in%umult
        IF (in%zone.GT.60 .OR. in%zone.LT.1) THEN
           WRITE_DEBUG_INFO
-          WRITE (0,'("invalid UTM zone ",I," (1<=zone<=60. exiting.)")') in%zone
+          WRITE (0,'("invalid UTM zone ",I3," (1<=zone<=60. exiting.)")') in%zone
           STOP 1
        END IF
     END IF

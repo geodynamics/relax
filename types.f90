@@ -17,7 +17,7 @@
 ! along with RELAX.  If not, see <http://www.gnu.org/licenses/>.
 !-----------------------------------------------------------------------
 
-#include 'include.f90'
+#include "include.f90"
 
 MODULE types
 

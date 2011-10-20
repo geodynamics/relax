@@ -1,11 +1,4 @@
-
-! implement the Intel Math Kernel Library
-#define IMKL_FFT
-
-! implement the Fastest Fourier Transform of the West, version 3
-!#define FFTW3 1
-! use multithreaded libraries
-!#define FFTW3_THREADS 1
+#include "config.h"
 
 ! implement SGI Fast Fourier Transforms library
 !#define SGI_FFT 1
