@@ -44,7 +44,7 @@ if [ ! -e $WDIR ]; then
 fi
 
 time ../relax <<EOF $* --no-vtk-output --no-proj-output \
-	--no-stress-output | tee $ODIR/in.param
+	--no-stress-output | tee $WDIR/in.param
 # grid size (sx1,sx2,sx3)
 512 512 512
 # dx1  dx2  dx3 beta nyquist
