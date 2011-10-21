@@ -7,7 +7,11 @@ def options(opt):
 
 def configure(cnf):
     cnf.load('compiler_c compiler_fc')
+
+    # Find Proj
     cnf.check_cc(header_name='proj_api.h',uselib_store='proj', lib='proj')
+
+    # Find GMT
     includedirs=['','/usr/include/gmt']
     found_gmt=False
     for inc in includedirs:
@@ -15,18 +19,31 @@ def configure(cnf):
             cnf.check_cc(msg="Checking for gmt.h in '" + inc + "'",
                          header_name='gmt.h', includes=inc,
                          lib=['gmt','netcdf'], uselib_store='gmt')
-        except:
+        except cnf.errors.ConfigurationError:
             pass
         else:
             found_gmt=True
             break
     if not found_gmt:
         cnf.fatal('Could not find gmt')
-    try:
-        cnf.check_fc(fcflags='-fopenmp', linkflags='-fopenmp', uselib_store='openmp')
-    except:
-        cnf.check_fc(fcflags='-openmp', linkflags='-openmp', uselib_store='openmp')
 
+    # Find OpenMP
+    openmp_msg="Checking for openmp flag "
+    openmp_fragment="program main\n  call omp_get_num_threads()\nend program main"
+    found_openmp=False
+    for flag in ['-fopenmp','-openmp','-mp','-xopenmp','-omp','-qsmp=omp']:
+        try:
+            cnf.check_fc(msg=openmp_msg+flag, fragment=openmp_fragment, fcflags=flag,
+                         linkflags=flag, uselib_store='openmp')
+        except cnf.errors.ConfigurationError:
+            continue
+        else:
+            found_openmp=True
+            break
+    if not found_openmp:
+        cnf.fatal('Could not find OpenMP')
+
+    # Find FFTW or IMKL
     if cnf.options.use_fftw:
         frag="program main\n" + 'include "fftw3.f"\n' \
             + "end program main\n"
