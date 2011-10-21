@@ -56,6 +56,7 @@ def configure(cnf):
     cnf.check_cc(header_name='proj_api.h',uselib_store='proj',
                  includes=[cnf.options.proj_incdir],
                  libpath=[cnf.options.proj_libdir],
+                 rpath=[cnf.options.proj_libdir],
                  lib='proj')
 
     # Find GMT
@@ -74,6 +75,7 @@ def configure(cnf):
             cnf.check_cc(msg="Checking for gmt.h in '" + inc + "'",
                          header_name='gmt.h', includes=inc,
                          libpath=[cnf.options.gmt_libdir],
+                         rpath=[cnf.options.gmt_libdir],
                          lib=['gmt','netcdf'], uselib_store='gmt')
         except cnf.errors.ConfigurationError:
             pass
@@ -118,6 +120,7 @@ def configure(cnf):
         cnf.check_fc(msg="Checking for fftw",
                      includes=[inc], fragment=frag, uselib_store='fftw',
                      libpath=[cnf.options.fftw_libdir],
+                     rpath=[cnf.options.fftw_libdir],
                      lib=['fftw3f','fftw3f_threads'], define_name="FFTW3")
     # Find MKL
     elif not cnf.options.use_ctfft:
@@ -135,6 +138,7 @@ def configure(cnf):
                      uselib_store='imkl',
                      includes=[cnf.options.mkl_incdir],
                      libpath=[cnf.options.mkl_libdir],
+                     rpath=[cnf.options.mkl_libdir],
                      use='openmp', define_name='IMKL_FFT')
 
     cnf.write_config_header('config.h')
