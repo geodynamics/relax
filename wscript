@@ -1,10 +1,3 @@
-def check_fc_header(cnf,header_name,incs,libname,link_libs, defname):
-    frag="program main\n" + 'include "' + header_name + '"\n' \
-        + "end program main\n"
-    cnf.check_fc(msg="Checking for " + header_name + " in " + incs,
-                 includes=incs, fragment=frag, uselib_store=libname,
-                 lib=link_libs, define_name=defname)
-
 def options(opt):
     opt.load('compiler_c compiler_fc')
     opt.add_option('--use-fftw', action='store_true', default=False,
@@ -30,13 +23,16 @@ def configure(cnf):
     if not found_gmt:
         cnf.fatal('Could not find gmt')
     try:
-        cnf.check_fc(fcflags='-openmp', linkflags='-openmp', uselib_store='openmp')
-    except:
         cnf.check_fc(fcflags='-fopenmp', linkflags='-fopenmp', uselib_store='openmp')
+    except:
+        cnf.check_fc(fcflags='-openmp', linkflags='-openmp', uselib_store='openmp')
 
     if cnf.options.use_fftw:
-        check_fc_header(cnf,"fftw3.f",'/usr/include','fftw',
-                        ['fftw3f','fftw3f_threads'],"FFTW3")
+        frag="program main\n" + 'include "fftw3.f"\n' \
+            + "end program main\n"
+        cnf.check_fc(msg="Checking for fftw in /usr/include",
+                     includes=['/usr/include'], fragment=frag, uselib_store='fftw',
+                     lib=['fftw3f','fftw3f_threads'], define_name="FFTW3")
     elif not cnf.options.use_ctfft:
         cnf.check_fc(lib=['mkl_intel_lp64', 'mkl_intel_thread',
                           'mkl_core'], uselib_store='imkl',
@@ -45,28 +41,24 @@ def configure(cnf):
     cnf.write_config_header('config.h')
 
 def build(bld):
-    sources=['relax.f90',
-             'types.f90',
-             'ctfft.f',
-             'fourier.f90',
-             'green.f90',
-             'elastic3d.f90',
-             'friction3d.f90',
-             'viscoelastic3d.f90',
-             'writegrd4.2.c',
-             'proj.c',
-             'export.f90',
-             'getdata.f',
-             'getopt_m.f90',
-             'input.f90']
-    uses=['gmt','proj','openmp']
-    if bld.options.use_fftw:
-        uses.append('fftw')
-    elif not bld.options.use_ctfft:
-        uses.append('imkl')
-        sources.append('mkl_dfti.f90')
+    uses=['gmt','proj','openmp','fftw','imkl']
+
     bld.program(features='c fc fcprogram',
-                source=sources,
+                source=['relax.f90',
+                        'types.f90',
+                        'ctfft.f',
+                        'fourier.f90',
+                        'green.f90',
+                        'elastic3d.f90',
+                        'friction3d.f90',
+                        'viscoelastic3d.f90',
+                        'writegrd4.2.c',
+                        'proj.c',
+                        'export.f90',
+                        'getdata.f',
+                        'getopt_m.f90',
+                        'input.f90',
+                        'mkl_dfti.f90'],
                 includes=['build'],
                 use=uses,
                 fcflags=['-cpp','-zero'],
