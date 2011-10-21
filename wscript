@@ -20,8 +20,8 @@ def configure(cnf):
     for inc in includedirs:
         try:
             cnf.check_cc(msg="Checking for gmt.h in '" + inc + "'",
-                         header_name='gmt.h', includes=inc, lib='gmt',
-                         uselib_store='gmt')
+                         header_name='gmt.h', includes=inc,
+                         lib=['gmt','netcdf'], uselib_store='gmt')
         except:
             pass
         else:
@@ -29,33 +29,46 @@ def configure(cnf):
             break
     if not found_gmt:
         cnf.fatal('Could not find gmt')
+    try:
+        cnf.check_fc(fcflags='-openmp', linkflags='-openmp', uselib_store='openmp')
+    except:
+        cnf.check_fc(fcflags='-fopenmp', linkflags='-fopenmp', uselib_store='openmp')
+
     if cnf.options.use_fftw:
         check_fc_header(cnf,"fftw3.f",'/usr/include','fftw',
                         ['fftw3f','fftw3f_threads'],"FFTW3")
     elif not cnf.options.use_ctfft:
         cnf.check_fc(lib=['mkl_intel_lp64', 'mkl_intel_thread',
                           'mkl_core'], uselib_store='imkl',
-                     fcflags='-openmp', define_name='IMKL_FFT')
+                     use='openmp', define_name='IMKL_FFT')
+
     cnf.write_config_header('config.h')
 
 def build(bld):
+    sources=['relax.f90',
+             'types.f90',
+             'ctfft.f',
+             'fourier.f90',
+             'green.f90',
+             'elastic3d.f90',
+             'friction3d.f90',
+             'viscoelastic3d.f90',
+             'writegrd4.2.c',
+             'proj.c',
+             'export.f90',
+             'getdata.f',
+             'getopt_m.f90',
+             'input.f90']
+    uses=['gmt','proj','openmp']
+    if bld.options.use_fftw:
+        uses.append('fftw')
+    elif not bld.options.use_ctfft:
+        uses.append('imkl')
+        sources.append('mkl_dfti.f90')
     bld.program(features='c fc fcprogram',
-                source=['relax.f90',
-                        'types.f90',
-                        'ctfft.f',
-                        'fourier.f90',
-                        'green.f90',
-                        'elastic3d.f90',
-                        'friction3d.f90',
-                        'viscoelastic3d.f90',
-                        'writegrd4.2.c',
-                        'proj.c',
-                        'export.f90',
-                        'getdata.f',
-                        'getopt_m.f90',
-                        'input.f90'],
+                source=sources,
                 includes=['build'],
-                use=['fftw','gmt','proj'],
+                use=uses,
                 fcflags=['-cpp','-zero'],
                 target='relax'
                 )
