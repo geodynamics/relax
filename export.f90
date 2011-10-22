@@ -17,7 +17,7 @@
 ! along with RELAX.  If not, see <http://www.gnu.org/licenses/>.
 !-----------------------------------------------------------------------
 
-#include 'include.f90'
+#include "include.f90"
 
 MODULE export
 
@@ -1034,10 +1034,10 @@ END SUBROUTINE exportcreep
                  +sx1*dx1/2, -sx2*dx2/2, sx3*dx3/2, &
                  +sx1*dx1/2, +sx2*dx2/2, sx3*dx3/2, &   
                  -sx1*dx1/2, +sx2*dx2/2, sx3*dx3/2, &
-                 -sx1*dx1/2, -sx2*dx2/2, 0, &
-                 +sx1*dx1/2, -sx2*dx2/2, 0, &
-                 +sx1*dx1/2, +sx2*dx2/2, 0, &
-                 -sx1*dx1/2, +sx2*dx2/2, 0
+                 -sx1*dx1/2, -sx2*dx2/2, 0.0, &
+                 +sx1*dx1/2, -sx2*dx2/2, 0.0, &
+                 +sx1*dx1/2, +sx2*dx2/2, 0.0, &
+                 -sx1*dx1/2, +sx2*dx2/2, 0.0
     WRITE (15,'("        </DataArray>")')
     WRITE (15,'("      </Points>")')
     WRITE (15,'("      <Polys>")')
@@ -1826,14 +1826,14 @@ END SUBROUTINE exportcreep
 
     ! fault edge coordinates
     WRITE (15,'(24ES11.2)') &
-                  x1-d(1)*W/2.d0-s(1)*L/2.d0-n(1)*T/2.d0, x2-d(2)*W/2.d0-s(2)*L/2.d0-n(2)*T/2.d0, x3-d(3)*W/2-s(3)*L/2-n(3)*T/2.d0, &
-                  x1-d(1)*W/2.d0+s(1)*L/2.d0-n(1)*T/2.d0, x2-d(2)*W/2.d0+s(2)*L/2.d0-n(2)*T/2.d0, x3-d(3)*W/2+s(3)*L/2-n(3)*T/2.d0, &
-                  x1+d(1)*W/2.d0+s(1)*L/2.d0-n(1)*T/2.d0, x2+d(2)*W/2.d0+s(2)*L/2.d0-n(2)*T/2.d0, x3+d(3)*W/2+s(3)*L/2-n(3)*T/2.d0, &
-                  x1+d(1)*W/2.d0-s(1)*L/2.d0-n(1)*T/2.d0, x2+d(2)*W/2.d0-s(2)*L/2.d0-n(2)*T/2.d0, x3+d(3)*W/2-s(3)*L/2-n(3)*T/2.d0, &
-                  x1+d(1)*W/2.d0-s(1)*L/2.d0+n(1)*T/2.d0, x2+d(2)*W/2.d0-s(2)*L/2.d0+n(2)*T/2.d0, x3+d(3)*W/2-s(3)*L/2+n(3)*T/2.d0, &
-                  x1-d(1)*W/2.d0-s(1)*L/2.d0+n(1)*T/2.d0, x2-d(2)*W/2.d0-s(2)*L/2.d0+n(2)*T/2.d0, x3-d(3)*W/2-s(3)*L/2+n(3)*T/2.d0, &
-                  x1-d(1)*W/2.d0+s(1)*L/2.d0+n(1)*T/2.d0, x2-d(2)*W/2.d0+s(2)*L/2.d0+n(2)*T/2.d0, x3-d(3)*W/2+s(3)*L/2+n(3)*T/2.d0, &
-                  x1+d(1)*W/2.d0+s(1)*L/2.d0+n(1)*T/2.d0, x2+d(2)*W/2.d0+s(2)*L/2.d0+n(2)*T/2.d0, x3+d(3)*W/2+s(3)*L/2+n(3)*T/2.d0
+                  x1-d(1)*W/2.d0-s(1)*L/2.d0-n(1)*T/2.d0, x2-d(2)*W/2.d0-s(2)*L/2.d0-n(2)*T/2.d0,x3-d(3)*W/2-s(3)*L/2-n(3)*T/2.d0, &
+                  x1-d(1)*W/2.d0+s(1)*L/2.d0-n(1)*T/2.d0, x2-d(2)*W/2.d0+s(2)*L/2.d0-n(2)*T/2.d0,x3-d(3)*W/2+s(3)*L/2-n(3)*T/2.d0, &
+                  x1+d(1)*W/2.d0+s(1)*L/2.d0-n(1)*T/2.d0, x2+d(2)*W/2.d0+s(2)*L/2.d0-n(2)*T/2.d0,x3+d(3)*W/2+s(3)*L/2-n(3)*T/2.d0, &
+                  x1+d(1)*W/2.d0-s(1)*L/2.d0-n(1)*T/2.d0, x2+d(2)*W/2.d0-s(2)*L/2.d0-n(2)*T/2.d0,x3+d(3)*W/2-s(3)*L/2-n(3)*T/2.d0, &
+                  x1+d(1)*W/2.d0-s(1)*L/2.d0+n(1)*T/2.d0, x2+d(2)*W/2.d0-s(2)*L/2.d0+n(2)*T/2.d0,x3+d(3)*W/2-s(3)*L/2+n(3)*T/2.d0, &
+                  x1-d(1)*W/2.d0-s(1)*L/2.d0+n(1)*T/2.d0, x2-d(2)*W/2.d0-s(2)*L/2.d0+n(2)*T/2.d0,x3-d(3)*W/2-s(3)*L/2+n(3)*T/2.d0, &
+                  x1-d(1)*W/2.d0+s(1)*L/2.d0+n(1)*T/2.d0, x2-d(2)*W/2.d0+s(2)*L/2.d0+n(2)*T/2.d0,x3-d(3)*W/2+s(3)*L/2+n(3)*T/2.d0, &
+                  x1+d(1)*W/2.d0+s(1)*L/2.d0+n(1)*T/2.d0, x2+d(2)*W/2.d0+s(2)*L/2.d0+n(2)*T/2.d0,x3+d(3)*W/2+s(3)*L/2+n(3)*T/2.d0
 
     WRITE (15,'("        </DataArray>")')
     WRITE (15,'("      </Points>")')
@@ -2019,8 +2019,8 @@ END SUBROUTINE exportcreep
 
     ! open file for mixed binary/ascii writing in VTK legacy format
     OPEN(UNIT=15,FILE=vcfilename,form='UNFORMATTED',ACCESS='SEQUENTIAL', &
-         ACTION='WRITE',CONVERT='BIG_ENDIAN',RECORDTYPE='STREAM', &
-         BUFFERED='YES',IOSTAT=iostatus)
+         ACTION='WRITE',CONVERT='BIG_ENDIAN', &
+         IOSTAT=iostatus)
     IF (iostatus>0) THEN
        WRITE_DEBUG_INFO
        PRINT '(a)', vcfilename
@@ -2088,8 +2088,8 @@ END SUBROUTINE exportcreep
 
     ! open file for mixed binary/ascii writing in VTK legacy format
     OPEN(UNIT=15,FILE=vcfilename,form='UNFORMATTED',ACCESS='SEQUENTIAL', &
-         ACTION='WRITE',CONVERT='BIG_ENDIAN',RECORDTYPE='STREAM', &
-         BUFFERED='YES',IOSTAT=iostatus)
+         ACTION='WRITE',CONVERT='BIG_ENDIAN', &
+         IOSTAT=iostatus)
     IF (iostatus>0) THEN
        WRITE_DEBUG_INFO
        PRINT '(a)', vcfilename

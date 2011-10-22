@@ -2082,7 +2082,8 @@ CONTAINS
 #endif
     LOGICAL, INTENT(IN), OPTIONAL :: rate
 
-    INTEGER :: i,i1,i2,i3,israte
+    INTEGER :: i,i1,i2,i3
+    LOGICAL :: israte
     REAL*8 :: period,phi,amp,L,W,Lp,Wp,x1,x2,x3,x,y,beta
 
     REAL*8, PARAMETER :: pi=3.141592653589793115997963468544185161_8
