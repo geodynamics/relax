@@ -43,8 +43,13 @@ def options(opt):
     other.add_option('--use-ctfft', action='store_true', default=False,
                      help='Use slow internal CTFFT instead of MKL or FFTW')
 
+def ifort_modifier_darwin(conf):
+    from waflib.Tools import fc_config
+    fc_config.fortran_modifier_darwin(conf)
 
 def configure(cnf):
+    from waflib.Configure import conf
+    conf(ifort_modifier_darwin)
     cnf.load('compiler_c compiler_fc')
 
     # Find Proj
