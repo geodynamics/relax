@@ -1,0 +1,29 @@
+Static linking
+
+Mac OS X
+--------
+
+From Fink, install gmt, fftw, proj, gfortran, and gcc4.6.  Configure
+with
+
+  CC=/sw/bin/gcc-fsf-4.6 CPPFLAGS="-I/usr/include/netcdf-4" ./waf configure --proj-dir=/sw --gmt-dir=/sw --fftw-dir=/sw --use-fftw
+
+Copy system directories to the current directory.
+
+  cp /sw/lib/gcc4.6/lib/libquadmath.a /sw/lib/gcc4.6/lib/libgfortran.a /sw/lib/gcc4.6/lib/libgomp.a /sw/lib/libgmt.a /sw/lib/libnetcdf.a /sw/lib/libproj.a /sw/lib/libfftw3f.a /sw/lib/libfftw3f_threads.a .
+
+Compile
+
+  ./waf
+
+and then recompile the executable
+
+  cd build
+  /sw/bin/gfortran relax.f90.1.o types.f90.1.o ctfft.f.1.o fourier.f90.1.o green.f90.1.o elastic3d.f90.1.o friction3d.f90.1.o viscoelastic3d.f90.1.o writegrd4.2.c.1.o proj.c.1.o export.f90.1.o getdata.f.1.o getopt_m.f90.1.o input.f90.1.o mkl_dfti.f90.1.o -o /Users/sbarbot/Documents/src/relax/relax -L.. -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads -lgomp -lquadmath -lgfortran -Wl,-search_paths_first -static-libgcc
+
+Then the output of "otool -L ../relax" will give
+
+../relax:
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 125.2.11)
+
+which is a standard system library available on all Macs.
