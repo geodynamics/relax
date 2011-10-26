@@ -153,7 +153,7 @@ def configure(cnf):
 
     # Check for -zero or -finit-local-zero
     frag="program main\n" + "end program main\n"
-    zero_flags=['-finit-local-zero','-zero']
+    zero_flags=['-zero','-finit-local-zero']
     if cnf.options.zero_flag:
         zero_flags=[cnf.options.zero_flag]
     found_zero=False
