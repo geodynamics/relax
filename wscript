@@ -39,7 +39,12 @@ def options(opt):
                     help='Directory where gmt library files are installed')
 
     other=opt.add_option_group('Other Options')
-    other.add_option('--openmp-flag', help="Compiler flag for OpenMP")
+    other.add_option('--openmp-flag',
+                     help="C and Fortran compiler flag for OpenMP")
+    other.add_option('--zero-flag',
+                     help="Fortran compiler flag to initialize all values to zero")
+    other.add_option('--cpp-flag',
+                     help="Fortran compiler flag to run the C preprocessor")
     other.add_option('--use-ctfft', action='store_true', default=False,
                      help='Use slow internal CTFFT instead of MKL or FFTW')
 
@@ -96,11 +101,11 @@ def configure(cnf):
     found_openmp=False
     openmp_flags=['-fopenmp','-openmp','-mp','-xopenmp','-omp','-qsmp=omp']
     if cnf.options.openmp_flag:
-        openmp_flag=cnf.options.openmp_flag
+        openmp_flags=[cnf.options.openmp_flag]
     for flag in openmp_flags:
         try:
-            cnf.check_fc(msg=openmp_msg+flag, fragment=openmp_fragment, fcflags=flag,
-                         linkflags=flag, uselib_store='openmp')
+            cnf.check_fc(msg=openmp_msg+flag, fragment=openmp_fragment,
+                         fcflags=flag, linkflags=flag, uselib_store='openmp')
         except cnf.errors.ConfigurationError:
             continue
         else:
@@ -146,11 +151,45 @@ def configure(cnf):
                      rpath=[cnf.options.mkl_libdir],
                      use='openmp', define_name='IMKL_FFT')
 
+    # Check for -zero or -finit-local-zero
+    frag="program main\n" + "end program main\n"
+    zero_flags=['-finit-local-zero','-zero']
+    if cnf.options.zero_flag:
+        zero_flags=[cnf.options.zero_flag]
+    found_zero=False
+    for flag in zero_flags:
+        try:
+            cnf.check_fc(fragment=frag,msg="Checking option " + flag,
+                         fcflags=flag,uselib_store='zero')
+        except:
+            continue
+        else:
+            found_zero=True
+            break
+    if not found_zero:
+        cnf.fatal("Could not find an option for zero'ing initial values")
+
+    # Check for C preprocessor option
+    cpp_flags=['-cpp','-Mpreprocess']
+    if cnf.options.cpp_flag:
+        cpp_flags=[cnf.options.cpp_flag]
+    found_cpp=False
+    for flag in cpp_flags:
+        try:
+            cnf.check_fc(fragment=frag,msg="Checking option " + flag,
+                         fcflags=flag,uselib_store='cpp')
+        except:
+            continue
+        else:
+            found_cpp=True
+            break
+    if not found_cpp:
+        cnf.fatal("Could not find an option for running the C preprocessor")
+
+
     cnf.write_config_header('config.h')
 
 def build(bld):
-    uses=['gmt','proj','openmp','fftw','imkl']
-
     bld.program(features='c fc fcprogram',
                 source=['relax.f90',
                         'types.f90',
@@ -168,7 +207,6 @@ def build(bld):
                         'input.f90',
                         'mkl_dfti.f90'],
                 includes=['build'],
-                use=uses,
-                fcflags=['-cpp','-zero'],
+                use=['gmt','proj','openmp','fftw','imkl','zero','cpp'],
                 target='relax'
                 )
