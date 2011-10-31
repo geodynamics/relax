@@ -120,11 +120,12 @@ CONTAINS
   !!
   !! \author sylvain barbot (08/30/08) - original form
   !-----------------------------------------------------------------
-  SUBROUTINE viscouseigenstress(mu,structure,ductilezones,sig,sx1,sx2,sx3, &
+  SUBROUTINE viscouseigenstress(mu,structure,ductilezones,nz,sig,sx1,sx2,sx3, &
        dx1,dx2,dx3,moment,beta,maxwelltime,gamma)
     REAL*8, INTENT(IN) :: mu,dx1,dx2,dx3,beta
+    INTEGER, INTENT(IN) :: nz
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
-    TYPE(WEAK_STRUCT), DIMENSION(:), INTENT(IN) :: ductilezones
+    TYPE(WEAK_STRUCT), DIMENSION(nz), INTENT(IN) :: ductilezones
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(TENSOR), INTENT(OUT), DIMENSION(sx1,sx2,sx3) :: moment
@@ -173,12 +174,12 @@ CONTAINS
              gammadot0=structure(i3)%gammadot0
 
              ! perturbation from isolated viscous zones
-             dg0=dgammadot0(ductilezones,x1,x2,x3,beta)
+             dg0=dgammadot0(ductilezones,nz,x1,x2,x3,beta)
 
              ! local fluidity structure
              gammadot0=gammadot0+dg0
 
-             IF (1e-9 .GT. gammadot0) CYCLE
+             IF (1.0d-9 .GT. gammadot0) CYCLE
 
              ! local deviatoric stress
              s=tensordeviatoric(sig(i1,i2,i3))
@@ -190,7 +191,7 @@ CONTAINS
              tauc=tau-cohesion
 
              ! cohesion test
-             IF (tauc .LE. 1e-9) CYCLE
+             IF (tauc .LE. 1.0d-9) CYCLE
 
              ! powerlaw viscosity
              gammadot=gammadot0*(tauc/mu)**power
@@ -221,17 +222,15 @@ CONTAINS
     !!
     !! \author sylvain barbot (3/29/10) - original form
     !---------------------------------------------------------
-    REAL*8 FUNCTION dgammadot0(zones,x1,x2,x3,beta)
-       TYPE(WEAK_STRUCT), INTENT(IN), DIMENSION(:) :: zones
+    REAL*8 FUNCTION dgammadot0(zones,n,x1,x2,x3,beta)
+       INTEGER, INTENT(IN) :: n
+       TYPE(WEAK_STRUCT), INTENT(IN), DIMENSION(nz) :: zones
        REAL*8, INTENT(IN) :: x1,x2,x3,beta
 
        REAL*8 :: dg,x,y,z,L,W,D,strike,dip,LM
        REAL*8 :: cstrike,sstrike,cdip,sdip, &
                  xr,yr,zr,x2r,Wp,Lp,Dp,x1s,x2s,x3s
-       INTEGER :: n,i
-
-       ! number of ductile zones
-       n=SIZE(zones,1)
+       INTEGER :: i
 
        ! default is no change in fluidity
        dgammadot0=0._8
@@ -239,9 +238,15 @@ CONTAINS
        DO i=1,n
           ! retrieve weak zone geometry
           dg=zones(i)%dgammadot0
-          x=zones(i)%x;y=zones(i)%y;z=zones(i)%z
-          W=zones(i)%length;L=zones(i)%width;D=zones(i)%thickness
-          strike=zones(i)%strike;dip=zones(i)%dip
+
+          x=zones(i)%x
+          y=zones(i)%y
+          z=zones(i)%z
+          W=zones(i)%length
+          L=zones(i)%width
+          D=zones(i)%thickness
+          strike=zones(i)%strike
+          dip=zones(i)%dip
 
           ! effective tapered dimensions
           Wp=W*(1._8+2._8*beta)/2._8

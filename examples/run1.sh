@@ -66,7 +66,7 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time ../relax $* <<EOF | tee $WDIR/in.param
+OMP_NUM_THREADS=4 time ../relax $* <<EOF | tee $WDIR/in.param
 # use '#' character to include comments in your input file
 # grid size (sx1,sx2,sx3)
 256 256 256

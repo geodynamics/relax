@@ -19,7 +19,7 @@ Compile
 and then recompile the executable
 
   cd build
-  /sw/bin/gfortran relax.f90.1.o types.f90.1.o ctfft.f.1.o fourier.f90.1.o green.f90.1.o elastic3d.f90.1.o friction3d.f90.1.o viscoelastic3d.f90.1.o writegrd4.2.c.1.o proj.c.1.o export.f90.1.o getdata.f.1.o getopt_m.f90.1.o input.f90.1.o mkl_dfti.f90.1.o -o /Users/sbarbot/Documents/src/relax/relax -L.. -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads -lgomp -lquadmath -lgfortran -Wl,-search_paths_first -static-libgcc
+  /sw/bin/gfortran relax.f90.1.o types.f90.1.o ctfft.f.1.o fourier.f90.1.o green.f90.1.o elastic3d.f90.1.o friction3d.f90.1.o viscoelastic3d.f90.1.o writevtk.c.1.o writegrd4.2.c.1.o proj.c.1.o export.f90.1.o getdata.f.1.o getopt_m.f90.1.o input.f90.1.o mkl_dfti.f90.1.o -o /Users/sbarbot/Documents/src/relax/relax -L.. -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads -lgomp -lquadmath -lgfortran -Wl,-search_paths_first -static-libgcc
 
 Then the output of "otool -L ../relax" will give
 

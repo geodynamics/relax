@@ -276,7 +276,13 @@ CONTAINS
     iret=DftiCreateDescriptor(desc,DFTI_SINGLE,DFTI_REAL,3,size)
     iret=DftiSetValue(desc,DFTI_CONJUGATE_EVEN_STORAGE,DFTI_COMPLEX_COMPLEX)
 
-    WRITE_MKL_DEBUG_INFO(iret)
+    IF(iret.NE.0) THEN
+       IF(.NOT.DftiErrorClass(iret,DFTI_NO_ERROR)) THEN
+          WRITE_DEBUG_INFO
+          WRITE (0,*) DftiErrorMessage(iret)
+          STOP 1
+       END IF
+    END IF
 
     IF (FFT_FORWARD == direction) THEN
        scale=dx1*dx2*dx3
@@ -294,7 +300,13 @@ CONTAINS
        iret=DftiComputeBackward(desc,data)
     END IF
     iret=DftiFreeDescriptor(desc)
-    WRITE_MKL_DEBUG_INFO(iret)
+    IF(iret.NE.0) THEN
+       IF(.NOT.DftiErrorClass(iret,DFTI_NO_ERROR)) THEN
+          WRITE_DEBUG_INFO
+          WRITE (0,*) DftiErrorMessage(iret)
+          STOP 1
+       END IF
+    END IF
 
   END SUBROUTINE fft3
 #else
@@ -431,7 +443,13 @@ CONTAINS
     iret=DftiCreateDescriptor(desc,DFTI_SINGLE,DFTI_REAL,2,size);
     iret=DftiSetValue(desc,DFTI_CONJUGATE_EVEN_STORAGE,DFTI_COMPLEX_COMPLEX)
 
-    WRITE_MKL_DEBUG_INFO(iret)
+    IF(iret.NE.0) THEN
+       IF(.NOT.DftiErrorClass(iret,DFTI_NO_ERROR)) THEN
+          WRITE_DEBUG_INFO
+          WRITE (0,*) DftiErrorMessage(iret)
+          STOP 1
+       END IF
+    END IF
 
     IF (FFT_FORWARD == direction) THEN
        scale=dx1*dx2
@@ -449,7 +467,13 @@ CONTAINS
        iret=DftiComputeBackward(desc,data)
     END IF
     iret=DftiFreeDescriptor(desc)
-    WRITE_MKL_DEBUG_INFO(iret)
+    IF(iret.NE.0) THEN
+       IF(.NOT.DftiErrorClass(iret,DFTI_NO_ERROR)) THEN
+          WRITE_DEBUG_INFO
+          WRITE (0,*) DftiErrorMessage(iret)
+          STOP 1
+       END IF
+    END IF
 
   END SUBROUTINE fft2
 #else
@@ -549,7 +573,13 @@ CONTAINS
     REAL*4 :: scale
 
     iret=DftiCreateDescriptor(desc,DFTI_SINGLE,DFTI_COMPLEX,1,sx)
-    WRITE_MKL_DEBUG_INFO(iret)
+    IF(iret.NE.0) THEN
+       IF(.NOT.DftiErrorClass(iret,DFTI_NO_ERROR)) THEN
+          WRITE_DEBUG_INFO
+          WRITE (0,*) DftiErrorMessage(iret)
+          STOP 1
+       END IF
+    END IF
 
     IF (FFT_FORWARD == direction) THEN
        scale=dx
@@ -563,7 +593,13 @@ CONTAINS
        iret=DftiComputeBackward(desc,data)
     END IF
     iret=DftiFreeDescriptor(desc)
-    WRITE_MKL_DEBUG_INFO(iret)
+    IF(iret.NE.0) THEN
+       IF(.NOT.DftiErrorClass(iret,DFTI_NO_ERROR)) THEN
+          WRITE_DEBUG_INFO
+          WRITE (0,*) DftiErrorMessage(iret)
+          STOP 1
+       END IF
+    END IF
 
   END SUBROUTINE fft1
 #else

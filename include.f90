@@ -42,7 +42,7 @@
 
 
 #ifdef IMKL_FFT
-#define WRITE_MKL_DEBUG_INFO(i) IF (i .NE. 0) THEN; IF (.NOT. DftiErrorClass(i,DFTI_NO_ERROR)) THEN; WRITE_DEBUG_INFO; WRITE (0,*) DftiErrorMessage(i); STOP 1; END IF; END IF
+#define WRITE_MKL_DEBUG_INFO(i) IF(i.NE.0)THEN;IF(.NOT.DftiErrorClass(i,DFTI_NO_ERROR))THEN;WRITE_DEBUG_INFO;WRITE (0,*) DftiErrorMessage(i);STOP 1;END IF;END IF
 #endif
 
 ! adjust data alignment for the Fourier transform
