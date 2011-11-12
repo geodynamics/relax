@@ -67,7 +67,7 @@ $WDIR
 # number of powerlaw viscous interfaces
 2
 # no depth gammadot0 power cohesion
-   1   3.0       5e3   3.0      0.0
+   1   2.0       5e3   3.0      0.0
    2   8.0       5e3   3.0      0.0
 # ductile zones corresponds to volumes where viscous properties change.
 # number of power-law ductile zones

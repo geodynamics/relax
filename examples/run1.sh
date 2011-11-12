@@ -89,7 +89,9 @@ $WDIR
 # integration time (in unit of time), step (negative for automatic) and scaling of computed value
 20 -1 1
 # number of observation planes
-0
+1
+# no x1 x2 x3 length width strike dip
+   1  0 -3  0      6     6     90  90
 # number of observation points
 0
 # number of Coulomb patches

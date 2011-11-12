@@ -175,11 +175,13 @@
   !!              afterslip, export faults to GMT xy format
   !!              and allow scaling of computed time steps.        <br>
   !! (04-26-11) - include command-line arguments
+  !! (11-04-11) - compatible with gfortran                         <br>
   !!
   !! \todo 
   !!   - homogenize VTK output so that geometry of events match event index
   !!   - evaluate Green function, stress and body forces in GPU
-  !!   - create a ./configure ./install framework
+  !!   - fix the vtk export to grid for anisotropic sampling
+  !!   - export position of observation points to long/lat in opts-geo.dat
   !------------------------------------------------------------------------
 PROGRAM relax
 
