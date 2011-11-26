@@ -211,8 +211,8 @@ PROGRAM relax
 #ifdef VTK
   CHARACTER(80) :: filename,title,name
   CHARACTER(3) :: digit
-  CHARACTER(4) :: digit4
 #endif
+  CHARACTER(4) :: digit4
   REAL*8 :: t,Dt,tm
   
   ! arrays
@@ -402,8 +402,11 @@ PROGRAM relax
                             in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,0)
   END IF
 #endif
-#ifdef VTK
+  ! initialize stress conditions
+  CALL export_rfaults_stress_init(sig,in%sx1,in%sx2,in%sx3, &
+                                     in%dx1,in%dx2,in%dx3,in%nsop,in%sop)
   WRITE (digit4,'(I4.4)') 0
+#ifdef VTK
   IF (in%isoutputvtk .AND. in%isoutputstress) THEN
      filename=trim(in%wdir)//"/sigma-"//digit4//".vtk"//char(0)
      title="stress tensor field"//char(0)
@@ -411,16 +414,24 @@ PROGRAM relax
      CALL exportvtk_tensors_legacy(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
                                    4,4,8,filename,title,name)
   END IF
+  ! coseismic stress change on predefined planes for 3-D visualization w/ Paraview
   filename=trim(in%wdir)//"/rfaults-sigma-"//digit4//".vtp"
   CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
                                 in%nsop,in%sop,filename,sig=sig)
-  ! initialize stress conditions
-  CALL exportvtk_rfaults_stress_init(sig,in%sx1,in%sx2,in%sx3, &
-                                     in%dx1,in%dx2,in%dx3,in%nsop,in%sop)
+  ! postseismic stress change on predefined planes (zero by definition)
   filename=trim(in%wdir)//"/rfaults-dsigma-"//digit4//".vtp"
   CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
                                 in%nsop,in%sop,filename)
 #endif
+  ! coseismic stress change on predefined planes for gmt
+  filename=trim(in%wdir)//"/rfaults-sigma-"//digit4//".xy"
+  CALL exportgmt_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
+                                in%nsop,in%sop,filename,sig=sig)
+  ! postseismic stress change on predefined planes for gmt (zero by definition)
+  filename=trim(in%wdir)//"/rfaults-dsigma-"//digit4//".xy"
+  CALL exportgmt_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
+                                in%nsop,in%sop,filename)
+  ! time series of stress in ASCII format
   CALL exportcoulombstress(sig,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
                     in%nsop,in%sop,0._8,in%wdir,.TRUE.)
   CALL reporttime(0,0._8,in%reporttimefilename)
@@ -754,8 +765,8 @@ PROGRAM relax
                                  in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,oi)
         END IF
 #endif
-#ifdef VTK
         WRITE (digit4,'(I4.4)') oi
+#ifdef VTK
         IF (in%isoutputvtk .AND. in%isoutputstress) THEN
            filename=trim(in%wdir)//"/sigma-"//digit4//".vtk"//char(0)
            title="stress tensor field"//char(0)
@@ -770,6 +781,15 @@ PROGRAM relax
         CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
                                       in%nsop,in%sop,filename,convention=1,sig=sig)
 #endif
+        ! total stress on predefined planes for gmt
+        filename=trim(in%wdir)//"/rfaults-sigma-"//digit4//".xy"
+        CALL exportgmt_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
+                                      in%nsop,in%sop,filename,sig=sig)
+        ! postseismic stress change on predefined planes for gm
+        filename=trim(in%wdir)//"/rfaults-dsigma-"//digit4//".xy"
+        CALL exportgmt_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
+                                      in%nsop,in%sop,filename,convention=1,sig=sig)
+        ! time series of stress in ASCII format
         CALL exportcoulombstress(sig,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
                           in%nsop,in%sop,t,in%wdir,.FALSE.)
 
