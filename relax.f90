@@ -180,6 +180,7 @@
   !! \todo 
   !!   - homogenize VTK output so that geometry of events match event index
   !!   - evaluate Green function, stress and body forces in GPU
+  !!   - write the code for MPI multi-thread
   !!   - fix the vtk export to grid for anisotropic sampling
   !!   - export position of observation points to long/lat in opts-geo.dat
   !------------------------------------------------------------------------
@@ -389,8 +390,20 @@ PROGRAM relax
   END IF
 
   ! export initial stress
+#ifdef GRD
+  IF (in%isoutputgrd .AND. in%isoutputstress) THEN
+     CALL exportstressgrd(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
+                          in%ozs,in%x0,in%y0,in%wdir,0)
+  END IF
+#endif
+#ifdef PROJ
+  IF (in%isoutputproj .AND. in%isoutputstress) THEN
+      CALL exportstressproj(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%ozs, &
+                            in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,0)
+  END IF
+#endif
 #ifdef VTK
-  WRITE (digit4,'(I4.4)') oi-1
+  WRITE (digit4,'(I4.4)') 0
   IF (in%isoutputvtk .AND. in%isoutputstress) THEN
      filename=trim(in%wdir)//"/sigma-"//digit4//".vtk"//char(0)
      title="stress tensor field"//char(0)

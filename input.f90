@@ -171,28 +171,28 @@ CONTAINS
     IF (in%isoutputgrd) THEN
        PRINT '("     * export to GRD format")'
     ELSE
-       PRINT '("     * export to GRD format cancelled                     (--",a,")")', trim(opts(4)%name)
+       PRINT '("     * export to GRD format cancelled                     (--",a,")")', trim(opts(5)%name)
     END IF
 #endif
 #ifdef XYZ
     IF (in%isoutputxyz) THEN
        PRINT '("     * export to XYZ format")'
     ELSE
-       PRINT '("     * export to XYZ format cancelled                     (--",a,")")', trim(opts(5)%name)
+       PRINT '("     * export to XYZ format cancelled                     (--",a,")")', trim(opts(6)%name)
     END IF
 #endif
 #ifdef TXT
     IF (in%isoutputtxt) THEN
        PRINT '("     * export to TXT format")'
     ELSE
-       PRINT '("     * export to TXT format cancelled                     (--",a,")")', trim(opts(2)%name)
+       PRINT '("     * export to TXT format cancelled                     (--",a,")")', trim(opts(3)%name)
     END IF
 #endif
 #ifdef VTK
     IF (in%isoutputvtk) THEN
        PRINT '("     * export to VTK format")'
     ELSE
-       PRINT '("     * export to VTK format cancelled                     (--",a,")")', trim(opts(3)%name)
+       PRINT '("     * export to VTK format cancelled                     (--",a,")")', trim(opts(4)%name)
     END IF
 #endif
 #ifdef PROJ

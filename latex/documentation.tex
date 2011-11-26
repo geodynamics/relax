@@ -514,18 +514,18 @@ coseismic event 001
 \label{input:out_coseismic}
 \end{figure}
 
-To visualize the coseismic displacement at the surface, it is convenient to use the script \verb'map.sh'. The plotting routine \verb'map.sh' provided with the code and numerous other post-processing scripts can be used to analyze the modeled scenario. The unix script \verb'map.sh', a wrapper around GMT programs, produces map views of any grid but is optimized to work with the three-dimensional output of RELAX.
+To visualize the coseismic displacement at the surface, it is convenient to use the script \verb'grdmap.sh'. The plotting routine \verb'grdmap.sh' provided with the code and numerous other post-processing scripts can be used to analyze the modeled scenario. The unix script \verb'grdmap.sh', a wrapper around GMT programs, produces map views of any grid but is optimized to work with the three-dimensional output of RELAX.
 \begin{alltt}
-{\color{NavyBlue}map.sh -b -30/30/-30/30 -p -0.05/0.05/0.001 -v 0.5 \textbackslash
-       -u "m" -e rpatch.sh output_directory/000}
+{\color{NavyBlue}grdmap.sh -b -30/30/-30/30 -p -0.05/0.05/0.001 -v 0.5 \textbackslash
+       -u "m" -e erpatch.sh output_directory/000}
 \end{alltt}
-where the \verb'-b' option defines the boundary of the map in the GMT format W/E/S/N, the \verb'-p' option defines the range of the color scale for the vertical displacements, the \verb'-v' option defines the length of the vectors for the horizontal displacement, the "-u" option defines the unit of the color scale, and the "-e" option call the additional script \verb'rpatch.sh' to plot the spatial extent of the fault on the map. The last argument \verb'output_directory/000' refers to the prefix of all GMT binary files associated with the index \verb'000'. Any file prefix followed by \verb'-north.grd', \verb'-east.grd' and \verb'-up.grd' can be used in this manner. To look at an individual file, for example the stress component $\sigma_{12}$ at 5\,km depth, simply use
+where the \verb'-b' option defines the boundary of the map in the GMT format W/E/S/N, the \verb'-p' option defines the range of the color scale for the vertical displacements, the \verb'-v' option defines the length of the vectors for the horizontal displacement, the "-u" option defines the unit of the color scale, and the "-e" option call the additional script \verb'erpatch.sh' to plot the spatial extent of the fault on the map. The last argument \verb'output_directory/000' refers to the prefix of all GMT binary files associated with the index \verb'000'. Any file prefix followed by \verb'-north.grd', \verb'-east.grd' and \verb'-up.grd' can be used in this manner. To look at an individual file, for example the stress component $\sigma_{12}$ at 5\,km depth, simply use
 \begin{alltt}
 
-{\color{NavyBlue}map.sh -b -30/30/-30/30 -p -500/500/1 \textbackslash
-       -u "kPa" -e rpatch.sh output_directory/000-s12.grd}
+{\color{NavyBlue}grdmap.sh -b -30/30/-30/30 -p -500/500/1 \textbackslash
+       -u "kPa" -e erpatch.sh output_directory/000-s12.grd}
 \end{alltt}
-For this command to work, it is assumed that \verb'map.sh' and \verb'rpatch.sh' are both located in a directory listed in the \verb'$PATH' environment variable, such as \verb'/usr/local/bin'.
+For this command to work, it is assumed that \verb'grdmap.sh' and \verb'erpatch.sh' are both located in a directory listed in the \verb'$PATH' environment variable, such as \verb'/usr/local/bin'.
 
 The coseismic slip distribution of a real earthquake can be a long and detailed description of the source coming from an inversion of geophysical data. To include these models and conform them to the format required by the RELAX program, it is convenient to use other unix tricks, such as \verb'awk', \verb'wc' and the use of variables, for instance, if the source is described in the file \verb'src.dat', but the file missing a line counter and the units in meters, one can alter it as follows
 \begin{alltt}
