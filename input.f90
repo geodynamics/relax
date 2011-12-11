@@ -549,15 +549,21 @@ CONTAINS
                   in%linearweakzone(k)%length,in%linearweakzone(k)%width, &
                   in%linearweakzone(k)%strike,in%linearweakzone(k)%dip, &
                   dummy,in%x0,in%y0,in%rot)
-#ifdef VTK
-                  ! export the ductile zone in VTK format
+
                   WRITE (digit,'(I3.3)') k
 
+#ifdef VTK
+                  ! export the ductile zone in VTK format
                   rffilename=trim(in%wdir)//"/weakzone-"//digit//".vtp"
                   CALL exportvtk_brick(in%linearweakzone(k)%x,in%linearweakzone(k)%y,in%linearweakzone(k)%z, &
                                        in%linearweakzone(k)%length,in%linearweakzone(k)%width,in%linearweakzone(k)%thickness, &
                                        in%linearweakzone(k)%strike,in%linearweakzone(k)%dip,rffilename)
 #endif
+                  ! export the ductile zone in GMT .xy format
+                  rffilename=trim(in%wdir)//"/weakzone-"//digit//".xy"
+                  CALL exportxy_brick(in%linearweakzone(k)%x,in%linearweakzone(k)%y,in%linearweakzone(k)%z, &
+                                      in%linearweakzone(k)%length,in%linearweakzone(k)%width,in%linearweakzone(k)%thickness, &
+                                      in%linearweakzone(k)%strike,in%linearweakzone(k)%dip,rffilename)
           END DO
        END IF
     END IF ! end linear viscous
@@ -603,10 +609,11 @@ CONTAINS
              WRITE (0,'("error in input file: index misfit")')
              STOP 1
           END IF
+
 #ifdef VTK
-          ! export the viscous layer in VTK format
           WRITE (digit,'(I3.3)') k
 
+          ! export the viscous layer in VTK format
           rffilename=trim(in%wdir)//"/nonlinearlayer-"//digit//".vtp"
           CALL exportvtk_rectangle(0.d0,0.d0,in%nonlinearlayer(k)%z, &
                                    DBLE(in%sx1)*in%dx1,DBLE(in%sx2)*in%dx2, &
@@ -656,10 +663,11 @@ CONTAINS
                   in%nonlinearweakzone(k)%length,in%nonlinearweakzone(k)%width, &
                   in%nonlinearweakzone(k)%strike,in%nonlinearweakzone(k)%dip, &
                   dummy,in%x0,in%y0,in%rot)
-#ifdef VTK
-                  ! export the ductile zone in VTK format
+
                   WRITE (digit,'(I3.3)') k
 
+#ifdef VTK
+                  ! export the ductile zone in VTK format
                   rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".vtp"
                   CALL exportvtk_brick(in%nonlinearweakzone(k)%x, &
                                        in%nonlinearweakzone(k)%y, &
@@ -670,6 +678,16 @@ CONTAINS
                                        in%nonlinearweakzone(k)%strike, &
                                        in%nonlinearweakzone(k)%dip,rffilename)
 #endif
+                  ! export the ductile zone in GMT .xy format
+                  rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".xy"
+                  CALL exportxy_brick(in%nonlinearweakzone(k)%x, &
+                                       in%nonlinearweakzone(k)%y, &
+                                       in%nonlinearweakzone(k)%z, &
+                                       in%nonlinearweakzone(k)%length, &
+                                       in%nonlinearweakzone(k)%width, &
+                                       in%nonlinearweakzone(k)%thickness, &
+                                       in%nonlinearweakzone(k)%strike, &
+                                       in%nonlinearweakzone(k)%dip,rffilename)
           END DO
        END IF
     END IF ! end nonlinear viscous

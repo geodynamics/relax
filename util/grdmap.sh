@@ -27,7 +27,7 @@ fi
 done
 
 # plotting vectors
-if [ -e $U1 ]; then
+if [ -e "$U1" ]; then
 
 #echo $self": found "$U1": plotting vectors"
 echo $self": Using VECTOR="$VECTOR", STEP="$ADX

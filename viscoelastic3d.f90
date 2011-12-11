@@ -179,7 +179,7 @@ CONTAINS
              ! local fluidity structure
              gammadot0=gammadot0+dg0
 
-             IF (1.0d-9 .GT. gammadot0) CYCLE
+             IF (1.0d-20 .GT. gammadot0) CYCLE
 
              ! local deviatoric stress
              s=tensordeviatoric(sig(i1,i2,i3))
@@ -191,7 +191,7 @@ CONTAINS
              tauc=tau-cohesion
 
              ! cohesion test
-             IF (tauc .LE. 1.0d-9) CYCLE
+             IF (tauc .LE. 1.0d-20) CYCLE
 
              ! powerlaw viscosity
              gammadot=gammadot0*(tauc/mu)**power

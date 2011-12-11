@@ -694,9 +694,9 @@ CONTAINS
     ! initialization
     vstruct(:)%z=0      ! depth is not used
     vstruct(:)%gammadot0=0 ! default is inviscid
-    vstruct(:)%stressexponent=1  ! default is linear
     vstruct(:)%friction=0.6  ! default is friction=0.6
     vstruct(:)%cohesion=0  ! default is no cohesion
+    vstruct(:)%stressexponent=layers(1)%stressexponent  ! default
 
     z0=fix(layers(1)%z/dx3)*dx3
     DO k=1,nv

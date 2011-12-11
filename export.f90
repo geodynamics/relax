@@ -1095,6 +1095,7 @@ END SUBROUTINE exportcreep
        STOP "could not open file for export"
     END IF
 
+    WRITE (15,'("> # east, north")')
     DO k=1,e%ns
 
        ! fault slip
@@ -1128,12 +1129,12 @@ END SUBROUTINE exportcreep
        d(2)=-sstrike*sdip
        d(3)=+cdip
 
-       ! fault edge coordinates
+       ! fault edge coordinates - export east (x2) and north (x1)
        WRITE (15,'("> -Z",3ES11.2)') ABS(slip)
-       WRITE (15,'(3ES11.2)') x1-d(1)*W/2-s(1)*L/2, x2-d(2)*W/2-s(2)*L/2
-       WRITE (15,'(3ES11.2)') x1-d(1)*W/2+s(1)*L/2, x2-d(2)*W/2+s(2)*L/2
-       WRITE (15,'(3ES11.2)') x1+d(1)*W/2+s(1)*L/2, x2+d(2)*W/2+s(2)*L/2
-       WRITE (15,'(3ES11.2)') x1+d(1)*W/2-s(1)*L/2, x2+d(2)*W/2-s(2)*L/2
+       WRITE (15,'(3ES11.2)') x2-d(2)*W/2-s(2)*L/2, x1-d(1)*W/2-s(1)*L/2
+       WRITE (15,'(3ES11.2)') x2-d(2)*W/2+s(2)*L/2, x1-d(1)*W/2+s(1)*L/2
+       WRITE (15,'(3ES11.2)') x2+d(2)*W/2+s(2)*L/2, x1+d(1)*W/2+s(1)*L/2
+       WRITE (15,'(3ES11.2)') x2+d(2)*W/2-s(2)*L/2, x1+d(1)*W/2-s(1)*L/2
 
     END DO
 
@@ -1878,6 +1879,67 @@ END SUBROUTINE exportcreep
     CLOSE(15)
 
   END SUBROUTINE exportvtk_rectangle
+
+  !------------------------------------------------------------------
+  !> subroutine ExportXY_Brick
+  !! creates a .xy file containing a brick (3d rectangle, cuboid).
+  !!
+  !! \author sylvain barbot 11/29/11 - original form
+  !------------------------------------------------------------------
+  SUBROUTINE exportxy_brick(x1,x2,x3,L,W,T,strike,dip,filename)
+    REAL*8 :: x1,x2,x3,L,W,T,strike,dip
+    CHARACTER(80), INTENT(IN) :: filename
+
+    INTEGER :: iostatus
+    CHARACTER :: q
+
+    REAL*8 :: cstrike,sstrike,cdip,sdip
+    REAL*8, DIMENSION(3) :: s,d,n
+
+    OPEN (UNIT=15,FILE=filename,IOSTAT=iostatus,FORM="FORMATTED")
+    IF (iostatus>0) THEN
+       WRITE_DEBUG_INFO
+       PRINT '(a)', filename
+       STOP "could not open file for export in ExportXY_Brick"
+    END IF
+
+    cstrike=cos(strike)
+    sstrike=sin(strike)
+    cdip=cos(dip)
+    sdip=sin(dip)
+ 
+    ! strike-slip unit direction
+    s(1)=sstrike
+    s(2)=cstrike
+    s(3)=0._8
+
+    ! dip-slip unit direction
+    d(1)=+cstrike*sdip
+    d(2)=-sstrike*sdip
+    d(3)=+cdip
+
+    ! surface normal vector components
+    n(1)=+cdip*cstrike
+    n(2)=-cdip*sstrike
+    n(3)=-sdip
+
+    ! fault edge coordinates
+    WRITE (15,'(">")')
+    WRITE (15,'(3ES11.2)') x2-d(2)*W/2-s(2)*L/2-n(2)*T/2.d0, x1-d(1)*W/2-s(1)*L/2-n(1)*T/2.d0, x3-d(3)*W/2-s(3)*L/2-n(3)*T/2.d0
+    WRITE (15,'(3ES11.2)') x2-d(2)*W/2+s(2)*L/2-n(2)*T/2.d0, x1-d(1)*W/2+s(1)*L/2-n(1)*T/2.d0, x3-d(3)*W/2+s(3)*L/2-n(3)*T/2.d0
+    WRITE (15,'(3ES11.2)') x2-d(2)*W/2+s(2)*L/2+n(2)*T/2.d0, x1-d(1)*W/2+s(1)*L/2+n(1)*T/2.d0, x3-d(3)*W/2+s(3)*L/2+n(3)*T/2.d0
+    WRITE (15,'(3ES11.2)') x2-d(2)*W/2-s(2)*L/2+n(2)*T/2.d0, x1-d(1)*W/2-s(1)*L/2+n(1)*T/2.d0, x3-d(3)*W/2-s(3)*L/2+n(3)*T/2.d0
+    WRITE (15,'(3ES11.2)') x2-d(2)*W/2-s(2)*L/2-n(2)*T/2.d0, x1-d(1)*W/2-s(1)*L/2-n(1)*T/2.d0, x3-d(3)*W/2-s(3)*L/2-n(3)*T/2.d0
+    WRITE (15,'(">")')
+    WRITE (15,'(3ES11.2)') x2+d(2)*W/2-s(2)*L/2-n(2)*T/2.d0, x1+d(1)*W/2-s(1)*L/2-n(1)*T/2.d0, x3+d(3)*W/2-s(3)*L/2-n(3)*T/2.d0
+    WRITE (15,'(3ES11.2)') x2+d(2)*W/2+s(2)*L/2-n(2)*T/2.d0, x1+d(1)*W/2+s(1)*L/2-n(1)*T/2.d0, x3+d(3)*W/2+s(3)*L/2-n(3)*T/2.d0
+    WRITE (15,'(3ES11.2)') x2+d(2)*W/2+s(2)*L/2+n(2)*T/2.d0, x1+d(1)*W/2+s(1)*L/2+n(1)*T/2.d0, x3+d(3)*W/2+s(3)*L/2+n(3)*T/2.d0
+    WRITE (15,'(3ES11.2)') x2+d(2)*W/2-s(2)*L/2+n(2)*T/2.d0, x1+d(1)*W/2-s(1)*L/2+n(1)*T/2.d0, x3+d(3)*W/2-s(3)*L/2+n(3)*T/2.d0
+    WRITE (15,'(3ES11.2)') x2+d(2)*W/2-s(2)*L/2-n(2)*T/2.d0, x1+d(1)*W/2-s(1)*L/2-n(1)*T/2.d0, x3+d(3)*W/2-s(3)*L/2-n(3)*T/2.d0
+
+    CLOSE(15)
+
+  END SUBROUTINE exportxy_brick
 
   !------------------------------------------------------------------
   !> subroutine ExportVTK_Brick

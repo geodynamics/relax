@@ -23,7 +23,7 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time ../relax --no-proj-output $* <<EOF | tee $WDIR/in.param
+OMP_NUM_THREADS=2 time ../relax --no-proj-output $* <<EOF | tee $WDIR/in.param
 # grid size (sx1,sx2,sx3)
 256 256 256
 # sampling size defines the grid spacing in units of distance

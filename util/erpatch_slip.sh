@@ -26,6 +26,6 @@ WDIR=$(dirname $PSFILE)
 psxy -O -K -JX -R$bds -C$WDIR/palette.cpt -W1p0/0/0 -L -M \
          -W0.5p/20/20/20 \
         <<EOF >> $PSFILE
-`awk '{if (">"==$1){print $0}else{print $2,$1}}' $WDIR/rfaults-???.xy`
+`awk '{if (">"==$1){print $0}else{print $1,$2}}' $WDIR/rfaults-???.xy`
 EOF
 

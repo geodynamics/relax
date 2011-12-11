@@ -1,0 +1,3967 @@
+%!PS-Adobe-3.0 EPSF-3.0
+%%Creator: MATLAB, The Mathworks, Inc. Version 7.8.0.347 (R2009a). Operating System: Linux 2.6.18-164.6.1.el5 #1 SMP Tue Nov 3 16:12:36 EST 2009 x86_64.
+%%Title: /u/dharti-r0/liuz/sylvain/HM/zhen/work/HM_coseis.eps
+%%CreationDate: 11/09/2011  14:32:09
+%%DocumentNeededFonts: Helvetica
+%%DocumentProcessColors: Cyan Magenta Yellow Black
+%%LanguageLevel: 2
+%%Pages: 1
+%%BoundingBox:    -7   137   620   653
+%%EndComments
+
+%%BeginProlog
+% MathWorks dictionary
+/MathWorks 160 dict begin
+% definition operators
+/bdef {bind def} bind def
+/ldef {load def} bind def
+/xdef {exch def} bdef
+/xstore {exch store} bdef
+% operator abbreviations
+/c  /clip ldef
+/cc /concat ldef
+/cp /closepath ldef
+/gr /grestore ldef
+/gs /gsave ldef
+/mt /moveto ldef
+/np /newpath ldef
+/cm /currentmatrix ldef
+/sm /setmatrix ldef
+/rm /rmoveto ldef
+/rl /rlineto ldef
+/s {show newpath} bdef
+/sc {setcmykcolor} bdef
+/sr /setrgbcolor ldef
+/sg /setgray ldef
+/w /setlinewidth ldef
+/j /setlinejoin ldef
+/cap /setlinecap ldef
+/rc {rectclip} bdef
+/rf {rectfill} bdef
+% page state control
+/pgsv () def
+/bpage {/pgsv save def} bdef
+/epage {pgsv restore} bdef
+/bplot /gsave ldef
+/eplot {stroke grestore} bdef
+% orientation switch
+/portraitMode 0 def /landscapeMode 1 def /rotateMode 2 def
+% coordinate system mappings
+/dpi2point 0 def
+% font control
+/FontSize 0 def
+/FMS {/FontSize xstore findfont [FontSize 0 0 FontSize neg 0 0]
+  makefont setfont} bdef
+/reencode {exch dup where {pop load} {pop StandardEncoding} ifelse
+  exch dup 3 1 roll findfont dup length dict begin
+  { 1 index /FID ne {def}{pop pop} ifelse } forall
+  /Encoding exch def currentdict end definefont pop} bdef
+/isroman {findfont /CharStrings get /Agrave known} bdef
+/FMSR {3 1 roll 1 index dup isroman {reencode} {pop pop} ifelse
+  exch FMS} bdef
+/csm {1 dpi2point div -1 dpi2point div scale neg translate
+ dup landscapeMode eq {pop -90 rotate}
+  {rotateMode eq {90 rotate} if} ifelse} bdef
+% line types: solid, dotted, dashed, dotdash
+/SO { [] 0 setdash } bdef
+/DO { [.5 dpi2point mul 4 dpi2point mul] 0 setdash } bdef
+/DA { [6 dpi2point mul] 0 setdash } bdef
+/DD { [.5 dpi2point mul 4 dpi2point mul 6 dpi2point mul 4
+  dpi2point mul] 0 setdash } bdef
+% macros for lines and objects
+/L {lineto stroke} bdef
+/MP {3 1 roll moveto 1 sub {rlineto} repeat} bdef
+/AP {{rlineto} repeat} bdef
+/PDlw -1 def
+/W {/PDlw currentlinewidth def setlinewidth} def
+/PP {closepath eofill} bdef
+/DP {closepath stroke} bdef
+/MR {4 -2 roll moveto dup  0 exch rlineto exch 0 rlineto
+  neg 0 exch rlineto closepath} bdef
+/FR {MR stroke} bdef
+/PR {MR fill} bdef
+/L1i {{currentfile picstr readhexstring pop} image} bdef
+/tMatrix matrix def
+/MakeOval {newpath tMatrix currentmatrix pop translate scale
+0 0 1 0 360 arc tMatrix setmatrix} bdef
+/FO {MakeOval stroke} bdef
+/PO {MakeOval fill} bdef
+/PD {currentlinewidth 2 div 0 360 arc fill
+   PDlw -1 eq not {PDlw w /PDlw -1 def} if} def
+/FA {newpath tMatrix currentmatrix pop translate scale
+  0 0 1 5 -2 roll arc tMatrix setmatrix stroke} bdef
+/PA {newpath tMatrix currentmatrix pop	translate 0 0 moveto scale
+  0 0 1 5 -2 roll arc closepath tMatrix setmatrix fill} bdef
+/FAn {newpath tMatrix currentmatrix pop translate scale
+  0 0 1 5 -2 roll arcn tMatrix setmatrix stroke} bdef
+/PAn {newpath tMatrix currentmatrix pop translate 0 0 moveto scale
+  0 0 1 5 -2 roll arcn closepath tMatrix setmatrix fill} bdef
+/vradius 0 def /hradius 0 def /lry 0 def
+/lrx 0 def /uly 0 def /ulx 0 def /rad 0 def
+/MRR {/vradius xdef /hradius xdef /lry xdef /lrx xdef /uly xdef
+  /ulx xdef newpath tMatrix currentmatrix pop ulx hradius add uly
+  vradius add translate hradius vradius scale 0 0 1 180 270 arc 
+  tMatrix setmatrix lrx hradius sub uly vradius add translate
+  hradius vradius scale 0 0 1 270 360 arc tMatrix setmatrix
+  lrx hradius sub lry vradius sub translate hradius vradius scale
+  0 0 1 0 90 arc tMatrix setmatrix ulx hradius add lry vradius sub
+  translate hradius vradius scale 0 0 1 90 180 arc tMatrix setmatrix
+  closepath} bdef
+/FRR {MRR stroke } bdef
+/PRR {MRR fill } bdef
+/MlrRR {/lry xdef /lrx xdef /uly xdef /ulx xdef /rad lry uly sub 2 div def
+  newpath tMatrix currentmatrix pop ulx rad add uly rad add translate
+  rad rad scale 0 0 1 90 270 arc tMatrix setmatrix lrx rad sub lry rad
+  sub translate rad rad scale 0 0 1 270 90 arc tMatrix setmatrix
+  closepath} bdef
+/FlrRR {MlrRR stroke } bdef
+/PlrRR {MlrRR fill } bdef
+/MtbRR {/lry xdef /lrx xdef /uly xdef /ulx xdef /rad lrx ulx sub 2 div def
+  newpath tMatrix currentmatrix pop ulx rad add uly rad add translate
+  rad rad scale 0 0 1 180 360 arc tMatrix setmatrix lrx rad sub lry rad
+  sub translate rad rad scale 0 0 1 0 180 arc tMatrix setmatrix
+  closepath} bdef
+/FtbRR {MtbRR stroke } bdef
+/PtbRR {MtbRR fill } bdef
+/stri 6 array def /dtri 6 array def
+/smat 6 array def /dmat 6 array def
+/tmat1 6 array def /tmat2 6 array def /dif 3 array def
+/asub {/ind2 exch def /ind1 exch def dup dup
+  ind1 get exch ind2 get sub exch } bdef
+/tri_to_matrix {
+  2 0 asub 3 1 asub 4 0 asub 5 1 asub
+  dup 0 get exch 1 get 7 -1 roll astore } bdef
+/compute_transform {
+  dmat dtri tri_to_matrix tmat1 invertmatrix 
+  smat stri tri_to_matrix tmat2 concatmatrix } bdef
+/ds {stri astore pop} bdef
+/dt {dtri astore pop} bdef
+/db {2 copy /cols xdef /rows xdef mul dup 3 mul string
+  currentfile 
+  3 index 0 eq {/ASCIIHexDecode filter}
+  {/ASCII85Decode filter 3 index 2 eq {/RunLengthDecode filter} if }
+  ifelse exch readstring pop
+  dup 0 3 index getinterval /rbmap xdef
+  dup 2 index dup getinterval /gbmap xdef
+  1 index dup 2 mul exch getinterval /bbmap xdef pop pop}bdef
+/it {gs np dtri aload pop moveto lineto lineto cp c
+  cols rows 8 compute_transform 
+  rbmap gbmap bbmap true 3 colorimage gr}bdef
+/il {newpath moveto lineto stroke}bdef
+currentdict end def
+%%EndProlog
+
+%%BeginSetup
+MathWorks begin
+
+0 cap
+
+end
+%%EndSetup
+
+%%Page: 1 1
+%%BeginPageSetup
+%%PageBoundingBox:    -7   137   620   653
+MathWorks begin
+bpage
+%%EndPageSetup
+
+%%BeginObject: obj1
+bplot
+
+/dpi2point 12 def
+portraitMode -0084 7836 csm
+
+    0     0  7526  6183 rc
+87 dict begin %Colortable dictionary
+/c0 { 0.000000 0.000000 0.000000 sr} bdef
+/c1 { 1.000000 1.000000 1.000000 sr} bdef
+/c2 { 0.900000 0.000000 0.000000 sr} bdef
+/c3 { 0.000000 0.820000 0.000000 sr} bdef
+/c4 { 0.000000 0.000000 0.800000 sr} bdef
+/c5 { 0.910000 0.820000 0.320000 sr} bdef
+/c6 { 1.000000 0.260000 0.820000 sr} bdef
+/c7 { 0.000000 0.820000 0.820000 sr} bdef
+c0
+1 j
+1 sg
+   0    0 7527 6184 rf
+24 w
+0 5039 5209 0 0 -5039 978 5503 4 MP
+PP
+-5209 0 0 5039 5209 0 0 -5039 978 5503 5 MP stroke
+gs 978 464 5210 5040 rc
+/mwscm { [/Indexed /DeviceRGB 63
+  <
+    00008f 00009f 0000af 0000bf 0000cf 0000df 0000ef 0000ff 000fff 001fff 
+    002fff 003fff 004fff 005fff 006fff 007fff 008fff 009fff 00afff 00bfff 
+    00cfff 00dfff 00efff 00ffff 0fffef 1fffdf 2fffcf 3fffbf 4fffaf 5fff9f 
+    6fff8f 7fff7f 8fff6f 9fff5f afff4f bfff3f cfff2f dfff1f efff0f ffff00 
+    ffef00 ffdf00 ffcf00 ffbf00 ffaf00 ff9f00 ff8f00 ff7f00 ff6f00 ff5f00 
+    ff4f00 ff3f00 ff2f00 ff1f00 ff0f00 ff0000 ef0000 df0000 cf0000 bf0000 
+    af0000 9f0000 8f0000 7f0000 
+  >
+] setcolorspace } bdef mwscm
+gs np 978 464 mt 0 5040 rl 5210 0 rl 0 -5040 rl cp c np
+[5218 0 0 5058 976 456] cc
+<< % Image dictionary
+  /ImageType 1
+  /Width 222 /Height 367
+  /BitsPerComponent 8
+  /Decode [0 255]
+  /ImageMatrix [222.000000 0 0 367.000000 0 0]
+  /DataSource currentfile
+  /ASCII85Decode filter
+  /RunLengthDecode filter
+>>
+image
+h]ICl`?=%[JKVoShB.:k`ZX+[JKVrTh&h1j`us1[JKVuUh&h1j`us.ZJKW#Vg`M(ia<94ZJKW&WgE1th
+aWT=[JKW&Wg)kkgaroC[JKW)XfcPbfb95I[JKW,YfcPbfb95FZJKW/ZfH5YebTPLZJKW2[f,oPdbokRZ
+JKW5\efTGcc61[[JKW5\eK9>bcQLa[JKW8]e/s5aclgg[JKW;^e/s5aclgdZJKW>_diX,`d3-jZJKWA`
+dN=#_dNHs[JKWA`d3!o^did$[JKWDacl[f]e0**[W$([T]-,EAXWZpQ^ECiEYTW$N_B@/HZQS0L`$!>I
+[NO?K`ZWPK\00EIa<8_L\ffNHarnqN]HGWGb95"N^*(cGbTP+O^`^iEc61=Q_'$lDcQLCQ_][#DclgLR
+`$!&Cd3-RR`ZW5Dd3-RR`ur8CdNHXRaWSDCdicaSarnGBe0)jTarnGBe0)gSbTOSBeKDpTbojVAef`!T
+c60_Bef`!TcQKbAf-&'Td3,qBf-&'Td3,nAfHA0UdNGtAfHA-Tdic%Afc\6Ue0)+Afc\3TeKD4Bfc\3T
+ef_7Ag*"9Tf-%@Bg*"9TfH@FBg*"9TfH@FBg*"6Sg*!RBgE=?Tg*!RBgE=<SgE<[CgE=<SgE<[CgE=9R
+h&rjDgE=9Rh&rjDgE=6QhB8sEgE=6QhB8pDg`X?Rh]T!Dg`X<Qi#o*Eg`X<Qi#o*Eg`X9Pi?53Fg`X9P
+i?53Fg`X6OiZP<Gg`X6OiZP?HgE=-NiZP?HgE=*MiukHIgE=*MiukHIgE='Lj<1QJgE='Lj<1QJgE=$K
+jWLZKgE=$KjWL]Lg*!mIjrgfMg*!mIjrgfMg*!jHk9-oNg*!jHjrgiNg*#u/q]<p&jrglOfc^,5llORs
+k9-uPfc^58jW;tpjrgoPfcU8:h]CDlk9.&RfHArjg)oH"ZQ[sDfcJojjrh#SfHAcehB1l&[3=-EefNZi
+jrh)Uf-&Qai#h&'\09EGdN7?hj<2#Wef`?]iZI2']HPfJclV0giZPrYeKE-Yj<*>'^`h2MboYpfi#ol[
+e0)sVj<*8%`?E\Qb9#aeh&s`]dicdSjWE;$aW](TaWBOcg`Xfad3-LOjWE5"c6:RX`ua=agE=idclg@M
+e0!rudim$[`ZEDIn0$4(cQL4Kb9-6sf-/E^`?*,Co,u^0bojtH`ujprg*+]``#co?ocW$5bTOhFg)p#0
+p)iuNhBC&b`#d_Vn/h?Hp)r9:arnVDh]M/*q&f>RiZZJf!?WE$*oS49*r6oP*r6uQ+QO]i+T3D"*o\:<
+*qLEL*r6uQ+Qail+T!7u*oe@>*q(-H*r@&R+Qsuo+Sd+s*q19M+S[&W*r?uP*;^cS*r@&R+R1,r+SQtq
+*qCEL+Sm2Y*rR,L*;giU*r@&R+RC8u+S?hp*qCEJ+T!8Z*r[2Y*;:EM*;poV*rI,R+RUE#+S-\n*qUQI
++T*>\*r[2Z*;gcS)Z(KQ*;poV*rI,S+R^K%+RpPl*q^WH+T3A_*Zk;$!?<*Y)tb-J)u^iV*W7&W+86oJ
++k%S&+2f5o+7^QQ*sWi.*??+>)]SbppDNrKrYthVrZ1tZr#bVTo-)U+m2s7fp)ifIrZ;Ce*ZZ7@)]K\6
+rYbMKrYb\R!?3!W*!%'#r>tnZp)ruNeKF0"`?+^ppE0J[+o<Ah+!2OF*?6%<)AsFl)#>'J)#bBV)B'P6
+*$"qurZ:tZp)s)QeKF)u`?+aqq&oJVrZDOi+!)ID*#fe6)&W>hqA0&H#oFKs)&aD4)]Tjs*W@,Y+8$cP
++k@e!+2o;r+8R,R+oWSl+!)ID*#fe6(`*r'q%XDU()Ic((`=20)B0V8*$$(!*rR2Q+T!>6+QX]a*r$iS
++S6fd+<VaJ*ZZ1<)&O/*'c$NY%i#fp()Ic()&X>3)]Th<*W@,X+8$cT+kIjs+3#As+8[2X+o3An+X%sN
++!)FA)Aj8+'bh;pr=])C&/5fn'c%T%(`=51)]Kb:*?G,#r?'-(i?-&\p`KDVr#tbX$R$W7*ZZ1;(D[\u
+')E4>&e>Wi'GVB"(`4,/)]Kb:*?G,#r?'3*h]KiZq&fMWr#u"_qBHFn+sA'N*?,k3'GD&i&H!%P&.fEc
+&ebom'c%T&)&aD4*#ot>rZ;"[bTPaa`ZFptr#kq]r?D.a!@/ri,7>\=*uu:;'b_/i%M&FH'FkT`%hK<c
+',2,q()If*)B0V8*?G,#rZBB-g`OQXq&fMWr?;.ar?M+`$R6i=*ZGq1&J#<Z%/pVN$k*RS%M'*_&ebro
+()If*)B0V8*??1Br?'?.g)n?Vq&fMWrZV7brZhCfqBZIo,9e3L(_[Gi$OZh=(CCNX$k3[V&.oNg'G_K%
+)&aG5*$$%@*rR2S+9<W/hB:Gm`ub(!r#kq]!?r`e,Q8qh,piC7#pgf>*>fG"$OI+;#8[XP$47.L%1a!^
+&el&r(`=52)]Tk=*Zk;&p`TGWi#pVn`ub(!r#kt^rZVFh,:"Q6,lo>>q^3R7,pFBJ'+G6Q"U,#4"U52;
+#mq%K%M'*`',;9!)&aG6*$,#"rZCqYq'"c@eK;gQqB,YYrZV7b!@&ig,Q]8<-N5AA-n$Mn-n$Df*uP_$
+#R(;3!WrN-"U52;$4@:Q&/#Wk()Ii,)]Th<*Zk;&qB5MUj<2qoa<(1"r#kt^rZVaq,:"N\,pjue-n$Mn
+r[K-A-RBlR'+G0L!<<*#!<NB-"pYGA$k<d[',;9")&aG6*??4#+8[2Q+m0ur+35N"+8d8\+V,b@,9nHZ
+,palb-R^Al.OtEJ#V%8M+r_4*"p4]&(BFR>"U55=$OmUY',;9")&aG6*?H7D+8d8P+m:&r+35N"+8m>]
++oWYp,9nHZ,pjrd-n$Mo.P(KL#V.AP,97L."p+T$'`e@="U>>A%1a$a'c.]*)]Tk>*ZlL&+RgQ=+OD4O
+*r6uW+T<N'+sJ6V,U=Z^-7:/h.4Qet/1`A)/1W+o*Yo1gq#D'0!sJl7$OmUZ'G_K&)B9b=*ZlL'+RL?=
++O2(N*r-oV+T<N'+sJ6V,U=Z_-7:2j.4Qi!/M/S-/M&=s*u>Cjq#D!-!sAf6$OmX['G_N()]Tk>+9!DK
++mgDs+3>T#+8d8\+V5hA,9nHZ,pjrd-n-Vr/1iIP/d<mW-Qj6:#5J63!WrT2#n%4T',;?%)]Tk>+!;^(
++o<JU+mpJs+3>T#+8m>]+oWYq,9nH[,pjuf-n-Vr/1iLQ0*X$[-mBQ@#PnE4!<NB-#7:kM&el-")]Tn@
++!CP+ocj)Qmi]dqaWC:#r?2(_rZVjt,:"Q]-7:2j.Olr"/M8^U0F'6_.3fcE#m1#)&ci%9"9o,>%M9?i
+(`OG9+!;^Mr?D4cpEK>TnK>sraWC:#r?2(_rZW:+,U=Z^-7:2j.P!&%/h\n40eb:6.O?,N$jHe4!>5G8
+!sAf5$4IFY'c7i/*ZuUL,5!2W,5<>O+NbeJ*r6uW+T<Ms+sJ6V,U=Z^-7:2j.P!&%/h\pX0a]Tf/12PW
+&.8^I"o\W8"U52<$P!da(`OJ;+<i!SpE]Y]q]bhZnfZ$rar^@#r?2(_&gAME,:"N\,pjuf.4Qi!/M8\1
+r@nX5/L_na((^o_#m^G6$jR%G%M9Em)]g+F,:*"0r?V=dr$(q[o,u*rar^@#r?2(_0d7ed,:"N\,pjuf
+.4Qi!/M8\10etL=0J4k&+<)(/%h&aM#6tMA$kO*i)]g.I,UOl8-iPIl-2o1g,Q&b^+nHht+3GZ#+8m>]
++oWZ:,9nH[,pjuf.4Qi!/M8\10ekF=0eY(+,9@a=&e59T#6kG@%MKWu+!N!Y./PIm-j:tG-71#brZqFe
+r?D%\ocV9sar^@#r?2(_rZVmu,:"Q]-7:2i.4Qi!/MAe3r@o*A/Li(j*>fJ$$O?q?#7;"X)^$CR.4QkH
+/.3sY.Ocep-RU5f,piO9rZh=bqB>MS`uiGFq&fPXrZV7b.O-/`,UFca-R^Dn.kE8)0/,(70eb74.OQG_
+)ANek#6Y,4$4n$r,q1Atr@\X5/hJV).k2tr-mp>g,piO9rZh@cqB>PT`ZNAFp`KGWr?2dt+sS<X,UFca
+-R^Dn.P!&%/hd/W'e_-h-mToT((^iW!<<0,&/lcC/ho-\1D2Gt0J>%1/1W2!-n$Gi-7'r`,lT%d,5WPW
++N>MH*r$iT+T<Ms+sJ6V,U=Z^-7:/h.4Qi!/1iLQ0+'<_.OZSd*>]:q"TAB?"V;Y$0/PRG3&``Q1c$j?
+0.e_*.Ocbn-RL,crZqIfr?D+^p)q?sb9$F#r#kt^rZWC.,:"N\-71)g-n-Vr/1`A)/hS_-.k2nm+WVC4
+$O$G/*Wccj.5NtG4?P\d3&`]N0eb43/1W2!-mp>g,paf^rZh@cq]Y\V`?38Ep`KDVrZV7b%O32D,UF``
+-7:2j.4Qhur%&1*.OZYi+W_L7%0c\1":H/!2Eh"'&j8<:2`3BG0J4q-.Ocbn-RL,crZhLh,Q&b`+nm+u
++3Yf#+8d8[+oWYn,9nHZ,palc-R^Alr[Rmt$S!VS-RBu[*>oP$#5nN(#T5-Qq`bcY4#o5V1,1F6/1W2!
+-mp>g,paf^rZh@cq]Y_W`?3;FpE08TrZV7brZ_Um,UF``-7Ad@q^Dn$-RC#^*uu46&.&C:!!<B@.m!Mk
+'0SE:2D['A/hAM&.4?Pj-7'r`,lT%e,5WPY+N5GH*qg]R+T3J_+oro5rZhRl,pju<-iGG&-RU5e,U+?P
+)]0;%$O$G/!sB>f3r(uQ4?5>W1,(=4/1N(s-RU5e,pXc8,Q/h`+o!2A+7C9B+3bl"+8d8[+oNSc,:!15
+r[%@e$md/D+s7pH)Aa)!$jQ\2!sB;d3VblN4ZYMZ1GLO7/1N(s-mp>f-2o1h,Q8na+o!2D+6O^?+3bl"
++8[2Z+oW\a,Q8ta,nqUL+sA'M*#]Y/&e>BV!rr<)'.,^757g"?3&NKH0.e_*.4HYm-71&<,lT%e,5`VZ
++R:-.*r-o)*qUQO+T*D],5ib^,S_OK+sA$L*#]Y/'+bT\#Qt//#88@@q*,NV4#f)R0eY+0.k2tr-RL/d
+,pXc8,Q/ha+o*8I+5@q6+4D;&+8R,X+oNVZ,8MII+WqjJ*#]Y0'+bW]#R1A4!XB>^1\j6K4ZYP[1GLO7
+/1W2!-mp>g,paf^rZh@cr#tkYm2t"&qB+90nK7TMr#t\V(EjqE+!)C?(`!et%LWOG!s&B&"qVk04Sh8U
+4ZYMY1,(@5/1N(s-mp>g,paf^rZh@cq]YeYmN:%%q&e92n/qHKq]YbZrZMao+!)FB)]9G+&e>BW"p=f(
+"9T)O.6%,g&jAE<2Dd0C/hJS'.4?Sl-71#brZqIfr?D._qB55KefON,h&c#,p`T/O%j2u:*ZZ4>)&F#$
+&.JsO"T&0%#S\L;48_;U4ZYMZ1GLO8/1W2!-n$Gi-7'u;,lT%e,5`V[+RpQ(*qLK5*pb!D+SR&Y+:fP9
+*ZZ4>)Aj5(&e>BW"p4Z%*!6Zj.5X+M5<_4k3&WTK0J>"/.k2tr-RU5f,piO9rZh@cr#tkYnfQ@&n/pj8
+ko]R@r?;(]&0Du8*??+<)&F#$&Io0S"TeH")[R6(/iGaP4$#>Z1bpd=/hAM&.4HYm-RL/d-2o1g,Q/ha
++o3>Q+4D:r+7^K7+7:9N*tKD6*?6":(`!i!&.K!P"9J?!)$LQl.5<_?3&``P1GLR9/M&D%.4?Sl-RL2>
+-2o1h,Q/ha+o3>Q+4D:F+7LEP*tTJ7*?6":)&O,'&eGKZ#6Y)(!!NE5)'gdhr\Y6D1GLR9/M&D%.Ocbo
+-RU5fr[%OhrZh@cr#tnZoH2L&^)ungr>uUm*ZZ7@)]BP0'bh8k%13=C!Vl^2$5F^60/>=>1,1I9/M&G'
+.Ocep-mpDA-35D=rZqFer?D1`qB5DPdN6(DocX/S&fr)7*?6":)&O/)'+k`a$4$e:q#CR('-8MQ0`Ed4
+0J>%1/1W2".K1^r-R\m?r[%OhrZh@cr#tq[oH2L&]cZtkq]GeY&02c2)]BS2()7Jp%h/mP"TnK"&I&gd
+,qCW&0J>(3/M&D%.OchG-ik\Cr[.UjrZqFerZ_7`q]PPRd2oqBq&oPVrZ2[m*?6%<)AsA-'b_/i%1<IH
+!s/5u"U,DS,:Y>F0*j0^/1W5#.OchG./kUn-N5=j,lT%e,5i\]+SHo)*kNNm+S[&X*YKJ6*#fh8)&O,(
+'+tid$jd.A!r;m#":Z.j.4tNP"YMAX.k3%J.K1ap-iPIl-2o1g,Q8nb+o<DU+42.5+8m5o*??+=)]BS2
+()7Mr&.T*U#R(;2qZ%*.$Pjj5/MAb0/M&G'.OtEHr@%Xmr[.UjrZqIfr?D1`q]PSSd2oJ5rZ2ao*?6%<
+)]BS2(DRVs&J#<Y#mUS7qZ%'-$5=R0/2&Y//M&D%.fCgp./bOm-N5=j,lT%f,5i\^+SHo)*j6[b*Yf\9
+*#on:)AsA.().Do&.T*U#R1D5qu@0.$54F,.kNA*/M&D%.fCgn./kUn-35D=rZqIfrZ_7`r#k\Td2oM6
+r>l^p*?6%<)]BS2(D[`!&eGQ_$OI%A!s8H%#6=u9'-&5G/,h($.k3%F.JtUn-NPP@r[%Oh!@&if,5i\_
++SHo)*j?ab*[MgI*#on:)AsA.()7Mr&J,E\$4-q@"9S]-":#>K)^-OW.Outup*oqgr[.dp-7'u;,lT%f
+,5i\^+S[&**ki]s+<^>!r>tqY+WMF?)AsD0(D[\u&eGQ_$jm:H"pP58#7:tU)B^:Q-n-VC./57j-ik\C
+r[%Xl-2o.j,:!13r?;%\p`Ij(_&rOsp)j5SrZ*(#*#fe7)&O/*'bh;n&.]3Y$OR1G#RLkJ&Jc9,+seT6
+-iPOh.K1^t-RU5frZqRj,lT%f,5i\_+S[&**lK/p+SHoV*r[/m*#on:)AsA/(D[`"&ePZc%LijG$O@.N
+&/,j!+!Dm.,mPbD-RU;j.4P0Er[Igp#:ClG-7'r`,lT%f,5i\_+S[&**l];o+SQuV*YTP7*#on:)B'J1
+(D[`"'+tlg%hJUK#nIR\'c7o4+X/01,R#J@-R^Dmq'l\".4?Sl-RL/d-2o.j,:!13r?;(]p`Ij(a<0pp
+p`KGUrZ)Lh*#fh8)&X8-()7Mt'+toT&-rj]'c.c.+!Dj-,7#P?-7:2j.4QhG/,h"+.4HYn-RU5f,paf^
+rZhCdrZV1^p`Ij(arg$oq&fPVrZ)Lh*#fh8)AsA/(D[`#'GD/Y&df9c'c.`,*?QFK,5rej,UFfd.4Y0E
+r[J7(.4?Sl-71#b,UE@6rZ_=br#kbVclUFRl6,mEr>tqY$lg6+)]BV4(`4&)()?f_%20Bh'GVE$)B9e@
++X/-0,6oJ@-R^Go.kCQLr[SI..Ocbo-RU5f,paf^,:!13r?;(]q&ds)cQD?nq&fPVrZ1tX$6'p&)&X8.
+(Ddi&r"Tn](Dn#/*?H=H+sJ6V,UFcc.4Qhuq^`:/.k3"t.4?Sl-71#b,U=TZrZ_:ar#keWclURVjWO@@
+r>tqY#ojp()]BV4)&O4i(]>*`(Ddo+)B9b=+<_pQ,:"N]-R^Go/,h(#/M6rQ%4`qY.Ocbo-RU5e,pXc8
+,68u4r?;(]q&ds)di[QlqB,YWr>bt[*#fjr)?C]nrYYSM'c7c*)B0Y:*ZuUM+sS?Z-7C;m.k<1J/Ij<_
+.k<(u.4?Pk-71#a,lT"h+sQt/r#keWclUa[hB;Y:r>tqYrZ(nV!?)mU)>k<d)&X>2)]Tk>+!;^N,:"Q^
+-n-Vr/1gWL&1f@_.Olkq-mp>g,paf^,:!13rZV1^q&ds)fH8ijqB,YWrZ1tXrYthTqAC%e)B0Y9*?H:F
++<_pS,pk#h.P!&$/M6oR&M5Rc.k<(u.4?Pj-7'r`,U4Q5,5rb`+Sd,+*nh^h+Sm2X*r[2Z*;piO)AF,0
+*#ot?*ZlLJ+sSB\-R^Dn.kE:L/eBTc/1W2!.4?Pk-7'r`,U4Q5,5rb`+Sd,+*o.pg+Sm2X*r[2Y*;piS
+)Z:U(*#ot>*ZlIH+X86Y-R^Dn.kE8)/h\k1/hJY+.k3"t-mpAh,paf^,:!13rZV1^q&ds)h]L8hqB,VV
+r>khVpDa)O&fhu6*ZlLJ+sSB\-R^Dn/1iJ,r\"j9/hJV*.k2tr-RU5e,pX`\,Q8nd+oEJY+4)(g+3l#*
++8d2Y*W-oR)uU`h*??1B+!;^N,:"Q^-R^Gp/1iLQ0+]`f/M&D%.4?Pk-7'r`,U4Q5,5rb`+Sd,+*onEd
++Sm2X*rI&M*<$rh*ZlIH+X/-V,pjug.P*/(r@\^7/hJV).Ocbn-RL,c,U=TZrZ_=br#keWclV<ka<:=$
+r#Y_Up)O#O&0;l7+<VgO,:"Q^-RgPs/M@#U&2#Re/1W2!-mpAh,paf^,:!13rZV1^q&ds)ko[hdqB,SU
+qAoDPr#I+**ZlIH+<_pQ,:+Zb.4Zr%/h\h0/M/M(.Ocbn-RL,c,U=TZ+sQt/r#keWclVKp_'&Oqq]>5I
+rZ2Ok+!;[L+X/-V-7C;n/1piR$nX"\.k2tr-RL/d,UE@6!?r`d+oNPY+4)(s+1r`m+8R&K*W@,Z*ss,5
++X&'U-7:5m/H.42/1`;$.4HYm-71#a,U4Q5,5rb`+S[&**q18^+Sm2U*qC?L*r[5e+<_pS,pt,k/,h(/
+.k<(u-mpAh,paf^,:!13rZV1^p`Ij(o,k@_q&fDRo,[ZK(*=YB+sSB]-n-Vr.k3"t.4?Pj-7'o_rZ_Ff
+,5i\_+S[&**q^Vu+Sd2M+Sd,R*q13L*X3]/+sSB\./PG"-mpAh,paf^,:!13r?;(]p`Ij(pE.U%o-*WH
+q&f>Pn/VcU*ZlLJ,:"T`r$Vas-RL/d,UE@6rZ_=br#k_UclW$*b966snf[]LpE&fE#9Fs0+X86Y-N#4r
+-71#b,U=TZrZ_:ar#k_UclW*,b96*oo-!cLpE'&LrZ(nX#9Fs0+X/0X-2f1i,m,D<,:!13r?;%\pE.a'
+!?WE*+Qt!?+S[&Q*r-iS*!mW+*ZcCG+X/-Vr$D=f!@&if,5i\_+SHo(*m#Pc+nQoO+86iQ*W-l`*??1B
++!;^N,:!+3rZh@cr?;%\p)hX&aro[eo-!cLp`B8Pr>beW"s+j.+<_pQqBPq_r?;"[p)hX&b95[coH<lM
+p`B&J"s+g-+!;^Mp`fSYq]PSScQ::Qh')A4p`K8Poc=#Q!ZrL,rZV1`qB>\Xp)hU%bok^`oH<lMq&]5M
+rZ2(^+9!DV+o*8R+3u"R+P7k0+SQuR*qp]R*W[?)rZLtZq&o;OcQ:CTefjW-p`K5Oq]5SUrZD%\rZUtX
+oH2C#clgd\oH<lMmN2?Lmi_3DcQ:IVd38-)pE/iFr?(PPnfQ1!dNHjZo-!cLnfIZMo-!QFcQ:OXbou[$
+p)irKq&f8Pn/oste0)mWoH<fKp`B/Op`SuHcQ:UZa<C-tiZJ(@llXOpeKDmUo,u*rclUa\`?FgqaWJkN
+f-%sSnfZ*tclUd]_BJFlbob:RfH@sQnK?'ud2ps`^*2tgcQCOUfc[sOmi]t!dN7*b]-6PadN?pZgE=$M
+lQF_"diR6d\0:,[efWB_g`X$KkTJM"eK3Kg[3=]UfcScdh&s$IjriA"f,i`jZ6A?QfcSlghB9$Gjri>!
+g)f)nYT`*NfH8lihB9!FjWN1th&bGrXWcdKf,rlkh]T$EjWN(qi?$l!X<H[Jdi[Wli#o'Dj<2hlkT0^G
+i#o$CjWMbhnK.TMi#o$Cj<1rSi?5'BjWM&Ti?5'Bj<1uTi?5$AjWM)Ui?5$Aj<2#UiZP*Aj<2#UiZP*A
+iukrUiZP'@j<2&ViZP'@iukuViZP'@iukuViuk-@iZPoViuk-@iZPoViuk-@i?5iViuk-@i?5iViuk-@
+i#ocViuk-@i#ocViuk-@h]T]Viuk-@h]T]Viuk-@hB9WViuk-@hB9WViuk-@hB9WViuk0Ag`XHUiuk0A
+g`XHUiuk0AgE=BUiZP*AgE=BUiZP-Bfc\3TiZP-Bfc\3TiZP-BfHA-TiZP-BfHA-Ti?5*Cef_sSi?5*C
+ef_sSi?5*Cef_sSi?5-De0)dRi#o'De0)dRi#o*EdNHUQi#o*EdNHUQh]T'FclgFPh]T'FclgFPhB9$G
+c617OhB9$Gc617Oh&s!HbTP(Nh&s$Ib94tMg`WsIb94tMg`X!JaWSeLgE<sKa<8\Kg*!mK`urVKg*!pL
+`ZWMJfc[mM`$!>IfH@jN_][5Hf-%gO_'%&Gef_dP^`^rFeKDaQ^*(cEe0)^R]cbZDdic[S]HGQCdNHXT
+\ffBBd3-XV\000@clgUW[NO!?c61OYZlmd=bTPFZZ67U<b95F\YTVC:aWT@^XWZ+8`ZX7aWZ]e5_]\.d
+VBFD2^``%gUEJ)/JKW5\efTGcc61[[JKW5\efTGcbokU[JKW2[f,oPdbTPO[JKW/ZfH5Yeb95I[JKW,Y
+fcPbfaroC[JKW)Xg)kkgaWT=[JKW&WgE1tha<97[JKW#Vg`M(i`us1[JKVuUh&h1j`us1[JKVrThB.:k
+`ZX+[JKVoSh]ICl`?=%[JKVlRi#dLm`$!t[JKViQi?*Un_][n[JKVfPiZE^o_B@h[JKVcOiu`gp_'%b[
+JKV`Nj<&pq^`_\[JKV]MjWB$r^EDV[JKVZLjr]-s^*)P[JKVWKk9#6t]ccJ[JKVTJkT>?u]HHD[JKVTJ
+kT>?u]-->[JKVQIkoYI!\fg8[JKVNHl5tR"\KL2[JKVKGlQ:[#\01,[JKVHFllUd$[ik&[J,
+~>
+gr
+gr
+
+0 sg
+%%IncludeResource: font Helvetica
+/Helvetica /ISOLatin1Encoding 120 FMSR
+
+ 961 5546 mt 
+( ) s
+6171  506 mt 
+( ) s
+gs 978 464 5210 5040 rc
+6 w
+/c8 { 1.000000 0.000000 0.000000 sr} bdef
+c8
+3 -4 990 4933 2 MP stroke
+0 2 2 -1 991 4930 3 MP stroke
+2 -5 990 3706 2 MP stroke
+1 2 1 -2 991 3703 3 MP stroke
+-12 -3 990 2479 2 MP stroke
+-1 -1 979 2478 2 MP stroke
+2 0 978 2475 2 MP stroke
+-7 -2 991 1252 2 MP stroke
+3 0 -2 -1 986 1251 3 MP stroke
+2 -4 1013 5397 2 MP stroke
+0 2 1 -1 1014 5394 3 MP stroke
+4 -6 1013 4170 2 MP stroke
+-1 3 3 -2 1014 4166 3 MP stroke
+-10 -4 1013 2943 2 MP stroke
+4 1 -3 -2 1006 2941 3 MP stroke
+-11 -4 1013 1716 2 MP stroke
+5 0 -3 -2 1005 1714 3 MP stroke
+-3 -1 1014 489 2 MP stroke
+1 0 -1 -1 1012 489 3 MP stroke
+4 -5 1035 4633 2 MP stroke
+-1 2 2 -2 1037 4630 3 MP stroke
+-1 -4 1036 3406 2 MP stroke
+1 1 1 -1 1034 3403 3 MP stroke
+-16 -5 1036 2179 2 MP stroke
+6 0 -4 -4 1024 2178 3 MP stroke
+-4 -1 1036 952 2 MP stroke
+2 0 -1 -1 1033 952 3 MP stroke
+2 -4 1058 5097 2 MP stroke
+0 1 1 -1 1059 5094 3 MP stroke
+3 -6 1058 3870 2 MP stroke
+0 2 2 -2 1059 3866 3 MP stroke
+-16 -4 1059 2643 2 MP stroke
+6 0 -5 -3 1048 2642 3 MP stroke
+-8 -3 1059 1416 2 MP stroke
+3 0 -2 -2 1053 1415 3 MP stroke
+3 -5 1081 4333 2 MP stroke
+0 2 2 -1 1082 4329 3 MP stroke
+-7 -3 1081 3106 2 MP stroke
+3 0 -2 -2 1076 3105 3 MP stroke
+-14 -4 1082 1879 2 MP stroke
+6 0 -4 -3 1072 1878 3 MP stroke
+-3 -1 1082 653 2 MP stroke
+1 0 -1 0 1080 652 3 MP stroke
+3 -5 1103 4797 2 MP stroke
+0 2 2 -1 1104 4793 3 MP stroke
+1 -5 1104 3570 2 MP stroke
+0 2 2 -1 1103 3566 3 MP stroke
+-18 -5 1104 2343 2 MP stroke
+7 0 -5 -3 1091 2341 3 MP stroke
+-5 -2 1105 1116 2 MP stroke
+2 0 -1 -1 1101 1115 3 MP stroke
+2 -3 1125 5260 2 MP stroke
+0 1 1 -1 1126 5258 3 MP stroke
+4 -5 1126 4033 2 MP stroke
+0 2 3 -1 1127 4029 3 MP stroke
+-14 -3 1127 2806 2 MP stroke
+5 0 -4 -2 1117 2805 3 MP stroke
+-10 -3 1128 1579 2 MP stroke
+4 0 -2 -2 1120 1578 3 MP stroke
+4 -5 1148 4497 2 MP stroke
+0 2 2 -1 1150 4493 3 MP stroke
+-3 -4 1149 3270 2 MP stroke
+2 1 0 -1 1146 3267 3 MP stroke
+-16 -5 1150 2043 2 MP stroke
+6 0 -4 -3 1138 2041 3 MP stroke
+-4 -1 1151 816 2 MP stroke
+2 0 -1 -1 1148 816 3 MP stroke
+3 -4 1170 4960 2 MP stroke
+0 2 2 -1 1171 4957 3 MP stroke
+3 -5 1171 3733 2 MP stroke
+0 2 2 -1 1172 3729 3 MP stroke
+-18 -4 1172 2506 2 MP stroke
+7 0 -5 -3 1159 2505 3 MP stroke
+-7 -3 1174 1280 2 MP stroke
+3 0 -2 -2 1169 1279 3 MP stroke
+2 -3 1192 5424 2 MP stroke
+0 1 1 -1 1193 5422 3 MP stroke
+5 -6 1193 4197 2 MP stroke
+-1 2 3 -2 1195 4193 3 MP stroke
+-11 -4 1195 2970 2 MP stroke
+5 0 -3 -3 1187 2969 3 MP stroke
+-12 -4 1196 1743 2 MP stroke
+5 0 -3 -2 1187 1741 3 MP stroke
+-2 0 1197 516 2 MP stroke
+1 0 1195 516 2 MP stroke
+4 -6 1215 4661 2 MP stroke
+0 3 2 -2 1217 4657 3 MP stroke
+0 -5 1217 3433 2 MP stroke
+1 2 1 -2 1216 3430 3 MP stroke
+-19 -6 1218 2207 2 MP stroke
+8 0 -6 -4 1205 2205 3 MP stroke
+-5 -2 1220 980 2 MP stroke
+2 0 -1 -1 1216 979 3 MP stroke
+3 -4 1237 5124 2 MP stroke
+0 2 1 -1 1239 5121 3 MP stroke
+4 -6 1239 3897 2 MP stroke
+0 2 2 -1 1241 3892 3 MP stroke
+-17 -4 1240 2670 2 MP stroke
+6 -1 -5 -3 1228 2669 3 MP stroke
+-8 -3 1242 1443 2 MP stroke
+3 0 -2 -2 1236 1442 3 MP stroke
+4 -6 1261 4361 2 MP stroke
+0 2 2 -1 1263 4356 3 MP stroke
+-7 -5 1263 3134 2 MP stroke
+3 1 -2 -2 1258 3131 3 MP stroke
+-15 -6 1264 1907 2 MP stroke
+6 1 -4 -4 1253 1905 3 MP stroke
+-3 -1 1266 680 2 MP stroke
+1 0 -1 -1 1264 680 3 MP stroke
+3 -5 1283 4824 2 MP stroke
+0 2 2 -2 1284 4821 3 MP stroke
+2 -6 1285 3597 2 MP stroke
+0 2 2 -2 1285 3593 3 MP stroke
+-21 -5 1286 2370 2 MP stroke
+8 -1 -6 -4 1271 2369 3 MP stroke
+-5 -2 1288 1143 2 MP stroke
+2 1 -1 -2 1284 1143 3 MP stroke
+2 -4 1305 5288 2 MP stroke
+0 1 1 -1 1306 5285 3 MP stroke
+5 -7 1306 4061 2 MP stroke
+0 3 3 -2 1308 4056 3 MP stroke
+-15 -4 1308 2834 2 MP stroke
+6 -1 -5 -2 1298 2832 3 MP stroke
+-10 -4 1310 1607 2 MP stroke
+4 0 -3 -2 1303 1605 3 MP stroke
+4 -6 1328 4524 2 MP stroke
+0 3 2 -2 1330 4520 3 MP stroke
+-2 -5 1330 3297 2 MP stroke
+2 2 0 -2 1328 3294 3 MP stroke
+-18 -6 1332 2070 2 MP stroke
+7 0 -5 -4 1319 2068 3 MP stroke
+-4 0 1335 843 2 MP stroke
+1 0 -1 0 1332 843 3 MP stroke
+3 -5 1350 4988 2 MP stroke
+0 2 2 -1 1351 4984 3 MP stroke
+4 -7 1352 3761 2 MP stroke
+0 3 2 -2 1354 3756 3 MP stroke
+-22 -5 1354 2534 2 MP stroke
+9 -1 -7 -3 1339 2532 3 MP stroke
+-7 -3 1357 1307 2 MP stroke
+2 1 -2 -2 1352 1306 3 MP stroke
+2 -3 1372 5451 2 MP stroke
+0 1 1 -1 1373 5449 3 MP stroke
+5 -6 1374 4224 2 MP stroke
+-1 2 3 -1 1376 4219 3 MP stroke
+-10 -4 1376 2997 2 MP stroke
+4 0 -2 -2 1368 2995 3 MP stroke
+-14 -5 1379 1770 2 MP stroke
+6 1 -4 -3 1369 1768 3 MP stroke
+-3 -1 1381 544 2 MP stroke
+1 0 -1 -1 1379 544 3 MP stroke
+3 -6 1396 4688 2 MP stroke
+0 3 2 -2 1397 4684 3 MP stroke
+1 -7 1398 3461 2 MP stroke
+1 3 1 -2 1398 3456 3 MP stroke
+-22 -7 1400 2234 2 MP stroke
+9 0 -7 -5 1385 2232 3 MP stroke
+-5 -1 1403 1007 2 MP stroke
+2 0 -2 -1 1400 1007 3 MP stroke
+3 -4 1417 5151 2 MP stroke
+0 2 2 -1 1418 5148 3 MP stroke
+5 -7 1420 3924 2 MP stroke
+-1 3 3 -2 1422 3919 3 MP stroke
+-20 -4 1422 2697 2 MP stroke
+8 -1 -6 -3 1408 2696 3 MP stroke
+-9 -4 1425 1471 2 MP stroke
+4 1 -2 -2 1418 1469 3 MP stroke
+5 -7 1441 4388 2 MP stroke
+0 3 3 -2 1443 4383 3 MP stroke
+-5 -5 1444 3161 2 MP stroke
+2 1 0 -2 1439 3158 3 MP stroke
+-18 -6 1447 1934 2 MP stroke
+7 0 -5 -4 1434 1932 3 MP stroke
+-3 0 1449 707 2 MP stroke
+1 0 -1 0 1447 707 3 MP stroke
+3 -6 1463 4852 2 MP stroke
+0 2 2 -2 1464 4848 3 MP stroke
+4 -7 1466 3624 2 MP stroke
+0 3 3 -2 1467 3619 3 MP stroke
+-25 -7 1468 2398 2 MP stroke
+10 0 -8 -5 1451 2396 3 MP stroke
+-5 -2 1471 1171 2 MP stroke
+2 0 -1 -1 1467 1170 3 MP stroke
+3 -4 1484 5315 2 MP stroke
+0 2 2 -1 1485 5312 3 MP stroke
+6 -7 1487 4088 2 MP stroke
+-1 3 4 -2 1489 4083 3 MP stroke
+-16 -5 1490 2861 2 MP stroke
+6 0 -4 -4 1478 2860 3 MP stroke
+-11 -4 1493 1634 2 MP stroke
+4 0 -3 -2 1485 1632 3 MP stroke
+5 -7 1508 4552 2 MP stroke
+0 3 3 -2 1510 4547 3 MP stroke
+-1 -7 1512 3325 2 MP stroke
+1 2 1 -2 1510 3320 3 MP stroke
+-22 -7 1515 2098 2 MP stroke
+9 0 -6 -4 1499 2095 3 MP stroke
+-4 -1 1518 871 2 MP stroke
+2 0 -1 -1 1515 871 3 MP stroke
+3 -5 1530 5015 2 MP stroke
+0 2 2 -2 1531 5012 3 MP stroke
+6 -8 1533 3788 2 MP stroke
+-1 3 4 -2 1535 3782 3 MP stroke
+-26 -6 1536 2561 2 MP stroke
+10 0 -8 -5 1518 2560 3 MP stroke
+-8 -2 1540 1334 2 MP stroke
+3 0 -2 -1 1534 1333 3 MP stroke
+2 -4 1551 5479 2 MP stroke
+0 2 1 -1 1552 5476 3 MP stroke
+6 -8 1554 4252 2 MP stroke
+-1 3 3 -2 1557 4246 3 MP stroke
+-11 -6 1558 3025 2 MP stroke
+5 1 -3 -3 1550 3022 3 MP stroke
+-15 -6 1561 1798 2 MP stroke
+6 1 -4 -4 1550 1796 3 MP stroke
+-3 0 1565 571 2 MP stroke
+1 0 -1 0 1563 571 3 MP stroke
+4 -6 1576 4715 2 MP stroke
+-1 3 3 -2 1577 4711 3 MP stroke
+3 -8 1579 3488 2 MP stroke
+1 3 2 -3 1580 3483 3 MP stroke
+-27 -7 1583 2261 2 MP stroke
+11 0 -8 -5 1564 2259 3 MP stroke
+-4 0 1586 1034 2 MP stroke
+1 -1 -1 0 1583 1034 3 MP stroke
+3 -5 1597 5179 2 MP stroke
+0 2 2 -2 1598 5176 3 MP stroke
+7 -9 1600 3952 2 MP stroke
+-1 4 4 -3 1603 3946 3 MP stroke
+-23 -6 1604 2725 2 MP stroke
+9 0 -6 -5 1587 2724 3 MP stroke
+-10 -3 1608 1498 2 MP stroke
+4 0 -3 -2 1601 1497 3 MP stroke
+5 -7 1622 4415 2 MP stroke
+-1 3 3 -2 1624 4410 3 MP stroke
+-4 -6 1625 3188 2 MP stroke
+3 2 0 -2 1621 3184 3 MP stroke
+-19 -7 1629 1961 2 MP stroke
+8 1 -5 -5 1615 1959 3 MP stroke
+-3 0 1633 735 2 MP stroke
+1 -1 -1 0 1631 735 3 MP stroke
+3 -5 1643 4879 2 MP stroke
+0 2 2 -1 1644 4875 3 MP stroke
+6 -9 1646 3652 2 MP stroke
+0 4 3 -2 1649 3645 3 MP stroke
+-30 -8 1650 2425 2 MP stroke
+12 0 -9 -6 1629 2423 3 MP stroke
+-5 -1 1654 1198 2 MP stroke
+2 0 -1 -1 1650 1198 3 MP stroke
+2 -4 1664 5343 2 MP stroke
+0 1 1 -1 1665 5340 3 MP stroke
+6 -9 1668 4116 2 MP stroke
+-1 3 4 -2 1670 4109 3 MP stroke
+-18 -6 1672 2889 2 MP stroke
+7 0 -5 -4 1659 2887 3 MP stroke
+-12 -5 1676 1662 2 MP stroke
+4 0 -3 -3 1667 1660 3 MP stroke
+4 -7 1689 4579 2 MP stroke
+0 3 3 -2 1690 4574 3 MP stroke
+1 -8 1693 3352 2 MP stroke
+1 3 2 -2 1692 3346 3 MP stroke
+-25 -8 1697 2125 2 MP stroke
+10 0 -7 -5 1679 2122 3 MP stroke
+-3 0 1701 898 2 MP stroke
+1 0 -1 0 1699 898 3 MP stroke
+3 -5 1710 5043 2 MP stroke
+0 2 2 -1 1711 5039 3 MP stroke
+7 -10 1714 3816 2 MP stroke
+-1 4 4 -3 1717 3809 3 MP stroke
+-31 -7 1718 2589 2 MP stroke
+12 -1 -9 -5 1696 2587 3 MP stroke
+-7 -2 1722 1362 2 MP stroke
+3 0 -2 -1 1717 1361 3 MP stroke
+1 -1 1732 5504 2 MP stroke
+0 1 2 -1 1731 5504 3 MP stroke
+6 -8 1735 4279 2 MP stroke
+-1 3 4 -2 1737 4273 3 MP stroke
+-9 -6 1739 3052 2 MP stroke
+4 1 -2 -3 1732 3049 3 MP stroke
+-17 -6 1744 1825 2 MP stroke
+7 1 -5 -4 1732 1823 3 MP stroke
+-2 1 1748 598 2 MP stroke
+-1 -1 1747 599 2 MP stroke
+4 -6 1756 4743 2 MP stroke
+-1 2 3 -1 1757 4738 3 MP stroke
+6 -10 1760 3516 2 MP stroke
+0 4 4 -3 1762 3509 3 MP stroke
+-32 -10 1765 2289 2 MP stroke
+12 0 -9 -7 1742 2286 3 MP stroke
+-4 -1 1769 1062 2 MP stroke
+1 0 -1 -1 1766 1062 3 MP stroke
+3 -4 1776 5206 2 MP stroke
+0 2 2 -1 1777 5203 3 MP stroke
+7 -10 1781 3979 2 MP stroke
+0 5 4 -3 1784 3972 3 MP stroke
+-27 -6 1786 2752 2 MP stroke
+10 -1 -8 -5 1767 2751 3 MP stroke
+-9 -3 1790 1525 2 MP stroke
+4 0 -3 -2 1784 1524 3 MP stroke
+5 -8 1802 4443 2 MP stroke
+0 3 3 -2 1804 4437 3 MP stroke
+-2 -9 1807 3216 2 MP stroke
+2 3 1 -3 1804 3210 3 MP stroke
+-22 -8 1811 1989 2 MP stroke
+9 0 -6 -5 1795 1986 3 MP stroke
+-3 0 1816 762 2 MP stroke
+1 0 -1 -1 1814 763 3 MP stroke
+3 -5 1823 4906 2 MP stroke
+0 2 2 -1 1824 4902 3 MP stroke
+8 -11 1827 3679 2 MP stroke
+-1 5 5 -3 1830 3671 3 MP stroke
+-36 -9 1832 2452 2 MP stroke
+14 0 -10 -7 1806 2450 3 MP stroke
+-5 -1 1837 1226 2 MP stroke
+2 -1 -1 -1 1833 1226 3 MP stroke
+3 -4 1843 5370 2 MP stroke
+0 2 2 -1 1844 5367 3 MP stroke
+7 -10 1848 4143 2 MP stroke
+-1 4 4 -3 1851 4136 3 MP stroke
+-18 -7 1853 2916 2 MP stroke
+7 1 -5 -4 1840 2913 3 MP stroke
+-13 -5 1858 1689 2 MP stroke
+6 1 -4 -3 1849 1687 3 MP stroke
+4 -8 1869 4607 2 MP stroke
+0 3 2 -2 1871 4601 3 MP stroke
+4 -11 1874 3380 2 MP stroke
+1 4 3 -3 1875 3372 3 MP stroke
+-30 -10 1879 2153 2 MP stroke
+12 0 -8 -6 1857 2149 3 MP stroke
+-3 0 1884 926 2 MP stroke
+1 0 -1 0 1882 926 3 MP stroke
+3 -5 1889 5070 2 MP stroke
+0 2 2 -1 1890 5066 3 MP stroke
+8 -11 1895 3843 2 MP stroke
+-1 4 5 -3 1898 3835 3 MP stroke
+-37 -8 1900 2616 2 MP stroke
+14 -1 -11 -6 1874 2614 3 MP stroke
+-7 -1 1905 1389 2 MP stroke
+3 -1 -2 -1 1900 1389 3 MP stroke
+6 -9 1915 4307 2 MP stroke
+0 3 4 -2 1917 4300 3 MP stroke
+-8 -9 1921 3080 2 MP stroke
+4 2 -1 -4 1914 3075 3 MP stroke
+-18 -7 1926 1853 2 MP stroke
+8 1 -5 -4 1913 1850 3 MP stroke
+-3 1 1932 626 2 MP stroke
+1 -1 -1 0 1930 627 3 MP stroke
+4 -6 1936 4770 2 MP stroke
+0 2 3 -2 1937 4766 3 MP stroke
+8 -12 1941 3543 2 MP stroke
+0 5 5 -3 1944 3534 3 MP stroke
+-39 -11 1947 2316 2 MP stroke
+15 0 -11 -8 1919 2313 3 MP stroke
+-4 -1 1952 1090 2 MP stroke
+2 0 -2 -1 1950 1090 3 MP stroke
+3 -5 1956 5234 2 MP stroke
+0 2 2 -2 1957 5231 3 MP stroke
+8 -11 1962 4007 2 MP stroke
+-1 4 5 -3 1965 3999 3 MP stroke
+-30 -8 1967 2780 2 MP stroke
+12 0 -9 -6 1946 2778 3 MP stroke
+-10 -3 1973 1553 2 MP stroke
+4 0 -3 -2 1966 1552 3 MP stroke
+5 -8 1982 4470 2 MP stroke
+0 4 3 -2 1984 4464 3 MP stroke
+1 -11 1988 3243 2 MP stroke
+2 4 2 -4 1987 3236 3 MP stroke
+-26 -10 1994 2017 2 MP stroke
+11 1 -7 -6 1975 2013 3 MP stroke
+-3 0 2000 790 2 MP stroke
+1 0 -1 0 1998 790 3 MP stroke
+4 -6 2002 4934 2 MP stroke
+0 3 2 -2 2004 4930 3 MP stroke
+10 -13 2008 3707 2 MP stroke
+-1 5 6 -3 2012 3697 3 MP stroke
+-45 -11 2014 2480 2 MP stroke
+17 -1 -13 -8 1982 2477 3 MP stroke
+-5 0 2020 1253 2 MP stroke
+2 -1 -2 0 2017 1253 3 MP stroke
+2 -5 2023 5398 2 MP stroke
+0 2 2 -2 2023 5395 3 MP stroke
+7 -11 2029 4171 2 MP stroke
+-1 4 5 -3 2031 4163 3 MP stroke
+-18 -9 2035 2944 2 MP stroke
+7 1 -4 -5 2021 2940 3 MP stroke
+-14 -5 2041 1717 2 MP stroke
+6 0 -4 -3 2031 1715 3 MP stroke
+-2 1 2047 490 2 MP stroke
+1 -1 -1 0 2046 491 3 MP stroke
+5 -7 2049 4634 2 MP stroke
+-1 3 3 -2 2051 4629 3 MP stroke
+8 -14 2055 3407 2 MP stroke
+0 6 5 -4 2058 3397 3 MP stroke
+-35 -12 2061 2180 2 MP stroke
+14 1 -9 -8 2035 2176 3 MP stroke
+-4 1 2068 953 2 MP stroke
+1 0 -2 0 2066 954 3 MP stroke
+3 -5 2069 5098 2 MP stroke
+0 2 2 -1 2070 5094 3 MP stroke
+10 -14 2075 3871 2 MP stroke
+-1 6 6 -4 2079 3861 3 MP stroke
+-46 -10 2082 2644 2 MP stroke
+18 -1 -14 -8 2050 2642 3 MP stroke
+-7 -1 2088 1417 2 MP stroke
+3 -1 -2 -1 2083 1417 3 MP stroke
+7 -9 2095 4334 2 MP stroke
+-1 4 4 -2 2098 4327 3 MP stroke
+-4 -12 2102 3107 2 MP stroke
+3 4 1 -5 2097 3100 3 MP stroke
+-19 -7 2108 1880 2 MP stroke
+8 1 -5 -5 2094 1878 3 MP stroke
+-2 1 2115 654 2 MP stroke
+-1 -1 2114 655 2 MP stroke
+4 -7 2116 4798 2 MP stroke
+-1 3 3 -2 2117 4793 3 MP stroke
+11 -16 2122 3571 2 MP stroke
+-1 7 7 -4 2126 3559 3 MP stroke
+-49 -14 2129 2344 2 MP stroke
+20 0 -14 -9 2094 2339 3 MP stroke
+-5 1 2136 1117 2 MP stroke
+2 -1 -2 0 2133 1118 3 MP stroke
+2 -5 2136 5262 2 MP stroke
+0 2 2 -1 2136 5258 3 MP stroke
+9 -12 2142 4034 2 MP stroke
+-1 5 6 -3 2145 4025 3 MP stroke
+-34 -9 2149 2807 2 MP stroke
+13 0 -10 -7 2125 2805 3 MP stroke
+-10 -3 2156 1581 2 MP stroke
+4 0 -3 -2 2149 1580 3 MP stroke
+6 -9 2162 4498 2 MP stroke
+-1 4 4 -3 2164 4492 3 MP stroke
+6 -16 2169 3271 2 MP stroke
+1 6 5 -5 2170 3260 3 MP stroke
+-29 -11 2176 2044 2 MP stroke
+12 1 -8 -7 2155 2040 3 MP stroke
+-3 2 2183 817 2 MP stroke
+1 -1 -2 1 2182 818 3 MP stroke
+4 -6 2182 4962 2 MP stroke
+0 2 3 -1 2183 4957 3 MP stroke
+11 -16 2189 3735 2 MP stroke
+-1 6 7 -4 2193 3723 3 MP stroke
+-58 -14 2196 2508 2 MP stroke
+23 -1 -17 -10 2155 2504 3 MP stroke
+-5 0 2203 1281 2 MP stroke
+2 0 -2 -1 2200 1282 3 MP stroke
+2 -4 2202 5425 2 MP stroke
+0 2 1 -1 2203 5422 3 MP stroke
+8 -11 2209 4198 2 MP stroke
+-1 4 5 -3 2212 4190 3 MP stroke
+-16 -12 2216 2971 2 MP stroke
+8 3 -3 -6 2203 2965 3 MP stroke
+-13 -4 2223 1744 2 MP stroke
+5 0 -4 -3 2214 1743 3 MP stroke
+-2 1 2231 518 2 MP stroke
+-1 -1 2230 519 2 MP stroke
+4 -8 2229 4662 2 MP stroke
+0 3 3 -2 2230 4656 3 MP stroke
+12 -19 2236 3435 2 MP stroke
+-1 8 8 -5 2240 3421 3 MP stroke
+-43 -15 2243 2208 2 MP stroke
+18 1 -12 -9 2212 2202 3 MP stroke
+-3 1 2251 981 2 MP stroke
+-1 0 2249 982 2 MP stroke
+3 -5 2249 5125 2 MP stroke
+0 2 2 -2 2250 5122 3 MP stroke
+10 -15 2256 3898 2 MP stroke
+0 6 6 -4 2260 3887 3 MP stroke
+-55 -12 2263 2671 2 MP stroke
+21 -1 -17 -10 2225 2669 3 MP stroke
+-7 -1 2271 1445 2 MP stroke
+2 0 -2 -1 2266 1445 3 MP stroke
+6 -10 2276 4362 2 MP stroke
+0 4 4 -3 2278 4355 3 MP stroke
+2 -17 2283 3135 2 MP stroke
+2 6 4 -6 2281 3124 3 MP stroke
+-21 -7 2291 1908 2 MP stroke
+9 0 -6 -4 2276 1905 3 MP stroke
+-3 2 2299 681 2 MP stroke
+1 -1 -1 0 2297 683 3 MP stroke
+4 -7 2295 4826 2 MP stroke
+0 2 2 -2 2297 4821 3 MP stroke
+13 -20 2303 3599 2 MP stroke
+-1 8 8 -5 2308 3584 3 MP stroke
+-62 -19 2311 2372 2 MP stroke
+25 0 -18 -13 2267 2366 3 MP stroke
+-4 1 2319 1145 2 MP stroke
+1 -1 -1 0 2316 1146 3 MP stroke
+3 -4 2315 5289 2 MP stroke
+0 1 2 -1 2316 5286 3 MP stroke
+9 -14 2323 4062 2 MP stroke
+-1 6 6 -4 2326 4052 3 MP stroke
+-36 -12 2330 2835 2 MP stroke
+15 0 -10 -7 2304 2830 3 MP stroke
+-9 -1 2338 1608 2 MP stroke
+3 0 -3 -2 2332 1609 3 MP stroke
+6 -9 2342 4526 2 MP stroke
+0 3 4 -2 2344 4519 3 MP stroke
+12 -22 2350 3299 2 MP stroke
+0 9 8 -6 2354 3283 3 MP stroke
+-32 -12 2358 2072 2 MP stroke
+13 1 -9 -7 2335 2067 3 MP stroke
+-2 2 2366 845 2 MP stroke
+-1 -1 2365 847 2 MP stroke
+3 -6 2362 4989 2 MP stroke
+0 3 2 -2 2363 4985 3 MP stroke
+13 -18 2370 3762 2 MP stroke
+-1 7 8 -5 2375 3749 3 MP stroke
+-75 -18 2378 2535 2 MP stroke
+29 -1 -22 -14 2325 2531 3 MP stroke
+-5 1 2386 1309 2 MP stroke
+2 -1 -2 0 2383 1310 3 MP stroke
+3 -4 2381 5453 2 MP stroke
+0 1 2 -1 2382 5450 3 MP stroke
+8 -12 2389 4226 2 MP stroke
+0 5 5 -3 2392 4217 3 MP stroke
+-10 -18 2397 2999 2 MP stroke
+7 5 0 -7 2387 2988 3 MP stroke
+-14 -3 2406 1772 2 MP stroke
+5 0 -4 -3 2396 1772 3 MP stroke
+-2 2 2414 545 2 MP stroke
+1 -1 -1 0 2413 547 3 MP stroke
+4 -7 2409 4689 2 MP stroke
+0 3 3 -2 2410 4684 3 MP stroke
+16 -23 2417 3462 2 MP stroke
+-1 9 10 -6 2423 3445 3 MP stroke
+-51 -19 2425 2236 2 MP stroke
+21 1 -14 -11 2388 2228 3 MP stroke
+-3 2 2434 1009 2 MP stroke
+1 -1 -1 0 2432 1011 3 MP stroke
+3 -5 2428 5153 2 MP stroke
+0 2 2 -1 2429 5149 3 MP stroke
+12 -17 2436 3926 2 MP stroke
+-1 7 7 -5 2441 3914 3 MP stroke
+-66 -15 2445 2699 2 MP stroke
+25 -2 -19 -11 2398 2695 3 MP stroke
+-7 2 2454 1472 2 MP stroke
+2 -1 -3 0 2450 1474 3 MP stroke
+6 -11 2456 4390 2 MP stroke
+0 4 4 -3 2458 4382 3 MP stroke
+10 -25 2464 3163 2 MP stroke
+1 9 8 -7 2466 3145 3 MP stroke
+-21 -6 2473 1936 2 MP stroke
+9 0 -6 -4 2458 1934 3 MP stroke
+-2 2 2482 709 2 MP stroke
+-1 -1 2481 711 2 MP stroke
+4 -7 2475 4853 2 MP stroke
+0 3 3 -2 2476 4848 3 MP stroke
+16 -23 2484 3626 2 MP stroke
+-1 10 10 -6 2490 3609 3 MP stroke
+-80 -24 2493 2399 2 MP stroke
+31 0 -22 -16 2435 2391 3 MP stroke
+-4 3 2502 1172 2 MP stroke
+1 -1 -2 0 2500 1175 3 MP stroke
+3 -5 2494 5317 2 MP stroke
+0 2 2 -2 2495 5314 3 MP stroke
+9 -15 2503 4090 2 MP stroke
+0 6 6 -4 2506 4079 3 MP stroke
+-35 -19 2512 2863 2 MP stroke
+16 3 -9 -10 2486 2854 3 MP stroke
+-9 1 2521 1636 2 MP stroke
+3 -1 -3 0 2515 1637 3 MP stroke
+6 -9 2522 4553 2 MP stroke
+-1 4 4 -3 2524 4547 3 MP stroke
+19 -29 2531 3326 2 MP stroke
+-1 12 12 -8 2538 3305 3 MP stroke
+-34 -13 2540 2100 2 MP stroke
+14 1 -9 -8 2515 2095 3 MP stroke
+-3 3 2550 873 2 MP stroke
+0 -2 -1 1 2548 875 3 MP stroke
+3 -6 2542 5017 2 MP stroke
+0 2 3 -2 2542 5013 3 MP stroke
+14 -21 2550 3790 2 MP stroke
+-1 8 8 -6 2556 3775 3 MP stroke
+-99 -23 2560 2563 2 MP stroke
+38 -2 -29 -17 2490 2557 3 MP stroke
+-5 3 2569 1336 2 MP stroke
+1 -1 -2 0 2566 1339 3 MP stroke
+2 -4 2561 5481 2 MP stroke
+0 1 2 -1 2561 5478 3 MP stroke
+7 -13 2570 4254 2 MP stroke
+0 5 5 -3 2572 4244 3 MP stroke
+0 -28 2579 3027 2 MP stroke
+5 9 5 -9 2574 3008 3 MP stroke
+-12 -1 2588 1800 2 MP stroke
+4 -1 -4 -2 2580 1801 3 MP stroke
+-2 3 2598 573 2 MP stroke
+0 -1 -1 1 2597 575 3 MP stroke
+4 -8 2589 4717 2 MP stroke
+0 3 3 -3 2590 4712 3 MP stroke
+20 -29 2598 3490 2 MP stroke
+-2 12 13 -8 2605 3469 3 MP stroke
+-61 -22 2607 2263 2 MP stroke
+25 1 -16 -13 2562 2254 3 MP stroke
+-3 4 2617 1036 2 MP stroke
+0 -2 -2 1 2616 1039 3 MP stroke
+2 -5 2608 5181 2 MP stroke
+0 2 1 -1 2609 5177 3 MP stroke
+11 -19 2617 3954 2 MP stroke
+0 8 7 -6 2621 3941 3 MP stroke
+-78 -22 2627 2727 2 MP stroke
+31 0 -23 -15 2572 2720 3 MP stroke
+-6 4 2636 1500 2 MP stroke
+2 -2 -3 1 2633 1503 3 MP stroke
+6 -11 2636 4417 2 MP stroke
+0 5 4 -4 2638 4410 3 MP stroke
+19 -36 2646 3190 2 MP stroke
+0 14 13 -11 2652 3165 3 MP stroke
+-19 -4 2655 1964 2 MP stroke
+7 -1 -6 -3 2642 1963 3 MP stroke
+-2 3 2665 737 2 MP stroke
+0 -1 -2 1 2665 739 3 MP stroke
+4 -7 2655 4881 2 MP stroke
+0 3 3 -2 2656 4876 3 MP stroke
+17 -27 2665 3654 2 MP stroke
+-1 11 11 -8 2671 3635 3 MP stroke
+-105 -32 2674 2427 2 MP stroke
+42 0 -30 -21 2599 2416 3 MP stroke
+-3 4 2684 1200 2 MP stroke
+0 -1 -2 1 2683 1203 3 MP stroke
+2 -5 2674 5345 2 MP stroke
+0 2 1 -1 2675 5341 3 MP stroke
+9 -16 2683 4118 2 MP stroke
+0 6 5 -4 2687 4106 3 MP stroke
+-25 -31 2693 2891 2 MP stroke
+14 8 -3 -13 2671 2873 3 MP stroke
+-8 4 2703 1664 2 MP stroke
+2 -2 -4 1 2699 1667 3 MP stroke
+5 -9 2702 4581 2 MP stroke
+0 4 3 -3 2704 4575 3 MP stroke
+25 -38 2712 3354 2 MP stroke
+-2 15 16 -11 2721 3327 3 MP stroke
+-34 -10 2722 2127 2 MP stroke
+13 0 -10 -7 2698 2124 3 MP stroke
+-3 3 2733 901 2 MP stroke
+0 -1 -2 1 2732 903 3 MP stroke
+3 -6 2721 5045 2 MP stroke
+0 2 2 -2 2722 5041 3 MP stroke
+14 -23 2731 3818 2 MP stroke
+0 9 9 -6 2736 3801 3 MP stroke
+-128 -33 2741 2591 2 MP stroke
+50 -1 -37 -24 2650 2582 3 MP stroke
+-5 5 2752 1364 2 MP stroke
+1 -2 -3 1 2750 1368 3 MP stroke
+7 -13 2750 4281 2 MP stroke
+0 5 5 -4 2752 4272 3 MP stroke
+16 -44 2760 3054 2 MP stroke
+3 16 14 -13 2762 3023 3 MP stroke
+-12 4 2771 1828 2 MP stroke
+3 -3 -5 1 2764 1831 3 MP stroke
+-2 3 2781 601 2 MP stroke
+0 -1 -2 1 2781 603 3 MP stroke
+4 -8 2769 4745 2 MP stroke
+0 3 3 -2 2770 4739 3 MP stroke
+22 -35 2779 3518 2 MP stroke
+-1 14 14 -10 2787 3493 3 MP stroke
+-70 -25 2789 2291 2 MP stroke
+29 1 -19 -15 2738 2281 3 MP stroke
+-3 5 2800 1064 2 MP stroke
+0 -2 -2 1 2799 1068 3 MP stroke
+3 -5 2787 5209 2 MP stroke
+0 2 2 -1 2788 5205 3 MP stroke
+10 -20 2798 3982 2 MP stroke
+0 8 7 -6 2801 3968 3 MP stroke
+-81 -36 2808 2755 2 MP stroke
+34 4 -21 -20 2748 2739 3 MP stroke
+-6 6 2819 1528 2 MP stroke
+1 -3 -3 1 2816 1533 3 MP stroke
+6 -11 2816 4445 2 MP stroke
+0 5 4 -3 2818 4437 3 MP stroke
+29 -51 2827 3218 2 MP stroke
+0 20 19 -15 2837 3182 3 MP stroke
+-18 4 2838 1991 2 MP stroke
+6 -3 -7 0 2827 1995 3 MP stroke
+-2 3 2849 765 2 MP stroke
+0 -1 -1 1 2848 767 3 MP stroke
+3 -7 2835 4909 2 MP stroke
+0 3 2 -2 2836 4904 3 MP stroke
+18 -30 2845 3682 2 MP stroke
+0 12 12 -8 2851 3660 3 MP stroke
+-136 -44 2856 2455 2 MP stroke
+54 1 -38 -28 2758 2439 3 MP stroke
+-3 6 2867 1228 2 MP stroke
+0 -2 -2 2 2866 1232 3 MP stroke
+2 -4 2853 5372 2 MP stroke
+0 2 1 -1 2854 5369 3 MP stroke
+8 -15 2864 4145 2 MP stroke
+0 6 6 -4 2866 4134 3 MP stroke
+-5 -54 2875 2918 2 MP stroke
+12 18 9 -19 2861 2883 3 MP stroke
+-7 8 2886 1692 2 MP stroke
+1 -4 -4 2 2883 1698 3 MP stroke
+-1 3 2897 465 2 MP stroke
+0 -1 -1 1 2897 467 3 MP stroke
+5 -9 2882 4609 2 MP stroke
+0 3 3 -3 2884 4603 3 MP stroke
+28 -47 2893 3382 2 MP stroke
+0 18 18 -13 2903 3348 3 MP stroke
+-30 0 2904 2155 2 MP stroke
+11 -3 -10 -3 2884 2158 3 MP stroke
+-3 5 2916 928 2 MP stroke
+0 -2 -2 1 2915 932 3 MP stroke
+2 -6 2901 5073 2 MP stroke
+1 2 2 -2 2901 5069 3 MP stroke
+13 -25 2912 3846 2 MP stroke
+0 10 9 -7 2916 3828 3 MP stroke
+-160 -53 2923 2619 2 MP stroke
+64 2 -45 -34 2808 2600 3 MP stroke
+-4 7 2934 1392 2 MP stroke
+0 -3 -3 2 2933 1397 3 MP stroke
+7 -13 2930 4309 2 MP stroke
+0 5 5 -4 2932 4300 3 MP stroke
+34 -70 2941 3082 2 MP stroke
+2 27 24 -21 2951 3033 3 MP stroke
+-10 12 2953 1855 2 MP stroke
+1 -5 -6 3 2949 1864 3 MP stroke
+-2 4 2965 629 2 MP stroke
+0 -2 -1 2 2964 631 3 MP stroke
+4 -8 2948 4773 2 MP stroke
+0 3 3 -2 2949 4767 3 MP stroke
+22 -40 2960 3546 2 MP stroke
+0 16 15 -11 2967 3517 3 MP stroke
+-69 -18 2971 2319 2 MP stroke
+27 -1 -20 -13 2922 2314 3 MP stroke
+-3 6 2983 1092 2 MP stroke
+0 -2 -2 2 2982 1096 3 MP stroke
+2 -4 2967 5236 2 MP stroke
+0 2 2 -1 2967 5233 3 MP stroke
+10 -19 2978 4009 2 MP stroke
+0 8 7 -6 2981 3996 3 MP stroke
+-67 -69 2990 2783 2 MP stroke
+35 17 -10 -30 2933 2744 3 MP stroke
+-5 10 3001 1556 2 MP stroke
+0 -4 -4 3 3000 1563 3 MP stroke
+5 -10 2996 4473 2 MP stroke
+1 4 3 -3 2998 4466 3 MP stroke
+36 -67 3008 3246 2 MP stroke
+0 26 25 -19 3019 3198 3 MP stroke
+-14 16 3020 2019 2 MP stroke
+1 -6 -8 4 3014 2031 3 MP stroke
+-2 5 3032 792 2 MP stroke
+0 -2 -1 1 3031 796 3 MP stroke
+3 -7 3014 4937 2 MP stroke
+1 3 2 -2 3015 4932 3 MP stroke
+17 -32 3026 3710 2 MP stroke
+0 13 12 -9 3031 3687 3 MP stroke
+-149 -56 3038 2483 2 MP stroke
+61 4 -40 -33 2929 2460 3 MP stroke
+-3 8 3050 1256 2 MP stroke
+-1 -3 -2 3 3049 1261 3 MP stroke
+2 -4 3032 5400 2 MP stroke
+1 2 1 -1 3033 5397 3 MP stroke
+8 -15 3044 4173 2 MP stroke
+0 6 6 -4 3046 4162 3 MP stroke
+27 -97 3056 2946 2 MP stroke
+9 36 27 -30 3056 2879 3 MP stroke
+-7 15 3068 1719 2 MP stroke
+0 -6 -5 5 3066 1729 3 MP stroke
+-2 4 3081 493 2 MP stroke
+0 -2 -1 2 3080 495 3 MP stroke
+4 -9 3062 4637 2 MP stroke
+1 4 3 -3 3063 4631 3 MP stroke
+29 -55 3074 3410 2 MP stroke
+0 22 20 -16 3083 3371 3 MP stroke
+-22 25 3086 2183 2 MP stroke
+3 -10 -12 6 3076 2202 3 MP stroke
+-3 6 3099 956 2 MP stroke
+0 -2 -2 2 3098 960 3 MP stroke
+3 -5 3080 5100 2 MP stroke
+0 2 2 -2 3081 5097 3 MP stroke
+13 -24 3092 3873 2 MP stroke
+0 10 9 -7 3096 3856 3 MP stroke
+-169 -100 3105 2647 2 MP stroke
+76 17 -38 -50 2974 2597 3 MP stroke
+-4 10 3117 1420 2 MP stroke
+-1 -4 -3 3 3116 1427 3 MP stroke
+6 -12 3110 4337 2 MP stroke
+1 5 4 -3 3112 4328 3 MP stroke
+46 -101 3123 3110 2 MP stroke
+3 39 35 -30 3134 3039 3 MP stroke
+-9 22 3135 1883 2 MP stroke
+-1 -9 -7 7 3133 1898 3 MP stroke
+-2 4 3148 657 2 MP stroke
+0 -2 -2 1 3148 660 3 MP stroke
+4 -7 3128 4801 2 MP stroke
+0 2 3 -2 3129 4796 3 MP stroke
+22 -42 3140 3574 2 MP stroke
+0 16 15 -12 3147 3544 3 MP stroke
+-42 46 3153 2347 2 MP stroke
+6 -20 -23 11 3134 2382 3 MP stroke
+-3 8 3166 1120 2 MP stroke
+0 -3 -2 3 3165 1125 3 MP stroke
+2 -4 3146 5264 2 MP stroke
+0 2 1 -1 3147 5261 3 MP stroke
+10 -19 3158 4037 2 MP stroke
+0 8 7 -6 3161 4024 3 MP stroke
+-29 -135 3171 2810 2 MP stroke
+35 43 15 -49 3127 2724 3 MP stroke
+-6 14 3184 1584 2 MP stroke
+0 -6 -5 4 3183 1594 3 MP stroke
+5 -10 3176 4501 2 MP stroke
+0 4 4 -3 3177 4494 3 MP stroke
+35 -79 3189 3274 2 MP stroke
+3 30 27 -23 3197 3218 3 MP stroke
+-14 36 3202 2047 2 MP stroke
+-2 -14 -11 11 3199 2072 3 MP stroke
+-2 6 3215 820 2 MP stroke
+-1 -2 -2 2 3215 824 3 MP stroke
+3 -6 3194 4965 2 MP stroke
+0 2 2 -1 3195 4960 3 MP stroke
+15 -32 3207 3738 2 MP stroke
+1 12 11 -9 3211 3715 3 MP stroke
+-49 48 3220 2511 2 MP stroke
+7 -21 -25 12 3196 2547 3 MP stroke
+-4 10 3233 1284 2 MP stroke
+0 -4 -3 3 3232 1291 3 MP stroke
+2 -4 3212 5428 2 MP stroke
+0 2 2 -1 3212 5425 3 MP stroke
+7 -14 3224 4201 2 MP stroke
+1 5 5 -4 3226 4191 3 MP stroke
+58 -155 3237 2974 2 MP stroke
+9 59 49 -47 3246 2866 3 MP stroke
+-8 21 3251 1747 2 MP stroke
+-1 -8 -7 6 3250 1762 3 MP stroke
+-2 4 3264 521 2 MP stroke
+0 -2 -2 1 3264 524 3 MP stroke
+4 -8 3242 4665 2 MP stroke
+0 3 3 -2 3243 4659 3 MP stroke
+26 -57 3255 3438 2 MP stroke
+2 22 19 -17 3262 3398 3 MP stroke
+-25 68 3268 2211 2 MP stroke
+-4 -25 -21 20 3264 2259 3 MP stroke
+-3 7 3282 984 2 MP stroke
+0 -2 -3 2 3282 989 3 MP stroke
+2 -5 3260 5128 2 MP stroke
+0 2 2 -2 3260 5125 3 MP stroke
+11 -23 3273 3901 2 MP stroke
+0 9 8 -7 3276 3885 3 MP stroke
+-103 -141 3286 2675 2 MP stroke
+62 38 -9 -58 3192 2592 3 MP stroke
+-5 13 3300 1448 2 MP stroke
+-1 -5 -4 4 3299 1457 3 MP stroke
+6 -11 3290 4365 2 MP stroke
+0 4 4 -3 3292 4357 3 MP stroke
+40 -122 3304 3138 2 MP stroke
+9 46 37 -38 3307 3054 3 MP stroke
+-11 33 3317 1911 2 MP stroke
+-2 -12 -10 10 3316 1934 3 MP stroke
+-2 5 3331 685 2 MP stroke
+0 -2 -2 2 3331 688 3 MP stroke
+3 -7 3308 4829 2 MP stroke
+0 3 2 -2 3309 4824 3 MP stroke
+19 -41 3321 3602 2 MP stroke
+1 16 14 -12 3326 3573 3 MP stroke
+-64 133 3335 2375 2 MP stroke
+-3 -51 -47 39 3318 2469 3 MP stroke
+-4 9 3349 1148 2 MP stroke
+0 -3 -3 3 3348 1154 3 MP stroke
+2 -4 3325 5292 2 MP stroke
+1 2 1 -1 3326 5289 3 MP stroke
+8 -17 3339 4065 2 MP stroke
+0 7 6 -5 3341 4053 3 MP stroke
+13 -214 3352 2838 2 MP stroke
+36 74 45 -71 3320 2695 3 MP stroke
+-6 18 3366 1612 2 MP stroke
+-1 -7 -6 6 3366 1624 3 MP stroke
+4 -9 3356 4529 2 MP stroke
+1 3 3 -2 3357 4522 3 MP stroke
+27 -79 3370 3302 2 MP stroke
+5 30 24 -25 3373 3248 3 MP stroke
+-20 55 3384 2075 2 MP stroke
+-3 -20 -17 16 3381 2114 3 MP stroke
+-2 7 3398 848 2 MP stroke
+-1 -3 -2 2 3398 853 3 MP stroke
+2 -6 3374 4993 2 MP stroke
+0 2 2 -2 3374 4989 3 MP stroke
+14 -30 3387 3766 2 MP stroke
+1 12 10 -9 3391 3745 3 MP stroke
+17 134 3401 2539 2 MP stroke
+-31 -44 -20 47 3438 2626 3 MP stroke
+-5 12 3416 1312 2 MP stroke
+0 -5 -4 4 3415 1320 3 MP stroke
+2 -3 3391 5456 2 MP stroke
+0 1 2 -1 3391 5454 3 MP stroke
+6 -13 3405 4229 2 MP stroke
+0 5 5 -4 3406 4220 3 MP stroke
+54 -188 3419 3002 2 MP stroke
+17 69 54 -59 3419 2873 3 MP stroke
+-10 28 3433 1775 2 MP stroke
+-1 -11 -9 9 3432 1794 3 MP stroke
+-2 5 3448 549 2 MP stroke
+-1 -2 -1 2 3447 552 3 MP stroke
+3 -8 3422 4693 2 MP stroke
+1 3 2 -3 3423 4688 3 MP stroke
+22 -53 3436 3466 2 MP stroke
+2 20 17 -16 3441 3429 3 MP stroke
+-43 97 3450 2239 2 MP stroke
+-3 -37 -33 29 3440 2307 3 MP stroke
+-3 8 3465 1012 2 MP stroke
+-1 -3 -2 2 3464 1018 3 MP stroke
+2 -4 3439 5156 2 MP stroke
+0 2 1 -1 3440 5153 3 MP stroke
+10 -21 3453 3929 2 MP stroke
+0 8 7 -7 3456 3915 3 MP stroke
+80 41 3468 2703 2 MP stroke
+-35 -6 19 22 3529 2722 3 MP stroke
+-5 16 3482 1476 2 MP stroke
+-1 -6 -4 5 3481 1487 3 MP stroke
+5 -10 3470 4393 2 MP stroke
+1 4 3 -3 3472 4386 3 MP stroke
+16 -106 3485 3166 2 MP stroke
+14 38 25 -35 3476 3095 3 MP stroke
+-16 42 3500 1939 2 MP stroke
+-3 -16 -13 12 3497 1969 3 MP stroke
+-3 6 3515 713 2 MP stroke
+0 -3 -2 2 3514 717 3 MP stroke
+2 -6 3488 4857 2 MP stroke
+1 2 2 -1 3488 4852 3 MP stroke
+16 -37 3502 3630 2 MP stroke
+1 14 12 -11 3506 3604 3 MP stroke
+-67 137 3517 2403 2 MP stroke
+-3 -53 -48 40 3498 2500 3 MP stroke
+-4 10 3532 1176 2 MP stroke
+-1 -3 -3 3 3531 1183 3 MP stroke
+2 -4 3505 5320 2 MP stroke
+0 2 2 -2 3505 5318 3 MP stroke
+7 -15 3519 4093 2 MP stroke
+1 6 5 -4 3521 4082 3 MP stroke
+30 -81 3534 2866 2 MP stroke
+5 31 25 -25 3539 2810 3 MP stroke
+-8 22 3549 1640 2 MP stroke
+-2 -9 -7 7 3548 1655 3 MP stroke
+4 -8 3536 4557 2 MP stroke
+0 3 3 -2 3537 4551 3 MP stroke
+20 -64 3551 3330 2 MP stroke
+5 24 19 -20 3552 3286 3 MP stroke
+-30 67 3566 2103 2 MP stroke
+-2 -26 -23 20 3559 2150 3 MP stroke
+-3 8 3581 876 2 MP stroke
+0 -3 -3 2 3581 882 3 MP stroke
+3 -5 3553 5021 2 MP stroke
+0 2 2 -1 3554 5017 3 MP stroke
+11 -26 3568 3794 2 MP stroke
+1 10 8 -8 3571 3776 3 MP stroke
+47 133 3583 2567 2 MP stroke
+-41 -41 -9 50 3639 2650 3 MP stroke
+-5 14 3598 1340 2 MP stroke
+-1 -6 -4 5 3597 1349 3 MP stroke
+2 -3 3570 5484 2 MP stroke
+0 1 1 -1 3571 5482 3 MP stroke
+5 -11 3585 4257 2 MP stroke
+1 4 4 -3 3586 4249 3 MP stroke
+32 -64 3600 3030 2 MP stroke
+1 25 23 -19 3609 2985 3 MP stroke
+-12 31 3615 1804 2 MP stroke
+-2 -12 -10 9 3613 1826 3 MP stroke
+-2 5 3631 577 2 MP stroke
+0 -2 -2 1 3631 581 3 MP stroke
+3 -7 3602 4721 2 MP stroke
+0 3 2 -2 3603 4716 3 MP stroke
+19 -44 3617 3494 2 MP stroke
+2 17 14 -13 3622 3463 3 MP stroke
+-53 96 3632 2267 2 MP stroke
+0 -38 -36 27 3615 2336 3 MP stroke
+-4 9 3648 1040 2 MP stroke
+0 -3 -3 2 3647 1047 3 MP stroke
+2 -4 3619 5184 2 MP stroke
+0 2 2 -2 3619 5182 3 MP stroke
+8 -17 3634 3957 2 MP stroke
+0 7 6 -5 3636 3945 3 MP stroke
+224 164 3649 2731 2 MP stroke
+-107 -34 46 78 3827 2817 3 MP stroke
+-7 18 3665 1504 2 MP stroke
+-1 -7 -6 5 3664 1517 3 MP stroke
+5 -9 3650 4421 2 MP stroke
+0 4 3 -3 3652 4415 3 MP stroke
+16 -50 3666 3194 2 MP stroke
+4 18 15 -15 3667 3159 3 MP stroke
+-22 47 3682 1967 2 MP stroke
+-1 -18 -16 14 3676 2000 3 MP stroke
+-3 6 3698 741 2 MP stroke
+0 -2 -2 2 3697 745 3 MP stroke
+3 -6 3667 4885 2 MP stroke
+0 2 2 -2 3668 4881 3 MP stroke
+14 -30 3683 3658 2 MP stroke
+0 12 11 -9 3686 3637 3 MP stroke
+-43 104 3698 2431 2 MP stroke
+-5 -40 -34 31 3689 2504 3 MP stroke
+-5 12 3715 1204 2 MP stroke
+-1 -5 -4 4 3714 1212 3 MP stroke
+2 -3 3684 5348 2 MP stroke
+0 1 2 -1 3684 5346 3 MP stroke
+6 -13 3699 4121 2 MP stroke
+1 5 4 -4 3701 4112 3 MP stroke
+178 146 3715 2895 2 MP stroke
+-88 -32 33 67 3860 2974 3 MP stroke
+-10 24 3731 1668 2 MP stroke
+-1 -9 -8 7 3729 1685 3 MP stroke
+3 -7 3716 4585 2 MP stroke
+1 3 2 -2 3717 4580 3 MP stroke
+22 -42 3732 3358 2 MP stroke
+0 17 16 -12 3738 3328 3 MP stroke
+-36 65 3748 2131 2 MP stroke
+0 -25 -24 18 3736 2178 3 MP stroke
+-3 8 3764 905 2 MP stroke
+0 -3 -3 3 3764 910 3 MP stroke
+2 -5 3733 5049 2 MP stroke
+0 2 2 -1 3733 5045 3 MP stroke
+10 -20 3748 3822 2 MP stroke
+0 7 7 -6 3751 3808 3 MP stroke
+85 97 3764 2595 2 MP stroke
+-47 -25 10 41 3839 2651 3 MP stroke
+-6 15 3781 1368 2 MP stroke
+-1 -6 -5 4 3780 1379 3 MP stroke
+5 -9 3765 4285 2 MP stroke
+0 3 4 -2 3766 4278 3 MP stroke
+122 88 3781 3058 2 MP stroke
+-58 -18 25 42 3878 3104 3 MP stroke
+-15 34 3797 1832 2 MP stroke
+-1 -14 -11 10 3793 1856 3 MP stroke
+-2 6 3814 605 2 MP stroke
+0 -2 -2 2 3814 609 3 MP stroke
+3 -6 3781 4749 2 MP stroke
+0 2 2 -2 3782 4745 3 MP stroke
+18 -32 3798 3522 2 MP stroke
+0 13 12 -9 3804 3499 3 MP stroke
+-46 77 3814 2295 2 MP stroke
+1 -31 -30 21 3798 2351 3 MP stroke
+-4 10 3831 1068 2 MP stroke
+-1 -3 -3 3 3830 1075 3 MP stroke
+2 -4 3798 5213 2 MP stroke
+0 1 1 -1 3799 5210 3 MP stroke
+7 -14 3814 3986 2 MP stroke
+0 5 5 -4 3816 3976 3 MP stroke
+183 129 3830 2759 2 MP stroke
+-86 -26 38 62 3975 2826 3 MP stroke
+-8 20 3847 1532 2 MP stroke
+-1 -8 -6 6 3845 1546 3 MP stroke
+4 -7 3830 4449 2 MP stroke
+0 3 2 -2 3832 4444 3 MP stroke
+56 15 3847 3222 2 MP stroke
+-22 1 16 10 3887 3227 3 MP stroke
+-25 45 3864 1996 2 MP stroke
+0 -18 -17 13 3856 2028 3 MP stroke
+-3 7 3881 769 2 MP stroke
+0 -3 -2 2 3880 774 3 MP stroke
+2 -5 3847 4913 2 MP stroke
+0 2 1 -2 3848 4910 3 MP stroke
+13 -21 3863 3686 2 MP stroke
+-1 8 9 -6 3867 3671 3 MP stroke
+-9 71 3880 2459 2 MP stroke
+-10 -25 -16 23 3887 2507 3 MP stroke
+-5 13 3897 1232 2 MP stroke
+-1 -5 -4 4 3896 1241 3 MP stroke
+2 -3 3863 5376 2 MP stroke
+0 2 1 -1 3864 5374 3 MP stroke
+5 -11 3880 4150 2 MP stroke
+0 4 4 -3 3881 4142 3 MP stroke
+167 116 3896 2923 2 MP stroke
+-79 -23 35 56 4028 2983 3 MP stroke
+-13 26 3914 1696 2 MP stroke
+0 -10 -9 8 3910 1714 3 MP stroke
+-2 5 3931 469 2 MP stroke
+0 -2 -2 1 3931 473 3 MP stroke
+3 -6 3896 4613 2 MP stroke
+0 3 2 -2 3897 4609 3 MP stroke
+29 -19 3913 3386 2 MP stroke
+-6 9 14 -4 3928 3371 3 MP stroke
+-35 56 3930 2159 2 MP stroke
+2 -22 -23 15 3918 2200 3 MP stroke
+-3 8 3947 933 2 MP stroke
+-1 -3 -3 2 3947 939 3 MP stroke
+2 -4 3912 5077 2 MP stroke
+0 1 1 -1 3913 5074 3 MP stroke
+9 -14 3929 3850 2 MP stroke
+-1 5 6 -4 3932 3840 3 MP stroke
+84 71 3946 2623 2 MP stroke
+-42 -16 15 32 4015 2662 3 MP stroke
+-7 16 3964 1396 2 MP stroke
+-1 -6 -5 5 3962 1407 3 MP stroke
+5 -7 3945 4313 2 MP stroke
+-1 3 3 -2 3947 4308 3 MP stroke
+146 76 3962 3087 2 MP stroke
+-64 -12 35 41 4073 3122 3 MP stroke
+-18 33 3980 1860 2 MP stroke
+0 -13 -12 10 3974 1883 3 MP stroke
+-3 6 3998 633 2 MP stroke
+0 -2 -2 2 3997 637 3 MP stroke
+3 -5 3961 4777 2 MP stroke
+0 2 2 -2 3962 4774 3 MP stroke
+18 -17 3978 3550 2 MP stroke
+-3 8 9 -4 3987 3537 3 MP stroke
+-30 57 3996 2323 2 MP stroke
+0 -22 -21 17 3987 2363 3 MP stroke
+-5 10 4014 1097 2 MP stroke
+0 -4 -4 3 4013 1104 3 MP stroke
+2 -4 3977 5241 2 MP stroke
+0 2 1 -1 3978 5238 3 MP stroke
+7 -10 3994 4014 2 MP stroke
+0 4 4 -2 3997 4006 3 MP stroke
+134 82 4012 2787 2 MP stroke
+-61 -15 30 41 4116 2828 3 MP stroke
+-10 20 4030 1560 2 MP stroke
+0 -8 -7 6 4027 1574 3 MP stroke
+4 -6 4010 4477 2 MP stroke
+0 3 2 -2 4012 4473 3 MP stroke
+100 38 4028 3251 2 MP stroke
+-41 -3 27 23 4101 3266 3 MP stroke
+-25 40 4046 2024 2 MP stroke
+1 -16 -16 11 4037 2053 3 MP stroke
+-3 7 4064 797 2 MP stroke
+-1 -2 -2 2 4063 802 3 MP stroke
+3 -4 4026 4941 2 MP stroke
+0 2 2 -1 4027 4938 3 MP stroke
+12 -12 4044 3714 2 MP stroke
+-2 6 6 -3 4050 3705 3 MP stroke
+12 49 4062 2487 2 MP stroke
+-13 -15 -5 18 4079 2518 3 MP stroke
+-6 12 4080 1261 2 MP stroke
+0 -4 -4 3 4078 1270 3 MP stroke
+2 -3 4042 5405 2 MP stroke
+0 1 1 -1 4043 5403 3 MP stroke
+5 -8 4060 4178 2 MP stroke
+0 3 3 -2 4062 4172 3 MP stroke
+141 68 4078 2951 2 MP stroke
+-61 -9 35 37 4184 2982 3 MP stroke
+-13 25 4096 1724 2 MP stroke
+-1 -10 -9 7 4092 1742 3 MP stroke
+-2 6 4114 497 2 MP stroke
+0 -2 -2 2 4114 501 3 MP stroke
+3 -5 4076 4641 2 MP stroke
+0 2 2 -2 4077 4638 3 MP stroke
+38 6 4093 3414 2 MP stroke
+-14 2 12 5 4119 3415 3 MP stroke
+-27 43 4112 2188 2 MP stroke
+1 -17 -17 12 4102 2219 3 MP stroke
+-4 9 4130 961 2 MP stroke
+0 -4 -3 3 4129 967 3 MP stroke
+2 -3 4091 5105 2 MP stroke
+0 1 1 -1 4092 5103 3 MP stroke
+9 -8 4109 3878 2 MP stroke
+-1 3 4 -2 4114 3872 3 MP stroke
+73 49 4127 2651 2 MP stroke
+-34 -10 16 24 4184 2676 3 MP stroke
+-8 16 4146 1424 2 MP stroke
+0 -6 -6 4 4144 1436 3 MP stroke
+4 -6 4125 4342 2 MP stroke
+0 2 2 -1 4127 4337 3 MP stroke
+138 47 4143 3115 2 MP stroke
+-56 -3 38 30 4243 3132 3 MP stroke
+-18 30 4162 1888 2 MP stroke
+0 -12 -12 8 4156 1910 3 MP stroke
+-3 7 4181 661 2 MP stroke
+0 -3 -2 2 4180 666 3 MP stroke
+2 -4 4141 4805 2 MP stroke
+0 2 1 -1 4142 4802 3 MP stroke
+20 -3 4159 3578 2 MP stroke
+-6 3 7 1 4172 3574 3 MP stroke
+-13 39 4177 2352 2 MP stroke
+-3 -14 -12 12 4176 2379 3 MP stroke
+-5 11 4196 1125 2 MP stroke
+0 -5 -4 4 4195 1132 3 MP stroke
+2 -3 4156 5269 2 MP stroke
+0 1 1 -1 4157 5267 3 MP stroke
+7 -6 4175 4042 2 MP stroke
+-2 2 4 -1 4178 4037 3 MP stroke
+107 49 4193 2815 2 MP stroke
+-46 -6 27 27 4273 2837 3 MP stroke
+-10 20 4212 1588 2 MP stroke
+0 -8 -7 6 4209 1602 3 MP stroke
+4 -5 4190 4506 2 MP stroke
+0 2 2 -1 4192 4502 3 MP stroke
+102 33 4209 3279 2 MP stroke
+-41 -1 28 22 4283 3290 3 MP stroke
+-22 34 4228 2052 2 MP stroke
+1 -14 -14 10 4220 2076 3 MP stroke
+-3 8 4247 825 2 MP stroke
+-1 -3 -2 2 4246 831 3 MP stroke
+2 -3 4206 4969 2 MP stroke
+0 1 1 -1 4207 4967 3 MP stroke
+14 -4 4224 3742 2 MP stroke
+-4 3 6 0 4232 3738 3 MP stroke
+23 33 4243 2516 2 MP stroke
+-14 -9 1 13 4265 2536 3 MP stroke
+-7 13 4263 1289 2 MP stroke
+0 -5 -5 4 4261 1298 3 MP stroke
+2 -2 4221 5433 2 MP stroke
+1 0 4222 5431 2 MP stroke
+5 -5 4240 4206 2 MP stroke
+-1 2 2 -1 4243 4202 3 MP stroke
+120 40 4259 2979 2 MP stroke
+-48 -2 33 26 4346 2993 3 MP stroke
+-14 24 4278 1752 2 MP stroke
+1 -10 -9 7 4273 1769 3 MP stroke
+-3 5 4298 526 2 MP stroke
+0 -2 -2 1 4297 530 3 MP stroke
+3 -4 4255 4670 2 MP stroke
+0 1 1 -1 4257 4667 3 MP stroke
+46 16 4274 3443 2 MP stroke
+-19 -1 13 10 4307 3449 3 MP stroke
+-18 33 4293 2216 2 MP stroke
+0 -13 -13 10 4288 2239 3 MP stroke
+-4 9 4313 989 2 MP stroke
+0 -3 -3 2 4312 996 3 MP stroke
+2 -3 4271 5133 2 MP stroke
+0 2 1 -1 4272 5131 3 MP stroke
+9 -4 4290 3906 2 MP stroke
+-2 3 4 -1 4295 3903 3 MP stroke
+63 32 4309 2679 2 MP stroke
+-28 -4 16 17 4356 2694 3 MP stroke
+-9 15 4329 1453 2 MP stroke
+0 -6 -6 4 4326 1464 3 MP stroke
+5 -4 4305 4370 2 MP stroke
+-1 2 3 -1 4307 4367 3 MP stroke
+116 32 4324 3143 2 MP stroke
+-45 0 33 23 4407 3152 3 MP stroke
+-17 26 4344 1916 2 MP stroke
+1 -10 -11 7 4338 1935 3 MP stroke
+-3 6 4364 690 2 MP stroke
+0 -2 -2 2 4363 694 3 MP stroke
+3 -4 4320 4834 2 MP stroke
+0 2 1 -1 4322 4831 3 MP stroke
+24 5 4339 3607 2 MP stroke
+-9 0 7 4 4356 3608 3 MP stroke
+-1 28 4359 2380 2 MP stroke
+-5 -10 -6 10 4364 2398 3 MP stroke
+-5 11 4379 1153 2 MP stroke
+0 -4 -4 3 4378 1161 3 MP stroke
+1 -2 4336 5297 2 MP stroke
+1 1 4336 5295 2 MP stroke
+7 -3 4355 4070 2 MP stroke
+-2 2 3 0 4359 4067 3 MP stroke
+90 30 4374 2843 2 MP stroke
+-36 -1 25 19 4439 2854 3 MP stroke
+-10 18 4394 1617 2 MP stroke
+0 -7 -7 5 4391 1630 3 MP stroke
+4 -4 4370 4534 2 MP stroke
+-1 2 2 -1 4372 4531 3 MP stroke
+83 27 4390 3307 2 MP stroke
+-34 -1 24 18 4449 3316 3 MP stroke
+-17 27 4410 2080 2 MP stroke
+1 -11 -11 7 4404 2100 3 MP stroke
+-4 7 4430 854 2 MP stroke
+0 -3 -3 2 4429 859 3 MP stroke
+3 -3 4385 4998 2 MP stroke
+-1 1 2 -1 4386 4996 3 MP stroke
+15 0 4405 3771 2 MP stroke
+-6 2 5 1 4415 3770 3 MP stroke
+27 23 4425 2544 2 MP stroke
+-14 -5 5 11 4447 2556 3 MP stroke
+-7 13 4445 1317 2 MP stroke
+0 -5 -5 4 4443 1326 3 MP stroke
+2 -2 4400 5461 2 MP stroke
+0 1 1 -1 4401 5460 3 MP stroke
+6 -3 4420 4234 2 MP stroke
+-2 2 3 -1 4423 4232 3 MP stroke
+100 26 4440 3007 2 MP stroke
+-39 1 29 19 4511 3014 3 MP stroke
+-13 20 4460 1781 2 MP stroke
+1 -8 -9 5 4456 1796 3 MP stroke
+-3 6 4481 554 2 MP stroke
+0 -2 -2 2 4480 558 3 MP stroke
+3 -3 4435 4698 2 MP stroke
+0 1 1 -1 4437 4696 3 MP stroke
+44 17 4455 3471 2 MP stroke
+-18 -2 12 10 4487 3478 3 MP stroke
+-9 24 4475 2244 2 MP stroke
+-2 -9 -7 7 4473 2261 3 MP stroke
+-5 9 4496 1018 2 MP stroke
+0 -4 -4 3 4495 1024 3 MP stroke
+2 -2 4450 5161 2 MP stroke
+0 1 1 -1 4451 5160 3 MP stroke
+10 -1 4470 3935 2 MP stroke
+-3 1 3 1 4477 3933 3 MP stroke
+56 21 4490 2708 2 MP stroke
+-23 -2 15 13 4531 2716 3 MP stroke
+-8 15 4511 1481 2 MP stroke
+0 -6 -5 4 4508 1492 3 MP stroke
+5 -2 4485 4398 2 MP stroke
+-2 1 3 0 4487 4396 3 MP stroke
+92 24 4505 3171 2 MP stroke
+-36 1 27 17 4570 3178 3 MP stroke
+-14 21 4526 1945 2 MP stroke
+1 -8 -9 6 4521 1960 3 MP stroke
+-3 7 4547 718 2 MP stroke
+0 -3 -2 2 4546 723 3 MP stroke
+3 -3 4500 4862 2 MP stroke
+-1 2 2 -1 4501 4860 3 MP stroke
+25 8 4520 3635 2 MP stroke
+-10 0 7 5 4538 3638 3 MP stroke
+6 20 4541 2408 2 MP stroke
+-6 -6 -2 7 4549 2421 3 MP stroke
+-6 10 4562 1182 2 MP stroke
+0 -4 -4 3 4560 1189 3 MP stroke
+2 -1 4515 5325 2 MP stroke
+-1 0 1 0 4516 5324 3 MP stroke
+8 -2 4535 4099 2 MP stroke
+-3 2 3 0 4540 4097 3 MP stroke
+75 19 4556 2872 2 MP stroke
+-29 1 22 14 4609 2877 3 MP stroke
+-10 17 4577 1645 2 MP stroke
+0 -7 -6 5 4573 1657 3 MP stroke
+4 -2 4550 4562 2 MP stroke
+-1 1 2 0 4552 4560 3 MP stroke
+66 22 4570 3335 2 MP stroke
+-26 -1 18 14 4618 3343 3 MP stroke
+-11 20 4591 2109 2 MP stroke
+0 -8 -8 6 4588 2123 3 MP stroke
+-4 8 4613 882 2 MP stroke
+0 -3 -3 3 4612 887 3 MP stroke
+2 -2 4565 5026 2 MP stroke
+1 1 4566 5024 2 MP stroke
+16 4 4585 3799 2 MP stroke
+-6 0 5 3 4596 3800 3 MP stroke
+29 16 4606 2572 2 MP stroke
+-13 -2 7 8 4628 2580 3 MP stroke
+-7 12 4628 1346 2 MP stroke
+0 -5 -4 4 4625 1354 3 MP stroke
+2 -1 4579 5489 2 MP stroke
+1 1 4580 5488 2 MP stroke
+6 -2 4600 4263 2 MP stroke
+-2 1 2 0 4604 4261 3 MP stroke
+81 18 4621 3036 2 MP stroke
+-31 2 24 14 4678 3040 3 MP stroke
+-11 18 4642 1809 2 MP stroke
+1 -7 -7 5 4638 1822 3 MP stroke
+-3 6 4664 582 2 MP stroke
+0 -2 -2 1 4663 587 3 MP stroke
+3 -2 4615 4726 2 MP stroke
+-1 1 2 -1 4616 4725 3 MP stroke
+39 15 4636 3499 2 MP stroke
+-16 -1 11 9 4664 3505 3 MP stroke
+-3 17 4657 2273 2 MP stroke
+-2 -6 -4 5 4658 2285 3 MP stroke
+-5 9 4679 1046 2 MP stroke
+0 -4 -3 3 4677 1052 3 MP stroke
+2 -2 4629 5190 2 MP stroke
+1 1 4630 5188 2 MP stroke
+11 1 4650 3963 2 MP stroke
+-4 1 3 1 4658 3963 3 MP stroke
+50 14 4671 2736 2 MP stroke
+-19 0 14 9 4707 2741 3 MP stroke
+-8 13 4693 1510 2 MP stroke
+0 -5 -5 4 4690 1519 3 MP stroke
+5 -2 4665 4427 2 MP stroke
+-2 1 2 0 4668 4425 3 MP stroke
+72 19 4686 3200 2 MP stroke
+-28 0 21 14 4737 3205 3 MP stroke
+-11 17 4708 1973 2 MP stroke
+1 -6 -7 4 4704 1986 3 MP stroke
+-3 7 4730 746 2 MP stroke
+0 -3 -2 2 4729 751 3 MP stroke
+3 -2 4679 4890 2 MP stroke
+0 1 1 -1 4681 4889 3 MP stroke
+24 9 4701 3663 2 MP stroke
+-10 -1 7 5 4718 3667 3 MP stroke
+12 14 4722 2437 2 MP stroke
+-7 -4 1 6 4733 2445 3 MP stroke
+-5 10 4744 1210 2 MP stroke
+0 -4 -4 3 4743 1217 3 MP stroke
+2 -2 4694 5354 2 MP stroke
+-1 1 1 -1 4695 5353 3 MP stroke
+8 0 4715 4127 2 MP stroke
+-3 1 2 1 4721 4126 3 MP stroke
+62 14 4737 2900 2 MP stroke
+-23 1 18 11 4781 2903 3 MP stroke
+-9 14 4759 1674 2 MP stroke
+0 -6 -6 4 4756 1684 3 MP stroke
+4 -2 4730 4591 2 MP stroke
+-2 1 2 0 4732 4589 3 MP stroke
+53 17 4751 3364 2 MP stroke
+-21 -1 15 11 4789 3370 3 MP stroke
+-6 16 4773 2137 2 MP stroke
+-1 -6 -5 5 4772 2148 3 MP stroke
+-4 8 4796 910 2 MP stroke
+0 -3 -3 2 4795 916 3 MP stroke
+2 -1 4744 5054 2 MP stroke
+1 0 4745 5053 2 MP stroke
+16 5 4766 3827 2 MP stroke
+-7 0 5 3 4777 3829 3 MP stroke
+29 11 4788 2601 2 MP stroke
+-12 -1 8 7 4809 2605 3 MP stroke
+-7 11 4810 1374 2 MP stroke
+1 -4 -5 3 4808 1382 3 MP stroke
+6 0 4780 4291 2 MP stroke
+-2 0 2 1 4784 4290 3 MP stroke
+65 15 4802 3064 2 MP stroke
+-25 1 20 12 4847 3067 3 MP stroke
+-9 14 4824 1838 2 MP stroke
+0 -6 -6 4 4821 1848 3 MP stroke
+-3 6 4847 611 2 MP stroke
+0 -3 -2 2 4846 615 3 MP stroke
+4 -2 4794 4755 2 MP stroke
+-1 1 2 0 4796 4753 3 MP stroke
+35 12 4816 3528 2 MP stroke
+-14 -1 10 7 4841 3533 3 MP stroke
+2 13 4839 2301 2 MP stroke
+-3 -4 -1 5 4842 2309 3 MP stroke
+-4 9 4861 1074 2 MP stroke
+0 -3 -3 3 4860 1080 3 MP stroke
+2 -1 4809 5218 2 MP stroke
+-1 1 1 0 4810 5217 3 MP stroke
+12 3 4830 3991 2 MP stroke
+-5 0 4 2 4838 3992 3 MP stroke
+44 10 4853 2765 2 MP stroke
+-17 1 13 8 4884 2767 3 MP stroke
+-8 12 4876 1538 2 MP stroke
+0 -5 -5 3 4873 1547 3 MP stroke
+5 -1 4845 4455 2 MP stroke
+-2 1 2 0 4848 4454 3 MP stroke
+56 15 4867 3228 2 MP stroke
+-22 1 16 11 4907 3232 3 MP stroke
+-8 13 4890 2002 2 MP stroke
+0 -5 -5 4 4887 2011 3 MP stroke
+-4 6 4913 775 2 MP stroke
+0 -2 -3 1 4912 780 3 MP stroke
+3 -2 4859 4919 2 MP stroke
+-1 1 2 -1 4860 4918 3 MP stroke
+23 8 4881 3692 2 MP stroke
+-9 0 6 5 4898 3695 3 MP stroke
+14 10 4904 2465 2 MP stroke
+-7 -2 3 5 4915 2470 3 MP stroke
+-6 10 4927 1238 2 MP stroke
+1 -4 -4 3 4925 1245 3 MP stroke
+2 -1 4873 5382 2 MP stroke
+-1 1 1 0 4874 5381 3 MP stroke
+9 2 4895 4155 2 MP stroke
+-4 0 3 2 4901 4155 3 MP stroke
+52 10 4918 2929 2 MP stroke
+-20 2 16 8 4954 2931 3 MP stroke
+-8 12 4941 1702 2 MP stroke
+0 -5 -5 3 4938 1711 3 MP stroke
+-3 5 4965 475 2 MP stroke
+0 -2 -2 1 4964 479 3 MP stroke
+4 -1 4909 4619 2 MP stroke
+-1 1 1 0 4912 4618 3 MP stroke
+42 14 4932 3392 2 MP stroke
+-17 -1 11 9 4963 3397 3 MP stroke
+-2 11 4955 2166 2 MP stroke
+-2 -4 -3 3 4956 2174 3 MP stroke
+-5 7 4979 939 2 MP stroke
+1 -3 -3 2 4977 944 3 MP stroke
+3 -1 4923 5083 2 MP stroke
+-1 0 1 0 4925 5082 3 MP stroke
+16 5 4946 3856 2 MP stroke
+-7 0 5 3 4957 3858 3 MP stroke
+28 8 4969 2629 2 MP stroke
+-11 0 8 5 4989 2632 3 MP stroke
+-6 11 4992 1402 2 MP stroke
+0 -4 -4 3 4990 1410 3 MP stroke
+6 1 4960 4319 2 MP stroke
+-2 0 2 1 4964 4319 3 MP stroke
+52 11 4983 3093 2 MP stroke
+-20 2 16 9 5019 3095 3 MP stroke
+-7 12 5006 1866 2 MP stroke
+0 -5 -5 3 5004 1875 3 MP stroke
+-3 6 5030 639 2 MP stroke
+0 -2 -2 2 5029 643 3 MP stroke
+3 -1 4974 4783 2 MP stroke
+-1 1 1 0 4976 4782 3 MP stroke
+30 11 4997 3556 2 MP stroke
+-13 -1 9 7 5018 3560 3 MP stroke
+6 9 5020 2330 2 MP stroke
+-4 -3 0 4 5026 2335 3 MP stroke
+-5 8 5044 1103 2 MP stroke
+1 -3 -3 2 5042 1109 3 MP stroke
+2 -1 4988 5247 2 MP stroke
+-1 0 1 0 4989 5246 3 MP stroke
+11 3 5011 4020 2 MP stroke
+-5 0 3 2 5019 4021 3 MP stroke
+38 8 5034 2793 2 MP stroke
+-14 1 11 6 5061 2795 3 MP stroke
+-7 11 5058 1566 2 MP stroke
+0 -4 -4 3 5055 1574 3 MP stroke
+6 1 5024 4483 2 MP stroke
+-2 0 2 1 5028 4483 3 MP stroke
+45 12 5048 3257 2 MP stroke
+-18 0 13 9 5080 3260 3 MP stroke
+-5 11 5072 2030 2 MP stroke
+0 -4 -4 3 5071 2038 3 MP stroke
+-4 7 5096 803 2 MP stroke
+0 -3 -3 2 5095 808 3 MP stroke
+3 -1 5038 4947 2 MP stroke
+-1 1 1 0 5040 4946 3 MP stroke
+21 8 5061 3720 2 MP stroke
+-8 -1 5 5 5077 3723 3 MP stroke
+16 7 5085 2494 2 MP stroke
+-7 -1 4 4 5097 2497 3 MP stroke
+-6 9 5110 1267 2 MP stroke
+0 -4 -4 3 5108 1273 3 MP stroke
+2 -1 5052 5411 2 MP stroke
+-1 0 1 0 5053 5410 3 MP stroke
+9 2 5075 4184 2 MP stroke
+-4 0 3 2 5081 4184 3 MP stroke
+43 9 5099 2957 2 MP stroke
+-16 1 13 7 5129 2959 3 MP stroke
+-6 10 5123 1731 2 MP stroke
+0 -4 -4 3 5121 1738 3 MP stroke
+-3 5 5148 504 2 MP stroke
+0 -2 -2 2 5147 507 3 MP stroke
+4 -1 5089 4648 2 MP stroke
+-1 1 1 0 5092 4647 3 MP stroke
+36 11 5112 3421 2 MP stroke
+-14 0 10 7 5138 3425 3 MP stroke
+0 9 5137 2194 2 MP stroke
+-2 -3 -2 3 5139 2200 3 MP stroke
+-4 6 5161 968 2 MP stroke
+0 -2 -3 2 5160 972 3 MP stroke
+2 -1 5103 5111 2 MP stroke
+-1 1 1 0 5104 5110 3 MP stroke
+15 6 5126 3884 2 MP stroke
+-6 -1 4 4 5137 3886 3 MP stroke
+26 6 5150 2658 2 MP stroke
+-10 0 8 5 5168 2659 3 MP stroke
+-6 9 5175 1431 2 MP stroke
+0 -4 -4 2 5173 1438 3 MP stroke
+6 1 5140 4348 2 MP stroke
+-2 0 2 1 5144 4348 3 MP stroke
+42 10 5164 3121 2 MP stroke
+-16 1 12 8 5194 3123 3 MP stroke
+-5 9 5188 1895 2 MP stroke
+0 -3 -4 2 5187 1902 3 MP stroke
+-3 5 5213 668 2 MP stroke
+0 -2 -2 1 5212 672 3 MP stroke
+4 -1 5153 4812 2 MP stroke
+-1 1 2 0 5155 4811 3 MP stroke
+26 9 5177 3585 2 MP stroke
+-10 -1 7 6 5196 3588 3 MP stroke
+8 7 5202 2358 2 MP stroke
+-4 -1 2 3 5208 2362 3 MP stroke
+-5 7 5227 1132 2 MP stroke
+0 -3 -3 2 5225 1137 3 MP stroke
+2 0 5167 5275 2 MP stroke
+-1 0 1 0 5168 5275 3 MP stroke
+11 4 5191 4048 2 MP stroke
+-5 0 3 2 5199 4050 3 MP stroke
+33 6 5215 2822 2 MP stroke
+-12 1 10 5 5238 2823 3 MP stroke
+-6 9 5240 1595 2 MP stroke
+1 -4 -4 2 5238 1602 3 MP stroke
+5 1 5204 4512 2 MP stroke
+-2 0 1 1 5208 4512 3 MP stroke
+37 10 5228 3285 2 MP stroke
+-14 0 10 7 5255 3288 3 MP stroke
+-2 8 5253 2059 2 MP stroke
+0 -3 -3 3 5254 2064 3 MP stroke
+-4 6 5279 832 2 MP stroke
+0 -2 -3 2 5278 836 3 MP stroke
+2 -1 5218 4976 2 MP stroke
+1 1 5219 4975 2 MP stroke
+19 7 5242 3749 2 MP stroke
+-8 -1 5 5 5256 3751 3 MP stroke
+16 6 5267 2522 2 MP stroke
+-7 0 5 4 5278 2524 3 MP stroke
+-5 7 5292 1296 2 MP stroke
+0 -3 -3 2 5290 1301 3 MP stroke
+2 0 5231 5439 2 MP stroke
+-1 0 1 0 5232 5439 3 MP stroke
+9 3 5255 4212 2 MP stroke
+-4 0 3 2 5261 4213 3 MP stroke
+36 7 5280 2986 2 MP stroke
+-14 1 11 6 5305 2987 3 MP stroke
+-5 9 5305 1759 2 MP stroke
+0 -4 -4 3 5304 1765 3 MP stroke
+-3 4 5331 533 2 MP stroke
+0 -2 -2 1 5330 536 3 MP stroke
+5 0 5268 4676 2 MP stroke
+-2 1 2 0 5271 4676 3 MP stroke
+30 9 5293 3449 2 MP stroke
+-12 0 9 6 5314 3452 3 MP stroke
+3 7 5318 2223 2 MP stroke
+-2 -2 -1 3 5322 2227 3 MP stroke
+-4 6 5344 996 2 MP stroke
+0 -2 -3 1 5343 1001 3 MP stroke
+2 -1 5282 5140 2 MP stroke
+-1 1 1 0 5283 5139 3 MP stroke
+14 5 5306 3913 2 MP stroke
+-5 0 3 3 5317 3915 3 MP stroke
+24 5 5331 2686 2 MP stroke
+-9 1 7 4 5348 2687 3 MP stroke
+-5 8 5357 1460 2 MP stroke
+0 -4 -3 3 5355 1465 3 MP stroke
+7 1 5319 4377 2 MP stroke
+-2 0 2 1 5324 4377 3 MP stroke
+35 8 5345 3150 2 MP stroke
+-14 1 11 6 5369 3152 3 MP stroke
+-3 8 5370 1923 2 MP stroke
+0 -3 -3 2 5370 1929 3 MP stroke
+-3 5 5396 697 2 MP stroke
+0 -2 -2 2 5395 700 3 MP stroke
+3 0 5333 4840 2 MP stroke
+-1 1 1 0 5335 4840 3 MP stroke
+22 8 5358 3613 2 MP stroke
+-9 0 6 5 5374 3616 3 MP stroke
+9 5 5383 2387 2 MP stroke
+-4 -1 2 3 5390 2389 3 MP stroke
+-4 7 5409 1160 2 MP stroke
+0 -3 -3 2 5408 1165 3 MP stroke
+2 -1 5346 5304 2 MP stroke
+-1 1 1 0 5347 5303 3 MP stroke
+10 4 5371 4077 2 MP stroke
+-4 -1 3 3 5378 4078 3 MP stroke
+29 6 5396 2850 2 MP stroke
+-11 1 9 5 5416 2851 3 MP stroke
+-4 7 5422 1624 2 MP stroke
+0 -3 -3 2 5421 1629 3 MP stroke
+5 1 5384 4541 2 MP stroke
+-2 0 2 1 5387 4541 3 MP stroke
+31 8 5409 3314 2 MP stroke
+-12 0 9 6 5431 3316 3 MP stroke
+0 7 5435 2087 2 MP stroke
+-1 -2 -1 2 5436 2092 3 MP stroke
+-4 5 5462 861 2 MP stroke
+0 -2 -2 1 5460 865 3 MP stroke
+3 0 5397 5004 2 MP stroke
+-1 0 1 0 5399 5004 3 MP stroke
+17 7 5422 3777 2 MP stroke
+-7 -1 4 4 5435 3780 3 MP stroke
+16 4 5448 2551 2 MP stroke
+-6 0 5 3 5459 2552 3 MP stroke
+-4 7 5474 1324 2 MP stroke
+0 -3 -3 2 5473 1329 3 MP stroke
+2 -1 5410 5468 2 MP stroke
+-1 1 1 0 5411 5467 3 MP stroke
+8 3 5435 4241 2 MP stroke
+-3 0 2 2 5441 4242 3 MP stroke
+30 7 5461 3014 2 MP stroke
+-11 0 9 6 5482 3015 3 MP stroke
+-3 7 5487 1788 2 MP stroke
+-1 -3 -2 2 5486 1793 3 MP stroke
+-3 5 5514 561 2 MP stroke
+0 -2 -2 1 5513 565 3 MP stroke
+4 0 5448 4705 2 MP stroke
+-1 1 1 0 5451 4705 3 MP stroke
+25 8 5474 3478 2 MP stroke
+-10 -1 7 6 5492 3480 3 MP stroke
+5 6 5500 2251 2 MP stroke
+-3 -2 1 3 5504 2254 3 MP stroke
+-4 6 5527 1025 2 MP stroke
+0 -3 -2 2 5525 1029 3 MP stroke
+2 0 5461 5168 2 MP stroke
+5463 5168 PD
+14 4 5486 3942 2 MP stroke
+-6 0 4 3 5496 3943 3 MP stroke
+21 4 5513 2715 2 MP stroke
+-8 1 6 3 5528 2716 3 MP stroke
+-4 7 5539 1488 2 MP stroke
+0 -3 -3 2 5538 1493 3 MP stroke
+7 2 5499 4405 2 MP stroke
+-3 0 2 1 5504 4406 3 MP stroke
+30 7 5525 3178 2 MP stroke
+-12 1 9 5 5546 3180 3 MP stroke
+-1 6 5552 1952 2 MP stroke
+-1 -2 -1 2 5552 1956 3 MP stroke
+-3 5 5579 725 2 MP stroke
+0 -2 -2 1 5578 729 3 MP stroke
+4 0 5512 4869 2 MP stroke
+-2 0 2 0 5514 4869 3 MP stroke
+20 7 5538 3642 2 MP stroke
+-8 -1 6 5 5552 3644 3 MP stroke
+10 5 5565 2415 2 MP stroke
+-5 -1 3 3 5572 2417 3 MP stroke
+-4 6 5592 1189 2 MP stroke
+0 -3 -2 2 5590 1193 3 MP stroke
+2 0 5525 5332 2 MP stroke
+-1 0 1 0 5526 5332 3 MP stroke
+10 3 5551 4106 2 MP stroke
+-4 0 3 2 5558 4107 3 MP stroke
+25 5 5577 2879 2 MP stroke
+-9 1 7 4 5595 2880 3 MP stroke
+-3 7 5604 1652 2 MP stroke
+0 -3 -2 2 5603 1657 3 MP stroke
+6 2 5563 4569 2 MP stroke
+-2 0 2 1 5567 4570 3 MP stroke
+26 6 5590 3343 2 MP stroke
+-10 1 8 4 5608 3345 3 MP stroke
+2 5 5617 2116 2 MP stroke
+-2 -1 0 2 5619 2119 3 MP stroke
+-3 6 5644 889 2 MP stroke
+0 -3 -2 2 5643 893 3 MP stroke
+3 0 5576 5033 2 MP stroke
+-1 0 1 0 5578 5033 3 MP stroke
+16 6 5602 3806 2 MP stroke
+-6 -1 4 4 5614 3808 3 MP stroke
+15 4 5629 2579 2 MP stroke
+-6 1 4 2 5640 2581 3 MP stroke
+-4 6 5657 1353 2 MP stroke
+0 -2 -2 2 5655 1357 3 MP stroke
+2 0 5589 5496 2 MP stroke
+-1 1 1 0 5590 5496 3 MP stroke
+8 2 5615 4270 2 MP stroke
+-3 0 2 1 5621 4271 3 MP stroke
+26 5 5642 3043 2 MP stroke
+-10 1 8 4 5660 3044 3 MP stroke
+-2 6 5669 1816 2 MP stroke
+0 -2 -2 1 5669 1821 3 MP stroke
+-3 4 5697 590 2 MP stroke
+1 -1 -2 1 5696 593 3 MP stroke
+5 1 5627 4733 2 MP stroke
+-2 0 2 0 5630 4734 3 MP stroke
+22 6 5654 3507 2 MP stroke
+-9 0 6 4 5670 3509 3 MP stroke
+6 4 5681 2280 2 MP stroke
+-3 -1 1 2 5686 2282 3 MP stroke
+-3 5 5709 1054 2 MP stroke
+0 -2 -2 2 5708 1057 3 MP stroke
+3 0 5640 5197 2 MP stroke
+-1 0 1 0 5642 5197 3 MP stroke
+12 5 5667 3970 2 MP stroke
+-5 -1 4 3 5675 3972 3 MP stroke
+19 3 5694 2744 2 MP stroke
+-7 1 6 3 5707 2744 3 MP stroke
+-4 6 5722 1517 2 MP stroke
+0 -2 -2 2 5720 1521 3 MP stroke
+6 2 5679 4434 2 MP stroke
+-2 0 1 2 5684 4434 3 MP stroke
+25 6 5706 3207 2 MP stroke
+-10 0 8 5 5723 3208 3 MP stroke
+0 5 5734 1981 2 MP stroke
+-1 -2 -1 2 5735 1984 3 MP stroke
+-3 5 5762 754 2 MP stroke
+0 -2 -2 2 5761 757 3 MP stroke
+4 1 5691 4897 2 MP stroke
+-1 0 1 0 5694 4898 3 MP stroke
+18 5 5718 3671 2 MP stroke
+-7 0 5 3 5731 3673 3 MP stroke
+10 4 5746 2444 2 MP stroke
+-4 -1 3 3 5753 2445 3 MP stroke
+-3 5 5774 1218 2 MP stroke
+0 -2 -2 1 5773 1222 3 MP stroke
+2 0 5704 5361 2 MP stroke
+-1 0 1 0 5705 5361 3 MP stroke
+9 4 5731 4134 2 MP stroke
+-4 -1 2 2 5738 4136 3 MP stroke
+22 4 5758 2908 2 MP stroke
+-8 1 7 4 5773 2908 3 MP stroke
+-2 6 5786 1681 2 MP stroke
+0 -2 -2 2 5786 1685 3 MP stroke
+5 1 5743 4598 2 MP stroke
+-2 0 1 1 5747 4598 3 MP stroke
+22 6 5770 3371 2 MP stroke
+-8 0 6 4 5786 3373 3 MP stroke
+3 4 5798 2145 2 MP stroke
+-1 -1 0 2 5801 2147 3 MP stroke
+-3 5 5827 918 2 MP stroke
+0 -2 -2 1 5826 922 3 MP stroke
+3 0 5755 5062 2 MP stroke
+-1 0 1 0 5757 5062 3 MP stroke
+14 5 5783 3835 2 MP stroke
+-6 -1 4 3 5793 3837 3 MP stroke
+15 4 5810 2608 2 MP stroke
+-6 0 5 3 5820 2609 3 MP stroke
+-3 5 5839 1382 2 MP stroke
+0 -2 -2 1 5838 1386 3 MP stroke
+7 3 5795 4298 2 MP stroke
+-3 0 2 2 5800 4299 3 MP stroke
+22 4 5823 3072 2 MP stroke
+-9 1 7 3 5838 3073 3 MP stroke
+-1 5 5851 1845 2 MP stroke
+-1 -2 -1 1 5851 1849 3 MP stroke
+-3 4 5880 619 2 MP stroke
+1 -2 -2 1 5879 622 3 MP stroke
+4 1 5807 4762 2 MP stroke
+-2 0 1 1 5810 4762 3 MP stroke
+18 6 5835 3535 2 MP stroke
+-7 0 5 4 5848 3537 3 MP stroke
+6 3 5863 2309 2 MP stroke
+-2 0 1 2 5868 2310 3 MP stroke
+-3 5 5892 1082 2 MP stroke
+0 -2 -2 1 5891 1086 3 MP stroke
+3 0 5819 5226 2 MP stroke
+-1 0 1 0 5821 5226 3 MP stroke
+11 4 5847 3999 2 MP stroke
+-5 0 3 3 5855 4000 3 MP stroke
+17 4 5875 2772 2 MP stroke
+-6 0 5 3 5887 2773 3 MP stroke
+-3 5 5904 1546 2 MP stroke
+0 -2 -2 2 5903 1549 3 MP stroke
+6 2 5859 4463 2 MP stroke
+-3 -1 2 2 5863 4463 3 MP stroke
+21 5 5887 3236 2 MP stroke
+-8 0 6 4 5902 3237 3 MP stroke
+1 5 5916 2009 2 MP stroke
+-2 -2 0 2 5917 2012 3 MP stroke
+-3 4 5945 783 2 MP stroke
+0 -2 -2 1 5944 786 3 MP stroke
+3 1 5871 4926 2 MP stroke
+-1 0 1 1 5873 4926 3 MP stroke
+15 5 5899 3699 2 MP stroke
+-6 0 4 3 5910 3701 3 MP stroke
+10 3 5927 2473 2 MP stroke
+-4 0 2 2 5935 2474 3 MP stroke
+-3 5 5957 1246 2 MP stroke
+0 -2 -2 1 5956 1250 3 MP stroke
+2 0 5883 5390 2 MP stroke
+-1 0 1 0 5884 5390 3 MP stroke
+9 3 5911 4163 2 MP stroke
+-4 0 3 2 5917 4164 3 MP stroke
+19 4 5939 2936 2 MP stroke
+-7 1 6 3 5952 2937 3 MP stroke
+-1 5 5968 1710 2 MP stroke
+-1 -2 -1 2 5968 1713 3 MP stroke
+-2 3 5998 484 2 MP stroke
+0 -1 -1 1 5997 486 3 MP stroke
+5 1 5923 4627 2 MP stroke
+-2 0 2 1 5926 4627 3 MP stroke
+19 5 5951 3400 2 MP stroke
+-7 0 6 4 5964 3401 3 MP stroke
+4 4 5980 2173 2 MP stroke
+-2 -1 1 2 5983 2175 3 MP stroke
+-3 4 6010 947 2 MP stroke
+0 -1 -2 1 6009 950 3 MP stroke
+3 1 5934 5090 2 MP stroke
+-1 0 1 1 5936 5090 3 MP stroke
+12 4 5963 3864 2 MP stroke
+-5 0 3 3 5972 3865 3 MP stroke
+13 3 5992 2637 2 MP stroke
+-5 0 4 2 6001 2638 3 MP stroke
+-2 4 6021 1411 2 MP stroke
+0 -2 -1 1 6020 1414 3 MP stroke
+8 3 5974 4327 2 MP stroke
+-3 0 2 2 5980 4328 3 MP stroke
+20 4 6003 3101 2 MP stroke
+-8 0 6 4 6017 3101 3 MP stroke
+0 4 6033 1874 2 MP stroke
+-1 -1 -1 1 6034 1877 3 MP stroke
+-2 3 6063 648 2 MP stroke
+0 -1 -1 1 6062 650 3 MP stroke
+4 1 5986 4791 2 MP stroke
+-1 0 1 1 5989 4791 3 MP stroke
+16 5 6015 3564 2 MP stroke
+-6 0 4 3 6027 3566 3 MP stroke
+7 3 6044 2338 2 MP stroke
+-3 -1 2 2 6049 2339 3 MP stroke
+-2 4 6074 1111 2 MP stroke
+0 -1 -1 1 6073 1114 3 MP stroke
+3 1 5998 5254 2 MP stroke
+-1 0 1 1 6000 5254 3 MP stroke
+10 3 6027 4028 2 MP stroke
+-4 0 3 2 6034 4029 3 MP stroke
+15 3 6056 2801 2 MP stroke
+-5 1 4 2 6067 2802 3 MP stroke
+-2 4 6086 1575 2 MP stroke
+0 -2 -1 1 6085 1578 3 MP stroke
+6 2 6038 4491 2 MP stroke
+-2 0 1 1 6043 4492 3 MP stroke
+19 4 6067 3265 2 MP stroke
+-7 0 6 3 6080 3266 3 MP stroke
+2 4 6097 2038 2 MP stroke
+-1 -1 0 2 6099 2040 3 MP stroke
+-3 4 6128 812 2 MP stroke
+0 -2 -2 1 6127 815 3 MP stroke
+3 1 6050 4955 2 MP stroke
+-1 0 1 1 6052 4955 3 MP stroke
+14 5 6079 3728 2 MP stroke
+-6 0 4 3 6089 3730 3 MP stroke
+9 2 6109 2502 2 MP stroke
+-3 0 2 2 6116 2502 3 MP stroke
+-3 4 6139 1275 2 MP stroke
+1 -1 -2 1 6138 1278 3 MP stroke
+2 0 6062 5419 2 MP stroke
+-1 0 1 0 6063 5419 3 MP stroke
+9 3 6090 4192 2 MP stroke
+-4 0 2 2 6097 4193 3 MP stroke
+17 4 6120 2965 2 MP stroke
+-7 0 5 3 6132 2966 3 MP stroke
+-1 4 6150 1739 2 MP stroke
+0 -2 -1 2 6150 1741 3 MP stroke
+-2 4 6181 512 2 MP stroke
+0 -2 -1 1 6180 515 3 MP stroke
+5 2 6102 4655 2 MP stroke
+-2 0 1 1 6106 4656 3 MP stroke
+17 4 6131 3429 2 MP stroke
+-7 0 5 3 6143 3430 3 MP stroke
+4 3 6162 2202 2 MP stroke
+-2 0 1 1 6165 2204 3 MP stroke
+2 1 6114 5119 2 MP stroke
+1 0 6115 5120 2 MP stroke
+11 4 6143 3892 2 MP stroke
+-4 0 3 2 6151 3894 3 MP stroke
+12 2 6173 2666 2 MP stroke
+-5 1 4 2 6181 2666 3 MP stroke
+7 2 6154 4356 2 MP stroke
+-3 0 2 1 6159 4357 3 MP stroke
+4 1 6184 3129 2 MP stroke
+4 1 6166 4820 2 MP stroke
+-2 0 1 1 6169 4820 3 MP stroke
+2 1 6177 5283 2 MP stroke
+0 1 6179 5283 2 MP stroke
+12 w
+0 sg
+-778 -337 -1221 -728 4817 5504 3 MP stroke
+-781 -204 -1035 -161 2794 4434 3 MP stroke
+-1209 -606 2475 5504 2 MP stroke
+-288 -181 1266 4898 2 MP stroke
+-7 -72 10 -83 -45 -65 -17 -55 3 -60 -17 -137 3092 4407 7 MP stroke
+-107 -50 -73 -62 -278 -55 -229 -105 -365 -270 -545 -467 -417 -286 -49 -96 
+-225 -212 3540 3341 10 MP stroke
+-139 -197 -7 -52 -21 -35 -14 -38 -4 -86 3263 4342 6 MP stroke
+-138 -107 -143 -40 1259 2045 3 MP stroke
+-451 -309 1429 3309 2 MP stroke
+-11 -28 -142 -132 -76 -43 -164 -114 -107 -49 -164 -89 -86 -81 -84 -76 
+2860 3454 9 MP stroke
+-639 -348 -313 -188 -163 -145 -233 -290 -38 -84 -28 -188 -17 -95 0 -110 
+-49 -123 2978 3841 10 MP stroke
+-118 -60 -580 -471 -569 -642 2245 3352 4 MP stroke
+-38 -28 -177 -43 -305 14 -11 0 1509 3309 5 MP stroke
+-195 -9 -118 31 -138 -35 -94 22 -73 -18 -115 -31 -173 -4 -49 -22 
+2627 3460 9 MP stroke
+55 5 181 44 149 12 98 19 510 24 188 -7 458 -36 153 -16 
+69 -33 278 -71 111 -10 163 3 146 -19 73 -31 66 -13 1950 4104 16 MP stroke
+-274 -304 -104 -160 -146 -180 -268 -179 0 -30 -17 -23 -267 -199 -178 -251 
+-218 -216 -111 -131 -87 -42 4436 3897 12 MP stroke
+-59 -52 -97 -56 -56 -38 -139 -53 -73 -32 -135 -79 -101 -84 -114 -99 
+-45 -64 -70 -139 -59 -38 -87 -67 -128 -100 -91 -35 3829 3845 15 MP stroke
+34 0 35 50 35 51 35 25 34 50 35 26 35 50 69 25 
+0 25 35 51 35 50 0 51 34 50 0 50 35 26 35 25 
+69 25 70 50 35 26 34 50 35 50 35 26 0 50 3165 2479 24 MP stroke
+6 w
+gs 2704 3456 483 483 rc
+0 j
+-69 -52 25 -83 -71 49 -70 -49 25 83 -69 52 86 0 28 82 
+29 -82 86 0 2830 3659 11 MP
+DP
+gr
+
+gs 3282 2490 483 483 rc
+0 j
+-69 -52 25 -83 -71 49 -70 -49 25 83 -69 52 86 0 28 82 
+29 -82 86 0 3408 2693 11 MP
+DP
+gr
+
+24 w
+347 0 1082 5402 2 MP stroke
+-118 34 118 35 1311 5367 3 MP stroke
+gr
+
+%%IncludeResource: font Helvetica
+/Helvetica /ISOLatin1Encoding 192 FMSR
+
+1488 5470 mt 
+(1m) s
+gs 978 464 5210 5040 rc
+6 w
+628 -1745 978 2209 2 MP stroke
+gr
+
+6 w
+gs 928 674 5310 3275 rc
+0 j
+-27 47 -27 -47 54 0 2983 1558 4 MP
+/c9 { 0.000000 1.000000 0.000000 sr} bdef
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 4655 2425 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3263 3588 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2176 3327 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 1937 2555 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2794 2848 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3020 3333 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3643 2483 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3291 3411 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3556 3371 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3232 3161 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 5317 2851 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3077 3044 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3545 2416 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3436 3272 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3507 2608 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3420 3109 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3532 3440 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3290 2542 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3517 3109 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3577 2821 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3360 3178 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 4007 2438 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 4281 3292 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 4327 3533 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3861 2803 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3812 3022 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 4101 2861 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 4228 2942 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 4877 3132 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 4069 2922 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3108 2860 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3290 2965 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 4661 3915 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3789 3287 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3510 3222 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2962 2281 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3936 3419 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2489 2812 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2610 2775 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2733 2702 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3280 2409 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2381 2892 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2257 2932 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2100 2995 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2113 3115 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3545 2721 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2639 3392 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2898 2994 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 1361 3151 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3813 2437 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2831 3203 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3290 3406 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3190 3313 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2514 3239 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2279 3609 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 4029 3772 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 1999 3275 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 1812 3280 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 1959 3774 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3069 3873 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gr
+
+gs 978 464 5210 5040 rc
+gr
+
+gs 928 674 5310 3275 rc
+0 j
+-27 47 -27 -47 54 0 2795 3593 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gr
+
+gs 978 464 5210 5040 rc
+gr
+
+gs 928 674 5310 3275 rc
+0 j
+-27 47 -27 -47 54 0 3675 3147 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3455 3616 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 4402 3586 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 4533 3202 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3776 3381 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3601 3169 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3225 3233 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 4369 2686 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3412 739 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 1017 1981 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 3339 2658 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2581 2146 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 4353 3589 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gr
+
+gs 978 464 5210 5040 rc
+24 w
+-16 20 3010 1542 2 MP stroke
+2 -9 -9 5 3003 1557 3 MP stroke
+-3 25 4682 2409 2 MP stroke
+-4 -9 -6 8 4685 2426 3 MP stroke
+10 -50 3290 3572 2 MP stroke
+6 18 13 -16 3287 3538 3 MP stroke
+-6 -9 2203 3311 2 MP stroke
+3 3 0 -4 2197 3306 3 MP stroke
+-68 -4 1964 2539 2 MP stroke
+24 -5 -22 -8 1918 2543 3 MP stroke
+-93 -32 2821 2832 2 MP stroke
+37 1 -25 -20 2753 2820 3 MP stroke
+15 -51 3047 3317 2 MP stroke
+4 19 15 -16 3047 3282 3 MP stroke
+-66 191 3670 2467 2 MP stroke
+-14 -71 -58 58 3662 2600 3 MP stroke
+-4 -80 3318 3395 2 MP stroke
+16 27 14 -28 3300 3343 3 MP stroke
+-22 -83 3583 3355 2 MP stroke
+23 26 8 -31 3553 3303 3 MP stroke
+22 -158 3259 3145 2 MP stroke
+22 56 37 -52 3244 3039 3 MP stroke
+15 12 5344 2835 2 MP stroke
+-7 -3 3 6 5356 2841 3 MP stroke
+29 -145 3104 3028 2 MP stroke
+18 52 37 -46 3096 2929 3 MP stroke
+-100 191 3572 2400 2 MP stroke
+-2 -75 -70 55 3542 2536 3 MP stroke
+-16 -128 3463 3256 2 MP stroke
+30 42 18 -45 3429 3173 3 MP stroke
+87 266 3534 2592 2 MP stroke
+-80 -82 -20 99 3641 2759 3 MP stroke
+-22 -250 3447 3093 2 MP stroke
+54 83 39 -88 3386 2931 3 MP stroke
+8 -81 3559 3424 2 MP stroke
+12 28 18 -27 3549 3370 3 MP stroke
+-58 269 3317 2526 2 MP stroke
+-31 -97 -70 86 3329 2709 3 MP stroke
+-121 -257 3544 3093 2 MP stroke
+89 75 7 -99 3416 2935 3 MP stroke
+372 477 3604 2805 2 MP stroke
+-216 -126 37 199 3939 3083 3 MP stroke
+-10 -161 3387 3162 2 MP stroke
+34 53 27 -55 3350 3056 3 MP stroke
+-22 81 4034 2422 2 MP stroke
+-8 -30 -22 25 4034 2478 3 MP stroke
+134 41 4308 3276 2 MP stroke
+-54 -1 38 27 4404 3290 3 MP stroke
+53 21 4354 3517 2 MP stroke
+-22 -2 14 12 4393 3526 3 MP stroke
+153 180 3888 2787 2 MP stroke
+-86 -46 18 76 4023 2891 3 MP stroke
+220 207 3839 3006 2 MP stroke
+-113 -49 36 93 4023 3120 3 MP stroke
+127 84 4128 2845 2 MP stroke
+-59 -16 27 41 4228 2888 3 MP stroke
+122 57 4255 2926 2 MP stroke
+-52 -7 31 31 4346 2952 3 MP stroke
+51 18 4904 3116 2 MP stroke
+-21 -1 14 11 4941 3123 3 MP stroke
+139 93 4096 2906 2 MP stroke
+-65 -18 30 45 4205 2954 3 MP stroke
+-62 -175 3135 2844 2 MP stroke
+54 54 12 -66 3061 2735 3 MP stroke
+31 -306 3317 2949 2 MP stroke
+47 107 68 -101 3280 2744 3 MP stroke
+1 9 4688 3899 2 MP stroke
+-2 -3 -1 3 4690 3905 3 MP stroke
+32 -96 3816 3271 2 MP stroke
+7 36 29 -30 3819 3205 3 MP stroke
+-22 -158 3537 3206 2 MP stroke
+37 52 22 -56 3493 3104 3 MP stroke
+-63 10 2989 2265 2 MP stroke
+20 -10 -23 -3 2949 2278 3 MP stroke
+97 -148 3963 3403 2 MP stroke
+-5 60 60 -41 4000 3296 3 MP stroke
+-81 -16 2516 2796 2 MP stroke
+31 -3 -25 -13 2460 2793 3 MP stroke
+-101 -24 2637 2759 2 MP stroke
+39 -2 -30 -18 2566 2753 3 MP stroke
+-155 -34 2760 2686 2 MP stroke
+59 -4 -46 -27 2651 2679 3 MP stroke
+-97 210 3307 2393 2 MP stroke
+-6 -81 -72 62 3282 2541 3 MP stroke
+-50 -12 2408 2876 2 MP stroke
+19 -1 -15 -9 2373 2873 3 MP stroke
+-42 -9 2284 2916 2 MP stroke
+16 -1 -13 -7 2255 2914 3 MP stroke
+-32 -4 2127 2979 2 MP stroke
+11 -1 -10 -5 2105 2980 3 MP stroke
+-21 -6 2140 3099 2 MP stroke
+8 0 -6 -4 2125 3097 3 MP stroke
+361 306 3572 2705 2 MP stroke
+-180 -68 65 140 3868 2871 3 MP stroke
+5 -37 2666 3376 2 MP stroke
+5 13 9 -12 2662 3351 3 MP stroke
+-4 -82 2925 2978 2 MP stroke
+17 27 14 -28 2907 2924 3 MP stroke
+-52 0 1388 3135 2 MP stroke
+18 -5 -17 -5 1353 3140 3 MP stroke
+-83 112 3840 2421 2 MP stroke
+7 -47 -49 30 3806 2503 3 MP stroke
+23 -63 2858 3187 2 MP stroke
+4 24 19 -19 2862 3143 3 MP stroke
+-23 -71 3317 3390 2 MP stroke
+21 22 5 -26 3289 3345 3 MP stroke
+7 -99 3217 3297 2 MP stroke
+16 35 21 -33 3203 3231 3 MP stroke
+-3 -31 2541 3223 2 MP stroke
+7 10 4 -11 2534 3203 3 MP stroke
+1 -9 2306 3593 2 MP stroke
+1 3 2 -3 2305 3587 3 MP stroke
+1 -7 4056 3756 2 MP stroke
+1 2 2 -2 4055 3751 3 MP stroke
+-11 -6 2026 3259 2 MP stroke
+5 1 -3 -3 2018 3256 3 MP stroke
+-12 -2 1839 3264 2 MP stroke
+5 -1 -4 -2 1831 3264 3 MP stroke
+-16 -15 1986 3758 2 MP stroke
+9 3 -3 -6 1973 3749 3 MP stroke
+4 -19 3096 3857 2 MP stroke
+2 7 5 -6 3095 3844 3 MP stroke
+0 -35 2822 3577 2 MP stroke
+7 12 6 -12 2816 3554 3 MP stroke
+6 10 3702 3131 2 MP stroke
+-4 -3 0 4 3708 3137 3 MP stroke
+4 -48 3482 3600 2 MP stroke
+8 17 10 -16 3476 3568 3 MP stroke
+37 19 4429 3570 2 MP stroke
+-16 -3 9 10 4457 3579 3 MP stroke
+97 29 4560 3186 2 MP stroke
+-39 0 28 20 4629 3195 3 MP stroke
+21 -97 3803 3365 2 MP stroke
+11 35 25 -31 3799 3299 3 MP stroke
+-92 -209 3628 3153 2 MP stroke
+70 62 8 -80 3528 3024 3 MP stroke
+15 -131 3252 3217 2 MP stroke
+20 46 30 -43 3237 3129 3 MP stroke
+37 43 4396 2670 2 MP stroke
+-20 -11 4 19 4429 2694 3 MP stroke
+-14 9 3439 723 2 MP stroke
+3 -4 -6 2 3431 730 3 MP stroke
+-24 2 1044 1965 2 MP stroke
+8 -3 -9 -2 1029 1969 3 MP stroke
+161 280 3366 2642 2 MP stroke
+-107 -79 2 111 3525 2811 3 MP stroke
+-54 -6 2608 2130 2 MP stroke
+19 -4 -17 -7 2571 2131 3 MP stroke
+37 19 4380 3573 2 MP stroke
+-16 -3 9 10 4408 3582 3 MP stroke
+12 w
+0 -1 2 -2 1 -1 1 -1 1 0 1 -1 1 0 1 0 
+1 -1 1 0 1 0 1 0 1 0 1 0 1 0 1 0 
+1 0 1 0 1 0 1 1 1 0 1 0 1 1 1 0 
+1 1 1 1 1 1 0 4 -1 1 -1 1 -1 1 -1 1 
+-1 0 -1 1 -1 0 -1 0 -1 0 -1 1 -1 0 -1 0 
+-1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 -1 0 
+-1 0 -1 -1 -1 0 -1 -1 -1 -1 -1 0 1 0 -2 -2 
+0 -2 3008 1562 58 MP stroke
+0 -2 2 -2 1 0 1 -1 1 0 1 0 1 0 1 0 
+1 0 1 0 1 0 1 1 1 0 1 1 1 1 0 4 
+-2 2 -1 0 -1 1 -1 0 -1 0 -1 1 -1 0 -1 0 
+-1 -1 -1 0 -1 0 -1 -1 -1 0 1 0 -2 -2 0 -2 
+4686 2434 33 MP stroke
+0 -2 1 -1 1 -1 1 0 1 0 1 -1 1 0 1 0 
+1 1 1 0 1 0 1 1 1 1 0 3 -1 1 -1 1 
+-1 0 -1 1 -1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 
+-1 0 -1 -1 0 -2 3306 3522 28 MP stroke
+0 -1 1 -1 1 -1 1 -1 1 0 1 0 1 0 1 0 
+1 0 1 1 1 0 1 1 0 3 -1 1 -1 1 -1 0 
+-1 1 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 -1 -1 
+0 -2 2202 3302 26 MP stroke
+0 -2 1 -1 1 0 1 -1 1 0 1 0 1 0 1 0 
+1 0 1 1 1 0 0 2 0 2 -1 1 -1 1 -1 1 
+-1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 -1 -1 0 -2 
+1901 2535 25 MP stroke
+0 -1 1 -1 1 0 1 -1 1 0 1 -1 1 0 1 1 
+1 0 1 0 1 1 1 1 0 2 -1 1 -1 1 -1 1 
+-1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 -1 
+0 -2 2733 2800 26 MP stroke
+0 -1 1 -1 1 -1 1 -1 1 0 1 0 1 -1 1 0 
+1 -1 2 0 1 0 1 0 2 -1 2 0 1 0 2 0 
+1 0 2 -1 2 0 2 0 1 0 2 0 2 0 2 0 
+1 1 2 0 2 0 1 0 2 0 1 1 2 0 1 0 
+1 0 2 1 1 0 1 1 1 0 1 0 1 1 1 1 
+1 1 0 2 -1 1 -1 1 -1 1 -1 1 -1 0 -1 0 
+-1 1 -2 0 -1 1 -1 0 -2 0 -1 0 -2 1 -1 0 
+-2 0 -2 0 -1 0 -2 0 -2 0 -2 0 -1 0 -2 0 
+-2 0 -2 0 -1 0 -2 0 -1 0 -2 -1 -2 0 -1 0 
+-1 0 -2 -1 -1 0 -1 -1 -1 0 -1 0 -1 -1 -1 0 
+-1 -1 -1 -1 0 -2 3089 3266 84 MP stroke
+1 -2 0 -2 1 -2 1 -1 1 -2 1 -2 2 -1 2 -2 
+2 -1 3 -2 3 -1 3 -1 3 -1 3 -2 4 -1 3 -1 
+4 -1 4 0 4 -1 4 -1 5 0 4 0 5 -1 4 0 
+4 0 5 0 4 0 5 1 4 0 4 0 5 1 4 1 
+4 0 3 1 4 1 4 1 3 2 3 1 3 1 3 1 
+2 2 3 1 2 2 1 1 2 2 1 2 1 1 1 2 
+0 7 -1 2 -1 2 -1 1 -2 2 -1 1 -2 2 -3 1 
+-2 2 -3 1 -3 2 -3 1 -3 1 -4 1 -4 1 -3 1 
+-4 1 -4 0 -5 1 -4 0 -4 1 -5 0 -4 0 -5 0 
+-4 0 -4 0 -5 0 -4 -1 -5 0 -4 -1 -4 0 -4 -1 
+-4 -1 -3 -1 -4 -1 -3 -1 -3 -1 -3 -2 -3 -1 -3 -2 
+-2 -1 -2 -2 -2 -1 -1 -2 -1 -1 -1 -2 -1 -2 0 -2 
+-1 -1 3675 2658 98 MP stroke
+0 -1 1 -1 1 -1 1 -1 2 -1 2 -1 2 -1 3 -1 
+3 -1 4 -1 4 -1 4 0 4 -1 5 -1 5 0 5 -1 
+6 -1 5 0 6 0 6 -1 6 0 6 0 6 0 6 -1 
+7 0 6 0 6 1 6 0 7 0 6 0 6 1 5 0 
+6 0 5 1 5 1 5 0 5 1 5 1 4 0 4 1 
+3 1 3 1 3 1 3 1 2 1 2 1 1 1 1 1 
+0 1 1 1 -1 1 0 1 -1 1 -1 1 -2 1 -2 1 
+-3 1 -3 1 -3 1 -3 1 -4 1 -4 0 -5 1 -5 1 
+-5 0 -5 1 -5 0 -6 1 -5 0 -6 1 -6 0 -7 0 
+-6 0 -6 0 -6 1 -7 -1 -6 0 -6 0 -6 0 -6 0 
+-6 -1 -6 0 -5 -1 -6 0 -5 -1 -5 0 -5 -1 -4 -1 
+-4 0 -4 -1 -4 -1 -3 -1 -3 -1 -2 -1 -2 -1 -2 -1 
+-1 -1 -1 -1 -1 -1 0 -1 3414 3315 101 MP stroke
+0 -2 2 -2 1 0 1 -1 1 0 1 -1 1 0 1 0 
+1 0 1 0 1 -1 1 0 1 0 1 0 1 1 1 0 
+1 0 1 0 1 0 1 1 1 0 1 1 1 0 0 1 
+2 2 0 2 -2 2 -1 1 -1 0 -1 1 -1 0 -1 1 
+-1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 
+-1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 -1 -1 -1 0 
+-1 -1 -1 -1 0 -2 3573 3272 52 MP stroke
+1 -1 1 -1 1 -1 1 0 1 -1 1 0 1 0 1 -1 
+2 0 1 0 2 -1 1 0 2 0 2 0 1 0 2 -1 
+2 0 2 0 2 0 2 0 1 0 2 0 2 0 2 0 
+2 0 2 0 2 1 1 0 2 0 2 0 1 0 2 1 
+1 0 2 0 1 1 1 0 1 0 1 1 1 0 1 1 
+1 0 -1 0 2 2 -1 1 -1 1 -1 1 -1 1 -1 0 
+-1 0 -1 1 -1 0 -2 0 -1 1 -2 0 -1 0 -2 0 
+-2 1 -1 0 -2 0 -2 0 -2 0 -2 0 -2 0 -2 0 
+-1 0 -2 0 -2 0 -2 0 -2 0 -2 0 -1 0 -2 -1 
+-2 0 -1 0 -2 0 -1 -1 -2 0 -1 0 -1 -1 -1 0 
+-1 0 -1 -1 -1 0 -1 -1 0 -1 3310 2986 86 MP stroke
+0 -1 1 -1 1 -1 1 0 1 -1 1 0 1 -1 1 0 
+1 0 1 0 1 0 1 1 1 0 1 0 1 1 1 1 
+0 4 -1 1 -1 1 -1 0 -1 1 -1 0 -1 0 -1 0 
+-1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 -1 -1 -1 -1 
+0 -2 5367 2847 34 MP stroke
+0 -1 1 -1 1 -1 1 0 1 -1 1 0 1 0 1 0 
+1 0 1 1 1 0 0 1 2 2 0 1 -2 2 -1 1 
+-1 0 -1 0 -1 1 -1 0 -1 0 -1 -1 -1 0 -1 -1 
+-1 -1 0 -2 3139 2883 27 MP stroke
+1 -1 1 -1 1 -1 1 -1 1 0 1 0 1 -1 1 0 
+1 0 1 0 1 -1 1 0 2 0 1 0 1 0 2 0 
+1 0 2 -1 1 0 2 0 1 0 1 0 2 1 1 0 
+2 0 1 0 1 0 2 0 1 0 1 1 1 0 1 0 
+1 0 1 1 1 0 1 0 1 1 1 0 1 1 0 1 
+0 2 -1 1 -1 0 -1 1 -1 0 -1 1 -1 0 -1 0 
+-1 1 -1 0 -1 0 -1 0 -2 0 -1 1 -1 0 -2 0 
+-1 0 -2 0 -1 0 -1 0 -2 0 -1 0 -2 0 -1 0 
+-2 0 -1 0 -1 -1 -2 0 -1 0 -1 0 -1 0 -1 -1 
+-1 0 -1 0 -1 -1 -1 0 -1 0 -1 -1 -1 -1 -1 -1 
+3496 2591 81 MP stroke
+-1 0 -1 0 -1 -1 -1 0 -1 0 0 -1 -2 -2 0 -2 
+1 -1 1 -1 1 -1 1 0 1 -1 1 0 1 0 1 0 
+1 0 1 1 1 0 1 1 1 1 0 3 -1 1 -1 1 
+-1 1 -1 0 -1 0 -1 1 3447 3123 29 MP stroke
+0 -1 1 -1 1 -1 1 -1 1 0 1 0 1 -1 1 0 
+1 0 1 0 1 -1 1 0 1 0 1 0 1 0 1 0 
+1 0 1 1 1 0 1 0 1 0 1 0 1 1 1 0 
+1 1 1 0 1 1 0 4 -1 1 -1 0 -1 1 -1 0 
+-1 1 -1 0 -1 0 -1 1 -1 0 -1 0 -1 0 -1 0 
+-1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 
+-1 0 -1 -1 -1 0 -1 0 -1 -1 -1 -1 0 -2 3634 2858 56 MP stroke
+0 -3 1 -1 1 -1 1 -1 1 -1 1 -1 1 0 1 -1 
+1 0 1 -1 2 0 1 0 1 0 1 -1 2 0 1 0 
+1 0 2 0 1 0 1 0 2 0 1 0 1 0 1 0 
+2 1 1 0 1 0 1 0 1 1 1 0 2 1 1 1 
+1 0 1 1 1 0 -1 0 2 2 1 1 0 5 -1 1 
+-1 1 -1 1 -1 1 -1 0 -1 1 -2 1 -1 0 -1 1 
+-1 0 -1 0 -1 0 -2 1 -1 0 -1 0 -1 0 -2 0 
+-1 0 -1 0 -2 0 -1 0 -1 0 -2 0 -1 -1 -1 0 
+-1 0 -2 0 -1 -1 -1 0 -1 -1 -1 0 -1 -1 -1 -1 
+-1 0 1 0 -2 -2 -1 -1 0 -2 3446 2843 78 MP stroke
+0 -1 2 -2 1 0 1 -1 1 0 1 -1 1 0 2 -1 
+2 0 2 -1 2 0 2 0 2 -1 3 0 2 0 3 -1 
+2 0 3 0 3 0 2 0 3 -1 3 0 3 0 3 0 
+3 0 3 1 2 0 3 0 3 0 3 0 2 1 3 0 
+2 0 2 1 2 0 2 0 2 1 2 0 2 1 1 0 
+1 1 2 0 1 1 1 1 0 1 0 2 -1 1 -1 1 
+-2 1 -1 0 -1 1 -2 0 -2 1 -2 0 -2 1 -2 0 
+-2 0 -2 1 -3 0 -2 0 -3 0 -3 1 -3 0 -2 0 
+-3 0 -3 0 -3 0 -3 0 -3 0 -3 0 -2 0 -3 0 
+-3 -1 -2 0 -3 0 -2 0 -3 -1 -2 0 -2 0 -2 -1 
+-2 0 -2 -1 -2 0 -1 -1 -1 0 -1 -1 -1 0 -1 -1 
+-1 0 1 0 -2 -2 3613 3343 92 MP stroke
+0 -1 1 -1 1 -1 1 -1 1 0 1 0 1 0 1 0 
+1 0 1 0 1 0 1 1 1 1 1 1 0 2 -1 1 
+-1 1 -1 1 -1 0 -1 1 -1 0 -1 0 -1 0 -1 0 
+-1 -1 -1 0 -1 -1 -1 -1 0 -2 3265 2795 30 MP stroke
+0 -1 1 -1 1 -1 1 -1 1 0 1 -1 1 0 1 0 
+1 0 1 0 1 0 1 0 1 0 1 0 1 1 1 0 
+1 0 1 1 1 1 0 3 -1 1 -1 1 -1 1 -1 0 
+-1 1 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 
+-1 0 -1 0 -1 -1 -1 0 -1 -1 -1 -1 0 -2 3432 2836 40 MP stroke
+0 -1 1 -1 1 -1 1 -1 1 0 1 -1 1 0 1 0 
+1 0 1 0 1 0 1 1 1 0 1 1 1 1 0 3 
+-1 1 -1 1 -1 1 -1 0 -1 1 -1 0 -1 0 -1 0 
+-1 0 -1 -1 -1 0 -1 0 0 -1 -2 -2 0 -1 3983 3282 32 MP stroke
+0 -3 2 -2 1 -1 1 -1 1 -1 1 0 1 -1 1 0 
+1 0 1 -1 1 0 1 0 1 0 1 0 1 0 1 0 
+1 0 1 0 1 0 1 1 1 0 1 1 1 0 1 1 
+1 0 1 1 0 1 2 2 0 2 1 1 -1 1 0 3 
+-2 2 -1 1 -1 1 -1 1 -1 0 -1 1 -1 0 -1 0 
+-1 1 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 
+-1 0 -1 -1 -1 0 -1 0 -1 -1 -1 0 -1 -1 -1 -1 
+-1 0 1 0 -2 -2 -1 -1 0 -4 3391 3001 62 MP stroke
+1 -1 0 -2 1 -1 1 -1 1 -1 1 -1 2 -1 1 -1 
+1 0 2 -1 1 0 2 -1 2 0 1 -1 2 0 2 -1 
+2 0 2 0 2 0 2 -1 2 0 2 0 2 0 2 0 
+3 1 2 0 2 0 1 0 2 1 2 0 2 1 2 0 
+1 1 2 0 1 1 2 0 1 1 1 1 1 1 1 0 
+1 1 1 1 0 1 1 1 0 5 -1 1 -1 1 -1 1 
+-1 1 -1 1 -1 0 -1 1 -2 1 -1 0 -2 1 -1 0 
+-2 1 -2 0 -2 1 -2 0 -1 0 -2 1 -2 0 -3 0 
+-2 0 -2 0 -2 0 -2 0 -2 0 -2 0 -2 -1 -2 0 
+-2 0 -2 -1 -1 0 -2 -1 -2 0 -1 -1 -2 0 -1 -1 
+-1 -1 -2 0 -1 -1 -1 -1 -1 -1 -1 -1 0 -2 -1 -1 
+0 -1 4045 2503 90 MP stroke
+-1 0 -1 -1 -1 0 -1 0 -1 -1 -1 -1 0 -3 1 -1 
+1 -1 1 -1 1 0 1 -1 1 0 1 0 1 0 1 0 
+1 1 1 0 1 1 0 5 -1 1 -1 1 -1 0 -1 0 
+-1 1 -1 0 4442 3312 27 MP stroke
+0 -1 1 -1 1 -1 1 -1 2 -1 3 -1 2 -1 4 -1 
+3 -1 4 0 5 -1 4 -1 5 -1 6 -1 5 0 6 -1 
+6 0 6 -1 7 0 6 0 7 -1 7 0 7 0 7 0 
+7 0 7 0 7 0 7 0 7 0 7 1 7 0 6 0 
+6 1 6 0 6 1 6 0 5 1 5 1 5 1 4 1 
+4 0 4 1 3 1 3 1 2 1 2 1 2 1 1 1 
+0 1 1 1 -1 1 0 1 -1 1 -2 1 -2 1 -2 1 
+-3 1 -3 1 -4 1 -4 1 -4 1 -5 0 -5 1 -5 1 
+-6 1 -6 0 -6 1 -6 0 -6 0 -7 1 -7 0 -7 0 
+-7 1 -7 0 -7 0 -7 0 -7 0 -7 -1 -7 0 -7 0 
+-6 -1 -7 0 -6 0 -6 -1 -6 0 -5 -1 -6 -1 -5 -1 
+-4 0 -5 -1 -4 -1 -3 -1 -4 -1 -2 -1 -3 -1 -2 -1 
+-1 -1 -1 -1 -1 -1 0 -1 4519 3538 101 MP stroke
+-1 0 2 -2 1 -1 1 -1 1 0 1 -1 1 0 1 0 
+1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 
+1 1 1 0 1 0 1 1 1 0 -1 0 2 2 0 1 
+-1 1 -1 1 -1 1 -1 1 -1 0 -1 0 -1 0 -1 1 
+-1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 
+-1 0 -1 0 -1 -1 -1 -1 -1 0 1 0 -2 -2 4052 2967 48 MP stroke
+-1 0 -1 0 -1 -1 -1 0 -1 -1 -1 -1 0 -3 1 -1 
+1 -1 1 0 1 -1 1 0 1 0 1 0 1 0 1 1 
+1 0 1 1 0 4 -1 1 -1 1 -1 0 -1 0 -1 1 
+4059 3208 25 MP stroke
+0 -6 1 -2 1 -3 2 -3 2 -2 2 -3 2 -2 3 -2 
+3 -3 3 -2 4 -2 4 -2 4 -1 4 -2 4 -2 5 -1 
+5 -1 5 -1 5 -1 5 -1 5 -1 5 0 6 0 5 0 
+5 0 6 0 5 0 5 1 5 1 5 1 5 1 5 1 
+5 1 4 2 4 2 4 1 4 2 4 2 3 2 3 3 
+3 2 2 2 2 3 2 2 2 3 1 3 1 2 0 11 
+-1 3 -1 3 -2 2 -2 3 -2 2 -2 3 -3 2 -3 2 
+-3 2 -4 2 -4 2 -4 2 -4 2 -4 1 -5 2 -5 1 
+-5 1 -5 1 -5 1 -5 0 -5 1 -6 0 -5 0 -5 0 
+-6 0 -5 -1 -5 0 -5 -1 -5 -1 -5 -1 -5 -1 -5 -2 
+-4 -1 -4 -2 -4 -2 -4 -2 -4 -2 -3 -2 -3 -2 -3 -2 
+-2 -3 -2 -2 -2 -3 -2 -2 -1 -3 -1 -3 0 -5 4340 2929 96 MP stroke
+0 -2 1 -2 2 -2 2 -2 3 -1 3 -2 4 -2 4 -1 
+6 -2 5 -2 6 -1 7 -1 7 -2 8 -1 7 -1 9 -1 
+8 -1 9 -1 9 -1 10 0 10 -1 9 0 10 -1 10 0 
+10 0 10 0 10 0 10 1 10 0 9 1 10 0 9 1 
+9 1 9 1 8 1 8 1 7 1 7 2 7 1 6 1 
+6 2 5 2 4 1 4 2 4 2 3 1 2 2 1 2 
+1 2 1 2 -1 2 -1 2 -1 1 -2 2 -3 2 -4 2 
+-4 2 -4 1 -5 2 -6 1 -6 2 -7 1 -7 2 -7 1 
+-8 1 -8 1 -9 1 -9 1 -9 0 -10 1 -9 1 -10 0 
+-10 0 -10 1 -10 0 -10 0 -10 -1 -10 0 -9 0 -10 -1 
+-10 -1 -9 0 -9 -1 -8 -1 -9 -1 -7 -1 -8 -1 -7 -2 
+-7 -1 -6 -2 -5 -1 -6 -2 -4 -1 -4 -2 -3 -2 -3 -2 
+-2 -2 -2 -1 -1 -2 0 -2 4536 2983 101 MP stroke
+0 -1 1 -1 1 0 1 -1 1 0 2 -1 1 0 2 0 
+3 -1 2 0 3 -1 2 0 3 0 3 -1 3 0 4 0 
+3 0 4 -1 3 0 4 0 4 0 4 0 4 0 4 0 
+3 0 4 0 4 0 4 0 4 0 3 0 4 1 3 0 
+4 0 3 0 3 1 3 0 3 0 2 1 3 0 2 1 
+2 0 2 0 1 1 1 0 1 1 1 0 1 1 0 1 
+-1 1 -1 1 -1 0 -1 1 -1 0 -2 1 -2 0 -2 1 
+-3 0 -2 1 -3 0 -3 0 -3 1 -3 0 -4 0 -3 0 
+-4 1 -3 0 -4 0 -4 0 -4 0 -4 0 -3 0 -4 0 
+-4 0 -4 0 -4 0 -4 0 -3 0 -4 -1 -3 0 -4 0 
+-3 0 -3 -1 -3 0 -2 0 -3 -1 -2 0 -3 -1 -2 0 
+-1 -1 -2 0 -1 -1 -1 0 -1 -1 -1 0 1 0 5016 3133 96 MP stroke
+0 -1 1 -1 1 -1 1 0 1 -1 1 0 1 -1 1 0 
+1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 
+1 0 1 0 1 1 1 0 1 0 1 1 1 1 0 1 
+1 1 -1 1 -1 1 -1 1 -1 1 -1 0 -1 0 -1 1 
+-1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 
+-1 0 -1 0 -1 -1 -1 0 -1 -1 -1 0 -1 -1 0 -1 
+4245 2998 49 MP stroke
+0 -1 2 -2 1 -1 1 0 1 -1 1 0 1 -1 1 0 
+1 0 1 -1 2 0 1 0 2 -1 1 0 2 0 1 0 
+2 0 2 -1 1 0 2 0 2 0 2 0 1 0 2 0 
+2 1 1 0 2 0 2 0 1 0 2 1 1 0 2 0 
+1 1 1 0 1 0 1 1 1 0 1 1 1 0 1 1 
+1 1 0 1 0 2 0 1 -1 1 -1 1 -1 0 -1 0 
+-1 1 -1 0 -1 1 -1 0 -1 1 -2 0 -1 0 -2 0 
+-1 1 -2 0 -2 0 -1 0 -2 0 -2 0 -1 0 -2 0 
+-2 0 -2 0 -1 0 -2 0 -2 0 -1 0 -2 0 -1 -1 
+-2 0 -1 0 -2 0 -1 -1 -1 0 -1 -1 -1 0 -1 -1 
+-1 0 -1 0 -1 -1 -1 -1 0 -1 -1 -1 3101 2669 87 MP stroke
+0 -1 1 -1 0 -1 1 -1 0 -1 1 -1 1 -1 1 -1 
+2 -1 1 -1 1 -1 2 0 2 -1 2 -1 2 -1 2 0 
+2 -1 2 0 2 -1 3 0 2 0 3 0 2 -1 3 0 
+2 0 3 0 2 0 2 1 3 0 2 0 3 0 2 1 
+2 0 2 1 2 0 2 1 2 1 2 1 2 0 1 1 
+2 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 
+1 1 0 2 -1 1 0 1 -1 2 0 1 -1 1 -1 1 
+-1 1 -1 0 -2 1 -1 1 -2 1 -2 1 -2 0 -2 1 
+-2 1 -2 0 -2 1 -2 0 -3 1 -2 0 -3 0 -2 0 
+-2 0 -3 0 -2 0 -3 0 -2 0 -3 0 -2 0 -3 -1 
+-2 0 -2 -1 -2 0 -2 -1 -2 -1 -2 0 -2 -1 -2 -1 
+-1 -1 -1 -1 -2 0 -1 -1 -1 -1 -1 -1 0 -1 -1 -2 
+0 -1 -1 -1 0 -1 3388 2643 100 MP stroke
+0 -1 1 -1 1 -1 1 -1 1 0 1 0 1 -1 1 1 
+1 0 1 0 1 0 1 1 1 1 0 3 -1 1 -1 1 
+-1 0 -1 1 -1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 
+-1 0 -1 -1 0 -2 4695 3908 28 MP stroke
+0 -1 1 -1 1 -1 1 -1 1 0 1 0 1 0 -1 0 
+2 0 1 0 1 0 1 0 1 1 1 1 0 3 -1 1 
+-1 1 -1 0 -1 1 -1 0 -1 0 -1 0 -1 0 -1 0 
+-1 -1 -1 0 -1 -1 0 -2 3854 3175 29 MP stroke
+0 -1 1 -1 0 -1 2 0 1 -1 2 -1 2 -1 2 0 
+3 -1 3 -1 3 0 4 -1 3 0 4 -1 5 0 4 -1 
+5 0 4 0 5 -1 5 0 5 0 5 0 6 0 5 -1 
+5 0 5 0 6 1 5 0 5 0 5 0 5 0 5 1 
+5 0 4 0 5 1 4 0 4 1 4 0 3 1 3 0 
+3 1 3 1 2 0 2 1 2 1 2 1 1 0 1 1 
+0 3 -1 1 -1 1 -2 0 -2 1 -2 1 -2 1 -3 0 
+-3 1 -3 0 -3 1 -4 1 -4 0 -4 1 -5 0 -4 0 
+-5 1 -5 0 -5 0 -5 0 -5 1 -5 0 -6 0 -5 0 
+-5 0 -5 0 -6 0 -5 -1 -5 0 -5 0 -5 0 -4 -1 
+-5 0 -4 0 -5 -1 -4 0 -3 -1 -4 -1 -3 0 -3 -1 
+-3 0 -2 -1 -2 -1 -2 -1 -1 0 -2 -1 0 -1 -1 -1 
+3599 3048 97 MP stroke
+1 -1 1 -1 1 -1 1 0 1 0 1 -1 1 0 1 1 
+1 0 1 0 1 1 0 4 -1 1 -1 0 -1 1 -1 0 
+-1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 0 -2 2931 2274 24 MP stroke
+0 -2 1 -1 1 -1 1 -1 1 0 1 -1 1 0 1 0 
+1 0 1 0 1 1 1 0 1 0 1 1 1 1 0 4 
+-1 1 -1 1 -1 1 -1 0 -1 1 -1 0 -1 0 -1 0 
+-1 0 -1 0 -1 -1 -1 0 -1 -1 -1 -1 0 -2 4067 3255 32 MP stroke
+-1 0 -1 0 -1 0 -1 -1 -1 0 1 0 -2 -2 0 -2 
+2 -2 1 0 1 0 1 -1 1 0 1 0 1 1 1 0 
+1 1 1 1 0 2 -1 1 -1 1 -1 1 -1 0 -1 0 
+2435 2776 25 MP stroke
+0 -2 1 -1 1 -1 1 0 1 0 1 0 1 -1 1 1 
+1 0 1 0 1 1 1 1 0 3 -1 1 -1 1 -1 0 
+-1 1 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 -1 -1 
+0 -2 2541 2735 26 MP stroke
+1 -1 1 -1 1 -1 1 0 1 -1 1 0 1 0 1 0 
+1 0 1 0 1 0 1 0 1 0 1 1 1 0 1 1 
+1 1 0 2 -2 2 -1 0 -1 1 -1 0 -1 1 -1 0 
+-1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 -1 0 -1 -1 
+-1 0 0 -2 2613 2651 35 MP stroke
+0 -2 1 -1 1 0 1 -1 1 -1 1 0 1 0 1 0 
+1 -1 1 0 1 0 1 1 1 0 1 0 1 0 1 0 
+1 1 1 1 1 1 0 3 -1 1 -1 1 -1 1 -1 0 
+-1 0 -1 1 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 
+-1 -1 -1 0 -1 0 -1 -1 -1 -1 -1 0 0 -2 3219 2603 40 MP stroke
+-1 0 -1 0 -1 0 -1 -1 -1 -1 0 -3 1 -1 1 -1 
+1 0 1 -1 1 0 1 0 1 1 1 0 1 0 1 1 
+0 3 -1 1 -1 1 -1 1 -1 0 -1 0 2358 2860 23 MP stroke
+0 -1 1 -1 1 -1 1 -1 1 0 1 0 1 -1 1 0 
+1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 
+1 0 1 0 1 0 1 1 1 0 1 1 1 0 1 1 
+0 2 -1 1 -1 1 -1 1 -1 0 -1 0 -1 1 -1 0 
+-1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 
+-1 0 -1 0 -1 -1 -1 0 -1 0 -1 -1 -1 0 1 0 
+-2 -2 2254 2907 50 MP stroke
+0 -2 1 -1 1 -1 1 -1 1 -1 1 0 1 0 1 0 
+1 -1 1 0 1 0 1 1 1 0 1 0 1 1 1 0 
+1 1 1 1 0 4 -1 1 -1 1 -1 1 -1 1 -1 0 
+-1 0 -1 1 -1 0 -1 0 -1 0 -1 -1 -1 0 -1 0 
+-1 -1 -1 0 -1 -1 -1 -1 0 -2 2103 2975 38 MP stroke
+-1 0 -1 -1 -1 0 -1 0 -1 -1 -1 0 0 -1 -2 -2 
+0 -3 2 -2 1 -1 1 0 1 -1 1 0 1 0 1 0 
+1 0 1 0 1 0 1 0 1 1 1 0 0 1 2 2 
+0 3 -1 1 -1 1 -1 1 -1 1 -1 0 -1 0 -1 1 
+-1 0 2119 3087 34 MP stroke
+0 -2 1 -1 1 0 1 -1 2 -1 2 -1 2 0 3 -1 
+2 -1 3 0 4 -1 3 0 4 -1 3 0 4 -1 5 0 
+4 -1 4 0 5 0 5 -1 4 0 5 0 5 0 5 0 
+5 0 4 0 5 0 5 0 4 1 5 0 4 0 5 1 
+4 0 4 1 4 0 3 1 4 0 3 1 3 0 3 1 
+2 1 2 0 2 1 2 1 1 1 1 0 1 1 1 1 
+0 1 -1 1 -1 1 -1 1 -1 1 -2 1 -2 0 -2 1 
+-2 1 -3 0 -3 1 -3 1 -4 0 -3 1 -4 0 -4 1 
+-4 0 -5 0 -4 1 -5 0 -4 0 -5 0 -5 1 -4 0 
+-5 0 -5 0 -5 0 -5 -1 -4 0 -5 0 -5 0 -4 -1 
+-4 0 -5 0 -4 -1 -3 0 -4 -1 -3 0 -4 -1 -3 -1 
+-2 0 -3 -1 -2 -1 -2 0 -2 -1 -1 -1 -1 -1 -1 -1 
+0 -1 4010 3011 98 MP stroke
+0 -1 1 -1 1 -1 1 0 1 0 1 0 1 0 1 0 
+1 0 1 1 1 0 0 4 -1 1 -1 1 -1 0 -1 0 
+-1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 0 -3 2676 3339 24 MP stroke
+-1 0 -1 0 -1 0 -1 -1 -1 -1 -1 -1 0 -2 2 -2 
+1 -1 1 0 1 0 1 0 1 0 1 0 1 0 1 0 
+1 1 1 1 0 3 -1 1 -1 1 -1 1 -1 0 -1 0 
+-1 0 2921 2892 26 MP stroke
+1 -1 0 -1 1 -1 0 -2 2 -1 1 -1 2 -1 2 -1 
+2 -1 2 -1 2 -1 3 -1 3 -1 3 -1 3 -1 4 0 
+3 -1 4 -1 4 0 4 -1 4 0 4 0 4 0 4 -1 
+4 0 4 0 4 1 4 0 4 0 4 0 4 1 4 0 
+4 1 3 1 3 0 4 1 3 1 3 1 2 1 3 1 
+2 1 2 1 2 1 2 1 1 1 1 1 1 2 1 1 
+0 5 -1 1 -1 1 -1 1 -1 2 -2 1 -2 1 -2 1 
+-2 1 -3 1 -2 1 -3 1 -3 0 -4 1 -3 1 -3 1 
+-4 0 -4 1 -4 0 -4 0 -4 1 -4 0 -4 0 -4 0 
+-4 0 -4 0 -4 0 -4 -1 -4 0 -4 0 -4 -1 -4 0 
+-3 -1 -4 -1 -3 -1 -3 0 -3 -1 -3 -1 -2 -1 -2 -1 
+-2 -1 -2 -1 -2 -1 -1 -2 -2 -1 0 -1 -1 -1 0 -2 
+-1 -1 1402 3135 98 MP stroke
+0 -2 1 -1 1 -2 1 -2 2 -2 3 -1 3 -2 3 -2 
+4 -1 4 -2 5 -1 5 -2 5 -1 5 -1 6 -1 6 -1 
+7 -1 6 -1 7 -1 7 -1 7 0 8 0 7 -1 7 0 
+8 0 7 0 8 0 7 1 7 0 7 0 7 1 7 1 
+7 1 6 1 6 1 6 1 6 1 5 1 5 2 4 1 
+4 2 4 1 4 2 3 2 2 1 2 2 2 2 1 2 
+1 1 0 4 -1 2 -1 2 -2 2 -2 1 -2 2 -3 2 
+-4 1 -4 2 -4 1 -4 2 -5 1 -5 2 -6 1 -6 1 
+-6 1 -6 1 -7 1 -7 0 -7 1 -7 1 -7 0 -7 0 
+-8 0 -7 1 -8 -1 -7 0 -7 0 -8 0 -7 -1 -7 -1 
+-7 0 -6 -1 -7 -1 -6 -1 -6 -1 -5 -1 -5 -2 -5 -1 
+-5 -2 -4 -1 -4 -2 -3 -1 -3 -2 -3 -2 -2 -1 -1 -2 
+-1 -2 -1 -2 0 -2 3875 2533 100 MP stroke
+-1 0 -1 -1 -1 0 -1 0 -1 -1 -1 -1 0 -1 -1 -1 
+1 -1 0 -1 1 -1 1 0 1 -1 1 0 1 0 1 0 
+1 0 1 0 1 0 1 1 1 0 -1 0 2 2 0 2 
+-2 2 -1 0 -1 1 -1 0 -1 0 1 0 2880 3120 31 MP stroke
+0 -1 1 -1 1 -1 1 0 1 -1 1 -1 2 0 1 0 
+1 -1 2 0 1 0 2 -1 1 0 2 0 2 0 2 -1 
+1 0 2 0 2 0 2 0 2 0 2 0 2 0 2 0 
+1 0 2 0 2 1 2 0 1 0 2 0 2 1 1 0 
+2 0 1 1 1 0 1 0 1 1 1 0 1 1 1 0 
+1 1 1 0 0 3 -1 1 -1 1 -1 0 -1 1 -1 0 
+-1 1 -1 0 -1 0 -1 1 -2 0 -1 0 -2 1 -2 0 
+-1 0 -2 0 -2 1 -2 0 -1 0 -2 0 -2 0 -2 0 
+-2 0 -2 0 -2 0 -2 0 -1 0 -2 -1 -2 0 -2 0 
+-1 0 -2 -1 -1 0 -2 0 -1 -1 -1 0 -2 0 -1 -1 
+-1 0 -1 -1 -1 -1 -1 0 0 -2 3324 3319 86 MP stroke
+0 -1 1 -1 1 -1 1 0 1 0 -1 0 3 -1 1 -1 
+1 0 2 0 1 -1 2 0 2 0 1 -1 2 0 2 0 
+2 0 2 -1 2 0 2 0 3 0 2 0 2 0 2 0 
+2 0 2 0 3 0 2 0 2 1 2 0 2 0 2 0 
+1 1 2 0 2 0 1 1 2 0 1 0 1 1 1 0 
+1 1 1 0 1 0 1 1 0 1 0 2 -1 1 -1 1 
+-1 0 -1 1 -1 0 -1 0 -1 1 -2 0 -1 0 -2 1 
+-2 0 -1 0 -2 1 -2 0 -2 0 -2 0 -2 0 -3 0 
+-2 1 -2 0 -2 0 -2 0 -2 0 -3 -1 -2 0 -2 0 
+-2 0 -2 0 -2 0 -2 -1 -1 0 -2 0 -2 -1 -1 0 
+-2 0 -1 -1 -1 0 -2 0 -1 -1 -1 -1 -1 0 0 -1 
+3258 3197 89 MP stroke
+-1 0 -1 0 -1 0 -1 0 -1 -1 -1 -1 -1 -1 0 -3 
+2 -2 1 -1 1 0 1 0 1 -1 1 0 1 1 1 0 
+1 0 1 1 1 0 1 1 0 4 -1 1 -1 1 -1 0 
+-1 1 -1 0 -1 0 2538 3187 28 MP stroke
+-1 0 -1 0 -1 0 -1 0 0 -1 -2 -2 0 -2 2 -2 
+1 0 1 -1 1 0 1 0 1 0 1 0 1 0 1 1 
+1 1 1 1 0 2 -2 2 -1 1 -1 0 -1 0 -1 0 
+2307 3580 25 MP stroke
+-1 0 2 -2 1 -1 1 -1 1 0 1 0 1 0 1 0 
+1 0 1 1 1 0 1 1 0 3 -1 1 -1 1 -1 1 
+-1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 
+0 -2 -1 -1 4063 3749 27 MP stroke
+-1 0 2 -2 1 -1 1 0 1 0 1 -1 1 0 1 1 
+1 0 1 1 1 0 0 4 -1 1 -1 1 -1 0 -1 0 
+-1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 0 -2 2020 3252 24 MP stroke
+-1 0 -1 0 -1 0 -1 -1 -1 -1 0 -1 0 -2 1 -1 
+1 -1 1 -1 1 0 1 0 1 0 1 0 1 1 1 0 
+1 1 0 3 -1 1 -1 1 -1 1 -1 0 -1 0 1827 3258 24 MP stroke
+1 -1 1 -1 1 -1 1 -1 1 0 1 0 1 0 1 0 
+1 0 1 0 1 0 1 0 1 1 1 0 -1 0 2 2 
+0 2 -1 1 -1 1 -1 1 -1 0 -1 0 -1 1 -1 0 
+-1 0 -1 0 -1 -1 -1 0 -1 0 -1 -1 -1 -1 0 -1 
+1977 3742 33 MP stroke
+0 -1 1 -1 0 -1 1 -1 1 -1 1 -1 2 -1 1 -1 
+2 -1 2 0 3 -1 2 -1 2 -1 3 -1 3 0 3 -1 
+3 0 3 -1 4 0 3 0 4 -1 3 0 4 0 3 0 
+4 0 3 0 4 0 4 0 3 0 4 1 3 0 3 0 
+4 1 3 0 3 1 3 0 2 1 3 1 2 1 2 1 
+2 0 2 1 2 1 1 1 2 1 1 1 0 1 1 1 
+0 4 -1 1 0 1 -1 1 -2 1 -1 1 -2 1 -2 1 
+-2 1 -2 1 -2 0 -3 1 -2 1 -3 1 -3 0 -3 1 
+-4 0 -3 0 -3 1 -4 0 -3 0 -4 1 -4 0 -3 0 
+-4 0 -3 0 -4 -1 -3 0 -4 0 -3 -1 -4 0 -3 0 
+-3 -1 -3 0 -3 -1 -3 -1 -2 -1 -2 0 -3 -1 -2 -1 
+-2 -1 -1 -1 -2 -1 -1 -1 -1 -1 -1 -1 0 -1 -1 -1 
+0 -1 3158 3838 98 MP stroke
+1 -1 1 -1 1 -1 1 0 1 -1 1 0 1 1 1 0 
+1 0 1 1 1 1 0 2 -1 1 -1 1 -1 1 -1 0 
+-1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 -1 0 -2 
+2828 3542 25 MP stroke
+0 -1 1 -1 1 -1 1 -1 1 0 1 -1 1 0 1 0 
+1 0 1 1 1 0 1 1 1 1 0 3 -1 1 -1 1 
+-1 1 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 
+-1 0 -1 -1 0 -2 3714 3141 28 MP stroke
+-1 0 -1 0 -1 -1 -1 0 0 -1 -2 -2 0 -1 2 -2 
+1 -1 1 0 1 0 1 0 1 0 1 0 1 0 1 1 
+1 1 0 3 -1 1 -1 1 -1 0 -1 1 -1 0 3486 3548 24 MP stroke
+0 -1 2 -2 1 0 1 -1 1 0 1 0 1 0 1 0 
+1 1 1 0 1 1 0 4 -1 1 -1 0 -1 1 -1 0 
+-1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 1 0 -2 -2 
+0 -1 4472 3589 26 MP stroke
+1 -1 1 -1 1 0 1 -1 1 0 1 0 1 -1 1 0 
+1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 
+1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 1 
+1 0 1 0 1 0 1 1 1 0 1 1 0 2 -1 1 
+-1 1 -1 0 -1 0 -1 1 -1 0 -1 0 -1 0 -1 1 
+-1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 
+-1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 -1 0 -1 0 
+-1 -1 -1 0 -1 0 -1 -1 0 -1 4671 3214 62 MP stroke
+0 -1 2 -2 1 0 1 -1 1 0 1 0 1 0 1 0 
+1 0 1 1 1 0 1 1 0 3 -1 1 -1 1 -1 1 
+-1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 
+0 -2 3829 3267 26 MP stroke
+0 -2 1 -1 1 -1 1 0 1 -1 1 0 1 0 1 0 
+1 0 1 1 1 0 1 1 1 1 0 3 -1 1 -1 1 
+-1 0 -1 1 -1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 
+-1 0 -1 -1 0 -2 3542 2944 28 MP stroke
+0 -1 1 -1 1 -1 1 -1 1 0 1 0 1 -1 1 0 
+1 1 1 0 1 0 1 1 1 1 0 3 -1 1 -1 1 
+-1 0 -1 1 -1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 
+-1 -1 -1 -1 0 -1 3273 3086 28 MP stroke
+-1 0 -1 0 -1 0 -1 0 0 -1 -2 -2 0 -1 1 -1 
+1 -1 1 -1 1 0 1 -1 1 0 1 0 1 1 1 0 
+1 1 1 1 0 2 -1 1 -1 1 -1 1 -1 0 -1 0 
+4433 2709 25 MP stroke
+0 -1 1 -1 1 -1 1 -1 1 0 1 0 1 0 1 0 
+1 0 1 0 1 0 1 1 1 1 0 3 -1 1 -1 1 
+-1 0 -1 1 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 0 
+-1 -1 0 -1 3430 731 27 MP stroke
+0 -2 1 -1 1 0 1 -1 1 0 1 0 1 0 1 0 
+1 0 1 1 1 0 0 2 0 2 -1 1 -1 1 -1 0 
+-1 0 -1 1 -1 0 -1 -1 -1 0 -1 0 -1 -1 0 -2 
+1025 1967 25 MP stroke
+0 -1 2 -2 1 0 1 -1 1 0 1 -1 1 0 1 0 
+1 0 1 0 1 1 1 0 1 0 1 1 1 1 0 4 
+-1 1 -1 1 -1 0 -1 0 -1 1 -1 0 -1 0 -1 0 
+-1 0 -1 0 -1 -1 -1 0 -1 0 0 -1 -2 -2 0 -1 
+3535 2922 33 MP stroke
+-1 0 -1 0 -1 0 -1 -1 -1 -1 0 -2 1 -1 1 -1 
+1 -1 1 0 1 -1 1 0 1 0 1 1 1 0 1 1 
+1 1 0 2 -1 1 -1 1 -1 1 -1 0 -1 0 -1 0 
+2554 2120 25 MP stroke
+0 -1 1 -1 0 -2 1 -1 1 -1 1 -1 1 -1 1 -1 
+2 -1 2 -1 2 -1 2 -1 2 -1 2 -1 3 0 2 -1 
+3 -1 3 0 3 -1 2 0 3 0 3 -1 4 0 3 0 
+3 0 3 0 3 0 3 0 3 1 3 0 3 0 3 1 
+2 0 3 1 3 1 2 0 2 1 3 1 2 1 2 1 
+1 1 2 1 1 1 2 1 1 1 0 1 1 1 1 2 
+0 4 -1 2 -1 1 0 1 -1 1 -2 1 -1 1 -2 1 
+-1 1 -2 1 -2 1 -3 1 -2 1 -2 0 -3 1 -3 1 
+-2 0 -3 1 -3 0 -3 0 -3 1 -3 0 -3 0 -3 0 
+-3 0 -3 0 -4 0 -3 -1 -3 0 -2 0 -3 -1 -3 0 
+-3 -1 -2 -1 -3 0 -2 -1 -2 -1 -2 -1 -2 -1 -2 -1 
+-2 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 0 -2 -1 -1 
+0 -1 4467 3592 98 MP stroke
+6 w
+gr
+
+gs 929 415 5309 5139 rc
+0 j
+-27 47 -27 -47 54 0 2236 5418 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gs 978 464 5210 5040 rc
+gr
+
+-27 47 -27 -47 54 0 1352 3593 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gs 978 464 5210 5040 rc
+gr
+
+gs 978 464 5210 5040 rc
+gr
+
+-27 47 -27 -47 54 0 1004 4353 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gs 978 464 5210 5040 rc
+gr
+
+-27 47 -27 -47 54 0 3080 4933 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gs 978 464 5210 5040 rc
+gr
+
+-27 47 -27 -47 54 0 3137 3946 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gs 978 464 5210 5040 rc
+gr
+
+gs 978 464 5210 5040 rc
+gr
+
+gs 978 464 5210 5040 rc
+gr
+
+-27 47 -27 -47 54 0 1950 4931 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gs 978 464 5210 5040 rc
+gr
+
+gs 978 464 5210 5040 rc
+gr
+
+gs 978 464 5210 5040 rc
+gr
+
+gs 978 464 5210 5040 rc
+gr
+
+gs 978 464 5210 5040 rc
+gr
+
+-27 47 -27 -47 54 0 1335 668 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gs 978 464 5210 5040 rc
+gr
+
+-27 47 -27 -47 54 0 2920 3585 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gs 978 464 5210 5040 rc
+gr
+
+gs 978 464 5210 5040 rc
+gr
+
+-27 47 -27 -47 54 0 4188 3904 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gs 978 464 5210 5040 rc
+gr
+
+-27 47 -27 -47 54 0 2832 5236 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2834 5236 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+-27 47 -27 -47 54 0 2832 5236 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gs 978 464 5210 5040 rc
+gr
+
+gs 978 464 5210 5040 rc
+gr
+
+-27 47 -27 -47 54 0 2708 4714 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gs 978 464 5210 5040 rc
+gr
+
+-27 47 -27 -47 54 0 2306 5239 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gs 978 464 5210 5040 rc
+gr
+
+gs 978 464 5210 5040 rc
+gr
+
+-27 47 -27 -47 54 0 3063 4423 4 MP
+c9
+gs
+PP
+gr
+0 sg
+DP
+gs 978 464 5210 5040 rc
+24 w
+/c10 { 1.000000 0.000000 1.000000 sr} bdef
+c10
+3 -5 2263 5402 2 MP stroke
+0 2 2 -2 2264 5399 3 MP stroke
+2 -6 1379 3577 2 MP stroke
+1 2 2 -2 1379 3573 3 MP stroke
+3 -5 1031 4337 2 MP stroke
+0 2 2 -1 1032 4333 3 MP stroke
+2 -6 3107 4917 2 MP stroke
+0 2 2 -2 3107 4913 3 MP stroke
+11 -26 3164 3930 2 MP stroke
+1 10 9 -8 3166 3912 3 MP stroke
+3 -6 1977 4915 2 MP stroke
+1 2 2 -1 1978 4910 3 MP stroke
+-2 0 1362 652 2 MP stroke
+1 0 -1 0 1361 652 3 MP stroke
+21 -45 2947 3569 2 MP stroke
+1 17 16 -13 2952 3537 3 MP stroke
+9 -8 4215 3888 2 MP stroke
+-2 4 4 -2 4220 3882 3 MP stroke
+3 -5 2859 5220 2 MP stroke
+0 2 2 -2 2860 5217 3 MP stroke
+3 -5 2861 5220 2 MP stroke
+0 2 2 -2 2862 5217 3 MP stroke
+2 -4 2859 5220 2 MP stroke
+0 1 1 -1 2860 5217 3 MP stroke
+4 -8 2735 4698 2 MP stroke
+0 3 3 -2 2736 4692 3 MP stroke
+2 -5 2333 5223 2 MP stroke
+0 2 2 -1 2333 5219 3 MP stroke
+6 -13 3090 4407 2 MP stroke
+0 5 5 -4 3091 4398 3 MP stroke
+12 w
+0 sg
+1 -1 -1 1 2266 5397 3 MP stroke
+1 0 1 0 -1 1 -1 0 1 0 1381 3570 6 MP stroke
+1 -1 -1 1 1035 4332 3 MP stroke
+1 -1 1 0 1 0 -1 1 -1 1 -1 -1 3110 4911 7 MP stroke
+1 0 -1 1 1 0 3175 3903 4 MP stroke
+1 0 -1 1 1 0 1980 4908 4 MP stroke
+1 0 -1 0 1361 652 3 MP stroke
+1 0 -1 0 2968 3524 3 MP stroke
+1 -1 1 0 -1 1 -1 0 4225 3880 5 MP stroke
+1 -1 -1 1 2862 5215 3 MP stroke
+1 -1 -1 1 2864 5215 3 MP stroke
+1 0 1 -1 1 0 1 1 -1 1 -1 0 -1 0 -1 0 
+1 0 2862 5215 10 MP stroke
+1 -1 -1 1 2739 4690 3 MP stroke
+1 0 -1 0 2336 5218 3 MP stroke
+1 0 -1 1 1 0 3095 4393 4 MP stroke
+gr
+gr
+
+12 w
+16 w
+DO
+ 978 5503 mt  978  464 L
+ 978  464 mt  978  464 L
+2714 5503 mt 2714  464 L
+2714  464 mt 2714  464 L
+4450 5503 mt 4450  464 L
+4450  464 mt 4450  464 L
+6187 5503 mt 6187  464 L
+6187  464 mt 6187  464 L
+ 978 5503 mt 6187 5503 L
+6187 5503 mt 6187 5503 L
+ 978 4243 mt 6187 4243 L
+6187 4243 mt 6187 4243 L
+ 978 2983 mt 6187 2983 L
+6187 2983 mt 6187 2983 L
+ 978 1723 mt 6187 1723 L
+6187 1723 mt 6187 1723 L
+ 978  464 mt 6187  464 L
+6187  464 mt 6187  464 L
+SO
+24 w
+ 978 5503 mt 6187 5503 L
+ 978  464 mt 6187  464 L
+ 978 5503 mt  978  464 L
+6187 5503 mt 6187  464 L
+ 978 5503 mt 6187 5503 L
+ 978 5503 mt  978  464 L
+ 978 5503 mt  978 5450 L
+ 978  464 mt  978  516 L
+ 706 5715 mt 
+(-117) s
+2714 5503 mt 2714 5450 L
+2714  464 mt 2714  516 L
+2362 5715 mt 
+(-116.5) s
+4450 5503 mt 4450 5450 L
+4450  464 mt 4450  516 L
+4178 5715 mt 
+(-116) s
+6187 5503 mt 6187 5450 L
+6187  464 mt 6187  516 L
+5835 5715 mt 
+(-115.5) s
+ 978 5503 mt 1030 5503 L
+6187 5503 mt 6134 5503 L
+ 570 5574 mt 
+(33.5) s
+ 978 4243 mt 1030 4243 L
+6187 4243 mt 6134 4243 L
+ 730 4314 mt 
+(34) s
+ 978 2983 mt 1030 2983 L
+6187 2983 mt 6134 2983 L
+ 570 3054 mt 
+(34.5) s
+ 978 1723 mt 1030 1723 L
+6187 1723 mt 6134 1723 L
+ 730 1794 mt 
+(35) s
+ 978  464 mt 1030  464 L
+6187  464 mt 6134  464 L
+ 570  535 mt 
+(35.5) s
+ 978 5503 mt 6187 5503 L
+ 978  464 mt 6187  464 L
+ 978 5503 mt  978  464 L
+6187 5503 mt 6187  464 L
+6 w
+1 sg
+0 5040 240 0 0 -5040 6368 5504 4 MP
+PP
+-240 0 0 5040 240 0 0 -5040 6368 5504 5 MP stroke
+gs 6368 464 241 5041 rc
+/mwscm { [/Indexed /DeviceRGB 63
+  <
+    00008f 00009f 0000af 0000bf 0000cf 0000df 0000ef 0000ff 000fff 001fff 
+    002fff 003fff 004fff 005fff 006fff 007fff 008fff 009fff 00afff 00bfff 
+    00cfff 00dfff 00efff 00ffff 0fffef 1fffdf 2fffcf 3fffbf 4fffaf 5fff9f 
+    6fff8f 7fff7f 8fff6f 9fff5f afff4f bfff3f cfff2f dfff1f efff0f ffff00 
+    ffef00 ffdf00 ffcf00 ffbf00 ffaf00 ff9f00 ff8f00 ff7f00 ff6f00 ff5f00 
+    ff4f00 ff3f00 ff2f00 ff1f00 ff0f00 ff0000 ef0000 df0000 cf0000 bf0000 
+    af0000 9f0000 8f0000 7f0000 
+  >
+] setcolorspace } bdef mwscm
+gs np 6368 464 mt 0 5040 rl 240 0 rl 0 -5040 rl cp c np
+[240 0 0 5040 6368 464] cc
+<< % Image dictionary
+  /ImageType 1
+  /Width 1 /Height 64
+  /BitsPerComponent 8
+  /Decode [0 255]
+  /ImageMatrix [1.000000 0 0 64.000000 0 0]
+  /DataSource currentfile
+  /ASCII85Decode filter
+  /RunLengthDecode filter
+>>
+image
+5<h=p4?GSa3&``Q1c$mA0J>%1/1W2!-mp>f,U4KV+<MXF*#fe6(`*r&'GD)k&.]6[$k!CK#R:P;"9S]+
+!.Y
+~>
+gr
+gr
+
+0 sg
+6407  312 mt 
+(m) s
+4 w
+DO
+SO
+6 w
+6368 5504 mt 6608 5504 L
+6368  464 mt 6608  464 L
+6368 5504 mt 6368  464 L
+6608 5504 mt 6608  464 L
+6368 5504 mt 6608 5504 L
+6608 5504 mt 6608  464 L
+6608 5504 mt 6557 5504 L
+6368 5504 mt 6418 5504 L
+6642 5575 mt 
+(-0.25) s
+6608 5000 mt 6557 5000 L
+6368 5000 mt 6418 5000 L
+6642 5071 mt 
+(-0.2) s
+6608 4496 mt 6557 4496 L
+6368 4496 mt 6418 4496 L
+6642 4567 mt 
+(-0.15) s
+6608 3992 mt 6557 3992 L
+6368 3992 mt 6418 3992 L
+6642 4063 mt 
+(-0.1) s
+6608 3488 mt 6557 3488 L
+6368 3488 mt 6418 3488 L
+6642 3559 mt 
+(-0.05) s
+6608 2984 mt 6557 2984 L
+6368 2984 mt 6418 2984 L
+6642 3055 mt 
+(0) s
+6608 2479 mt 6557 2479 L
+6368 2479 mt 6418 2479 L
+6642 2550 mt 
+(0.05) s
+6608 1975 mt 6557 1975 L
+6368 1975 mt 6418 1975 L
+6642 2046 mt 
+(0.1) s
+6608 1472 mt 6557 1472 L
+6368 1472 mt 6418 1472 L
+6642 1543 mt 
+(0.15) s
+6608  968 mt 6557  968 L
+6368  968 mt 6418  968 L
+6642 1039 mt 
+(0.2) s
+6608  464 mt 6557  464 L
+6368  464 mt 6418  464 L
+6642  535 mt 
+(0.25) s
+6368 5504 mt 6608 5504 L
+6368  464 mt 6608  464 L
+6368 5504 mt 6368  464 L
+6608 5504 mt 6608  464 L
+1 sg
+0 500 1839 0 0 -500 4289 1024 4 MP
+PP
+-1839 0 0 500 1839 0 0 -500 4289 1024 5 MP stroke
+4 w
+DO
+SO
+6 w
+0 sg
+4289 1024 mt 6128 1024 L
+4289  524 mt 6128  524 L
+4289 1024 mt 4289  524 L
+6128 1024 mt 6128  524 L
+4289 1024 mt 6128 1024 L
+4289 1024 mt 4289  524 L
+4289 1024 mt 6128 1024 L
+4289  524 mt 6128  524 L
+4289 1024 mt 4289  524 L
+6128 1024 mt 6128  524 L
+4765  726 mt 
+(Campaign GPS) s
+gs 4289 524 1840 501 rc
+12 w
+366 0 4362 657 2 MP stroke
+gr
+
+12 w
+4765  959 mt 
+(CGPS) s
+gs 4289 524 1840 501 rc
+24 w
+c10
+366 0 4362 890 2 MP stroke
+6 w
+gr
+
+6 w
+c10
+
+end %%Color Dict
+
+eplot
+%%EndObject
+
+epage
+end
+
+showpage
+
+%%Trailer
+%%EOF

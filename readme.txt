@@ -3,10 +3,19 @@ RELAX - time-dependent postseismic deformation with afterslip and viscoelastic f
 
 INSTALLATION:
 
-The code is written in Fortran90 and is optimized for the INTEL ifort compiler.
-The gmt 4.5+ library is required to export results to GMT for post-processing.
+The code is written in Fortran90 and is optimized for the the gfortran and the 
+INTEL ifort compiler. The gmt 4.5+ library is required to export results to GMT 
+for post-processing.
 
-More information for compilation is available in the makefile.
+DOCUMENTATION:
+
+Generate a .pdf file of the documentation with the command:
+
+pdflatex latex/documentation.tex
+
+Generate a browsable version of the code with:
+
+doxygen .doxygen
 
 RUN:
 
@@ -72,7 +81,7 @@ For friction faults where slip rates are evaluated from stress and a constitutiv
 law, the rake corresponds to the orientation of slip. That is, if r_i is the rake
 vector and v_i is the instantaneous velocity vector, then r_j v_j >= 0. 
 
-REFERENCE:
+REFERENCES:
 
 More information about parameters and constitutive laws can be found in
 
