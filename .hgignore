@@ -4,6 +4,15 @@ relax
 *~
 *.o
 *.mod
+.DS_Store
+.gmtdefaults4
+build/
 examples/.gmtcommands4
 examples/.gmtdefaults4
-examples/loads1
+examples/.DS_Store
+latex/documentation.aux
+latex/documentation.blg
+latex/documentation.log
+latex/documentation.pdf
+latex/documentation.synctex.gz
+latex/documentation.toc

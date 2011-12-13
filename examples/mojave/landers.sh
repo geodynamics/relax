@@ -23,7 +23,7 @@ time ../../relax <<EOF $* --no-vtk-output --no-proj-output \
 # origin position and rotation
 0 0 0
 # geographic origin zone unit
--116.27 34.595 11 1e3
+#-116.27 34.595 11 1e3
 # observation depth
 0 5
 # output directory
@@ -35,6 +35,8 @@ $WDIR
 # number of observation planes
 0
 # number of observation points
+0
+# number of stress observation planes
 0
 # number of prestress interfaces with depth
 0

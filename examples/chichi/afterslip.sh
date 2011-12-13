@@ -33,6 +33,8 @@ $WDIR
 0 
 # number of observation points
 0 
+# number of stress observation planes
+0
 # number of prestress interfaces
 0
 # number of linear viscous interfaces

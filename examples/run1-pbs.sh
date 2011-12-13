@@ -1,13 +1,15 @@
 #!/bin/sh
 
+# example input file for a queueing system (for a single node of a cluster)
+
 #PBS -l nodes=1:ppn=8
 #PBS -l walltime=0:02:60
 #PBS -q debug
 #PBS -N output1
 #PBS -o ./output1/out
 
-#change the working directory (default is home directory)
-#echo working directory: $PBS_O_WORKDIR
+# change the working directory (default is home directory)
+# echo working directory: $PBS_O_WORKDIR
 cd $PBS_O_WORKDIR
 
 export MX_RCACHE=0

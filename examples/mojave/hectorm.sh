@@ -14,16 +14,16 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time relax <<EOF $* --no-vtk-output --no-proj-output \
+time ../../relax <<EOF $* --no-vtk-output --no-proj-output \
 	--no-stress-output | tee $WDIR/in.param
 # grid size (sx1,sx2,sx3)
-1024 1024 512
+512 512 512
 # dx1  dx2  dx3 beta nyquist
   0.6  0.6  0.6 0.35     1.0
 # origin position and rotation
 0 0 0
 # geographic origin zone unit
--116.27 34.595 11 1e3
+#-116.27 34.595 11 1e3
 # observation depth
 0 5
 # output directory
@@ -35,6 +35,8 @@ $WDIR
 # number of observation planes
 0
 # number of observation points
+0
+# number of stress observation planes
 0
 # number of prestress interfaces with depth
 0
