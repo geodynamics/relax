@@ -79,7 +79,7 @@ $WDIR
 # the constraint of rake is not applied. this afterslip plane starts
 # immediately below the coseismic rupture.
 # no  x1 x2 x3 length width strike dip rake (slip rake is +-180 degrees from this value)
-   1  -1  0  1     2      1      0  90    0
+   1  -1  0  1     2      1      0  90  180
 # number of interseismic loading strike-slip
 0
 # number of interseismic loading opening cracks
