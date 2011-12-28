@@ -625,14 +625,14 @@ CONTAINS
     INTEGER :: iostatus,i1,i2
     CHARACTER(80) :: outfiletxt
 #endif
-#ifdef GRD_EXPORTEIGENSTRAIN
+!#_indef GRD_EXPORTEIGENSTRAIN
     CHARACTER(80) :: outfilegrd
     INTEGER :: j,iostat,j1,j2
     REAL*4, ALLOCATABLE, DIMENSION(:,:) :: temp
     REAL*8 :: rland=9998.,rdum=9999.
     REAL*8 :: xmin,ymin
     CHARACTER(80) :: title="monitor field "
-#endif
+!#_endif
 
     IF (nop .le. 0) RETURN
 
@@ -668,7 +668,7 @@ CONTAINS
        CLOSE(15)
 #endif
 
-#ifdef GRD_EXPORTEIGENSTRAIN
+!#_ifdef GRD_EXPORTEIGENSTRAIN
        outfilegrd=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".estrain.grd"
 
        ! convert to c standard
@@ -695,7 +695,7 @@ CONTAINS
 
        DEALLOCATE(temp)
 
-#endif
+!#_endif
 
        DEALLOCATE(slippatch)
     END DO
@@ -741,6 +741,7 @@ END SUBROUTINE exporteigenstrain
   !! \author sylvain barbot (01/01/07) - original form
   !!                        (02/25/10) - output in TXT and GRD formats
   !---------------------------------------------------------------------
+#define TXT_EXPORTCREEP
   SUBROUTINE exportcreep(np,n,beta,sig,structure, &
                          sx1,sx2,sx3,dx1,dx2,dx3,x0,y0,wdir,i)
     INTEGER, INTENT(IN) :: np,sx1,sx2,sx3,i
@@ -790,6 +791,8 @@ END SUBROUTINE exporteigenstrain
        OPEN (UNIT=15,FILE=outfile,IOSTAT=iostatus,FORM="FORMATTED")
        IF (iostatus>0) STOP "could not open file for export"
           
+       WRITE (15,'("#        x1         x2         x3          yr        yz", &
+                   "       slip strike-slip  dip-slip")')
        WRITE (15,'(8ES11.3E2)') ((slippatch(i1,i2), i1=1,ns1,skip), i2=1,ns2,skip)
           
        CLOSE(15)
@@ -1891,7 +1894,6 @@ END SUBROUTINE exportcreep
     CHARACTER(80), INTENT(IN) :: filename
 
     INTEGER :: iostatus
-    CHARACTER :: q
 
     REAL*8 :: cstrike,sstrike,cdip,sdip
     REAL*8, DIMENSION(3) :: s,d,n

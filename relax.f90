@@ -217,6 +217,7 @@ PROGRAM relax
   
   ! arrays
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: v1,v2,v3,u1,u2,u3,gamma
+  REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: u1r,u2r,u3r
   REAL*4, DIMENSION(:,:), ALLOCATABLE :: t1,t2,t3
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: inter1,inter2,inter3
   TYPE(TENSOR), DIMENSION(:,:,:), ALLOCATABLE :: tau,sig,moment
@@ -250,6 +251,16 @@ PROGRAM relax
             t1(in%sx1+2,in%sx2),t2(in%sx1+2,in%sx2),t3(in%sx1+2,in%sx2), &
             STAT=iostatus)
   IF (iostatus>0) STOP "could not allocate memory"
+#ifdef VTK
+  IF (in%isoutputvtkrelax) THEN
+     ALLOCATE(u1r(in%sx1+2,in%sx2,in%sx3/2),u2r(in%sx1+2,in%sx2,in%sx3/2), &
+              u3r(in%sx1+2,in%sx2,in%sx3/2),STAT=iostatus)
+     IF (iostatus>0) STOP "could not allocate memory for VTK relax output"
+     u1r=0
+     u2r=0
+     u3r=0
+  END IF
+#endif
 
   IF (in%isoutputrelax) THEN
      ALLOCATE(inter1(in%sx1+2,in%sx2,2),inter2(in%sx1+2,in%sx2,2),inter3(in%sx1+2,in%sx2,2),STAT=iostatus)
@@ -383,6 +394,13 @@ PROGRAM relax
                                    4,4,8,filename,title,name)
      !CALL exportvtk_vectors_slice(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,filename)
   END IF
+  IF (in%isoutputvtkrelax) THEN
+     filename=trim(in%wdir)//"/disp-relax-000.vtk"//char(0)
+     title="postseismic displacement vector field"//char(0)
+     name="displacement"//char(0)
+     CALL exportvtk_vectors_legacy(u1r,u2r,u3r,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
+                                   4,4,8,filename,title,name)
+  END IF
 #endif
   IF (ALLOCATED(in%ptsname)) THEN
      CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
@@ -448,7 +466,7 @@ PROGRAM relax
   CALL tensorfieldadd(moment,moment,in%sx1,in%sx2,in%sx3/2,c1=0._4,c2=0._4)  
 
   DO i=1,ITERATION_MAX
-     IF (t > (in%interval+1e-6)) GOTO 100 ! proper exit
+     IF (t .GE. in%interval) GOTO 100 ! proper exit
      
      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      ! predictor
@@ -573,8 +591,8 @@ PROGRAM relax
      
      ! nonlinear fault creep with rate-strengthening friction
      IF (ALLOCATED(in%faultcreepstruc)) THEN
+
         ! use v1 as placeholders for the afterslip planes
-        v1=0
         DO k=1,in%np
            ! one may use optional arguments ...,VEL=v1) to convert
            ! fault slip to eigenstrain (scalar)
@@ -584,15 +602,13 @@ PROGRAM relax
                 sig,in%mu,in%faultcreepstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment)
         END DO
-        
-        ! update slip history
-        CALL fieldadd(gamma,v1,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
 
         ! export strike and dip creep velocity
         IF (isoutput(in%skip,t,i,in%odt,oi,in%events(e)%time)) THEN
            CALL exportcreep(in%np,in%n,in%beta,sig,in%faultcreepstruc, &
                             in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%x0,in%y0,in%wdir,oi)
         END IF
+
      END IF
 
      ! interseismic loading
@@ -644,6 +660,14 @@ PROGRAM relax
         CALL sliceadd(inter2(:,:,1),v2,in%sx1+2,in%sx2,in%sx3,int(in%oz/in%dx3)+1,c2=REAL(Dt))
         CALL sliceadd(inter3(:,:,1),v3,in%sx1+2,in%sx2,in%sx3,int(in%oz/in%dx3)+1,c2=REAL(Dt))
      END IF
+
+#ifdef VTK
+     IF (in%isoutputvtkrelax) THEN
+        u1r=u1r+Dt*v1
+        u2r=u2r+Dt*v2
+        u3r=u3r+Dt*v3 
+     END IF
+#endif
 
      ! time increment
      t=t+Dt
@@ -749,6 +773,13 @@ PROGRAM relax
            CALL exportvtk_vectors_legacy(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
                                          8,8,16,filename,title,name)
            !CALL exportvtk_vectors_slice(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,filename)
+        END IF
+        IF (in%isoutputvtkrelax) THEN
+           filename=trim(in%wdir)//"/disp-relax-"//digit//".vtk"//char(0)
+           title="postseismic displacement vector field"//char(0)
+           name="displacement"//char(0)
+           CALL exportvtk_vectors_legacy(u1r,u2r,u3r,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
+                                         4,4,8,filename,title,name)
         END IF
 #endif
 

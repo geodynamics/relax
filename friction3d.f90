@@ -283,7 +283,7 @@ CONTAINS
     ! rake vector component
     r(1)=sstrike*cr+cstrike*sdip*sr
     r(2)=cstrike*cr-sstrike*sdip*sr
-    r(3)=+cdip*sr
+    r(3)=cdip*sr
 
     DO i3=1,sx3
        x3=DBLE(i3-1)*dx3
@@ -331,9 +331,9 @@ CONTAINS
              ! absolute value of shear component
              ts=t-taun*n
              taus=SQRT(SUM(ts*ts))
-             
+
              ! effective shear stress on fault plane
-             tau=taus+friction*taun-cohesion
+             tau=MAX(0.d0,taus+friction*taun-cohesion)
 
              ! rake direction test only if | rake | < 3*Pi
              IF (SUM(ts*r).LT.0.d0 .AND. ABS(rake).LT.pi2*1.5d0) CYCLE
@@ -351,9 +351,6 @@ CONTAINS
                 WRITE (0,'("------------------------------------------")')
                 STOP 5
              END IF
-
-             ! yield surface test
-             IF ((0._8 .GE. taus) .OR. (tau .LE. 0._8)) CYCLE
 
              ! shear traction direction
              ts=ts/taus
@@ -409,7 +406,7 @@ CONTAINS
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
 
     INTEGER :: i1,i2,i3,px2,px3,j2,j3,status
-    REAL*8 :: cstrike,sstrike,cdip,sdip,slip,ss,ds,cr,sr
+    REAL*8 :: cstrike,sstrike,cdip,sdip,cr,sr
     REAL*8 :: vo,tauc,taun,taus, &
          friction,tau,cohesion
     REAL*8 :: x1,x2,x3,xr,yr,zr,Wp,Lp
@@ -449,7 +446,7 @@ CONTAINS
     ! rake vector component
     r(1)=sstrike*cr+cstrike*sdip*sr
     r(2)=cstrike*cr-sstrike*sdip*sr
-    r(3)=+cdip*sr
+    r(3)=cdip*sr
 
     ! loop in the dip direction
     DO j3=1,px3+1
@@ -464,60 +461,51 @@ CONTAINS
           
           CALL local2ref(xr,yr,zr,x1,x2,x3)
 
+          ! initialize zero slip velocity
+          patch(j2,j3)=SLIPPATCH_STRUCT(x1,x2,x3,yr,zr,0._8,0._8,0._8)
+
           ! discard out-of-bound locations
           IF (  (x1 .GT. DBLE(sx1/2-1)*dx1) .OR. (x1 .LT. -DBLE(sx1/2)*dx1) &
            .OR. (x2 .GT. DBLE(sx2/2-1)*dx2) .OR. (x2 .LT. -DBLE(sx2/2)*dx2) &
-           .OR. (x3 .GT. DBLE(sx3-1)*dx3) .OR. (x3 .LT. 0._8)  ) THEN
-             slip=0._8
-             ss=0._8
-             ds=0._8
-          ELSE
-             ! evaluates instantaneous creep velocity
-             CALL shiftedindex(x1,x2,x3,sx1,sx2,sx3,dx1,dx2,dx3,i1,i2,i3)
+           .OR. (x3 .GT. DBLE(sx3-1)*dx3) .OR. (x3 .LT. 0._8)  ) CYCLE
 
-             ! retrieve friction parameters
-             vo=structure(i3)%gammadot0
-             tauc=structure(i3)%stressexponent
-             friction=structure(i3)%friction
-             cohesion=structure(i3)%cohesion
+          ! evaluates instantaneous creep velocity
+          CALL shiftedindex(x1,x2,x3,sx1,sx2,sx3,dx1,dx2,dx3,i1,i2,i3)
+
+          ! retrieve friction parameters
+          vo=structure(i3)%gammadot0
+          tauc=structure(i3)%stressexponent
+          friction=structure(i3)%friction
+          cohesion=structure(i3)%cohesion
        
-             ! traction = sigma . n
-             s=sig(i1,i2,i3)
-             t=s .tdot. n
+          ! traction = sigma . n
+          s=sig(i1,i2,i3)
+          t=s .tdot. n
 
-             ! signed normal component
-             taun=SUM(t*n)
+          ! signed normal component
+          taun=SUM(t*n)
 
-             ! absolute value of shear component
-             ts=t-taun*n
-             taus=SQRT(SUM(ts*ts))
+          ! absolute value of shear component
+          ts=t-taun*n
+          taus=SQRT(SUM(ts*ts))
              
-             ! effective shear stress on fault plane
-             tau=taus+friction*taun-cohesion
+          ! effective shear stress on fault plane
+          tau=MAX(0.d0,taus+friction*taun-cohesion)
 
-             ! shear traction direction
-             ts=ts/taus
+          ! rake direction test only if | rake | < 3*Pi
+          IF (SUM(ts*r).LT.0.d0 .AND. ABS(rake).LT.pi2*1.5d0) CYCLE
 
-             ! yield surface rake direction tests
-             IF ((0._8 .GE. taus) .OR. &
-                 (tau .LE. 0._8)  .OR. &
-                 (SUM(ts*r).LT.0.d0)) THEN
-                ss=0;ds=0;slip=0;
-             ELSE
-                ! creep rate
-                slip=vo*2._8*sinh(tau/tauc)
+          ! creep rate
+          patch(j2,j3)%slip=vo*2._8*sinh(tau/tauc)
 
-                ! strike-direction creep rate
-                ss=slip*SUM(ts*sv)
+          ! shear traction direction
+          ts=ts/taus
 
-                ! dip-direction creep rate
-                ds=slip*SUM(ts*dv)
-             END IF
-          END IF
+          ! strike-direction creep rate
+          patch(j2,j3)%ss=patch(j2,j3)%slip*SUM(ts*sv)
 
-          ! gather absolute and relative position, total, 
-          ! strike and dip slip in a single structure
-          patch(j2,j3)=SLIPPATCH_STRUCT(x1,x2,x3,yr,zr,slip,ss,ds)
+          ! dip-direction creep rate
+          patch(j2,j3)%ds=patch(j2,j3)%slip*SUM(ts*dv)
 
        END DO
     END DO

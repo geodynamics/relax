@@ -27,7 +27,7 @@ fi
 done
 
 # plotting vectors
-if [ -e "$U1" ]; then
+if [ -e $U1 ]; then
 
 #echo $self": found "$U1": plotting vectors"
 echo $self": Using VECTOR="$VECTOR", STEP="$ADX
@@ -60,7 +60,7 @@ REVERT="-Xa-0.9i -Ya-0.3i"
 fi
 
 	#-Q0.20c/1.0c/0.4cn1.0c \
-psscale -O -Ba$PSSCALE/:$unit: -D2.0i/-0.8i/3.1i/0.2ih \
+psscale -O -B$PSSCALE/:$unit: -D2.0i/-0.8i/3.1i/0.2ih \
 	-C$colors $REVERT \
 	>> $PSFILE 
 
@@ -116,7 +116,7 @@ do
     g) gset=1;;
     i) iset=1;illumination="-I$OPTARG";;
     o) oset=1;ODIR=$OPTARG;;
-    p) pset=1;P=$OPTARG;PSSCALE=`echo $OPTARG | awk -F"/" 'function abs(x){return x<0?-x:x}{print abs($2)}'`;;
+    p) pset=1;P=$OPTARG;PSSCALE=`echo $OPTARG | awk -F"/" 'function abs(x){return x<0?-x:x}{print abs($2-$1)/4}'`;echo $PSSCALE;;
     v) vset=1;SIZE=$OPTARG;VECTOR=$OPTARG"c";;
     r) rset=1;;
     s) sset=1;ADX=$OPTARG;;
@@ -158,8 +158,8 @@ fi
 if [ "$tset" != "1" ]; then
 	tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/4}'`
 fi
-HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*4)}'`
 if [ "$gset" != "1" ]; then
+	HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*4)}'`
 	if [ "$rset" != "1" ]; then
 		PROJ="X4i/"$HEIGHT
 	else
@@ -167,7 +167,8 @@ if [ "$gset" != "1" ]; then
 	fi
         AXIS=-Ba${tick}:"":/a${tick}:""::."$U3":WSne
 else
-	PROJ="M0/0/4i"
+	HEIGHT=4i
+	PROJ="M0/0/$HEIGHT"
         AXIS=-B${tick}:"":/${tick}:""::."$U3":WSne
 fi
 
@@ -208,7 +209,7 @@ if [ "$pset" != "1" ]; then
 		grd2cpt $U3 -C$cptfile -Z -T= > $colors
 	fi
 else
-	makecpt -C$cptfile -T$P -Z -D > $colors;
+	makecpt -C$cptfile -T$P -D > $colors;
 fi
 if [ "$oset" != "1" ]; then
 	ODIR=$WDIR
@@ -217,7 +218,7 @@ if [ -e $U1 ]; then
 	if [ "$vset" != "1" ]; then
                 MAX1=`grdinfo $U1 -C | awk '{if (sqrt($7^2)>sqrt($6^2)){print sqrt($7^2)}else{print sqrt($6^2)}}'`
                 MAX2=`grdinfo $U2 -C | awk '{if (sqrt($7^2)>sqrt($6^2)){print sqrt($7^2)}else{print sqrt($6^2)}}'`
-		SIZE=`echo "$MAX1 $MAX2"| awk '{print ($1+$2)*0.95}'`
+		SIZE=`echo "$MAX1 $MAX2"| awk '{if (0==$1 && 0==$2){print 1}else{print ($1+$2)*0.95}}'`
 		VECTOR=$SIZE"c"
 	fi
 	if [ "$sset" != "1" ]; then

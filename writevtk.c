@@ -206,12 +206,12 @@ void exportvtk_tensors_legacy_(sig,sx1,sx2,sx3,dx1,dx2,dx3,j1,j2,j3,filename,tit
            buffer[0]=(1u==endian)?sig[index+0]:swap(sig[index+0]);
            buffer[1]=(1u==endian)?sig[index+1]:swap(sig[index+1]);
            buffer[2]=(1u==endian)?sig[index+2]:swap(sig[index+2]);
-           buffer[3]=(1u==endian)?sig[index+3]:swap(sig[index+3]);
-           buffer[4]=(1u==endian)?sig[index+4]:swap(sig[index+4]);
-           buffer[5]=(1u==endian)?sig[index+5]:swap(sig[index+5]);
-           buffer[6]=(1u==endian)?sig[index+6]:swap(sig[index+6]);
-           buffer[7]=(1u==endian)?sig[index+7]:swap(sig[index+7]);
-           buffer[8]=(1u==endian)?sig[index+8]:swap(sig[index+8]);
+           buffer[3]=(1u==endian)?sig[index+1]:swap(sig[index+1]);
+           buffer[4]=(1u==endian)?sig[index+3]:swap(sig[index+3]);
+           buffer[5]=(1u==endian)?sig[index+4]:swap(sig[index+4]);
+           buffer[6]=(1u==endian)?sig[index+2]:swap(sig[index+2]);
+           buffer[7]=(1u==endian)?sig[index+4]:swap(sig[index+4]);
+           buffer[8]=(1u==endian)?sig[index+5]:swap(sig[index+5]);
 
            // write buffer to disk
            fwrite(buffer,36,1,funit);

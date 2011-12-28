@@ -57,7 +57,7 @@ CONTAINS
 !$  INTEGER :: omp_get_num_procs,omp_get_max_threads
     REAL*8 :: dummy,dum1,dum2
     REAL*8 :: minlength,minwidth
-    TYPE(OPTION_S) :: opts(9)
+    TYPE(OPTION_S) :: opts(11)
 
     INTEGER :: k,iostatus,i,e
 
@@ -69,15 +69,17 @@ CONTAINS
     END IF
 
     ! parse the command line for options
-    opts(1)=OPTION_S("no-proj-output",.FALSE.,CHAR(20))
-    opts(2)=OPTION_S("no-relax-output",.FALSE.,CHAR(21))
-    opts(3)=OPTION_S("no-txt-output",.FALSE.,CHAR(22))
-    opts(4)=OPTION_S("no-vtk-output",.FALSE.,CHAR(23))
-    opts(5)=OPTION_S("no-grd-output",.FALSE.,CHAR(24))
-    opts(6)=OPTION_S("no-xyz-output",.FALSE.,CHAR(25))
-    opts(7)=OPTION_S("no-stress-output",.FALSE.,CHAR(26))
-    opts(8)=OPTION_S("dry-run",.FALSE.,CHAR(27))
-    opts(9)=OPTION_S("help",.FALSE.,'h')
+    opts( 1)=OPTION_S("no-proj-output",.FALSE.,CHAR(20))
+    opts( 2)=OPTION_S("no-relax-output",.FALSE.,CHAR(21))
+    opts( 3)=OPTION_S("no-txt-output",.FALSE.,CHAR(22))
+    opts( 4)=OPTION_S("no-vtk-output",.FALSE.,CHAR(23))
+    opts( 5)=OPTION_S("no-grd-output",.FALSE.,CHAR(24))
+    opts( 6)=OPTION_S("no-xyz-output",.FALSE.,CHAR(25))
+    opts( 7)=OPTION_S("no-stress-output",.FALSE.,CHAR(26))
+    opts( 8)=OPTION_S("with-stress-output",.FALSE.,CHAR(27))
+    opts( 9)=OPTION_S("with-vtk-relax-output",.FALSE.,CHAR(28))
+    opts(10)=OPTION_S("dry-run",.FALSE.,CHAR(29))
+    opts(11)=OPTION_S("help",.FALSE.,'h')
 
     DO
        ch=getopt("h",opts)
@@ -107,6 +109,12 @@ CONTAINS
           in%isoutputstress=.FALSE.
        CASE(CHAR(27))
           ! option dry-run
+          in%isoutputstress=.TRUE.
+       CASE(CHAR(28))
+          ! option dry-run
+          in%isoutputvtkrelax=.TRUE.
+       CASE(CHAR(29))
+          ! option dry-run
           in%isdryrun=.TRUE.
        CASE('h')
           ! option help
@@ -129,16 +137,18 @@ CONTAINS
        PRINT '("      [--no-vtk-output] [--no-xyz-output]")'
        PRINT '("")'
        PRINT '("options:")'
-       PRINT '("   -h                 prints this message and aborts calculation")'
-       PRINT '("   --dry-run          abort calculation, only output geometry")'
-       PRINT '("   --help             prints this message and aborts calculation")'
-       PRINT '("   --no-grd-output    cancel output in GMT grd binary format")'
-       PRINT '("   --no-proj-output   cancel output in geographic projection")'
-       PRINT '("   --no-relax-output  cancel output of the postseismic contribution")'
-       PRINT '("   --no-stress-output cancel output of stress tensor in any format")'
-       PRINT '("   --no-txt-output    cancel output in text format")'
-       PRINT '("   --no-vtk-output    cancel output in Paraview VTK format")'
-       PRINT '("   --no-xyz-output    cancel output in GMT xyz format")'
+       PRINT '("   -h                      prints this message and aborts calculation")'
+       PRINT '("   --dry-run               abort calculation, only output geometry")'
+       PRINT '("   --help                  prints this message and aborts calculation")'
+       PRINT '("   --no-grd-output         cancel output in GMT grd binary format")'
+       PRINT '("   --no-proj-output        cancel output in geographic projection")'
+       PRINT '("   --no-relax-output       cancel output of the postseismic contribution")'
+       PRINT '("   --no-stress-output      cancel output of stress tensor in any format")'
+       PRINT '("   --no-txt-output         cancel output in text format")'
+       PRINT '("   --no-vtk-output         cancel output in Paraview VTK format")'
+       PRINT '("   --no-xyz-output         cancel output in GMT xyz format")'
+       PRINT '("   --with-stress-output    export stress tensor")'
+       PRINT '("   --with-vtk-relax-output export relaxation to VTK format")'
        PRINT '("")'
        PRINT '("description:")'
        PRINT '("   Evaluates the deformation due to fault slip, surface loading")'

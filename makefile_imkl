@@ -10,7 +10,7 @@
 # to fit with your environment.
 
 LIBPATH=-L/sw/lib -L/opt/intel/Compiler/11.1/084/Frameworks/mkl/lib/em64t/ -L/opt/intel/Compiler/11.1/084/lib/
-INCPATH=-I/sw/include -I/opt/intel/Compiler/11.1/084/Frameworks/mkl/include
+INCPATH=-I/sw/include -I/opt/intel/Compiler/11.1/084/Frameworks/mkl/include -Ibuild
 
 LIBS=-lproj -lgmt -lnetcdf -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -openmp -lpthread 
 
@@ -20,9 +20,9 @@ FC=ifort -openmp
 
 FFLAGS=-cpp $(INCPATH) -zero -warn all
 F77FLAGS=-zero 
-CFLAGS=-I/sw/include 
+CFLAGS=-I/sw/include -Ibuild
 
-OBJ = types.o mkl_dfti.o fourier.o green.o elastic3d.o friction3d.o viscoelastic3d.o writegrd4.2.o proj.o export.o getdata.o getopt.o input.o relax.o
+OBJ = types.o mkl_dfti.o fourier.o green.o elastic3d.o friction3d.o viscoelastic3d.o writegrd4.2.o writevtk.o proj.o export.o getdata.o getopt_m.o input.o relax.o
 
 %.o : %.c
 	$(CC) $(CFLAGS) -c $^
