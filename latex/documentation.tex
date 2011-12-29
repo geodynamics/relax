@@ -40,7 +40,7 @@
 \title{\bf Relax: Nonlinear Postseismic Relaxation\\in the Fourier Domain}
 
 \author
-{User Manual\\
+{User's Manual\\
 \\
 \normalsize{Sylvain Barbot (sbarbot@caltech.edu)}\\
 \normalsize{Division of Geological and Planetary Sciences, Caltech}\\
@@ -205,7 +205,6 @@ The output of the simulation can be projected on the fly to geographic coordinat
 
 \subsection{Running}
 
-\subsubsection{Running the program}
 
 The binary packages provided on the CIG website contain everything
 needed to run simulations.  After unpacking the packages, open a
@@ -581,11 +580,11 @@ By default, the deformation is written to disk in map view, for mapping with GMT
 The observation points are given a four-character name \verb'name' and the time series of displacement and stress is listed in the output file \verb'name.txt'. Using the above example, we obtain
 \begin{alltt}
 > more output_directory/GPS1.txt
-#         t         u1         u2         u3        s11        s12        s13
-  0.000E+00 -1.736E-05  1.726E-01 -2.343E-08  1.034E-03 -2.199E+03  4.950E-01
-  1.000E-01 -1.738E-05  1.726E-01 -2.356E-08  1.035E-03 -2.198E+03  4.950E-01
-  2.000E-01 -1.739E-05  1.727E-01 -2.368E-08  1.036E-03 -2.197E+03  4.951E-01
-  3.000E-01 -1.741E-05  1.728E-01 -2.376E-08  1.035E-03 -2.197E+03  4.951E-01
+#         t         u1        u2         u3       s11        s12       s13
+  0.000E+00 -1.736E-05 1.726E-01 -2.343E-08 1.034E-03 -2.199E+03 4.950E-01
+  1.000E-01 -1.738E-05 1.726E-01 -2.356E-08 1.035E-03 -2.198E+03 4.950E-01
+  2.000E-01 -1.739E-05 1.727E-01 -2.368E-08 1.036E-03 -2.197E+03 4.951E-01
+  3.000E-01 -1.741E-05 1.728E-01 -2.376E-08 1.035E-03 -2.197E+03 4.951E-01
 ...
 \end{alltt}
 where we have discarded the last three component of the stress tensor in the interest of space. The observation points list the cumulative displacement and stress, including the initial perturbation from an earthquake and the contribution due to the viscoelastic relaxation.
@@ -701,11 +700,12 @@ All VTK output files for visualization in Paraview are suffixed with the output 
 \verb'vel-0014.vtk' & subsampled volume of velocity vector\\
 \verb'sigma-0014.vtk' & subsampled volume of stress tensor\\
 \verb'power-0014.vtk' & subsampled volume of power tensor\\
+\verb'disp-relax-0014.vtk' & subsampled volume of the relaxation part of the displacement vector (no coseismic)\\
 \end{tabular}\\
 \\
-The export to files in the VTK binary format \verb'.vtk' can be cancelled for the interest of space with the \verb'--no-vtk-output' option.
+The output \verb'disp-relax-????.vtk' are only available with the \verb`--with-vtk-relax-output` option. The export to files in the VTK binary format \verb'.vtk' can be cancelled for the interest of space with the \verb'--no-vtk-output' option.
 
-Some other files only contain geometrical information, such as geometry of fault patches, grid dimension, position of observation points, and so on\\
+Some other files only contain geometrical information, such as geometry of fault patches, grid dimension, position of observation points:\\
 \\
 \begin{tabular}{ll}
 \verb'opts.dat' & list of observation points (coordinates and names)\\
