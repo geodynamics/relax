@@ -203,129 +203,44 @@ Both the post-processing and the storage of the simulation are greatly facilitat
 
 The output of the simulation can be projected on the fly to geographic coordinates, which is convenient to communicate results to others in a global coordinate system. In RELAX, this is performed with the proj4 library. It is recommended to install these libraries on your system.
 
-\subsection{Installation}
-\subsubsection{Installation from the source files}
-
-The compilation procedure, written by Walter Landry, uses Waf, a Python-based framework for configuring, compiling and installing applications. To obtain more information about this installation script, type
-\begin{alltt}
-{\color{orange}> ./waf --help}
-\end{alltt}
-in a terminal from the source directory. To compile a binary file form the source code, the general procedure is to configure the project first, then compile. For example, to use the FFTW Fourier transform library, use
-\begin{alltt}
-{\color{orange}> ./waf configure --use-fftw
-> ./waf}
-\end{alltt}
-On Pangu, the supercomputer of Caltech's GPS Division, you have to configure \verb'waf' to use the intel compilers and specify the location of the MKL, the GMT, and the PROJ libraries:
-\begin{alltt}
-{\color{orange}> CPPFLAGS="-I/usr/include/netcdf-4" LDFLAGS="-L/usr/lib64" ./waf configure 
---proj-dir=/home/walter/src/relax/relax-bin 
---gmt-dir=/home/walter/src/relax/relax-bin/ 
---mkl-incdir=/opt/intel/composerxe-2011.1.107/mkl/include/ 
---mkl-libdir=/opt/intel/composerxe-2011.1.107/mkl/lib/intel64/ 
---check-c-compiler=icc --check-fortran-compiler=ifort
-> ./waf}
-\end{alltt}
-To compile the code on a Mac OS X platform with the intel Fortran compiler, the MKL Fourier transform library, and the GMT and PROJ libraries installed with Fink, use
-\begin{alltt}
-{\color{orange}> ./waf configure --proj-dir=/sw --gmt-dir=/sw 
---mkl-libdir=/opt/intel/Compiler/11.1/084/Frameworks/mkl/lib/em64t/ 
---mkl-incdir=/opt/intel/Compiler/11.1/084/Frameworks/mkl/include 
---check-c-compiler=icc --check-fortran-compiler=ifort
-> ./waf}
-\end{alltt}
-
-To have a closer look at the code, one can generate an \verb'html'-based interface that can be browsed with the \verb'doxygen' program (\verb'http://www.stack.nl/~dimitri/doxygen/index.html') with the command
-\begin{alltt}
-{\color{orange}
-> mkdir doc
-> doxygen ./doxygen}
-\end{alltt}
-in the code source directory.
-
-
+\subsection{Running}
 
 \subsubsection{Running the program}
 
-When using external libraries, it is required to add to the environment variables \verb'LD_LIBRARY_PATH' the location of the dynamic libraries. For example, on a Mac OS X platform, with libraries installed by Fink, the \verb'LD_LIBRARY_PATH' variable should contain
+The binary packages provided on the CIG website contain everything
+needed to run simulations.  After unpacking the packages, open a
+terminal (or, in Windows, a Command Prompt) and run the setup script
+
 \begin{alltt}
-{\color{NavyBlue}:/sw/lib:/sw/lib/netcdf-gfortran/lib}
+{\color{orange} source setup.sh # Linux and Mac}
+{\color{orange} setup.bat       # Windows}
 \end{alltt}
 
-On shared memory machines, such as most modern laptops, it is possible to run the code in parallel using \verb'openmp'. The number of CPU used is the maximum number of threads allowed by the machine, or the number found in the environment variable \verb'OMP_NUM_THREADS'. To change the value, type
+You should get the response
+
 \begin{alltt}
-{\color{orange}> export OMP_NUM_THREADS=4}
-\end{alltt}
-on the command line. This command affects all other programs running in this session. To set the number for a specific run, prepend the variable definition to your command
-\begin{alltt}
-{\color{orange}> OMP_NUM_THREADS=4 relax --option}
+{\color{orange}Ready to run Relax.}
 \end{alltt}
 
-Some examples of simple calculations are provided in the \verb'examples' directory. For instance, to run the first example, just type
+On shared memory machines, such as most modern laptops and desktops, it is possible to run the code in parallel using \verb'openmp'. The number of CPU's used is the maximum number of threads allowed by the machine, or the number found in the environment variable \verb'OMP_NUM_THREADS'. To change the value, type
 \begin{alltt}
-{\color{orange}> cd examples
-> ./run1.sh}
+{\color{orange} export OMP_NUM_THREADS=4 # Linux and Mac}
+{\color{orange} set OMP_NUM_THREADS=4    # Windows}
+\end{alltt}
+on the command line. This command affects all other programs running
+in this session. On Linux or Mac machines, to set the number for a
+specific run, prepend the variable definition to your command
+\begin{alltt}
+{\color{orange} OMP_NUM_THREADS=4 relax --option # Linux and Mac}
 \end{alltt}
 
-\subsection{Installation from the binary files}
-
-The binary files can be downloaded from the web at \textit{www.geodynamics.org/cig/software/relax}. On a Mac platform, open the \verb`.dmg` bundle (for example, \verb`Relax-Mac-1_0_0.dmg`) and copy the files to a local directory of your choice (\verb`dir`). Then, open a terminal or \verb`X11` window and type the following
+Some examples of simple calculations are provided in the \verb'examples' directory. For instance, to run the first example, change into the \verb'examples' directory and run
 \begin{alltt}
-{\color{orange}> cd dir
-> source setup.sh}
-\end{alltt}
-The Relax software is ready to be used. For example, in the same terminal window, type
-\begin{alltt}
-{\color{orange}> cd examples
-> ./run2.sh}
+{\color{orange} ./run1.sh  # Linux and Mac }
+{\color{orange} ./run1.bat # Windows }
 \end{alltt}
 
-On Windows Vista and Windows 7, uncompress the .zip file to a local directory of your choice. Then, execute the setup file (\verb`setup.bat`). To run an example, go to the 'examples' directory and execute the \verb`run1.bat` script.
-
-On a linux platform, download the compressed tar package to the directory of your choice (dir), then Open a terminal or X11 window and type the following
-\begin{alltt}
-{\color{orange}> cd dir
-> tar -xzvf package.tgz
-> source setup.sh
-}
-\end{alltt}
-
-\section{Creating stand-alone executable files}
-
-\subsection{Mac OS X}
-From Fink, install gmt, fftw, proj, gfortran, and gcc4.6. Then, copy the static libraries from the system directories to the current location:
-\begin{alltt}
-{\color{orange}> cp /sw/lib/gcc4.6/lib/libquadmath.a /sw/lib/gcc4.6/lib/libgfortran.a 
-/sw/lib/gcc4.6/lib/libgomp.a /sw/lib/libgmt.a /sw/lib/libnetcdf.a 
-/sw/lib/libproj.a /sw/lib/libfftw3f.a /sw/lib/libfftw3f_threads.a .}
-\end{alltt}
-Configure and compile the static code with
-\begin{alltt}
-{\color{orange}> CC=/sw/bin/gcc-fsf-4.6 CPPFLAGS="-I/usr/include/netcdf-4" ./waf configure 
---proj-dir=/sw --gmt-dir=/sw --fftw-dir=/sw --use-fftw
-> ./waf}
-\end{alltt}
-and then recompile the executable
-\begin{alltt}
-{\color{orange}> cd build
-> /sw/bin/gfortran relax.f90.1.o types.f90.1.o ctfft.f.1.o fourier.f90.1.o 
-green.f90.1.o elastic3d.f90.1.o friction3d.f90.1.o viscoelastic3d.f90.1.o 
-writevtk.c.1.o writegrd4.2.c.1.o proj.c.1.o export.f90.1.o getdata.f.1.o 
-getopt_m.f90.1.o input.f90.1.o mkl_dfti.f90.1.o -o ../relax -L.. -lgmt 
--lnetcdf -lproj -lfftw3f -lfftw3f_threads -lgomp -lquadmath -lgfortran 
--Wl,-search_paths_first -static-libgcc}
-\end{alltt}
-To verify that everything goes well, check the output with the command 
-\begin{alltt}
-{\color{orange}> otool -L ../relax}
-\end{alltt}
-which should print
-\begin{alltt}
-{\color{NavyBlue}../relax:
-        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current ver
-sion 125.2.11)}
-\end{alltt}
-The code should depend only on this external standard system library, which is available on all Macs.
-
+Alternately, on Windows, you can double-click on \verb'run1.bat' from the file browser.
 
 \section{Modeling a deformation scenario}
 

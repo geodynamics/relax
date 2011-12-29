@@ -1,15 +1,63 @@
-You will need GMT and Proj.  You probably want a fast fft library,
-like FFTW or MKL.  To configure, run
+Before building Relax, you must have
+
+  GMT
+  Proj
+  Python 2.4 or greater
+
+A fast fft library, such as FFTW or MKL, is also highly recommended.
+An implementation of the Cooley-Tukey FFT algorithm is included, but
+it will be significantly slower.
+
+The first step in building Relax is to configure the build system.  Relax uses Waf
+
+  http://code.google.com/p/waf/
+
+for configuration and building.  To configure, run
 
   ./waf configure
 
-If that works, run
+To get basic help and a list of configuration options, run
+
+  ./waf --help
+
+Once configuration works, build Relax with the command
 
   ./waf
 
+As one example, to compile the code on Mac OS X with the Intel fortran
+compiler, the MKL libraries, and the Fink-provided GMT and Proj
+libraries, we configured with the command
 
-The valid environment variables are slightly different from autoconf.
-Specifically, they are
+  ./waf configure --proj-dir=/sw --gmt-dir=/sw --mkl-libdir=/opt/intel/Compiler/11.1/084/Frameworks/mkl/lib/em64t/ --mkl-incdir=/opt/intel/Compiler/11.1/084/Frameworks/mkl/include --check-c-compiler=icc --check-fortran-compiler=ifort
+
+As another example, to build Relax on Caltech's CITerra, we first built and
+install gmt and proj into /home/walter/src/relax/relax-bin.  We then
+configured Relax with the command
+
+  CPPFLAGS="-I/usr/include/netcdf-4" LDFLAGS="-L/usr/lib64" ./waf configure  --proj-dir=/home/walter/src/relax/relax-bin --gmt-dir=/home/walter/src/relax/relax-bin/ --mkl-incdir=/opt/intel/composerxe-2011.1.107/mkl/include/ --mkl-libdir=/opt/intel/composerxe-2011.1.107/mkl/lib/intel64/ --check-c-compiler=icc --check-fortran-compiler=ifort
+
+Depending on how your libraries were built, you may have to set
+LD_LIBRARY_PATH (Linux) or DYLD_LIBRARY_PATH (Mac) so that Relax can
+find them.  For example, on Mac OS X using Fink, you may have to run the command
+
+  export DYLD_LIBRARY_PATH=/sw/lib:/sw/lib/netcdf-gfortran/lib
+
+-------
+Doxygen
+-------
+
+You can generate a doxygen interface with the commands
+
+  mkdir doc
+  doxygen ./doxygen
+
+
+---------------------
+Environment Variables
+---------------------
+
+The valid environment variables for Waf are slightly different from
+autoconf.  Specifically, they are
 
 CFLAGS
 
