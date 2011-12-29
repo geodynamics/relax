@@ -1,29 +1,50 @@
-Static linking
+You will need GMT and Proj.  You probably want a fast fft library,
+like FFTW or MKL.  To configure, run
 
-Mac OS X
---------
+  ./waf configure
 
-From Fink, install gmt, fftw, proj, gfortran, and gcc4.6.  Configure
-with
-
-  CC=/sw/bin/gcc-fsf-4.6 CPPFLAGS="-I/usr/include/netcdf-4" ./waf configure --proj-dir=/sw --gmt-dir=/sw --fftw-dir=/sw --use-fftw
-
-Copy system directories to the current directory.
-
-  cp /sw/lib/gcc4.6/lib/libquadmath.a /sw/lib/gcc4.6/lib/libgfortran.a /sw/lib/gcc4.6/lib/libgomp.a /sw/lib/libgmt.a /sw/lib/libnetcdf.a /sw/lib/libproj.a /sw/lib/libfftw3f.a /sw/lib/libfftw3f_threads.a .
-
-Compile
+If that works, run
 
   ./waf
 
-and then recompile the executable
 
-  cd build
-  /sw/bin/gfortran relax.f90.1.o types.f90.1.o ctfft.f.1.o fourier.f90.1.o green.f90.1.o elastic3d.f90.1.o friction3d.f90.1.o viscoelastic3d.f90.1.o writevtk.c.1.o writegrd4.2.c.1.o proj.c.1.o export.f90.1.o getdata.f.1.o getopt_m.f90.1.o input.f90.1.o mkl_dfti.f90.1.o -o /Users/sbarbot/Documents/src/relax/relax -L.. -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads -lgomp -lquadmath -lgfortran -Wl,-search_paths_first -static-libgcc
+The valid environment variables are slightly different from autoconf.
+Specifically, they are
 
-Then the output of "otool -L ../relax" will give
+CFLAGS
 
-../relax:
-        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 125.2.11)
+    Selects compilation options for when the C compiler is used,
+    e.g. "-Wall".
 
-which is a standard system library available on all Macs.
+CXXFLAGS
+
+    Selects compilation options for when the C++ compiler is used,
+    e.g. "-Wall".
+
+CPPFLAGS
+
+    Selects C preprocessor options, e.g. "-DFOO=bar"
+
+LINKFLAGS
+
+    Extra linker options, e.g. "-L/usr/local -lsome-library"
+
+CC
+
+    The C compiler that will be used instead of the platform
+    default. Example CC=/usr/bin/gcc-2.95
+
+CXX
+
+    The C++ compiler that will be used instead of the platform
+    default. Example CXX=/usr/bin/g++-2.95
+
+FC
+
+    The fortran compiler that will be used instead of the platform
+    default. Example CXX=/usr/bin/gfortran
+
+PREFIX
+
+    The default installation prefix to be used, if no --prefix option
+    is given.

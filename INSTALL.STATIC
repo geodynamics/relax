@@ -1,0 +1,259 @@
+These instructions are only useful if you want to build binaries that
+will run on other people's machines.  If you are only running the
+Relax on your own machine, just read the regular instructions in
+INSTALL.
+
+Static linking
+--------------
+
+After the binaries are built, to actually make the code run on another
+machine, you need to copy
+
+  proj/proj_def.dat
+  gmt/pslib/PS_font_info.d
+  gmt/time/us.d
+  gmt/gmt.conf
+
+into the following structure
+
+  share/time/us.d
+  share/gmt.conf
+  share/pslib/PS_font_info.d
+  share/proj_def.dat
+
+Then before running set the environment variables
+
+  export PROJ_LIB=$PWD/share
+  export GMT_SHAREDIR=$PWD/share
+
+Also, on the Mac, you have to set DYLD_LIBRARY_PATH to point to a
+bundled version of libgcc_s.  There are scripts for this in
+setup_linux.sh, setup_mac.sh, and setup_win.bat.
+
+-------
+Windows
+-------
+
+Install cygwin and the packages gcc4, gcc4-fortran, libhdf5-devel, and
+libfftw3-devel.  libproj-devel is too old.
+
+Download and configure netcdf 4.1.3 with
+
+  ./configure --prefix=/home/walter/src/relax/relax-bin --enable-netcdf4 --disable-shared --disable-fortran --disable-dap
+
+Download and configure GMT 4.5.7 (do not use install-gmt.sh)
+
+  ./configure --prefix=/home/walter/src/relax/relax-bin --enable-netcdf=/home/walter/src/relax/relax-bin LIBS=-lnetcdf -lhdf5_hl -lhdf5 -lz --disable-xgrid --disable-shared --disable-ps
+
+Download and configure Proj 4.7.0
+
+  ./configure --prefix=/home/walter/src/relax/relax-bin --disable-shared
+
+Finally, configure relax
+
+  ./waf configure --use-fftw --gmt-dir=/home/walter/src/relax/relax-bin --proj-dir=/home/walter/src/relax/relax-bin/ --zero-flag=-finit-local-zero
+
+Build relax, cd into build/, and redo the link line
+
+  gcc -Wl,--enable-auto-import -Wl,--enable-auto-import relax.f90.1.o types.f90.1.o ctfft.f.1.o fourier.f90.1.o green.f90.1.o elastic3d.f90.1.o friction3d.f90.1.o viscoelastic3d.f90.1.o writevtk.c.1.o writegrd4.2.c.1.o proj.c.1.o export.f90.1.o getdata.f.1.o getopt_m.f90.1.o input.f90.1.o mkl_dfti.f90.1.o -o /home/walter/src/relax/relax/build/relax.exe -Wl,-rpath,/home/walter/src/relax/relax-bin/lib -Wl,-rpath,/home/walter/src/relax/relax-bin//lib -Wl,-rpath,None -Wl,-Bstatic -Wl,-Bdynamic -L/home/walter/src/relax/relax-bin/lib -L/home/walter/src/relax/relax-bin//lib -LNone -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads /usr/lib/libhdf5_hl.a /usr/lib/libhdf5.a /usr/lib/libz.a `gcc -print-file-name=libgfortran.a` `gcc -print-file-name=libgomp.a`
+
+Running ldd on the binary gives
+
+  $ ldd build/relax.exe 
+	ntdll.dll => /cygdrive/c/Windows/SysWOW64/ntdll.dll (0x77e80000)
+	kernel32.dll => /cygdrive/c/Windows/syswow64/kernel32.dll (0x76130000)
+	KERNELBASE.dll => /cygdrive/c/Windows/syswow64/KERNELBASE.dll (0x75970000)
+	cygwin1.dll => /usr/bin/cygwin1.dll (0x61000000)
+	ADVAPI32.DLL => /cygdrive/c/Windows/syswow64/ADVAPI32.DLL (0x76030000)
+	msvcrt.dll => /cygdrive/c/Windows/syswow64/msvcrt.dll (0x75e20000)
+	sechost.dll => /cygdrive/c/Windows/SysWOW64/sechost.dll (0x75860000)
+	RPCRT4.dll => /cygdrive/c/Windows/syswow64/RPCRT4.dll (0x755f0000)
+	SspiCli.dll => /cygdrive/c/Windows/syswow64/SspiCli.dll (0x75560000)
+	CRYPTBASE.dll => /cygdrive/c/Windows/syswow64/CRYPTBASE.dll (0x75550000)
+	cygfftw3f-3.dll => /usr/bin/cygfftw3f-3.dll (0x64140000)
+	cyggcc_s-1.dll => /usr/bin/cyggcc_s-1.dll (0x6bf40000)
+
+So you will have to include cygwin1.dll, cygfftw3f-3.dll, and
+cyggcc_s-1.dll with the binary.
+
+--------
+Mac OS X
+--------
+
+You will first need a fortran compiler.  Compile gcc 4.6.2 with
+
+  ../gcc-4.6.2/configure --prefix=/Users/walter/src/gcc-4.6.2-bin --enable-languages=c,c++,fortran
+
+Then build and install it.  Set the path to point to the new compiler
+
+  export PATH=/Users/walter/src/gcc-4.6.2-bin/bin:$PATH
+
+Configure HDF5 1.8.8 
+
+  ./configure --prefix=/Users/walter/src/relax/relax-bin --disable-shared --disable-parallel
+
+Configure NetCDF 4.1.3
+
+  ./configure --prefix=/Users/walter/src/relax/relax-bin --enable-netcdf4 --disable-shared CPPFLAGS="-I/Users/walter/src/relax/relax-bin/include" LDFLAGS="-L/Users/walter/src/relax/relax-bin/lib" --disable-fortran --disable-dap
+
+Get the GMT 4.5.7 tarball and configure it directly (do not use install-gmt.sh)
+
+  ./configure --prefix=/Users/walter/src/relax/relax-bin --enable-netcdf=/Users/walter/src/relax/relax-bin LDFLAGS="-L/Users/walter/src/relax/relax-bin/lib" CPPFLAGS="-I/Users/walter/src/relax/relax-bin/include" LIBS="-lnetcdf -lhdf5_hl -lhdf5 -lz" --disable-xgrid --disable-shared --disable-ps
+
+Configure Proj 4.7.0
+
+  ./configure --prefix=/Users/walter/src/relax/relax-bin --disable-shared
+
+Configure FFTW 3.3
+
+  ./configure --enable-threads --disable-openmp --enable-fortran --prefix=/Users/walter/src/relax/relax-bin --enable-single
+
+Finally, configure Relax
+
+  ./waf configure --use-fftw --gmt-dir=/Users/walter/src/relax/relax-bin/ --proj-dir=/Users/walter/src/relax/relax-bin/ --zero-flag="-finit-local-zero" --fftw-dir=/Users/walter/src/relax/relax-bin/
+
+This will fail to link.  cd into build/ and redo the final link with
+
+  gcc relax.f90.1.o types.f90.1.o ctfft.f.1.o fourier.f90.1.o green.f90.1.o elastic3d.f90.1.o friction3d.f90.1.o viscoelastic3d.f90.1.o writevtk.c.1.o writegrd4.2.c.1.o proj.c.1.o export.f90.1.o getdata.f.1.o getopt_m.f90.1.o input.f90.1.o mkl_dfti.f90.1.o -o /Users/walter/src/relax/relax/build/relax -Wl,-rpath,/Users/walter/src/relax/relax-bin//lib -Wl,-rpath,/Users/walter/src/relax/relax-bin//lib -Wl,-rpath,/Users/walter/src/relax/relax-bin//lib   -L/Users/walter/src/relax/relax-bin//lib -L/Users/walter/src/relax/relax-bin//lib -L/Users/walter/src/relax/relax-bin//lib -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads -lhdf5_hl -lhdf5 -lz `gcc -print-file-name=libgomp.a` `gcc -print-file-name=libquadmath.a` `gcc -print-file-name=libgfortran.a` -static-libgcc
+
+
+Running otool -L on it gives
+
+  $ otool -L relax
+  relax:
+        /usr/lib/libz.1.dylib (compatibility version 1.0.0, current version 1.2.3
+)                                                                               
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 
+125.2.11)
+
+which are both provided by the system.
+
+------------------
+Mac OS X with Fink
+------------------
+
+Install gmt, fftw, proj, gfortran, and gcc4.6.  Configure with
+
+  CC=/sw/bin/gcc-fsf-4.6 CPPFLAGS="-I/usr/include/netcdf-4" ./waf configure --proj-dir=/sw --gmt-dir=/sw --fftw-dir=/sw --use-fftw
+
+Copy system directories to the current directory.
+
+  cp /sw/lib/gcc4.6/lib/libquadmath.a /sw/lib/gcc4.6/lib/libgfortran.a /sw/lib/gcc4.6/lib/libgomp.a /sw/lib/libgmt.a /sw/lib/libnetcdf.a /sw/lib/libproj.a /sw/lib/libfftw3f.a /sw/lib/libfftw3f_threads.a .
+
+Compile
+
+  ./waf
+
+and then recompile the executable
+
+  cd build
+  /sw/bin/gfortran relax.f90.1.o types.f90.1.o ctfft.f.1.o fourier.f90.1.o green.f90.1.o elastic3d.f90.1.o friction3d.f90.1.o viscoelastic3d.f90.1.o writevtk.c.1.o writegrd4.2.c.1.o proj.c.1.o export.f90.1.o getdata.f.1.o getopt_m.f90.1.o input.f90.1.o mkl_dfti.f90.1.o -o /Users/sbarbot/Documents/src/relax/relax -L.. -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads -lgomp -lquadmath -lgfortran -Wl,-search_paths_first -static-libgcc
+
+Then the output of "otool -L ../relax" will give
+
+../relax:
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 125.2.11)
+
+which is a standard system library available on all Macs.
+
+-----
+Linux
+-----
+
+Install fftw using apt.  Set the path to use Pylith's compilers
+
+  export PATH=/home/buildbot/install/pylith_linux_x86_64_binbot/bin:$PATH
+
+for io.geodynamics.org or 
+
+  export PATH=/home/buildbot/install/pylith_linux_i686_binbot/bin:$PATH
+
+for nix.geodynamics.org.  You may have to change the permissions of
+the directories, since the binbot likes to make then non-readable to
+the world.
+
+Manually install hdf5 1.8.8 using the configure line
+
+  ./configure --prefix=/home/walter/src/relax/relax-bin --disable-shared --disable-parallel
+
+Then install netcdf 4.1.3 using the configure line
+
+  ./configure --prefix=/home/walter/src/relax/relax-bin --enable-netcdf4 --disable-shared CPPFLAGS="-I/home/walter/src/relax/relax-bin/include" LDFLAGS="-L/home/walter/src/relax/relax-bin/lib" --disable-fortran
+
+Install gmt 4.5.7 using the configure line (do not use install-gmt.sh)
+
+  ./configure --prefix=/home/walter/src/relax/relax-bin --enable-netcdf=/home/walter/src/relax/relax-bin LDFLAGS="-L/home/walter/src/relax/relax-bin/lib" CPPFLAGS="-I/home/walter/src/relax/relax-bin/include" LIBS="-lnetcdf -lhdf5_hl -lhdf5 -lz" --disable-xgrid --disable-shared --disable-ps
+
+Install Proj 4.7.0 with the configure line
+
+  ./configure --prefix=/home/walter/src/relax/relax-bin --disable-shared
+
+Finally, configure relax with the line
+
+  python2.5 waf configure --use-fftw --gmt-dir=/home/walter/src/relax/relax-bin/ --proj-dir=/home/walter/src/relax/relax-bin/ --zero-flag="-finit-local-zero"
+
+Build relax, cd into build/, and redo the link with a command like
+
+  gcc relax.f90.1.o types.f90.1.o ctfft.f.1.o fourier.f90.1.o green.f90.1.o elastic3d.f90.1.o friction3d.f90.1.o viscoelastic3d.f90.1.o writevtk.c.1.o writegrd4.2.c.1.o proj.c.1.o export.f90.1.o getdata.f.1.o getopt_m.f90.1.o input.f90.1.o mkl_dfti.f90.1.o -o /home/walter/src/relax/relax/build/relax -Wl,-rpath,/home/walter/src/relax/relax-bin//lib -Wl,-rpath,/home/walter/src/relax/relax-bin//lib -Wl,-rpath,None -Wl,-Bstatic -Wl,-Bdynamic -L/home/walter/src/relax/relax-bin//lib -L/home/walter/src/relax/relax-bin//lib -lgmt -lnetcdf -lhdf5_hl -lhdf5 -lproj /usr/lib/libfftw3f.a /usr/lib/libfftw3f_threads.a /usr/lib/libz.a `gcc -print-file-name=libgfortran.a` `gcc -print-file-name=libgomp.a` -lm -lpthread -lrt
+
+The changes to the default link line are
+  1) Change gfortran to gcc and add in
+   `gcc -print-file-name=libgfortran.a`
+   `gcc -print-file-name=libquadmath.a`
+  2) Add in hdf5 links.
+  3) Change fftw to static libs.
+  4) Remove -fopenmp and add in
+   `gcc -print-file-name=libgfortran.a`
+  5) add in -lm, -lpthread, and -lrt
+
+Running ldd on the binary gives
+
+  $ ldd relax
+	linux-vdso.so.1 =>  (0x00007fffcc3f6000)
+	libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f9741499000)
+	libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007f974127d000)
+	librt.so.1 => /lib/x86_64-linux-gnu/librt.so.1 (0x00007f9741074000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f9740cf0000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f9741738000)
+
+which are all things provided by the system.
+
+--------------
+Linux Centos 5
+--------------
+
+Log in as buildbot and use the pylith compilers
+
+export CC=/home/buildbot/install/pylith_centos_x86_64_binbot/bin/gcc
+export CXX=/home/buildbot/install/pylith_centos_x86_64_binbot/bin/g++
+export F90=/home/buildbot/install/pylith_centos_x86_64_binbot/bin/gfortran
+export F77=/home/buildbot/install/pylith_centos_x86_64_binbot/bin/gfortran
+export FC=/home/buildbot/install/pylith_centos_x86_64_binbot/bin/gfortran
+
+Configure HDF5
+
+  ./configure --prefix=/home/buildbot/src/relax/relax-bin --disable-shared --disable-parallel
+
+Configure NetCDF 4.1.3
+
+  ./configure --prefix=/home/buildbot/src/relax/relax-bin --enable-netcdf4 --disable-shared CPPFLAGS="-I/home/buildbot/src/relax/relax-bin/include" LDFLAGS="-L/home/buildbot/src/relax/relax-bin/lib" --disable-fortran --disable-dap
+
+Get the GMT 4.5.7 tarball and configure it directly (do not use install-gmt.sh)
+
+  ./configure --prefix=/home/buildbot/src/relax/relax-bin --enable-netcdf=/home/buildbot/src/relax/relax-bin LDFLAGS="-L/home/buildbot/src/relax/relax-bin/lib" CPPFLAGS="-I/home/buildbot/src/relax/relax-bin/include" LIBS="-lnetcdf -lhdf5_hl -lhdf5 -lz" --disable-xgrid --disable-shared --disable-ps
+
+Configure Proj 4.7.0
+
+  ./configure --prefix=/home/buildbot/src/relax/relax-bin --disable-shared
+
+Configure FFTW 3.3
+
+  ./configure --enable-threads --disable-openmp --enable-fortran --prefix=/home/buildbot/src/relax/relax-bin --enable-single
+
+Finally, configure Relax
+
+  ./waf configure --use-fftw --gmt-dir=/home/buildbot/src/relax/relax-bin/ --proj-dir=/home/buildbot/src/relax/relax-bin/ --zero-flag="-finit-local-zero" --fftw-dir=/home/buildbot/src/relax/relax-bin/
+
+This will fail to link.  cd into build/ and redo the final link with
+
+  /home/buildbot/install/pylith_centos_x86_64_binbot/bin/gcc relax.f90.1.o types.f90.1.o ctfft.f.1.o fourier.f90.1.o green.f90.1.o elastic3d.f90.1.o friction3d.f90.1.o viscoelastic3d.f90.1.o writevtk.c.1.o writegrd4.2.c.1.o proj.c.1.o export.f90.1.o getdata.f.1.o getopt_m.f90.1.o input.f90.1.o mkl_dfti.f90.1.o -o /home/buildbot/src/relax/relax/build/relax -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-Bstatic -Wl,-Bdynamic -L/home/buildbot/src/relax/relax-bin//lib -L/home/buildbot/src/relax/relax-bin//lib -L/home/buildbot/src/relax/relax-bin//lib -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads -lhdf5_hl -lhdf5 -lz -lm `$CC -print-file-name=libgfortran.a` `$CC -print-file-name=libgomp.a` -lpthread -lrt
