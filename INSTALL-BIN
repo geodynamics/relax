@@ -1,0 +1,45 @@
+Installing from Binaries
+
+Mac OS X
+--------
+
+1. Open the Relax-Mac-1_0_0 disk image
+2. Copy all the files to a local directory of your choice (dir)
+3. Open Terminal or X11 and type the following
+4. cd dir
+5. source setup.sh
+
+The Relax software is ready to be used. For example,
+in the same terminal window, type:
+
+1. cd examples
+2. ./run2.sh
+
+Windows Vista and Windows 7
+---------------------------
+
+1. Uncompress the .zip file to a local directory of your choice
+2. Execute the setup file
+
+The Relax software is ready to be used. To run an example:
+
+1. go to the 'examples' directory
+2. execute run1.bat
+
+The other examples require a Unix terminal such as provided by Cygwin.
+
+Linux
+-----
+
+1. Download the compressed tar package to the directory of your choice (dir)
+2. Open Terminal or X11 and type the following
+3. cd dir
+4. tar -xzvf package.tgz
+5. source setup.sh
+
+The Relax software is ready to be used. For example,
+in the same terminal window, type:
+
+1. cd examples
+2. ./run2.sh
+

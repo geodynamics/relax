@@ -204,6 +204,7 @@ Both the post-processing and the storage of the simulation are greatly facilitat
 The output of the simulation can be projected on the fly to geographic coordinates, which is convenient to communicate results to others in a global coordinate system. In RELAX, this is performed with the proj4 library. It is recommended to install these libraries on your system.
 
 \subsection{Installation}
+\subsubsection{Installation from the source files}
 
 The compilation procedure, written by Walter Landry, uses Waf, a Python-based framework for configuring, compiling and installing applications. To obtain more information about this installation script, type
 \begin{alltt}
@@ -243,7 +244,7 @@ in the code source directory.
 
 
 
-\subsection{Running the program}
+\subsubsection{Running the program}
 
 When using external libraries, it is required to add to the environment variables \verb'LD_LIBRARY_PATH' the location of the dynamic libraries. For example, on a Mac OS X platform, with libraries installed by Fink, the \verb'LD_LIBRARY_PATH' variable should contain
 \begin{alltt}
@@ -265,7 +266,28 @@ Some examples of simple calculations are provided in the \verb'examples' directo
 > ./run1.sh}
 \end{alltt}
 
+\subsection{Installation from the binary files}
 
+The binary files can be downloaded from the web at \textit{www.geodynamics.org/cig/software/relax}. On a Mac platform, open the \verb`.dmg` bundle (for example, \verb`Relax-Mac-1_0_0.dmg`) and copy the files to a local directory of your choice (\verb`dir`). Then, open a terminal or \verb`X11` window and type the following
+\begin{alltt}
+{\color{orange}> cd dir
+> source setup.sh}
+\end{alltt}
+The Relax software is ready to be used. For example, in the same terminal window, type
+\begin{alltt}
+{\color{orange}> cd examples
+> ./run2.sh}
+\end{alltt}
+
+On Windows Vista and Windows 7, uncompress the .zip file to a local directory of your choice. Then, execute the setup file (\verb`setup.bat`). To run an example, go to the 'examples' directory and execute the \verb`run1.bat` script.
+
+On a linux platform, download the compressed tar package to the directory of your choice (dir), then Open a terminal or X11 window and type the following
+\begin{alltt}
+{\color{orange}> cd dir
+> tar -xzvf package.tgz
+> source setup.sh
+}
+\end{alltt}
 
 \section{Creating stand-alone executable files}
 
