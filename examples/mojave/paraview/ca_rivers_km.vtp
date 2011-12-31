@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<VTKFile type="PolyData" version="0.1">
+  <PolyData>
+    <Piece NumberOfPoints="8" NumberOfLines="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Segment 0" NumberOfComponents="3" format="ascii">
+ 269.008660 -306.068420 0 266.997370 -309.154820 0 261.255940 -311.102220 0 253.928850 -316.935550 0 254.318480 -321.832980 0 251.514430 -327.899260 0 252.490090 -331.440710 0 250.986830 -334.523720 0
+        </DataArray>
+      </Points>
+      <Lines>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="7">
+0 1 2 3 4 5 6 7 
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="8" RangeMax="8">
+          8
+        </DataArray>
+      </Lines>
+    </Piece>
+    <Piece NumberOfPoints="20" NumberOfLines="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Segment 1" NumberOfComponents="3" format="ascii">
+ 277.924210 -221.138130 0 291.419930 -227.637900 0 296.266180 -238.636110 0 302.370110 -240.195830 0 308.266200 -251.681810 0 314.741700 -254.814900 0 319.645500 -260.014420 0 317.355740 -263.697180 0 304.664590 -271.976600 0 289.821920 -272.961490 0 285.284740 -277.605480 0 286.648000 -280.592950 0 281.228610 -284.465470 0 285.229320 -288.006800 0 283.098880 -289.752130 0 283.846660 -292.399700 0 281.689970 -292.724200 0 280.361070 -290.358160 0 277.375810 -292.928640 0 275.807900 -297.776610 0
+        </DataArray>
+      </Points>
+      <Lines>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="19">
+0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="20" RangeMax="20">
+          20
+        </DataArray>
+      </Lines>
+    </Piece>
+    <Piece NumberOfPoints="3" NumberOfLines="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Segment 2" NumberOfComponents="3" format="ascii">
+ 578.232210 534.348040 0 572.076520 533.271250 0 558.949760 535.854420 0
+        </DataArray>
+      </Points>
+      <Lines>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="2">
+0 1 2 
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="3" RangeMax="3">
+          3
+        </DataArray>
+      </Lines>
+    </Piece>
+    <Piece NumberOfPoints="13" NumberOfLines="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Segment 3" NumberOfComponents="3" format="ascii">
+ 552.036910 536.393110 0 544.451600 533.160860 0 534.907030 534.071670 0 529.940070 530.538540 0 515.631580 529.366230 0 505.179410 531.120820 0 499.339670 527.808670 0 493.146770 530.461260 0 485.260620 537.008490 0 480.152160 534.070300 0 473.487890 539.483530 0 468.417310 541.010630 0 468.123950 542.875190 0
+        </DataArray>
+      </Points>
+      <Lines>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="12">
+0 1 2 3 4 5 6 7 8 9 10 11 12 
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="13" RangeMax="13">
+          13
+        </DataArray>
+      </Lines>
+    </Piece>
+    <Piece NumberOfPoints="3" NumberOfLines="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Segment 4" NumberOfComponents="3" format="ascii">
+ 466.834650 542.973960 0 465.238780 539.937150 0 463.900380 543.198660 0
+        </DataArray>
+      </Points>
+      <Lines>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="2">
+0 1 2 
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="3" RangeMax="3">
+          3
+        </DataArray>
+      </Lines>
+    </Piece>
+    <Piece NumberOfPoints="3" NumberOfLines="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Segment 5" NumberOfComponents="3" format="ascii">
+ 458.754260 543.592410 0 458.076290 541.887630 0 455.419840 543.847330 0
+        </DataArray>
+      </Points>
+      <Lines>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="2">
+0 1 2 
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="3" RangeMax="3">
+          3
+        </DataArray>
+      </Lines>
+    </Piece>
+  </PolyData>
+</VTKFile>

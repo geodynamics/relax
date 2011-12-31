@@ -190,7 +190,7 @@ MODULE types
      LOGICAL :: isoutputrelax=.TRUE.
      LOGICAL :: isoutputtxt=.TRUE.
      LOGICAL :: isoutputvtk=.TRUE.
-     LOGICAL :: isoutputvtkrelax=.TRUE.
+     LOGICAL :: isoutputvtkrelax=.FALSE.
      LOGICAL :: isoutputgrd=.TRUE.
      LOGICAL :: isoutputxyz=.TRUE.
      LOGICAL :: isoutputstress=.TRUE.

@@ -57,7 +57,7 @@ CONTAINS
 !$  INTEGER :: omp_get_num_procs,omp_get_max_threads
     REAL*8 :: dummy,dum1,dum2
     REAL*8 :: minlength,minwidth
-    TYPE(OPTION_S) :: opts(11)
+    TYPE(OPTION_S) :: opts(12)
 
     INTEGER :: k,iostatus,i,e
 
@@ -77,9 +77,10 @@ CONTAINS
     opts( 6)=OPTION_S("no-xyz-output",.FALSE.,CHAR(25))
     opts( 7)=OPTION_S("no-stress-output",.FALSE.,CHAR(26))
     opts( 8)=OPTION_S("with-stress-output",.FALSE.,CHAR(27))
-    opts( 9)=OPTION_S("with-vtk-relax-output",.FALSE.,CHAR(28))
-    opts(10)=OPTION_S("dry-run",.FALSE.,CHAR(29))
-    opts(11)=OPTION_S("help",.FALSE.,'h')
+    opts( 9)=OPTION_S("with-vtk-output",.FALSE.,CHAR(28))
+    opts(10)=OPTION_S("with-vtk-relax-output",.FALSE.,CHAR(29))
+    opts(11)=OPTION_S("dry-run",.FALSE.,CHAR(30))
+    opts(12)=OPTION_S("help",.FALSE.,'h')
 
     DO
        ch=getopt("h",opts)
@@ -111,9 +112,12 @@ CONTAINS
           ! option dry-run
           in%isoutputstress=.TRUE.
        CASE(CHAR(28))
-          ! option dry-run
-          in%isoutputvtkrelax=.TRUE.
+          ! option with-output-vtk
+          in%isoutputvtk=.TRUE.
        CASE(CHAR(29))
+          ! option with-output-vtk-relax
+          in%isoutputvtkrelax=.TRUE.
+       CASE(CHAR(30))
           ! option dry-run
           in%isdryrun=.TRUE.
        CASE('h')
@@ -148,6 +152,7 @@ CONTAINS
        PRINT '("   --no-vtk-output         cancel output in Paraview VTK format")'
        PRINT '("   --no-xyz-output         cancel output in GMT xyz format")'
        PRINT '("   --with-stress-output    export stress tensor")'
+       PRINT '("   --with-vtk-output       export output in Paraview VTK format")'
        PRINT '("   --with-vtk-relax-output export relaxation to VTK format")'
        PRINT '("")'
        PRINT '("description:")'
@@ -177,6 +182,19 @@ CONTAINS
 #endif
 !$  PRINT '("     * parallel OpenMP implementation with ",I3.3,"/",I3.3," threads")', &
 !$                  omp_get_max_threads(),omp_get_num_procs()
+#ifdef PROJ
+    IF (in%isoutputproj) THEN
+       PRINT '("     * export to longitude/latitude text format")'
+    ELSE
+       PRINT '("     * export to longitude/latitude text format cancelled (--",a,")")', trim(opts(1)%name)
+    END IF
+#endif
+#ifdef TXT
+    IF (in%isoutputtxt) THEN
+       PRINT '("     * export to TXT format")'
+    ELSE
+       PRINT '("     * export to TXT format cancelled                     (--",a,")")', trim(opts(3)%name)
+    END IF
 #ifdef GRD
     IF (in%isoutputgrd) THEN
        PRINT '("     * export to GRD format")'
@@ -191,12 +209,6 @@ CONTAINS
        PRINT '("     * export to XYZ format cancelled                     (--",a,")")', trim(opts(6)%name)
     END IF
 #endif
-#ifdef TXT
-    IF (in%isoutputtxt) THEN
-       PRINT '("     * export to TXT format")'
-    ELSE
-       PRINT '("     * export to TXT format cancelled                     (--",a,")")', trim(opts(3)%name)
-    END IF
 #endif
 #ifdef VTK
     IF (in%isoutputvtk) THEN
@@ -204,12 +216,8 @@ CONTAINS
     ELSE
        PRINT '("     * export to VTK format cancelled                     (--",a,")")', trim(opts(4)%name)
     END IF
-#endif
-#ifdef PROJ
-    IF (in%isoutputproj) THEN
-       PRINT '("     * export to longitude/latitude text format")'
-    ELSE
-       PRINT '("     * export to longitude/latitude text format cancelled (--",a,")")', trim(opts(1)%name)
+    IF (in%isoutputvtkrelax) THEN
+       PRINT '("     * export relaxation component to VTK format          (--",a,")")', trim(opts(10)%name)
     END IF
 #endif
     PRINT 2000

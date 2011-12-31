@@ -775,6 +775,7 @@ PROGRAM relax
            !CALL exportvtk_vectors_slice(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,filename)
         END IF
         IF (in%isoutputvtkrelax) THEN
+           WRITE (digit,'(I3.3)') oi
            filename=trim(in%wdir)//"/disp-relax-"//digit//".vtk"//char(0)
            title="postseismic displacement vector field"//char(0)
            name="displacement"//char(0)
