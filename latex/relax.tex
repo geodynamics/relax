@@ -56,7 +56,7 @@
 
 \thispagestyle{empty}
 \begin{figure}[!h]
-\centering\includegraphics[width=15.1cm]{cover.eps}
+\centering\includegraphics[width=15.092cm]{cover.eps}
 \end{figure}
 \pagebreak
 
@@ -76,7 +76,7 @@ The open-source program RELAX evaluates the displacement and stress in a half sp
 The possible applications for the earthquake-cycle modeling include i) co-seismic displacement and Coulomb stress calculation, ii) quasi-static stress transfer between earthquakes due to a postseismic transient, iii) modeling of postseismic transients including nonlinear rheologies and multiple mechanisms, iv) cycle of multiple earthquakes and spin-up models, v) loading cycle of lakes or the monsoon.
 
 \section{Acknowledgment}
-We are greatly thankful for the help of Yuri Fialko and Walter Landry, who contributed to the coming about of the software. We appreciate the efforts of Lucile Bruhat, Yaru Hsu, Mikhail Kogan and Baptiste Rousset, for testing an earlier version of the code. The support of CIG is greatly appreciated.
+We are greatly thankful for the help of Yuri Fialko and Walter Landry, who contributed to the coming about of the software. We appreciate the efforts of Lucile Bruhat, Yaru Hsu, Mikhail Kogan, Zhen Liu and Baptiste Rousset for testing an earlier version of the code. The support of CIG is greatly appreciated.
 
 
 \vspace{2.5cm}
@@ -226,7 +226,7 @@ In RELAX, the fault thickness is chosen to be the sampling size $T=\Delta x$. A 
 \section{Setting up the program}
 
 \subsection{Introduction}
-The RELAX code is written in Fortran90 with a few I/O functions written in C. The performance of the code depends greatly on the efficiency of the discrete Fourier transform being used. The program can work with the Cooley-Tukey FFT algorithm, for which the source code is provided. For better performance, it is recommended to use the FFT native to the computer environment. The program can readily use the SGI, the FFTW and the Intel MKL FFTs. While we have found that the Intel MLK FFT provides the most efficient calculation, the package provided by the CIG web site implements FFTW.
+The RELAX code is written in Fortran90 with a few I/O functions written in C. The performance of the code depends greatly on the efficiency of the discrete Fourier transform being used. The program can work with the Cooley-Tukey FFT algorithm, for which the source code is provided. For better performance, it is recommended to use the FFT native to the computer environment. The program can readily use the SGI, the FFTW and the Intel MKL FFTs. While we have found that the Intel MKL FFT provides the most efficient calculation, the package provided by the CIG web site implements FFTW.
 
 Both the post-processing and the storage of the simulation are greatly facilitated by writing output files in the cross-platform NetCDF binary format used by the Generic Mapping Tools (GMT). GMT is convenient to rapidly display the simulation results as it is computed, transform the output into other formats or projections (for example, to project the displacement into the Radar line of sight of a satellite to compare with synthetic aperture radar data), make animations and communicate results. Although RELAX can output in ASCII format, it is recommended to link the code to the GMT 4.5 libraries. A suite of GMT-based post-processing scripts are available in the \verb`util` directory and required GMT to be installed in your system.
 

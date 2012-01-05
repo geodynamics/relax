@@ -217,7 +217,7 @@ CONTAINS
        PRINT '("     * export to VTK format cancelled                     (--",a,")")', trim(opts(4)%name)
     END IF
     IF (in%isoutputvtkrelax) THEN
-       PRINT '("     * export relaxation component to VTK format          (--",a,")")', trim(opts(10)%name)
+       PRINT '("     * export relaxation component to VTK format   (--",a,")")', trim(opts(10)%name)
     END IF
 #endif
     PRINT 2000
@@ -1079,7 +1079,7 @@ CONTAINS
           CALL exportvtk_rfaults(in%events(e),rffilename)
 #endif
           rffilename=trim(in%wdir)//"/rfaults-"//digit//".xy"
-          CALL exportxy_rfaults(in%events(e),rffilename)
+          CALL exportxy_rfaults(in%events(e),in%x0,in%y0,rffilename)
 
           PRINT 2000
        END IF

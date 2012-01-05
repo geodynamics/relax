@@ -1077,8 +1077,9 @@ END SUBROUTINE exportcreep
   !!
   !! \author sylvain barbot 03/05/11 - original form
   !------------------------------------------------------------------
-  SUBROUTINE exportxy_rfaults(e,rffilename)
+  SUBROUTINE exportxy_rfaults(e,x0,y0,rffilename)
     TYPE(EVENT_STRUC), INTENT(IN) :: e
+    REAL*8, INTENT(IN) :: x0, y0
     CHARACTER(80), INTENT(IN) :: rffilename
 
     INTEGER :: iostatus,k
@@ -1109,8 +1110,8 @@ END SUBROUTINE exportcreep
        dip=e%s(k)%dip
 
        ! fault center position
-       x1=e%s(k)%x
-       x2=e%s(k)%y
+       x1=e%s(k)%x+x0
+       x2=e%s(k)%y+y0
        x3=e%s(k)%z
 
        ! fault dimension

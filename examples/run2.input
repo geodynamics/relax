@@ -1,3 +1,9 @@
+# nonlinear viscoelastic relaxation (power exponent n=3)
+# following slip on a strike-slip fault
+#
+# output every two computational steps (Dt = -2). 
+# The time step is computed automatically and the value unchanged (scale = 1)
+#
 # grid size (sx1,sx2,sx3)
 256 256 256
 # sampling size defines the grid spacing in units of distance
@@ -18,7 +24,7 @@ output2
 1 1 8.33e-4
 # integration time refers to the length in units of time of the simulation.
 # integration time (t1)
-100 -1 1
+100 -1 0.5
 # observation planes are arbitrary planes where the inelastic strain rate
 # is sampled for output.
 # number of observation planes
@@ -66,4 +72,3 @@ output2
 # surface loads can be used to model loading of lakes or dams
 # number of surface loads
 0
-
