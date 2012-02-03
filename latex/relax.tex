@@ -235,22 +235,22 @@ The output of the simulation can be projected on the fly to geographic coordinat
 \subsection{Running}
 
 
-The binary packages provided on the CIG website contain everything
-needed to run simulations.  After unpacking the packages, open a
-terminal (or, in Windows, a Command Prompt) and run the setup script
+The binary packages provided on the CIG website contain everything needed to run simulations.  After unpacking the packages, open a terminal (or, in Windows, a Command Prompt) and run the setup script
 \begin{alltt}
-{\color{orange}source setup.sh # for Linux and Mac}
-{\color{orange}setup.bat       # for Windows}
+{\color{orange}source setup.sh}  # for Linux and Mac on bash
+{\color{orange}source setup.csh} # for Linux and Mac on csh
+{\color{orange}setup.bat}        # for Windows
 \end{alltt}
 You should get the response
 \begin{alltt}
 {\color{NavyBlue}Ready to run Relax.}
 \end{alltt}
+On Linux and Mac, you can check which shell is running (\verb`bash` or \verb`csh`) by typing the command \verb`ps -p $$` in a terminal.
 
 On shared memory machines, such as most modern laptops and desktops, it is possible to run the code in parallel using \verb'openmp'. The number of CPU's used is the maximum number of threads allowed by the machine, or the number found in the environment variable \verb'OMP_NUM_THREADS'. To change the value, type
 \begin{alltt}
-{\color{orange}export OMP_NUM_THREADS=4 # for Linux and Mac}
-{\color{orange}set OMP_NUM_THREADS=4    # for Windows}
+{\color{orange}export OMP_NUM_THREADS=4} # for Linux and Mac
+{\color{orange}set OMP_NUM_THREADS=4}    # for Windows
 \end{alltt}
 on the command line. This command affects all other programs running
 in this session. On Linux or Mac machines, to set the number for a
@@ -261,8 +261,8 @@ specific run, prepend the variable definition to your command
 
 Some examples of simple calculations are provided in the \verb'examples' directory. For instance, to run the first example, change into the \verb'examples' directory and run
 \begin{alltt}
-{\color{orange}./run1.sh  # for Linux and Mac }
-{\color{orange}./run1.bat # for Windows }
+{\color{orange}./run1.sh}  # for Linux and Mac
+{\color{orange}./run1.bat} # for Windows
 \end{alltt}
 Alternately, on Windows, you can double-click on \verb'run1.bat' from the file browser.
 
