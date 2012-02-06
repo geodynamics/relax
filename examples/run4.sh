@@ -43,4 +43,4 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time ../relax --no-stress-output --no-proj-output $* < run4.input
+time ../relax --no-stress-output --no-proj-output $* < run4.input | tee $WDIR/in.param

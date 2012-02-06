@@ -1,0 +1,99 @@
+----------------------------------------------------------------------------
+ RELAX: nonlinear postseismic relaxation with Fourier-domain Green's function
+     * Intel MKL implementation of the FFT
+     * parallel OpenMP implementation with 016/016 threads
+     * export to longitude/latitude text format cancelled (--no-proj-output)
+     * export to VTK format
+----------------------------------------------------------------------------
+grid dimension (sx1,sx2,sx3)
+  256  256  256
+sampling (dx1,dx2,dx3), smoothing (beta, nyquist)
+  5.00E-2  5.00E-2  5.00E-2  2.00E-1  1.00E+0
+origin position (x0,y0) and rotation
+  0.00E+0  0.00E+0  0.00E+0
+observation depth (displacement and stress)
+  0.00E+0  0.00E+0
+output directory
+ output3 (time report: output3/time.txt)
+lambda, mu, gamma (gamma = (1 - nu) rho g / mu)
+  1.00E+00  1.00E+00  8.33E-04
+time interval, (positive time step) or (negative skip, scaling)
+  5.00E-1 (output every 001 steps, dt scaled by 1.00E-2)
+number of observation planes
+    1
+----------------------------------------------------------------------------
+no.        x1       x2       x3   length    width strike    dip
+----------------------------------------------------------------------------
+001  -3.00E+0  0.00E+0  5.00E-1  6.00E+0  2.50E+0    0.0   90.0
+number of observation points
+    0
+number of stress observation segments
+    0
+number of prestress interfaces
+    0
+number of linear viscous interfaces
+    0
+number of nonlinear viscous interfaces
+    0
+number of fault creep interfaces
+    1
+----------------------------------------------------------------------------
+no.    depth   gamma0 (a-b)sig friction cohesion
+----------------------------------------------------------------------------
+001  1.00E+0  1.00E+3  1.00E+3  0.00E+0  0.00E+0
+number of afterslip planes
+    1
+----------------------------------------------------------------------------
+no.        x1       x2       x3   length    width strike    dip   rake
+----------------------------------------------------------------------------
+001  -2.00E+0  0.00E+0  1.00E+0  4.00E+0  2.00E+0    0.0   90.0    0.0
+number of inter-seismic strike-slip segments
+    0
+number of inter-seismic tensile segments
+    0
+number of events
+    1
+number of coseismic strike-slip segments
+    1
+----------------------------------------------------------------------------
+no.     slip       xs       ys       zs  length   width strike   dip   rake
+----------------------------------------------------------------------------
+001  1.00E+0 -5.00E-1  0.00E+0  0.00E+0 1.00E+0 1.00E+0    0.0  90.0    0.0
+----------------------------------------------------------------------------
+number of coseismic tensile segments
+    0
+number of coseismic dilatation point sources
+    0
+number of surface loads
+    0
+max sampling size (hor.,vert.): 4.00E-1 4.00E-1
+----------------------------------------------------------------------------
+coseismic event 001
+ I  |   Dt   | tm(ve) | tm(pl) | tm(as) |     t/tmax     | power  |  C:E^i | 
+000* 0.00E+00 0.00E+00 0.00E+00 0.00E+00 0.00E+00/5.00E-1 0.00E+00 1.03E+00
+001* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 2.00E-02/5.00E-1 6.47E-01 1.04E+00
+002* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 4.00E-02/5.00E-1 6.11E-01 1.05E+00
+003* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 6.00E-02/5.00E-1 5.77E-01 1.06E+00
+004* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 8.00E-02/5.00E-1 5.47E-01 1.07E+00
+005* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 1.00E-01/5.00E-1 5.18E-01 1.08E+00
+006* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 1.20E-01/5.00E-1 4.92E-01 1.09E+00
+007* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 1.40E-01/5.00E-1 4.67E-01 1.10E+00
+008* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 1.60E-01/5.00E-1 4.45E-01 1.11E+00
+009* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 1.80E-01/5.00E-1 4.23E-01 1.12E+00
+010* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 2.00E-01/5.00E-1 4.04E-01 1.13E+00
+011* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 2.20E-01/5.00E-1 3.85E-01 1.14E+00
+012* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 2.40E-01/5.00E-1 3.68E-01 1.14E+00
+013* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 2.60E-01/5.00E-1 3.52E-01 1.15E+00
+014* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 2.80E-01/5.00E-1 3.36E-01 1.16E+00
+015* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 3.00E-01/5.00E-1 3.22E-01 1.16E+00
+016* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 3.20E-01/5.00E-1 3.09E-01 1.17E+00
+017* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 3.40E-01/5.00E-1 2.96E-01 1.17E+00
+018* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 3.60E-01/5.00E-1 2.84E-01 1.18E+00
+019* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 3.80E-01/5.00E-1 2.73E-01 1.19E+00
+020* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 4.00E-01/5.00E-1 2.63E-01 1.19E+00
+021* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 4.20E-01/5.00E-1 2.52E-01 1.20E+00
+022* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 4.40E-01/5.00E-1 2.43E-01 1.20E+00
+023* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 4.60E-01/5.00E-1 2.34E-01 1.21E+00
+024* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 4.80E-01/5.00E-1 2.26E-01 1.21E+00
+025* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 5.00E-01/5.00E-1 2.17E-01 1.21E+00
+026* 2.00E-02 1.00E+07 1.00E+07 2.00E+01 5.20E-01/5.00E-1 2.10E-01 1.22E+00
