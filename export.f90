@@ -583,6 +583,132 @@ CONTAINS
   END SUBROUTINE exportoptsdat
     
   !---------------------------------------------------------------------
+  !> subroutine exportPlaneStress
+  !! samples the value of an input tensor field at the location of 
+  !! defined plane (position, strike, dip, length and width).
+  !!
+  !! input variables
+  !! @param sig        - sampled tensor array
+  !! @param nop        - number of observation planes
+  !! @param op         - structure of observation planes (position, orientation)
+  !! @param x0, y0 - origin position of coordinate system
+  !! @param dx1,2,3    - sampling size
+  !! @param sx1,2,3    - size of the scalar field
+  !! @param wdir       - output directory for writing
+  !! @param i          - loop index to suffix file names
+  !!
+  !! creates files 
+  !!
+  !!    wdir/index.s00001.estrain.txt with TXT_EXPORTEIGENSTRAIN option
+  !!
+  !!    wdir/index.s00001.estrain.grd with GRD_EXPORTEIGENSTRAIN option
+  !! 
+  !! \author sylvain barbot (01/01/07) - original form
+  !                         (02/25/10) - output in TXT and GRD formats
+  !---------------------------------------------------------------------
+  SUBROUTINE exportplanestress(sig,nop,op,x0,y0,dx1,dx2,dx3,sx1,sx2,sx3,wdir,i)
+    INTEGER, INTENT(IN) :: nop,sx1,sx2,sx3,i
+    TYPE(PLANE_STRUCT), INTENT(IN), DIMENSION(nop) :: op
+    TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
+    REAL*8, INTENT(IN) :: x0,y0,dx1,dx2,dx3
+    CHARACTER(80), INTENT(IN) :: wdir
+
+    INTEGER :: k,ns1,ns2
+    TYPE(SLIPPATCH_STRUCT), DIMENSION(:,:), ALLOCATABLE :: slippatch
+    CHARACTER(3) :: sdigit
+    CHARACTER(3) :: digit
+#ifdef TXT_EXPORTEIGENSTRAIN
+    INTEGER :: iostatus,i1,i2
+    CHARACTER(80) :: outfiletxt
+#endif
+!#_indef GRD_EXPORTEIGENSTRAIN
+    CHARACTER(80) :: fn11,fn12,fn13,fn22,fn23,fn33
+    INTEGER :: j,iostat,j1,j2
+    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: temp11,temp12,temp13, &
+                                           temp22,temp23,temp33
+    REAL*8 :: rland=9998.,rdum=9999.
+    REAL*8 :: xmin,ymin
+    CHARACTER(80) :: title="monitor tensor field "
+!#_endif
+
+    IF (nop .le. 0) RETURN
+
+    WRITE (digit,'(I3.3)') i
+
+    DO k=1,nop
+       CALL monitorstressfield(op(k)%x,op(k)%y,op(k)%z, &
+            op(k)%width,op(k)%length,op(k)%strike,op(k)%dip, &
+            0._8,sx1,sx2,sx3,dx1,dx2,dx3,sig,slippatch)
+
+       IF (.NOT. ALLOCATED(slippatch)) THEN
+          WRITE_DEBUG_INFO
+          WRITE (0,'("could not monitor slip")')
+          STOP 2
+       END IF
+
+       ns1=SIZE(slippatch,1)
+       ns2=SIZE(slippatch,2)
+          
+       slippatch(:,:)%x1=slippatch(:,:)%x1+x0
+       slippatch(:,:)%x2=slippatch(:,:)%x2+y0
+
+       WRITE (sdigit,'(I3.3)') k
+
+!#_ifdef GRD_EXPORTEIGENSTRAIN
+       fn11=trim(wdir)//"/"//digit//".op"//sdigit//"-s11.grd"
+       fn12=trim(wdir)//"/"//digit//".op"//sdigit//"-s12.grd"
+       fn13=trim(wdir)//"/"//digit//".op"//sdigit//"-s13.grd"
+       fn22=trim(wdir)//"/"//digit//".op"//sdigit//"-s22.grd"
+       fn23=trim(wdir)//"/"//digit//".op"//sdigit//"-s23.grd"
+       fn33=trim(wdir)//"/"//digit//".op"//sdigit//"-s33.grd"
+
+       ! convert to c standard
+       j=INDEX(fn11," ")
+       fn11(j:j)=char(0)
+       fn12(j:j)=char(0)
+       fn13(j:j)=char(0)
+       fn22(j:j)=char(0)
+       fn23(j:j)=char(0)
+       fn33(j:j)=char(0)
+
+       ALLOCATE(temp11(ns1,ns2),temp12(ns1,ns2),temp13(ns1,ns2), &
+                temp22(ns1,ns2),temp23(ns1,ns2),temp33(ns1,ns2),STAT=iostat)
+       IF (iostatus>0) STOP "could not allocate temporary array for GRD slip export."
+
+       DO j2=1,ns2
+          DO j1=1,ns1
+             temp11(ns1+1-j1,j2)=slippatch(j1,j2)%sig%s11
+             temp12(ns1+1-j1,j2)=slippatch(j1,j2)%sig%s12
+             temp13(ns1+1-j1,j2)=slippatch(j1,j2)%sig%s13
+             temp22(ns1+1-j1,j2)=slippatch(j1,j2)%sig%s22
+             temp23(ns1+1-j1,j2)=slippatch(j1,j2)%sig%s23
+             temp33(ns1+1-j1,j2)=slippatch(j1,j2)%sig%s33
+          END DO
+       END DO
+
+       ! xmin is the lowest coordinates (positive eastward in GMT)
+       xmin= MINVAL(slippatch(:,:)%lx)
+       ! ymin is the lowest coordinates (positive northward in GMT)
+       ymin=-MAXVAL(slippatch(:,:)%lz)
+
+       ! call the c function "writegrd_"
+       CALL writegrd(temp11,ns1,ns2,ymin,xmin,dx3,dx2,rland,rdum,title,fn11)
+       CALL writegrd(temp12,ns1,ns2,ymin,xmin,dx3,dx2,rland,rdum,title,fn12)
+       CALL writegrd(temp13,ns1,ns2,ymin,xmin,dx3,dx2,rland,rdum,title,fn13)
+       CALL writegrd(temp22,ns1,ns2,ymin,xmin,dx3,dx2,rland,rdum,title,fn22)
+       CALL writegrd(temp23,ns1,ns2,ymin,xmin,dx3,dx2,rland,rdum,title,fn23)
+       CALL writegrd(temp33,ns1,ns2,ymin,xmin,dx3,dx2,rland,rdum,title,fn33)
+
+       DEALLOCATE(temp11,temp12,temp13,temp22,temp23,temp33)
+
+!#_endif
+
+       DEALLOCATE(slippatch)
+    END DO
+
+END SUBROUTINE exportplanestress
+
+  !---------------------------------------------------------------------
   !> subroutine exportEigenstrain
   !! samples the value of an input scalar field at the location of 
   !! defined plane (position, strike, dip, length and width).

@@ -2664,6 +2664,183 @@ CONTAINS
   END SUBROUTINE plane
 
   !---------------------------------------------------------------------
+  !> function MonitorStressField
+  !! samples a stress field along a specified planar surface.
+  !!
+  !! \author sylvain barbot (10-16-07) - original form
+  !---------------------------------------------------------------------
+  SUBROUTINE monitorstressfield(x,y,z,L,W,strike,dip,beta, &
+       sx1,sx2,sx3,dx1,dx2,dx3,sig,patch)
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3
+    REAL*8, INTENT(IN) :: x,y,z,L,W,strike,dip,beta,dx1,dx2,dx3
+    TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
+    TYPE(SLIPPATCH_STRUCT), ALLOCATABLE, DIMENSION(:,:), INTENT(OUT) :: patch
+
+    INTEGER :: px2,px3,j2,j3,status
+    REAL*8 :: x1,x2,x3,xr,yr,zr,Wp,Lp, &
+         cstrike,sstrike,cdip,sdip
+    TYPE(TENSOR) :: lsig
+
+    cstrike=cos(strike)
+    sstrike=sin(strike)
+    cdip=cos(dip)
+    sdip=sin(dip)
+
+    ! effective tapered dimensions
+    Wp=W*(1._8+2._8*beta) ! horizontal dimension for vertical fault
+    Lp=L*(1._8+2._8*beta) ! depth for a vertical fault
+
+    px3=fix(Lp/dx3)
+    px2=fix(Wp/dx2)
+
+    ALLOCATE(patch(px2+1,px3+1),STAT=status)
+    IF (status>0) STOP "could not allocate the slip patches for export"
+
+    DO j3=1,px3+1
+       DO j2=1,px2+1
+
+          CALL ref2local(x,y,z,xr,yr,zr)
+          
+          ! no translation in out of plane direction
+          yr=REAL(yr)+REAL((DBLE(j2)-DBLE(px2)/2._8-1._8)*dx2)
+          zr=REAL(zr)+REAL((DBLE(j3)-DBLE(px3)/2._8-1._8)*dx3)
+          
+          CALL local2ref(xr,yr,zr,x1,x2,x3)
+          
+          ! discard out-of-bound locations
+          IF (  (x1 .gt. DBLE(sx1/2-1)*dx1) .or. (x1 .lt. -DBLE(sx1/2)*dx1) &
+           .or. (x2 .gt. DBLE(sx2/2-1)*dx2) .or. (x2 .lt. -DBLE(sx2/2)*dx2) &
+           .or. (x3 .gt. DBLE(sx3-1)*dx3) .or. (x3 .lt. 0._8)  ) THEN
+             lsig=TENSOR(0._8,0._8,0._8,0._8,0._8,0._8)
+          ELSE
+             CALL sampletensor(x1,x2,x3,dx1,dx2,dx3,sx1,sx2,sx3,sig,lsig)
+          END IF
+
+          patch(j2,j3)=SLIPPATCH_STRUCT(x1,x2,x3,yr,zr,0._8,0._8,0._8,lsig)
+
+       END DO
+    END DO
+
+  CONTAINS
+
+    !--------------------------------------------------------------
+    !> subroutine sample
+    !! interpolates the value of a discretized 3-dimensional field
+    !! at a subpixel location. method consists in correlating the
+    !! 3D field with a delta function filter. the delta function is
+    !! approximated with a narrow normalized gaussian.
+    !!
+    !! \author sylvain barbot (10-17-07) - original form
+    !--------------------------------------------------------------
+    SUBROUTINE sampletensor(x1,x2,x3,dx1,dx2,dx3,sx1,sx2,sx3,sig,lsig)
+      INTEGER, INTENT(IN) :: sx1,sx2,sx3
+      REAL*8, INTENT(IN) :: x1,x2,x3,dx1,dx2,dx3
+      TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
+      TYPE(TENSOR), INTENT(OUT) :: lsig
+    
+      INTEGER :: i1,i2,i3,i,j,k,l1,l2,l3,i1p,i2p,i3p
+      INTEGER, PARAMETER :: RANGE=2
+      REAL*8 :: sum,weight,x,y,z
+      REAL*8, PARAMETER :: EPS=1e-2
+
+      sum=0._8
+      lsig=TENSOR(0._8,0._8,0._8,0._8,0._8,0._8)
+
+      ! closest sample
+      CALL shiftedindex(x1,x2,x3,sx1,sx2,sx3,dx1,dx2,dx3,i,j,k)
+      ! rounded coordinates of closest sample
+      CALL shiftedcoordinates(i,j,k,sx1,sx2,2*sx3,dx1,dx2,dx3,x,y,z)
+
+      ! no interpolation for node points
+      IF ( (abs(x-x1) .lt. EPS*dx1) .and. &
+           (abs(y-x2) .lt. EPS*dx2) .and. &
+           (abs(z-x3) .lt. EPS*dx3) ) THEN
+         lsig=sig(i,j,k)
+         RETURN
+      END IF
+
+      DO l3=-RANGE,+RANGE
+         ! no periodicity in the 3-direction
+         IF ((k+l3 .le. 0) .or. (k+l3 .gt. sx3)) CYCLE
+
+         IF (l3 .ge. 0) THEN
+            i3p=mod(k-1+l3,sx3)+1
+         ELSE
+            i3p=mod(sx3+k-1+l3,sx3)+1
+         END IF
+
+         DO l2=-RANGE,+RANGE
+            IF (l2 .ge. 0) THEN
+               i2p=mod(j-1+l2,sx2)+1
+            ELSE
+               i2p=mod(sx2+j-1+l2,sx2)+1
+            END IF
+
+            DO l1=-RANGE,+RANGE
+               IF (l1 .ge. 0) THEN
+                  i1p=mod(i-1+l1,sx1)+1
+               ELSE
+                  i1p=mod(sx1+i-1+l1,sx1)+1
+               END IF
+
+               weight=sinc(((x+l1*dx1)-x1)/dx1)*dx1 &
+                     *sinc(((y+l2*dx2)-x2)/dx2)*dx2 &
+                     *sinc(((z+l3*dx3)-x3)/dx3)*dx3
+
+               !weight=gauss((x+l1*dx1)-x1,dx1)*dx1 &
+               !      *gauss((y+l2*dx2)-x2,dx2)*dx2 &
+               !      *gauss((z+l3*dx3)-x3,dx3)*dx3
+
+               lsig=lsig.plus.(REAL(weight).times.sig(i1p,i2p,i3p))
+               sum  =sum  +weight
+
+            END DO
+         END DO
+      END DO
+      IF (sum .gt. 1e-6) lsig=REAL(1._8/sum).times.lsig
+
+    END SUBROUTINE sampletensor
+
+    !-----------------------------------------------
+    ! subroutine ref2local
+    ! convert reference Cartesian coordinates into
+    ! the rotated, local fault coordinates system.
+    !-----------------------------------------------
+    SUBROUTINE ref2local(x,y,z,xp,yp,zp)
+      REAL*8, INTENT(IN) :: x,y,z
+      REAL*8, INTENT(OUT) :: xp,yp,zp
+
+      REAL*8 :: x2
+
+      x2 = cstrike*x  -sstrike*y
+      xp = cdip   *x2 -sdip   *z
+      yp = sstrike*x  +cstrike*y
+      zp = sdip   *x2 +cdip   *z
+
+    END SUBROUTINE ref2local
+
+    !-----------------------------------------------
+    ! subroutine local2ref
+    ! converts a set of coordinates from the rotated
+    ! fault-aligned coordinate system into the
+    ! reference, Cartesian coordinates system.
+    !-----------------------------------------------
+    SUBROUTINE local2ref(xp,yp,zp,x,y,z)
+      REAL*8, INTENT(IN) :: xp,yp,zp
+      REAL*8, INTENT(OUT) :: x,y,z
+
+      REAL*8 :: x2p
+
+      x2p=  cdip*xp+sdip*zp
+      x  =  cstrike*x2p+sstrike*yp
+      y  = -sstrike*x2p+cstrike*yp
+      z  = -sdip*xp    +cdip*zp
+
+    END SUBROUTINE local2ref
+
+  END SUBROUTINE monitorstressfield
+
+  !---------------------------------------------------------------------
   !> function MonitorField
   !! samples a scalar field along a specified planar surface.
   !!
@@ -2683,6 +2860,9 @@ CONTAINS
     INTEGER :: px2,px3,j2,j3,status
     REAL*8 :: x1,x2,x3,xr,yr,zr,Wp,Lp, &
          cstrike,sstrike,cdip,sdip,value
+    TYPE(TENSOR) :: sig0
+
+    sig0=TENSOR(0._8,0._8,0._8,0._8,0._8,0._8)
 
     cstrike=cos(strike)
     sstrike=sin(strike)
@@ -2719,7 +2899,7 @@ CONTAINS
              CALL sample(x1,x2,x3,dx1,dx2,dx3,sx1,sx2,sx3,slip,value)
           END IF
 
-          patch(j2,j3)=SLIPPATCH_STRUCT(x1,x2,x3,yr,zr,value,0._8,0._8)
+          patch(j2,j3)=SLIPPATCH_STRUCT(x1,x2,x3,yr,zr,value,0._8,0._8,sig0)
 
        END DO
     END DO

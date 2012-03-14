@@ -462,7 +462,7 @@ CONTAINS
           CALL local2ref(xr,yr,zr,x1,x2,x3)
 
           ! initialize zero slip velocity
-          patch(j2,j3)=SLIPPATCH_STRUCT(x1,x2,x3,yr,zr,0._8,0._8,0._8)
+          patch(j2,j3)=SLIPPATCH_STRUCT(x1,x2,x3,yr,zr,0._8,0._8,0._8,s)
 
           ! discard out-of-bound locations
           IF (  (x1 .GT. DBLE(sx1/2-1)*dx1) .OR. (x1 .LT. -DBLE(sx1/2)*dx1) &

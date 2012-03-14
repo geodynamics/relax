@@ -898,7 +898,8 @@ CONTAINS
        ALLOCATE(in%inter%ts(in%inter%nt),in%inter%tsc(in%inter%nt),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate the tensile source list"
        PRINT 2000
-       PRINT '(a)',"no. opening xs ys zs  length width  strike dip"
+       PRINT '(a)',"no.  opening       xs       ys       ", &
+                   "zs  length   width strike   dip"
        PRINT 2000
        DO k=1,in%inter%nt
           CALL getdata(iunit,dataline)

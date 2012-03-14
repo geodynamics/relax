@@ -1,7 +1,7 @@
 Before building Relax, you must have
 
-  GMT
-  Proj
+  GMT 4.5 or greater
+  Proj 4.7.1 or greater
   Python 2.4 or greater
 
 A fast fft library, such as FFTW or MKL, is also highly recommended.

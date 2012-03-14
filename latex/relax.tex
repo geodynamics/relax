@@ -75,7 +75,7 @@ The open-source program RELAX evaluates the displacement and stress in a half sp
 
 The possible applications for the earthquake-cycle modeling include i) co-seismic displacement and Coulomb stress calculation, ii) quasi-static stress transfer between earthquakes due to a postseismic transient, iii) modeling of postseismic transients including nonlinear rheologies and multiple mechanisms, iv) cycle of multiple earthquakes and spin-up models, v) loading cycle of lakes or the monsoon.
 
-\section{Acknowledgment}
+\section{Acknowledgments}
 We are greatly thankful for the help of Yuri Fialko and Walter Landry, who contributed to the coming about of the software. We appreciate the efforts of Lucile Bruhat, Yaru Hsu, Mikhail Kogan, Zhen Liu and Baptiste Rousset for testing an earlier version of the code. The support of CIG is greatly appreciated.
 
 
@@ -228,9 +228,9 @@ In RELAX, the fault thickness is chosen to be the sampling size $T=\Delta x$. A 
 \subsection{Introduction}
 The RELAX code is written in Fortran90 with a few I/O functions written in C. The performance of the code depends greatly on the efficiency of the discrete Fourier transform being used. The program can work with the Cooley-Tukey FFT algorithm, for which the source code is provided. For better performance, it is recommended to use the FFT native to the computer environment. The program can readily use the SGI, the FFTW and the Intel MKL FFTs. While we have found that the Intel MKL FFT provides the most efficient calculation, the package provided by the CIG web site implements FFTW.
 
-Both the post-processing and the storage of the simulation are greatly facilitated by writing output files in the cross-platform NetCDF binary format used by the Generic Mapping Tools (GMT). GMT is convenient to rapidly display the simulation results as it is computed, transform the output into other formats or projections (for example, to project the displacement into the Radar line of sight of a satellite to compare with synthetic aperture radar data), make animations and communicate results. Although RELAX can output in ASCII format, it is recommended to link the code to the GMT 4.5 libraries. A suite of GMT-based post-processing scripts are available in the \verb`util` directory and required GMT to be installed in your system.
+Both the post-processing and the storage of the simulation are greatly facilitated by writing output files in the cross-platform NetCDF binary format used by the Generic Mapping Tools (GMT). GMT is convenient to rapidly display the simulation results as it is computed, transform the output into other formats or projections (for example, to project the displacement into the Radar line of sight of a satellite to compare with synthetic aperture radar data), make animations and communicate results. Although RELAX can output in ASCII format, it is recommended to link the code to the GMT 4.5 libraries. A suite of GMT-based post-processing scripts are available in the \verb`util` directory and require GMT to be installed in your system.
 
-The output of the simulation can be projected on the fly to geographic coordinates, which is convenient to communicate results to others in a global coordinate system. In RELAX, this is performed with the proj4 library. It is recommended to install these libraries on your system to facilitate post processing.
+The output of the simulation can be projected on the fly to geographic coordinates, which is convenient to communicate results to others in a global coordinate system. In RELAX, this is performed with the Proj4 library (Proj4.7.1 or higher). It is recommended to install these libraries on your system to facilitate post processing.
 
 \subsection{Running}
 
@@ -788,6 +788,120 @@ Let's look at the postseismic relaxation due to the stress perturbation caused b
 \end{figure*}
 %
 
+\pagebreak
+\section{Using Paraview with Relax}
+
+This section offers a short introduction to using \verb`Paraview` to visualize three-dimensional objects and simulations. \verb`Paraview` also offers a convenient way to check the geometry of the models, including the input slip models and the relative position of other boundaries (viscous layers, ductile zone anomalies, receiver stress faults for Coulomb stress calculation). 
+
+The first example uses the output created by the Coulomb stress calculation in the \verb`examples/mojave` directory. To run the example, type
+\begin{verbatim}
+cd examples/mojave
+./coulomb.sh
+\end{verbatim}
+in a terminal. You can interrupt the program after this line appears
+\begin{verbatim}
+coseismic event 001
+ I  |   Dt   | tm(ve) | tm(pl) | tm(as) |     t/tmax     | power  |  C:E^i |
+000* 0.00E+00 0.00E+00 0.00E+00 0.00E+00 0.00E+00/2.00E+1 0.00E+00 3.60E+03
+\end{verbatim}
+as we only need the coseismic model. Figures~\ref{fig:cgrid-1} to \ref{fig:coulomb} show the procedure to import and visualize the model. First, load the computational extent of the model (Figs.~\ref{fig:cgrid-1} and \ref{fig:cgrid-2}). Then, load the source patches of the deformation (Fig.~\ref{fig:rfaults}). Use the \verb`Rescale to Data Range` and/or \verb`Edit Color Map...` controls in the \verb`Display` tab, if necessary. When running your first models, these first steps are a good way to verify the accuracy of the input geometry. Lastly, load the receiver faults and adjust the color scale (Fig.~\ref{fig:coulomb}). The stress calculation includes several projections of the stress tensor at the receiver fault location, including normal, shear and Coulomb stress, shear stress in the strike and dip direction, and the full stress tensor. Additional post-processing calculations can be done with the \verb`Calculator` filter.
+
+The second example uses a model of the viscoelastic relaxation that follows the 1992 Mw 7.3 Landers earthquake. To run the simulation with the \verb`Paraview` output, type
+\begin{verbatim}
+./landers.sh --with-vtk-output --with-vtk-relax-output
+\end{verbatim}
+The first option, \verb`--with-vtk-output`, enforces the output in \verb`vtk` format, which is cancelled in \verb`landers.sh`; the second option, \verb`--with-vtk-relax-output` exports the relaxation contribution for three-dimensional visualization. The relaxation contribution is the total deformation, both elastic and viscoelastic, minus the coseismic deformation. This example also produces the output of the first one, so it is possible to reproduce the same steps. Additionally, you can load the three-dimensional coseismic displacement field (\verb`disp-..vtk`), and create the vector field using the \verb`Glyph` filter (Figs.~\ref{fig:disp-1} and \ref{fig:disp-2}). To look at the relaxation component, load \verb`disp-relax-..vtk`. You can then directly create a vector field, or you can decimate the data set to make the plot less dense (Fig.~\ref{fig:extract}). To plot the postseismic vector field, it is more convenient to move to another time step (postseismic component is zero by definition at time step zero). You can then apply the \verb`Glyph` filter on the data subset (Fig.~\ref{fig:disp-relax}). Finally, you can load the California faults trace or the UCERF three-dimensional fault model using the ancillary files located in \verb`examples/mojave/paraview`.
+
+
+
+%
+\begin{figure*}
+\begin{center}
+\includegraphics[width=\textwidth]{paraview-cgrid-1.png}
+\end{center}
+\small
+\caption{Open the file containing the spatial extent of the computational domain.}
+\label{fig:cgrid-1}
+\end{figure*}
+%
+
+%
+\begin{figure*}
+\begin{center}
+\includegraphics[width=\textwidth]{paraview-cgrid-2.png}
+\end{center}
+\small
+\caption{Change the representation to wireframe to display online the boundary of the rectangular volume.}
+\label{fig:cgrid-2}
+\end{figure*}
+%
+
+%
+\begin{figure*}
+\begin{center}
+\includegraphics[width=\textwidth]{paraview-rfaults.png}
+\end{center}
+\small
+\caption{Load the Landers slip model and color by the amplitude of slip. Rescale to data range in the ``display'' menu, if necessary.}
+\label{fig:rfaults}
+\end{figure*}
+%
+
+%
+\begin{figure*}
+\begin{center}
+\includegraphics[width=\textwidth]{paraview-coulomb.png}
+\end{center}
+\small
+\caption{Load the receiver faults, in the case the Hector Mine ruptured faults, and color by one in: shear, normal, Coulomb, strike-direction shear, dip-direction shear stresses. Rescale to data range in the ``Display'' window, if necessary.}
+\label{fig:coulomb}
+\end{figure*}
+%
+
+
+%
+\begin{figure*}
+\begin{center}
+\includegraphics[width=\textwidth]{paraview-disp-1.png}
+\end{center}
+\small
+\caption{Load the displacement field (disp-0* appears on the ``Pipeline Browser'') and apply the ``Glyph'' filter.}
+\label{fig:disp-1}
+\end{figure*}
+%
+
+%
+\begin{figure*}
+\begin{center}
+\includegraphics[width=\textwidth]{paraview-disp-2.png}
+\end{center}
+\small
+\caption{Adjust the scale factor, points masking and random mode and set the color to ``GlyphVector''.}
+\label{fig:disp-2}
+\end{figure*}
+%
+
+%
+\begin{figure*}
+\begin{center}
+\includegraphics[width=\textwidth]{paraview-extract.png}
+\end{center}
+\small
+\caption{Load the relaxation component of the deformation (``disp-relax-0*'' appears on the ``Pipeline Browser''), then decimate the data set to prepare for a larger displacement field vector. To take one every four points, adjust the ``Sample Rate I'' accordingly.}
+\label{fig:extract}
+\end{figure*}
+%
+
+%
+\begin{figure*}
+\begin{center}
+\includegraphics[width=\textwidth]{paraview-disp-relax.png}
+\end{center}
+\small
+\caption{Apply the ``Glyph'' filter on the ``ExtractSubset1'' new data set, then change the color scale to ``GlyphVector'' and cancel the visibility of the ``ExtractSubset1'', the ``disp-relax-00*'' datasets (check out the eye controls).}
+\label{fig:disp-relax}
+\end{figure*}
+%
 
 \pagebreak
 \bibliography{../../../latex/reference}

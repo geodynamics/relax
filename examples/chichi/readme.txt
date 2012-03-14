@@ -46,3 +46,10 @@ To localize the 3-d deformation in paraview, load
   aplane-001.vtp (afterslip plane)
   vel-..vtk
 
+Our preferred model can be simulated with
+
+./coupled.sh
+
+a figure of the observed and modeled deformation can be generated with:
+
+grdmap.sh -t 50 -b -110/110/-150/180 -p -0.2/0.2/0.01 -v 0.15 -s 10 -e ./efaults.sh -e ./ecoast.sh -e rpatch.sh -e ./econtour.sh -e ./epgps.sh -e ./eopts.sh -Y -0.6 -u m coupled/200-relax-up.grd

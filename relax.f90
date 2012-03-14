@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright 2007, 2008, 2009 Sylvain Barbot
+! Copyright 2007-2012, Sylvain Barbot
 !
 ! This file is part of RELAX
 !
@@ -409,6 +409,7 @@ PROGRAM relax
 
   ! export initial stress
 #ifdef GRD
+  CALL exportplanestress(sig,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
   IF (in%isoutputgrd .AND. in%isoutputstress) THEN
      CALL exportstressgrd(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
                           in%ozs,in%x0,in%y0,in%wdir,0)

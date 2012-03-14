@@ -201,7 +201,7 @@ echo $self: using colorfile $cptfile
 if [ "$pset" != "1" ]; then
 	# cool, copper, gebco, globe, gray, haxby, hot, jet, no_green, ocean
 	# polar, rainbow, red2green, relief, topo, sealand, seis, split, wysiwyg  
-	PSSCALE=`grdinfo $U3 -C | awk 'function abs(x){return x<0?-x:x}{if (abs($6) >= abs($7)) print abs($6); else print abs($7)}'`
+	PSSCALE=`grdinfo $U3 -C | awk 'function abs(x){return x<0?-x:x}{if (abs($6) >= abs($7)) print abs($6)/2; else print abs($7)/2}'`
 	if [ "0" == $PSSCALE ]; then
 		grd2cpt $U3 -C$cptfile -Z -T= -L-1/1 > $colors
 		PSSCALE=0.5

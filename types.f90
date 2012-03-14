@@ -66,6 +66,7 @@ MODULE types
   TYPE SLIPPATCH_STRUCT
      SEQUENCE
      REAL*8 :: x1,x2,x3,lx,lz,slip,ss,ds
+     TYPE(TENSOR) :: sig
   END TYPE SLIPPATCH_STRUCT
 
   TYPE EVENT_STRUC
