@@ -179,10 +179,14 @@
   !!
   !! \todo 
   !!   - homogenize VTK output so that geometry of events match event index
-  !!   - evaluate Green function, stress and body forces in GPU
+  !!   - evaluate Green's function, stress and body forces in GPU
   !!   - write the code for MPI multi-thread
   !!   - fix the vtk export to grid for anisotropic sampling
   !!   - export position of observation points to long/lat in opts-geo.dat
+  !!   - check the projected output on the south hemisphere
+  !!   - check the fully-relaxed afterslip for uniform stress change
+  !!   - include topography of parameter interface
+  !!   - export afterslip output in VTK
   !------------------------------------------------------------------------
 PROGRAM relax
 

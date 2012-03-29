@@ -7,6 +7,8 @@
  * proj routine to convert arrays of UTM coordinates
  * to longitude/latitude using the PROJ.4 library
  *
+ * to do: check the output in the south hemisphere
+ *
  * sylvain barbot (22/05/10) - original form
  */
 
