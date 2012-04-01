@@ -25,7 +25,7 @@ fi
 #   qsub ./run1-pbs.sh
 #
 
-mpiexec -n 8 relax <<EOF
+mpiexec -n 8 ../../build/relax <<EOF
 # use '#' character to include comments in your input file
 # grid size (sx1,sx2,sx3)
 256 256 256

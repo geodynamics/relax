@@ -402,14 +402,14 @@ CONTAINS
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
     REAL*8, INTENT(IN) :: x,y,z,L,W,strike,rake,dip,beta,dx1,dx2,dx3
     TYPE(TENSOR), DIMENSION(sx1,sx2,sx3), INTENT(IN) :: sig
-    TYPE(SLIPPATCH_STRUCT), ALLOCATABLE, DIMENSION(:,:), INTENT(OUT) :: patch
+    TYPE(SLIPPATCH_STRUCT), ALLOCATABLE, DIMENSION(:,:), INTENT(INOUT) :: patch
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
 
     INTEGER :: i1,i2,i3,px2,px3,j2,j3,status
     REAL*8 :: cstrike,sstrike,cdip,sdip,cr,sr
     REAL*8 :: vo,tauc,taun,taus, &
          friction,tau,cohesion
-    REAL*8 :: x1,x2,x3,xr,yr,zr,Wp,Lp
+    REAL*8 :: x1,x2,x3,xr,yr,zr
     TYPE(TENSOR) :: s
     REAL*8, DIMENSION(3) :: t,ts,n,sv,dv,r
 
@@ -426,17 +426,9 @@ CONTAINS
     ! dip direction vector
     dv=(/ -cstrike*sdip, +sstrike*sdip, -cdip /)
 
-    ! effective tapered dimensions
-    Wp=W*(1._8+2._8*beta) ! horizontal dimension for vertical fault
-    Lp=L*(1._8+2._8*beta) ! depth for a vertical fault
-
     ! number of samples in the dip and strike direction
-    px3=fix(L/dx3)
-    px2=fix(W/dx2)
-
-    ! allocate array of measurements
-    ALLOCATE(patch(px2+1,px3+1),STAT=status)
-    IF (status>0) STOP "could not allocate the slip patches for export"
+    px2=SIZE(patch,1)
+    px3=SIZE(patch,2)
 
     ! surface normal vector components
     n(1)=+cdip*cstrike
@@ -449,9 +441,9 @@ CONTAINS
     r(3)=cdip*sr
 
     ! loop in the dip direction
-    DO j3=1,px3+1
+    DO j3=1,px3
        ! loop in the strike direction
-       DO j2=1,px2+1
+       DO j2=1,px2
 
           CALL ref2local(x,y,z,xr,yr,zr)
           
@@ -462,7 +454,8 @@ CONTAINS
           CALL local2ref(xr,yr,zr,x1,x2,x3)
 
           ! initialize zero slip velocity
-          patch(j2,j3)=SLIPPATCH_STRUCT(x1,x2,x3,yr,zr,0._8,0._8,0._8,s)
+          patch(j2,j3)=SLIPPATCH_STRUCT(x1,x2,x3,yr,zr,0._8,0._8,0._8, &
+                                        0._8,0._8,0._8,0._8,s)
 
           ! discard out-of-bound locations
           IF (  (x1 .GT. DBLE(sx1/2-1)*dx1) .OR. (x1 .LT. -DBLE(sx1/2)*dx1) &
@@ -495,17 +488,23 @@ CONTAINS
           ! rake direction test only if | rake | < 3*Pi
           IF (SUM(ts*r).LT.0.d0 .AND. ABS(rake).LT.pi2*1.5d0) CYCLE
 
+          ! shear stress
+          patch(j2,j3)%taus=taus
+
           ! creep rate
           patch(j2,j3)%slip=vo*2._8*sinh(tau/tauc)
+          patch(j2,j3)%v=vo*2._8*sinh(tau/tauc)
 
           ! shear traction direction
           ts=ts/taus
 
           ! strike-direction creep rate
           patch(j2,j3)%ss=patch(j2,j3)%slip*SUM(ts*sv)
+          patch(j2,j3)%vss=patch(j2,j3)%v*SUM(ts*sv)
 
           ! dip-direction creep rate
           patch(j2,j3)%ds=patch(j2,j3)%slip*SUM(ts*dv)
+          patch(j2,j3)%vds=patch(j2,j3)%v*SUM(ts*dv)
 
        END DO
     END DO

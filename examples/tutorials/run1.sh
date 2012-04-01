@@ -66,4 +66,4 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-OMP_NUM_THREADS=4 ../relax $* < run1.input | tee $WDIR/in.param
+OMP_NUM_THREADS=4 ../../build/relax $* < run1.input | tee $WDIR/in.param

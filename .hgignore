@@ -1,6 +1,6 @@
 syntax: glob
 
-relax
+.waf-1.6.8-*
 *~
 *.o
 *.mod
@@ -12,10 +12,10 @@ build/
 examples/.gmtcommands4
 examples/.gmtdefaults4
 examples/.DS_Store
-examples/output1
-examples/output2
-examples/output3
-examples/output4
+examples/tutorials/output1
+examples/tutorials/output2
+examples/tutorials/output3
+examples/tutorials/output4
 examples/mojave/coulomb
 latex/relax.aux
 latex/relax.blg

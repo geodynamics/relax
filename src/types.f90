@@ -26,11 +26,6 @@ MODULE types
      REAL*8 :: slip,x,y,z,width,length,strike,dip,rake,period,phase,beta
   END TYPE SOURCE_STRUCT
 
-  TYPE PLANE_STRUCT
-     SEQUENCE
-     REAL*8 :: x,y,z,width,length,strike,dip,rake
-  END TYPE PLANE_STRUCT
-
   TYPE LAYER_STRUCT
      SEQUENCE
      REAL*8 :: z,gammadot0,stressexponent,cohesion,friction
@@ -65,9 +60,26 @@ MODULE types
 
   TYPE SLIPPATCH_STRUCT
      SEQUENCE
-     REAL*8 :: x1,x2,x3,lx,lz,slip,ss,ds
+     ! absolute position
+     REAL*8 :: x1,x2,x3
+     ! relative position (strike and dip directions)
+     REAL*8 :: lx,lz
+     ! cumulative slip (total, strike and dip slip)
+     REAL*8 :: slip,ss,ds
+     ! instantaneous velocity
+     REAL*8 :: v,vss,vds
+     ! shear stress
+     REAL*8 :: taus
+     ! stress tensor
      TYPE(TENSOR) :: sig
   END TYPE SLIPPATCH_STRUCT
+
+  TYPE PLANE_STRUCT
+     SEQUENCE
+     REAL*8 :: x,y,z,width,length,strike,dip,rake
+     INTEGER :: px2,px3
+     TYPE(SLIPPATCH_STRUCT), DIMENSION(:,:), ALLOCATABLE :: patch
+  END TYPE PLANE_STRUCT
 
   TYPE EVENT_STRUC
      REAL*8 :: time

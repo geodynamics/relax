@@ -86,4 +86,4 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time ../relax --no-proj-output --no-stress-output $* < run3.input | tee $WDIR/in.param
+time ../../build/relax --no-proj-output --no-stress-output $* < run3.input | tee $WDIR/in.param

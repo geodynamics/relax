@@ -2716,7 +2716,8 @@ CONTAINS
              CALL sampletensor(x1,x2,x3,dx1,dx2,dx3,sx1,sx2,sx3,sig,lsig)
           END IF
 
-          patch(j2,j3)=SLIPPATCH_STRUCT(x1,x2,x3,yr,zr,0._8,0._8,0._8,lsig)
+          patch(j2,j3)=SLIPPATCH_STRUCT(x1,x2,x3,yr,zr, &
+                                        0._8,0._8,0._8,0._8,0._8,0._8,0._8,lsig)
 
        END DO
     END DO
@@ -2899,7 +2900,8 @@ CONTAINS
              CALL sample(x1,x2,x3,dx1,dx2,dx3,sx1,sx2,sx3,slip,value)
           END IF
 
-          patch(j2,j3)=SLIPPATCH_STRUCT(x1,x2,x3,yr,zr,value,0._8,0._8,sig0)
+          patch(j2,j3)=SLIPPATCH_STRUCT(x1,x2,x3,yr,zr,value,0._8,0._8, &
+                                        0._8,0._8,0._8,0._8,sig0)
 
        END DO
     END DO

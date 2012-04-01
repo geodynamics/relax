@@ -871,14 +871,13 @@ END SUBROUTINE exporteigenstrain
   SUBROUTINE exportcreep(np,n,beta,sig,structure, &
                          sx1,sx2,sx3,dx1,dx2,dx3,x0,y0,wdir,i)
     INTEGER, INTENT(IN) :: np,sx1,sx2,sx3,i
-    TYPE(PLANE_STRUCT), INTENT(IN), DIMENSION(np) :: n
+    TYPE(PLANE_STRUCT), INTENT(INOUT), DIMENSION(np) :: n
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
     REAL*8, INTENT(IN) :: x0,y0,dx1,dx2,dx3,beta
     CHARACTER(80), INTENT(IN) :: wdir
 
     INTEGER :: k,ns1,ns2,pos
-    TYPE(SLIPPATCH_STRUCT), DIMENSION(:,:), ALLOCATABLE :: slippatch
     CHARACTER(5) :: sdigit
     CHARACTER(3) :: digit
 #ifdef TXT_EXPORTCREEP
@@ -902,13 +901,13 @@ END SUBROUTINE exporteigenstrain
     DO k=1,np
        CALL monitorfriction(n(k)%x,n(k)%y,n(k)%z, &
             n(k)%width,n(k)%length,n(k)%strike,n(k)%dip,n(k)%rake,beta, &
-            sx1,sx2,sx3,dx1,dx2,dx3,sig,structure,slippatch)
+            sx1,sx2,sx3,dx1,dx2,dx3,sig,structure,n(k)%patch)
 
-       ns1=SIZE(slippatch,1)
-       ns2=SIZE(slippatch,2)
+       ns1=SIZE(n(k)%patch,1)
+       ns2=SIZE(n(k)%patch,2)
           
-       slippatch(:,:)%x1=slippatch(:,:)%x1+x0
-       slippatch(:,:)%x2=slippatch(:,:)%x2+y0
+       !patch(:,:)%x1=patch(:,:)%x1+x0
+       !patch(:,:)%x2=patch(:,:)%x2+y0
 
        WRITE (sdigit,'(I5.5)') k
 #ifdef TXT_EXPORTCREEP
@@ -919,7 +918,7 @@ END SUBROUTINE exporteigenstrain
           
        WRITE (15,'("#        x1         x2         x3          yr        yz", &
                    "       slip strike-slip  dip-slip")')
-       WRITE (15,'(8ES11.3E2)') ((slippatch(i1,i2), i1=1,ns1,skip), i2=1,ns2,skip)
+       WRITE (15,'(8ES11.3E2)') ((n(k)%patch(i1,i2), i1=1,ns1,skip), i2=1,ns2,skip)
           
        CLOSE(15)
 #endif
@@ -942,16 +941,16 @@ END SUBROUTINE exporteigenstrain
 
        DO i2=1,ns2
           DO i1=1,ns1
-             temp1(ns1+1-i1,i2)=slippatch(i1,i2)%ds
-             temp2(ns1+1-i1,i2)=slippatch(i1,i2)%ss
-             temp3(ns1+1-i1,i2)=slippatch(i1,i2)%slip
+             temp1(ns1+1-i1,i2)=n(k)%patch(i1,i2)%ds
+             temp2(ns1+1-i1,i2)=n(k)%patch(i1,i2)%ss
+             temp3(ns1+1-i1,i2)=n(k)%patch(i1,i2)%slip
           END DO
        END DO
 
        ! xmin is the lowest coordinates (positive eastward in GMT)
-       xmin= MINVAL(slippatch(:,:)%lx)
+       xmin= MINVAL(n(k)%patch(:,:)%lx)
        ! ymin is the lowest coordinates (positive northward in GMT)
-       ymin=-MAXVAL(slippatch(:,:)%lz)
+       ymin=-MAXVAL(n(k)%patch(:,:)%lz)
 
        ! call the c function "writegrd_"
        CALL writegrd(temp1,ns1,ns2,ymin,xmin,dx3,dx2, &
@@ -965,7 +964,6 @@ END SUBROUTINE exporteigenstrain
 
 #endif
 
-       DEALLOCATE(slippatch)
     END DO
 
 END SUBROUTINE exportcreep

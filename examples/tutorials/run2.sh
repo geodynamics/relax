@@ -23,4 +23,4 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-OMP_NUM_THREADS=2 time ../relax --no-proj-output $* < run2.input | tee $WDIR/in.param
+OMP_NUM_THREADS=2 time ../../build/relax --no-proj-output $* < run2.input | tee $WDIR/in.param

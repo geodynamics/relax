@@ -328,7 +328,6 @@ CONTAINS
           IF (i .ne. k) THEN
              WRITE_DEBUG_INFO
              WRITE (0,*) "error in input file: plane index misfit", k,"<>",i
-             WRITE (0,*) in%op(k)
              STOP 1
           END IF
 
@@ -801,6 +800,13 @@ CONTAINS
                   in%n(k)%length,in%n(k)%width, &
                   in%n(k)%strike,in%n(k)%dip,in%n(k)%rake, &
                   in%x0,in%y0,in%rot)
+
+             ! number of patches in each direction
+             in%n(k)%px2=FIX(in%n(k)%length/in%dx2)
+             in%n(k)%px3=FIX(in%n(k)%width/in%dx3)
+
+             ALLOCATE(in%n(k)%patch(in%n(k)%px2,in%n(k)%px3),STAT=iostatus)
+             IF (iostatus>0) STOP "could not allocate the fault patches"
 
 #ifdef VTK
              ! export the afterslip segment in VTK format
