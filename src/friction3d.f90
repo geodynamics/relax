@@ -454,8 +454,12 @@ CONTAINS
           CALL local2ref(xr,yr,zr,x1,x2,x3)
 
           ! initialize zero slip velocity
-          patch(j2,j3)=SLIPPATCH_STRUCT(x1,x2,x3,yr,zr,0._8,0._8,0._8, &
-                                        0._8,0._8,0._8,0._8,s)
+          patch(j2,j3)%x1=x1
+          patch(j2,j3)%x2=x2
+          patch(j2,j3)%x3=x3
+          patch(j2,j3)%lx=yr
+          patch(j2,j3)%lz=zr
+          patch(j2,j3)%sig=s
 
           ! discard out-of-bound locations
           IF (  (x1 .GT. DBLE(sx1/2-1)*dx1) .OR. (x1 .LT. -DBLE(sx1/2)*dx1) &
@@ -492,18 +496,15 @@ CONTAINS
           patch(j2,j3)%taus=taus
 
           ! creep rate
-          patch(j2,j3)%slip=vo*2._8*sinh(tau/tauc)
           patch(j2,j3)%v=vo*2._8*sinh(tau/tauc)
 
           ! shear traction direction
           ts=ts/taus
 
           ! strike-direction creep rate
-          patch(j2,j3)%ss=patch(j2,j3)%slip*SUM(ts*sv)
           patch(j2,j3)%vss=patch(j2,j3)%v*SUM(ts*sv)
 
           ! dip-direction creep rate
-          patch(j2,j3)%ds=patch(j2,j3)%slip*SUM(ts*dv)
           patch(j2,j3)%vds=patch(j2,j3)%v*SUM(ts*dv)
 
        END DO
@@ -549,5 +550,42 @@ CONTAINS
     END SUBROUTINE local2ref
 
   END SUBROUTINE monitorfriction
+
+  !---------------------------------------------------------------------
+  !> function FrictionAdd
+  !! update the cumulative slip of a creeping segment
+  !!
+  !! \author sylvain barbot (04-01-12) - original form
+  !---------------------------------------------------------------------
+  SUBROUTINE frictionadd(np,n,dt)
+    INTEGER, INTENT(IN) :: np
+    TYPE(PLANE_STRUCT), INTENT(INOUT), DIMENSION(np) :: n
+    REAL*8, INTENT(IN) :: dt
+
+    INTEGER :: px2,px3,j2,j3,k
+
+    ! number of samples in the dip and strike direction
+    DO k=1,np
+       px2=SIZE(n(k)%patch,1)
+       px3=SIZE(n(k)%patch,2)
+
+       ! loop in the dip direction
+       DO j3=1,px3
+          ! loop in the strike direction
+          DO j2=1,px2
+             ! cumulative creep
+             n(k)%patch(j2,j3)%slip=n(k)%patch(j2,j3)%slip+dt*n(k)%patch(j2,j3)%v
+
+             ! cumulative strike-direction creep
+             n(k)%patch(j2,j3)%ss=n(k)%patch(j2,j3)%ss+dt*n(k)%patch(j2,j3)%vss
+
+             ! cumulative dip-direction creep
+             n(k)%patch(j2,j3)%ds=n(k)%patch(j2,j3)%ds+dt*n(k)%patch(j2,j3)%vds
+          END DO
+       END DO
+
+    END DO
+
+  END SUBROUTINE frictionadd
 
 END MODULE friction3d

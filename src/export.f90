@@ -899,34 +899,90 @@ END SUBROUTINE exporteigenstrain
     WRITE (digit,'(I3.3)') i
 
     DO k=1,np
-       CALL monitorfriction(n(k)%x,n(k)%y,n(k)%z, &
-            n(k)%width,n(k)%length,n(k)%strike,n(k)%dip,n(k)%rake,beta, &
-            sx1,sx2,sx3,dx1,dx2,dx3,sig,structure,n(k)%patch)
 
        ns1=SIZE(n(k)%patch,1)
        ns2=SIZE(n(k)%patch,2)
           
-       !patch(:,:)%x1=patch(:,:)%x1+x0
-       !patch(:,:)%x2=patch(:,:)%x2+y0
-
        WRITE (sdigit,'(I5.5)') k
 #ifdef TXT_EXPORTCREEP
-       outfile=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".creep.txt"
+       outfile=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".creep.dat"
        
        OPEN (UNIT=15,FILE=outfile,IOSTAT=iostatus,FORM="FORMATTED")
        IF (iostatus>0) STOP "could not open file for export"
           
        WRITE (15,'("#        x1         x2         x3          yr        yz", &
-                   "       slip strike-slip  dip-slip")')
-       WRITE (15,'(8ES11.3E2)') ((n(k)%patch(i1,i2), i1=1,ns1,skip), i2=1,ns2,skip)
-          
+                   "       slip strike-slip  dip-slip   velocity     ss vel", &
+                   "     ds vel       taus      sig11      sig12      sig13      sig22      sig23      sig33")')
+       WRITE (15,'(18ES11.3E2)') ((n(k)%patch(i1,i2)%x1,n(k)%patch(i1,i2)%x3,n(k)%patch(i1,i2)%x3, &
+                                  n(k)%patch(i1,i2)%lx,n(k)%patch(i1,i2)%lz, &
+                                  n(k)%patch(i1,i2)%slip, &
+                                  n(k)%patch(i1,i2)%ss, &
+                                  n(k)%patch(i1,i2)%ds, &
+                                  n(k)%patch(i1,i2)%v, &
+                                  n(k)%patch(i1,i2)%vss, &
+                                  n(k)%patch(i1,i2)%vds, &
+                                  n(k)%patch(i1,i2)%taus, &
+                                  n(k)%patch(i1,i2)%sig%s11, &
+                                  n(k)%patch(i1,i2)%sig%s12, &
+                                  n(k)%patch(i1,i2)%sig%s13, &
+                                  n(k)%patch(i1,i2)%sig%s22, &
+                                  n(k)%patch(i1,i2)%sig%s23, &
+                                  n(k)%patch(i1,i2)%sig%s33, &
+                                  i1=1,ns1,skip), i2=1,ns2,skip)
        CLOSE(15)
 #endif
 
+       outfile=wdir(1:pos-1)//"/creep-"//sdigit//"s-"//digit//".vtk"
+       
+       OPEN (UNIT=15,FILE=outfile,IOSTAT=iostatus,FORM="FORMATTED")
+       IF (iostatus>0) STOP "could not open file for export"
+       
+       WRITE (15,'("# vtk DataFile Version 3.0")')
+       WRITE (15,'("test")')
+       WRITE (15,'("ASCII")')
+       WRITE (15,'("DATASET POLYDATA")')
+       WRITE (15,'("POINTS ",i0," float")') ns1*ns2
+       WRITE (15,'(3ES11.3E2)') ((n(k)%patch(i1,i2)%x1,n(k)%patch(i1,i2)%x2,n(k)%patch(i1,i2)%x3,i1=1,ns1), i2=1,ns2)
+       WRITE (15,'("")')
+       WRITE (15,'("POLYGONS ",i0,X,i0)') (ns1-1)*(ns2-1)*2,(ns1-1)*(ns2-1)*2*4
+       DO i2=1,ns2-1
+          DO i1=1,ns1-1
+             WRITE (15,'("3 ",i0,X,i0,X,i0)') (i2-1)*ns1+i1-1,(i2-1)*ns1+i1-1+1,i2*ns1+i1-1+1
+             WRITE (15,'("3 ",i0,X,i0,X,i0)') (i2-1)*ns1+i1-1,(i2  )*ns1+i1-1  ,i2*ns1+i1-1+1
+          END DO
+       END DO
+       WRITE (15,'("")')
+       WRITE (15,'("POINT_DATA ",i0)') (ns1)*(ns2)
+       WRITE (15,'("SCALARS afterslip float")')
+       WRITE (15,'("LOOKUP_TABLE default")')
+       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%slip,i1=1,ns1),i2=1,ns2)
+       WRITE (15,'("SCALARS strike_slip float")')
+       WRITE (15,'("LOOKUP_TABLE default")')
+       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%ss,i1=1,ns1),i2=1,ns2)
+       WRITE (15,'("SCALARS dip-slip float")')
+       WRITE (15,'("LOOKUP_TABLE default")')
+       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%ds,i1=1,ns1),i2=1,ns2)
+       WRITE (15,'("SCALARS velocity float")')
+       WRITE (15,'("LOOKUP_TABLE default")')
+       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%v,i1=1,ns1),i2=1,ns2)
+       WRITE (15,'("SCALARS velocity_strike_slip float")')
+       WRITE (15,'("LOOKUP_TABLE default")')
+       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%vss,i1=1,ns1),i2=1,ns2)
+       WRITE (15,'("SCALARS velocity_dip_slip float")')
+       WRITE (15,'("LOOKUP_TABLE default")')
+       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%vds,i1=1,ns1),i2=1,ns2)
+       WRITE (15,'("SCALARS shear_stress float")')
+       WRITE (15,'("LOOKUP_TABLE default")')
+       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%taus,i1=1,ns1),i2=1,ns2)
+       CLOSE(15)
+
 #ifdef GRD_EXPORTCREEP
-       file1=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".creep-north.grd"
-       file2=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".creep-east.grd"
-       file3=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".creep-up.grd"
+       ALLOCATE(temp1(ns1,ns2),temp2(ns1,ns2),temp3(ns1,ns2),STAT=iostatus)
+       IF (iostatus>0) STOP "could not allocate temporary arrays for GRD slip export."
+
+       file1=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".slip-strike.grd"
+       file2=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".slip-dip.grd"
+       file3=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".slip.grd"
 
        ! convert to c standard
        j=INDEX(file1," ")
@@ -936,14 +992,44 @@ END SUBROUTINE exporteigenstrain
        j=INDEX(file3," ")
        file3(j:j)=char(0)
 
-       ALLOCATE(temp1(ns1,ns2),temp2(ns1,ns2),temp3(ns1,ns2),STAT=iostatus)
-       IF (iostatus>0) STOP "could not allocate temporary arrays for GRD slip export."
-
        DO i2=1,ns2
           DO i1=1,ns1
              temp1(ns1+1-i1,i2)=n(k)%patch(i1,i2)%ds
              temp2(ns1+1-i1,i2)=n(k)%patch(i1,i2)%ss
              temp3(ns1+1-i1,i2)=n(k)%patch(i1,i2)%slip
+          END DO
+       END DO
+
+       ! xmin is the lowest coordinates (positive eastward in GMT)
+       xmin= MINVAL(n(k)%patch(:,:)%lx)
+       ! ymin is the lowest coordinates (positive northward in GMT)
+       ymin=-MAXVAL(n(k)%patch(:,:)%lz)
+
+       ! call the c function "writegrd_"
+       CALL writegrd(temp1,ns1,ns2,ymin,xmin,dx3,dx2, &
+                     rland,rdum,title,file1)
+       CALL writegrd(temp2,ns1,ns2,ymin,xmin,dx3,dx2, &
+                     rland,rdum,title,file2)
+       CALL writegrd(temp3,ns1,ns2,ymin,xmin,dx3,dx2, &
+                     rland,rdum,title,file3)
+
+       file1=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".vel-strike.grd"
+       file2=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".vel-dip.grd"
+       file3=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".vel.grd"
+
+       ! convert to c standard
+       j=INDEX(file1," ")
+       file1(j:j)=char(0)
+       j=INDEX(file2," ")
+       file2(j:j)=char(0)
+       j=INDEX(file3," ")
+       file3(j:j)=char(0)
+
+       DO i2=1,ns2
+          DO i1=1,ns1
+             temp1(ns1+1-i1,i2)=n(k)%patch(i1,i2)%vds
+             temp2(ns1+1-i1,i2)=n(k)%patch(i1,i2)%vss
+             temp3(ns1+1-i1,i2)=n(k)%patch(i1,i2)%v
           END DO
        END DO
 
@@ -1153,7 +1239,7 @@ END SUBROUTINE exportcreep
     WRITE (15,'("    <Piece NumberOfPoints=",a,"8",a," NumberOfPolys=",a,"6",a,">")'),q,q,q,q
     WRITE (15,'("      <Points>")')
     WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                            " Name=",a,"Comp. Grid",a, &
+                            " Name=",a,"Computational Grid",a, &
                             " NumberOfComponents=",a,"3",a, &
                             " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
     WRITE (15,'(24ES9.2E1)') &

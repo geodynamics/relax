@@ -606,13 +606,14 @@ PROGRAM relax
                 in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
                 sig,in%mu,in%faultcreepstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment)
-        END DO
 
-        ! export strike and dip creep velocity
-        IF (isoutput(in%skip,t,i,in%odt,oi,in%events(e)%time)) THEN
-           CALL exportcreep(in%np,in%n,in%beta,sig,in%faultcreepstruc, &
-                            in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%x0,in%y0,in%wdir,oi)
-        END IF
+           ! keep track if afterslip instantaneous velocity
+           CALL monitorfriction(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
+                in%n(k)%width,in%n(k)%length, &
+                in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
+                in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
+                sig,in%faultcreepstruc,in%n(k)%patch)
+        END DO
 
      END IF
 
@@ -658,6 +659,7 @@ PROGRAM relax
      CALL fieldadd(u2,v2,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
      CALL fieldadd(u3,v3,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
      CALL tensorfieldadd(tau,moment,in%sx1,in%sx2,in%sx3/2,c2=REAL(Dt))
+     CALL frictionadd(in%np,in%n,Dt)
      
      ! keep track of the viscoelastic contribution alone
      IF (in%isoutputrelax) THEN
@@ -721,6 +723,10 @@ PROGRAM relax
         
         CALL reporttime(1,t,in%reporttimefilename)
 
+        ! export strike and dip creep velocity
+        CALL exportcreep(in%np,in%n,in%beta,sig,in%faultcreepstruc, &
+                         in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%x0,in%y0,in%wdir,oi)
+
         ! export
 #ifdef TXT
         IF (in%isoutputtxt) THEN
@@ -735,7 +741,7 @@ PROGRAM relax
            END IF
         END IF
 #endif
-        CALL exporteigenstrain(gamma,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
+        !CALL exporteigenstrain(gamma,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
 #ifdef GRD
         IF (in%isoutputgrd) THEN
            IF (in%isoutputrelax) THEN

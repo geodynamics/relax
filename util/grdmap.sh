@@ -68,16 +68,55 @@ rm -f $colors
 
 }
 
-if (test $# -lt "1"); then
-        echo "usage: grdmap.sh [-b -5/5/-5/5] [-p -1.5/1.5/0.1] [...] file1.grd ... fileN.grd"
+gmtset LABEL_FONT_SIZE 12p
+gmtset HEADER_FONT_SIZE 12p
+gmtset ANOT_FONT_SIZE 12p 
+gmtset COLOR_BACKGROUND 0/0/255
+gmtset COLOR_FOREGROUND 255/0/0
+gmtset COLOR_NAN 255/255/255
+gmtset PAPER_MEDIA a5
+
+libdir=$(dirname $0)
+EXTRA=""
+
+while getopts "b:c:e:ghi:o:p:v:s:t:u:xrY:" flag
+do
+  case "$flag" in
+    b) bset=1;bds=$OPTARG;;
+    c) cset=1;carg=$OPTARG;;
+    e) eset=1;EXTRA="$EXTRA $OPTARG";;
+    g) gset=1;;
+    h) hset=1;;
+    i) iset=1;illumination="-I$OPTARG";;
+    o) oset=1;ODIR=$OPTARG;;
+    p) pset=1;P=$OPTARG;PSSCALE=`echo $OPTARG | awk -F"/" 'function abs(x){return x<0?-x:x}{print abs($2-$1)/4}'`;echo $PSSCALE;;
+    v) vset=1;SIZE=$OPTARG;VECTOR=$OPTARG"c";;
+    r) rset=1;;
+    s) sset=1;ADX=$OPTARG;;
+    t) tset=1;tick=$OPTARG;;
+    u) uset=1;unit=$OPTARG;;
+    x) xset=1;;
+    Y) Yset=1;Yshift=$OPTARG;;
+  esac
+done
+for item in $bset $cset $iset $oset $pset $vset $sset $tset $uset $Yset $EXTRA;do
+	shift;shift
+done
+for item in $gset $hset $xset $rset;do
+	shift;
+done
+
+if [ $# -lt "1" ] || [ "$hset" == "1" ] ; then
+        echo "usage: map.sh [-b -5/5/-5/5] [-p -1.5/1.5/0.1] [...] file1.grd ... fileN.grd"
 	echo "or"
-        echo "       grdmap.sh [-b -5/5/-5/5] [-p -1.5/1.5/0.1] [...] dir1/index1 ... dirN/indexN"
+        echo "       map.sh [-b -5/5/-5/5] [-p -1.5/1.5/0.1] [...] dir1/index1 ... dirN/indexN"
 	echo ""
         echo "options:"
         echo "         -b bds sets the map bound to bds"
 	echo "         -c palette_name [default my_jet]"
         echo "         -e file.sh runs file.sh to add content to map"
         echo "         -g switch to geographic projection (longitude/latitude)"
+        echo "         -h display this error message and exit"
 	echo "         -i file.grd illuminates the grd image with file.grd"
         echo "         -o output directory"
         echo "         -p palette sets the color scale bounds to palette"
@@ -95,43 +134,6 @@ if (test $# -lt "1"); then
         
         exit
 fi
-
-gmtset LABEL_FONT_SIZE 12p
-gmtset HEADER_FONT_SIZE 12p
-gmtset ANOT_FONT_SIZE 12p 
-gmtset COLOR_BACKGROUND 0/0/255
-gmtset COLOR_FOREGROUND 255/0/0
-gmtset COLOR_NAN 255/255/255
-gmtset PAPER_MEDIA a5
-
-libdir=$(dirname $0)
-EXTRA=""
-
-while getopts "b:c:e:gi:o:p:v:s:t:u:xrY:" flag
-do
-  case "$flag" in
-    b) bset=1;bds=$OPTARG;;
-    c) cset=1;carg=$OPTARG;;
-    e) eset=1;EXTRA="$EXTRA $OPTARG";;
-    g) gset=1;;
-    i) iset=1;illumination="-I$OPTARG";;
-    o) oset=1;ODIR=$OPTARG;;
-    p) pset=1;P=$OPTARG;PSSCALE=`echo $OPTARG | awk -F"/" 'function abs(x){return x<0?-x:x}{print abs($2-$1)/4}'`;echo $PSSCALE;;
-    v) vset=1;SIZE=$OPTARG;VECTOR=$OPTARG"c";;
-    r) rset=1;;
-    s) sset=1;ADX=$OPTARG;;
-    t) tset=1;tick=$OPTARG;;
-    u) uset=1;unit=$OPTARG;;
-    x) xset=1;;
-    Y) Yset=1;Yshift=$OPTARG;;
-  esac
-done
-for item in $bset $cset $iset $oset $pset $vset $sset $tset $uset $Yset $EXTRA;do
-	shift;shift
-done
-for item in $gset $xset $rset;do
-	shift;
-done
 
 while [ "$#" != "0" ];do
 
