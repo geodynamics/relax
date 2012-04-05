@@ -43,12 +43,12 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time ../../relax <<EOF --no-vtk-output --no-proj-output \
+time ../../build/relax <<EOF --no-vtk-output --no-proj-output \
 	--no-stress-output $* | tee $WDIR/in.param
 # grid size (sx1,sx2,sx3)
 512 512 512
 # dx1  dx2  dx3 beta nyquist
-  0.6  0.6  0.6 0.30     2.0
+  0.6  0.6  0.6 0.30     1.0
 # origin position and rotation
 0 0 0
 # geographic origin zone unit

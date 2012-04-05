@@ -24,6 +24,9 @@ latex/relax.pdf
 latex/relax.synctex.gz
 latex/relax.toc
 makefile*
+examples/tibet/kokoxili/kokoxili_co
+examples/tibet/kokoxili/kokoxili_vs
+examples/tibet/kokoxili/kokoxili_vs3d
 examples/tibet/yushu/faults/fault_corners_yushu.txt
 examples/tibet/yushu/faults/fault_corners_yushu_ds.txt
 examples/tibet/yushu/faults/fault_corners_yushu_ss.txt
@@ -44,4 +47,9 @@ examples/newzealand/faults/christchurch.flt
 examples/newzealand/faults/christchurch.vtp
 examples/newzealand/faults/darfield.flt
 examples/newzealand/faults/darfield.vtp
+examples/parkfield/parkfield_co
+examples/parkfield/parkfield_mx
+examples/parkfield/parkfield_mx_f
+examples/parkfield/parkfield_as
+examples/parkfield/parkfield_as_f
 examples/tibet/qaidam

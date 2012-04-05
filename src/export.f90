@@ -1371,7 +1371,7 @@ END SUBROUTINE exportcreep
     INTEGER :: iostatus,k
     CHARACTER :: q
 
-    REAL*8 :: strike,dip,x1,x2,x3,cstrike,sstrike,cdip,sdip,L,W,slip
+    REAL*8 :: strike,dip,x1,x2,x3,cstrike,sstrike,cdip,sdip,L,W,slip,r
          
     REAL*8, DIMENSION(3) :: s,d
 
@@ -1393,6 +1393,9 @@ END SUBROUTINE exportcreep
 
        ! fault slip
        slip=e%s(k)%slip
+
+       ! slip
+       r=e%s(k)%rake
 
        ! fault orientation
        strike=e%s(k)%strike
@@ -1462,7 +1465,10 @@ END SUBROUTINE exportcreep
                                 " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
 
 
-       WRITE (15,'(3ES11.2)'), (s(1)+d(1))*slip,(s(2)+d(2))*slip,(s(3)+s(3))*slip
+       WRITE (15,'(3ES11.2)'), (s(1)*cos(r)+d(1)*sin(r))*slip, &
+                               (s(2)*cos(r)+d(2)*sin(r))*slip, &
+                               (s(3)*cos(r)+d(3)*sin(r))*slip
+
        WRITE (15,'("        </DataArray>")')
        WRITE (15,'("      </CellData>")')
 

@@ -1,0 +1,325 @@
+<?xml version="1.0"?>
+<VTKFile type="PolyData" version="0.1">
+  <PolyData>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -3.72E+00  -1.87E+02   0.00E+00   4.80E+00  -2.14E+02   0.00E+00   4.80E+00  -2.14E+02   1.65E+01  -3.72E+00  -1.87E+02   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+   4.22E-02  -1.33E-01  -2.50E-01
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -1.95E+00  -1.55E+02   0.00E+00  -3.72E+00  -1.87E+02   0.00E+00  -3.72E+00  -1.87E+02   1.65E+01  -1.95E+00  -1.55E+02   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+  -1.14E-01  -2.05E+00  -1.90E-01
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+   3.68E+00  -1.09E+02   0.00E+00  -1.95E+00  -1.55E+02   0.00E+00  -1.95E+00  -1.55E+02   1.65E+01   3.68E+00  -1.09E+02   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+  -3.21E-01  -2.59E+00  -6.70E-01
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -3.00E+00  -8.02E+01   0.00E+00   3.68E+00  -1.09E+02   0.00E+00   3.68E+00  -1.09E+02   1.65E+01  -3.00E+00  -8.02E+01   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+   3.42E-01  -1.50E+00  -1.89E-16
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -8.09E+00  -5.45E+01   0.00E+00  -2.99E+00  -8.02E+01   0.00E+00  -2.99E+00  -8.02E+01   1.65E+01  -8.09E+00  -5.45E+01   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+   3.51E-01  -1.77E+00  -4.00E-02
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -1.27E+01  -2.62E+01   0.00E+00  -8.09E+00  -5.45E+01   0.00E+00  -8.09E+00  -5.45E+01   1.65E+01  -1.27E+01  -2.62E+01   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+   3.39E-01  -2.09E+00  -1.40E-01
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -1.44E+01  -1.16E+01   0.00E+00  -1.27E+01  -2.62E+01   0.00E+00  -1.27E+01  -2.62E+01   1.65E+01  -1.44E+01  -1.16E+01   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+   2.60E-01  -2.28E+00   7.00E-02
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -1.74E+01   7.50E+00   0.00E+00  -1.44E+01  -1.16E+01   0.00E+00  -1.44E+01  -1.16E+01   1.65E+01  -1.74E+01   7.50E+00   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+   6.04E-01  -3.73E+00  -4.00E-02
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -2.01E+01   3.71E+01   0.00E+00  -1.74E+01   7.50E+00   0.00E+00  -1.74E+01   7.50E+00   1.65E+01  -2.01E+01   3.71E+01   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+   4.60E-01  -5.19E+00  -1.60E-01
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -2.53E+01   7.01E+01   0.00E+00  -2.01E+01   3.71E+01   0.00E+00  -2.01E+01   3.71E+01   1.65E+01  -2.53E+01   7.01E+01   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+   6.04E-01  -3.84E+00   5.20E-01
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -3.03E+01   1.05E+02   0.00E+00  -2.53E+01   7.01E+01   0.00E+00  -2.53E+01   7.01E+01   1.65E+01  -3.03E+01   1.05E+02   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+   7.69E-01  -5.29E+00   4.60E-01
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -3.40E+01   1.31E+02   0.00E+00  -3.03E+01   1.05E+02   0.00E+00  -3.03E+01   1.05E+02   1.65E+01  -3.40E+01   1.31E+02   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+   4.55E-01  -3.20E+00   2.50E-01
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -3.88E+01   1.51E+02   0.00E+00  -3.40E+01   1.31E+02   0.00E+00  -3.40E+01   1.31E+02   1.65E+01  -3.88E+01   1.51E+02   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+   7.23E-01  -3.04E+00   1.14E+00
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -4.37E+01   1.77E+02   0.00E+00  -3.89E+01   1.51E+02   0.00E+00  -3.89E+01   1.51E+02   1.65E+01  -4.37E+01   1.77E+02   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+   4.45E-01  -2.43E+00   1.07E+00
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -4.79E+01   2.08E+02   0.00E+00  -4.37E+01   1.77E+02   0.00E+00  -4.37E+01   1.77E+02   1.65E+01  -4.79E+01   2.08E+02   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+   3.36E-01  -2.47E+00   3.70E-01
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+  -5.46E+01   2.37E+02   0.00E+00  -4.79E+01   2.08E+02   0.00E+00  -4.79E+01   2.08E+02   1.65E+01  -5.46E+01   2.37E+02   1.65E+01
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="3">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Normals="slip">
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+   2.97E-01  -1.31E+00  -4.00E-02
+        </DataArray>
+      </CellData>
+    </Piece>
+  </PolyData>
+</VTKFile>
