@@ -829,7 +829,7 @@ END SUBROUTINE exportplanestress
 END SUBROUTINE exporteigenstrain
 
   !---------------------------------------------------------------------
-  !> subroutine exportCreep
+  !> subroutine exportCreep_asc
   !! evaluates the value of creep velocity at the location of 
   !! defined plane (position, strike, dip, length and width).
   !!
@@ -846,29 +846,38 @@ END SUBROUTINE exporteigenstrain
   !!
   !! creates files 
   !!
-  !!    wdir/index.s00001.creep.txt 
+  !!    wdir/index.s00001.creep.dat
   !!
   !! containing
   !!
-  !!    x,y,z,x',y',sqrt(vx'^2+vy'^2),vx',vy'
+  !!    x1,x2,x3,x',y',slip,ss,ds,vel,ss vel,ds vel,taus,sigij
+  !!
+  !! where
+  !! 
+  !!   x1, x2, x3          are the absolute coordinates of the fault samples
+  !!   x', y'              are the local coordinates (along-strike and down-dip)
+  !!   slip, ss, ds        are the total, strike- and dip- slip components
+  !!   vel, ss vel, ds vel are the total, strike- and dip- velocity components
+  !!   taus, sigij         are the shear stress and the 6 independent components
+  !!                       of the stress tensor
   !!
   !! with TXT_EXPORTCREEP option and
   !!
-  !!    wdir/index.s00001.creep-north.grd 
-  !!    wdir/index.s00001.creep-east.grd 
-  !!    wdir/index.s00001.creep-up.grd 
+  !!    wdir/index.s00001.slip-strike.grd 
+  !!    wdir/index.s00001.slip-dip.grd 
+  !!    wdir/index.s00001.slip.grd 
   !!
-  !! with GRD_EXPORTCREEP option where the suffix -north stands for
-  !! dip slip, -east for strike slip and -up for amplitude of slip.
+  !! with GRD_EXPORTCREEP option where the suffix -strike stands for
+  !! strike-slip, -dip for dip slip.
   !!
-  !! file wdir/index.s00001.creep.txt is subsampled by a factor "skip"
+  !! file wdir/index.s00001.creep.dat is subsampled by a factor "skip"
   !! compared to the grd files.
   !! 
   !! \author sylvain barbot (01/01/07) - original form
   !!                        (02/25/10) - output in TXT and GRD formats
   !---------------------------------------------------------------------
 #define TXT_EXPORTCREEP
-  SUBROUTINE exportcreep(np,n,beta,sig,structure, &
+  SUBROUTINE exportcreep_asc(np,n,beta,sig,structure, &
                          sx1,sx2,sx3,dx1,dx2,dx3,x0,y0,wdir,i)
     INTEGER, INTENT(IN) :: np,sx1,sx2,sx3,i
     TYPE(PLANE_STRUCT), INTENT(INOUT), DIMENSION(np) :: n
@@ -880,18 +889,9 @@ END SUBROUTINE exporteigenstrain
     INTEGER :: k,ns1,ns2,pos
     CHARACTER(5) :: sdigit
     CHARACTER(3) :: digit
-#ifdef TXT_EXPORTCREEP
     CHARACTER(80) :: outfile
     INTEGER :: skip=3
-#endif
-#ifdef GRD_EXPORTCREEP
-    INTEGER :: j,iostatus,i1,i2
-    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: temp1,temp2,temp3
-    REAL*8 :: rland=9998.,rdum=9999.
-    REAL*8 :: xmin,ymin
-    CHARACTER(80) :: title="monitor field "
-    CHARACTER(80) :: file1,file2,file3
-#endif
+    INTEGER :: iostatus,i1,i2
 
     IF (np .le. 0) RETURN
 
@@ -904,7 +904,6 @@ END SUBROUTINE exporteigenstrain
        ns2=SIZE(n(k)%patch,2)
           
        WRITE (sdigit,'(I5.5)') k
-#ifdef TXT_EXPORTCREEP
        outfile=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".creep.dat"
        
        OPEN (UNIT=15,FILE=outfile,IOSTAT=iostatus,FORM="FORMATTED")
@@ -930,58 +929,96 @@ END SUBROUTINE exporteigenstrain
                                   n(k)%patch(i1,i2)%sig%s33, &
                                   i1=1,ns1,skip), i2=1,ns2,skip)
        CLOSE(15)
-#endif
 
-       outfile=wdir(1:pos-1)//"/creep-"//sdigit//"s-"//digit//".vtk"
-       
-       OPEN (UNIT=15,FILE=outfile,IOSTAT=iostatus,FORM="FORMATTED")
-       IF (iostatus>0) STOP "could not open file for export"
-       
-       WRITE (15,'("# vtk DataFile Version 3.0")')
-       WRITE (15,'("test")')
-       WRITE (15,'("ASCII")')
-       WRITE (15,'("DATASET POLYDATA")')
-       WRITE (15,'("POINTS ",i0," float")') ns1*ns2
-       WRITE (15,'(3ES11.3E2)') ((n(k)%patch(i1,i2)%x1,n(k)%patch(i1,i2)%x2,n(k)%patch(i1,i2)%x3,i1=1,ns1), i2=1,ns2)
-       WRITE (15,'("")')
-       WRITE (15,'("POLYGONS ",i0,X,i0)') (ns1-1)*(ns2-1)*2,(ns1-1)*(ns2-1)*2*4
-       DO i2=1,ns2-1
-          DO i1=1,ns1-1
-             WRITE (15,'("3 ",i0,X,i0,X,i0)') (i2-1)*ns1+i1-1,(i2-1)*ns1+i1-1+1,i2*ns1+i1-1+1
-             WRITE (15,'("3 ",i0,X,i0,X,i0)') (i2-1)*ns1+i1-1,(i2  )*ns1+i1-1  ,i2*ns1+i1-1+1
-          END DO
-       END DO
-       WRITE (15,'("")')
-       WRITE (15,'("POINT_DATA ",i0)') (ns1)*(ns2)
-       WRITE (15,'("SCALARS afterslip float")')
-       WRITE (15,'("LOOKUP_TABLE default")')
-       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%slip,i1=1,ns1),i2=1,ns2)
-       WRITE (15,'("SCALARS strike_slip float")')
-       WRITE (15,'("LOOKUP_TABLE default")')
-       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%ss,i1=1,ns1),i2=1,ns2)
-       WRITE (15,'("SCALARS dip-slip float")')
-       WRITE (15,'("LOOKUP_TABLE default")')
-       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%ds,i1=1,ns1),i2=1,ns2)
-       WRITE (15,'("SCALARS velocity float")')
-       WRITE (15,'("LOOKUP_TABLE default")')
-       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%v,i1=1,ns1),i2=1,ns2)
-       WRITE (15,'("SCALARS velocity_strike_slip float")')
-       WRITE (15,'("LOOKUP_TABLE default")')
-       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%vss,i1=1,ns1),i2=1,ns2)
-       WRITE (15,'("SCALARS velocity_dip_slip float")')
-       WRITE (15,'("LOOKUP_TABLE default")')
-       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%vds,i1=1,ns1),i2=1,ns2)
-       WRITE (15,'("SCALARS shear_stress float")')
-       WRITE (15,'("LOOKUP_TABLE default")')
-       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%taus,i1=1,ns1),i2=1,ns2)
-       CLOSE(15)
+    END DO
 
-#ifdef GRD_EXPORTCREEP
+END SUBROUTINE exportcreep_asc
+
+  !---------------------------------------------------------------------
+  !> subroutine exportCreep_grd
+  !! evaluates the value of creep velocity at the location of 
+  !! defined plane (position, strike, dip, length and width).
+  !!
+  !! input variables
+  !! @param np         - number of frictional planes
+  !! @param n          - array of frictional planes (position, orientation)
+  !! @param structure  - array of depth-dependent frictional properties
+  !! @param x0, y0     - origin position of coordinate system
+  !! @param dx1,2,3    - sampling size
+  !! @param sx1,2,3    - size of the stress tensor field
+  !! @param beta       - smoothing factor controlling the extent of planes
+  !! @param wdir       - output directory for writing
+  !! @param i          - loop index to suffix file names
+  !!
+  !! creates files 
+  !!
+  !!    wdir/index.s00001.creep.dat
+  !!
+  !! containing
+  !!
+  !!    x1,x2,x3,x',y',slip,ss,ds,vel,ss vel,ds vel,taus,sigij
+  !!
+  !! where
+  !! 
+  !!   x1, x2, x3          are the absolute coordinates of the fault samples
+  !!   x', y'              are the local coordinates (along-strike and down-dip)
+  !!   slip, ss, ds        are the total, strike- and dip- slip components
+  !!   vel, ss vel, ds vel are the total, strike- and dip- velocity components
+  !!   taus, sigij         are the shear stress and the 6 independent components
+  !!                       of the stress tensor
+  !!
+  !! with TXT_EXPORTCREEP option and
+  !!
+  !!    wdir/index.s00001.slip-strike.grd 
+  !!    wdir/index.s00001.slip-dip.grd 
+  !!    wdir/index.s00001.slip.grd 
+  !!
+  !! with GRD_EXPORTCREEP option where the suffix -strike stands for
+  !! strike-slip, -dip for dip slip.
+  !!
+  !! file wdir/index.s00001.creep.dat is subsampled by a factor "skip"
+  !! compared to the grd files.
+  !! 
+  !! \author sylvain barbot (01/01/07) - original form
+  !!                        (02/25/10) - output in TXT and GRD formats
+  !---------------------------------------------------------------------
+#define TXT_EXPORTCREEP
+  SUBROUTINE exportcreep_grd(np,n,beta,sig,structure, &
+                         sx1,sx2,sx3,dx1,dx2,dx3,x0,y0,wdir,i)
+    INTEGER, INTENT(IN) :: np,sx1,sx2,sx3,i
+    TYPE(PLANE_STRUCT), INTENT(INOUT), DIMENSION(np) :: n
+    TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
+    TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
+    REAL*8, INTENT(IN) :: x0,y0,dx1,dx2,dx3,beta
+    CHARACTER(80), INTENT(IN) :: wdir
+
+    INTEGER :: k,ns1,ns2,pos
+    CHARACTER(5) :: sdigit
+    CHARACTER(3) :: digit
+    INTEGER :: j,iostatus,i1,i2
+    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: temp1,temp2,temp3
+    REAL*8 :: rland=9998.,rdum=9999.
+    REAL*8 :: xmin,ymin
+    CHARACTER(80) :: title="monitor field "
+    CHARACTER(80) :: file1,file2,file3
+
+    IF (np .le. 0) RETURN
+
+    pos=INDEX(wdir," ")
+    WRITE (digit,'(I3.3)') i
+
+    DO k=1,np
+
+       ns1=SIZE(n(k)%patch,1)
+       ns2=SIZE(n(k)%patch,2)
+          
+       WRITE (sdigit,'(I5.5)') k
+
        ALLOCATE(temp1(ns1,ns2),temp2(ns1,ns2),temp3(ns1,ns2),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate temporary arrays for GRD slip export."
 
-       file1=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".slip-strike.grd"
-       file2=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".slip-dip.grd"
+       file1=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".slip-dip.grd"
+       file2=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".slip-strike.grd"
        file3=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".slip.grd"
 
        ! convert to c standard
@@ -1048,11 +1085,105 @@ END SUBROUTINE exporteigenstrain
 
        DEALLOCATE(temp1,temp2,temp3)
 
-#endif
+    END DO
+
+END SUBROUTINE exportcreep_grd
+
+  !---------------------------------------------------------------------
+  !> subroutine exportCreep_vtk
+  !! evaluates the value of creep velocity at the location of 
+  !! defined plane (position, strike, dip, length and width).
+  !!
+  !! input variables
+  !! @param np         - number of frictional planes
+  !! @param n          - array of frictional planes (position, orientation)
+  !! @param structure  - array of depth-dependent frictional properties
+  !! @param x0, y0     - origin position of coordinate system
+  !! @param dx1,2,3    - sampling size
+  !! @param sx1,2,3    - size of the stress tensor field
+  !! @param beta       - smoothing factor controlling the extent of planes
+  !! @param wdir       - output directory for writing
+  !! @param i          - loop index to suffix file names
+  !!
+  !! \author sylvain barbot (04/04/12) - original form
+  !---------------------------------------------------------------------
+#define TXT_EXPORTCREEP
+  SUBROUTINE exportcreep_vtk(np,n,beta,sig,structure, &
+                         sx1,sx2,sx3,dx1,dx2,dx3,x0,y0,wdir,i)
+    INTEGER, INTENT(IN) :: np,sx1,sx2,sx3,i
+    TYPE(PLANE_STRUCT), INTENT(INOUT), DIMENSION(np) :: n
+    TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
+    TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
+    REAL*8, INTENT(IN) :: x0,y0,dx1,dx2,dx3,beta
+    CHARACTER(80), INTENT(IN) :: wdir
+
+    INTEGER :: k,ns1,ns2,pos
+    CHARACTER(5) :: sdigit
+    CHARACTER(3) :: digit
+    CHARACTER(80) :: outfile
+    INTEGER :: skip=3
+    INTEGER :: j,iostatus,i1,i2
+    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: temp1,temp2,temp3
+
+    IF (np .le. 0) RETURN
+
+    pos=INDEX(wdir," ")
+    WRITE (digit,'(I3.3)') i
+
+    DO k=1,np
+
+       ns1=SIZE(n(k)%patch,1)
+       ns2=SIZE(n(k)%patch,2)
+          
+       WRITE (sdigit,'(I5.5)') k
+
+       outfile=wdir(1:pos-1)//"/creep-"//sdigit//"s-"//digit//".vtk"
+       
+       OPEN (UNIT=15,FILE=outfile,IOSTAT=iostatus,FORM="FORMATTED")
+       IF (iostatus>0) STOP "could not open file for export"
+       
+       WRITE (15,'("# vtk DataFile Version 3.0")')
+       WRITE (15,'("afterslip")')
+       WRITE (15,'("ASCII")')
+       WRITE (15,'("DATASET POLYDATA")')
+       WRITE (15,'("POINTS ",i0," float")') ns1*ns2
+       WRITE (15,'(3ES11.3E2)') ((n(k)%patch(i1,i2)%x1,n(k)%patch(i1,i2)%x2,n(k)%patch(i1,i2)%x3,i1=1,ns1), i2=1,ns2)
+       WRITE (15,'("")')
+       WRITE (15,'("POLYGONS ",i0,X,i0)') (ns1-1)*(ns2-1)*2,(ns1-1)*(ns2-1)*2*4
+       DO i2=1,ns2-1
+          DO i1=1,ns1-1
+             WRITE (15,'("3 ",i0,X,i0,X,i0)') (i2-1)*ns1+i1-1,(i2-1)*ns1+i1-1+1,i2*ns1+i1-1+1
+             WRITE (15,'("3 ",i0,X,i0,X,i0)') (i2-1)*ns1+i1-1,(i2  )*ns1+i1-1  ,i2*ns1+i1-1+1
+          END DO
+       END DO
+       WRITE (15,'("")')
+       WRITE (15,'("POINT_DATA ",i0)') (ns1)*(ns2)
+       WRITE (15,'("SCALARS afterslip float")')
+       WRITE (15,'("LOOKUP_TABLE default")')
+       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%slip,i1=1,ns1),i2=1,ns2)
+       WRITE (15,'("SCALARS strike_slip float")')
+       WRITE (15,'("LOOKUP_TABLE default")')
+       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%ss,i1=1,ns1),i2=1,ns2)
+       WRITE (15,'("SCALARS dip-slip float")')
+       WRITE (15,'("LOOKUP_TABLE default")')
+       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%ds,i1=1,ns1),i2=1,ns2)
+       WRITE (15,'("SCALARS velocity float")')
+       WRITE (15,'("LOOKUP_TABLE default")')
+       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%v,i1=1,ns1),i2=1,ns2)
+       WRITE (15,'("SCALARS velocity_strike_slip float")')
+       WRITE (15,'("LOOKUP_TABLE default")')
+       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%vss,i1=1,ns1),i2=1,ns2)
+       WRITE (15,'("SCALARS velocity_dip_slip float")')
+       WRITE (15,'("LOOKUP_TABLE default")')
+       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%vds,i1=1,ns1),i2=1,ns2)
+       WRITE (15,'("SCALARS shear_stress float")')
+       WRITE (15,'("LOOKUP_TABLE default")')
+       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%taus,i1=1,ns1),i2=1,ns2)
+       CLOSE(15)
 
     END DO
 
-END SUBROUTINE exportcreep
+END SUBROUTINE exportcreep_vtk
 
 #ifdef GRD
   !------------------------------------------------------------------

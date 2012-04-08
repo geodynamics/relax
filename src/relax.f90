@@ -723,9 +723,19 @@ PROGRAM relax
         
         CALL reporttime(1,t,in%reporttimefilename)
 
-        ! export strike and dip creep velocity
-        CALL exportcreep(in%np,in%n,in%beta,sig,in%faultcreepstruc, &
-                         in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%x0,in%y0,in%wdir,oi)
+        ! export strike and dip afterslip, afterslip velocity and fault stress
+        IF (in%isoutputtxt) THEN
+           CALL exportcreep_asc(in%np,in%n,in%beta,sig,in%faultcreepstruc, &
+                            in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%x0,in%y0,in%wdir,oi)
+        END IF
+        IF (in%isoutputgrd) THEN
+           CALL exportcreep_grd(in%np,in%n,in%beta,sig,in%faultcreepstruc, &
+                            in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%x0,in%y0,in%wdir,oi)
+        END IF
+        IF (in%isoutputvtk) THEN
+           CALL exportcreep_vtk(in%np,in%n,in%beta,sig,in%faultcreepstruc, &
+                            in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%x0,in%y0,in%wdir,oi)
+        END IF
 
         ! export
 #ifdef TXT
