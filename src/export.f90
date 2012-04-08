@@ -1107,7 +1107,6 @@ END SUBROUTINE exportcreep_grd
   !!
   !! \author sylvain barbot (04/04/12) - original form
   !---------------------------------------------------------------------
-#define TXT_EXPORTCREEP
   SUBROUTINE exportcreep_vtk(np,n,beta,sig,structure, &
                          sx1,sx2,sx3,dx1,dx2,dx3,x0,y0,wdir,i)
     INTEGER, INTENT(IN) :: np,sx1,sx2,sx3,i
@@ -1123,7 +1122,6 @@ END SUBROUTINE exportcreep_grd
     CHARACTER(80) :: outfile
     INTEGER :: skip=3
     INTEGER :: j,iostatus,i1,i2
-    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: temp1,temp2,temp3
 
     IF (np .le. 0) RETURN
 

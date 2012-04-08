@@ -186,7 +186,7 @@
   !!   - check the projected output on the south hemisphere
   !!   - check the fully-relaxed afterslip for uniform stress change
   !!   - include topography of parameter interface
-  !!   - export afterslip output in VTK
+  !!   - export afterslip output in VTK legacy format (binary)
   !------------------------------------------------------------------------
 PROGRAM relax
 
@@ -202,7 +202,7 @@ PROGRAM relax
   
   IMPLICIT NONE
   
-  INTEGER, PARAMETER :: ITERATION_MAX = 9900
+  INTEGER, PARAMETER :: ITERATION_MAX = 99999
   REAL*8, PARAMETER :: STEP_MAX = 1e7
 
   INTEGER :: i,k,e,oi,iostatus,mech(3)

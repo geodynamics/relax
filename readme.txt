@@ -25,16 +25,16 @@ comments and explanations.
 VISUALIZATION:
 
 Many outputs are exported in the General Mapping Tools (GMT) format, deformation
-maps can be obtained with typical GMT post-processing. Download post-processing
-and visualization tools util.tar available online.
-Make sure to have the .ps file viewer gv or the .pdf file viewer xpdf installed.
+maps can be obtained with typical GMT post-processing. Check the post-processing
+and visualization tools available in the 'util' directory.
+Make sure to have the .ps file viewer 'gv' or the .pdf file viewer 'xpdf' installed.
 Simulations can be visualized in 3D with the free software Paraview (paraview.org).
 
 PURPOSE:
 
 The program RELAX computes nonlinear time-dependent viscoelastic deformation with 
-powerlaw rheology and rate-strengthening friction in a cubic, periodic grid due 
-to coseismic stress changes, initial stress, surface loads, and/or moving faults.
+powerlaw rheology and rate-strengthening friction in a cubic grid due to coseismic 
+stress changes, initial stress, surface loads, and/or moving faults.
 
 DESCRIPTION:
 
@@ -74,7 +74,7 @@ the following figure:
                   Z (x3)
 
 Dislocations are converted to double-couple equivalent body-force analytically.
-Solution displacement is obtained by application of the Greens functions in the 
+Solution displacement is obtained by application of the Green's functions in the 
 Fourier domain.
 
 For friction faults where slip rates are evaluated from stress and a constitutive 
@@ -85,7 +85,7 @@ REFERENCES:
 
 More information about parameters and constitutive laws can be found in
 
-S. Barbot and Fialko Y., "Fourier-Domain Green Function for an Elastic Semi-
+S. Barbot and Fialko Y., "Fourier-Domain Green's Function for an Elastic Semi-
 Infinite Solid under Gravity, with Applications to Earthquake and Volcano 
 Deformation", Geophysical Journal International, v. 182, no. 2, pp. 568-582, 2010,
 doi:10.1111/j.1365-246X.2010.04655.x
