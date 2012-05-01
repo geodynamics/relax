@@ -5,7 +5,7 @@ c	First implemented in Potsdam, Feb, 1999
 c	Last modified: Potsdam, Nov, 2001, by R. Wang
 c
 	integer unit
-	character line*180,char*1
+	character line*256,char*1
 c
 	integer i
 c

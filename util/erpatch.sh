@@ -28,6 +28,6 @@ WDIR=$(dirname $PSFILE)
 psxy -O -K -JX -R$bds -L -M \
          -W1.0p/20/20/20 \
         <<EOF >> $PSFILE
-`awk '{if (">"==$1){print $1}else{print $1,$2}}' $WDIR/rfaults-???.xy`
+`awk '{if (">"==$1){print $1}else{print $1,$2}}' $WDIR/rfaults-???.xy $WDIR/rdykes-???.xy`
 EOF
 

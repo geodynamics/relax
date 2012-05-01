@@ -606,21 +606,37 @@ CONTAINS
 
     CONTAINS
 
-      !-----------------------------------------------------------------
+      !------------------------------------------------------------------------
       !> subroutine CerrutiSolCowling
       !! computes the general solution for the deformation field in an
       !! elastic half-space due to an arbitrary surface traction in the
       !! presence of gravity.
       !!
       !! The 3 components u1, u2 and u3 of the deformation field are 
-      !! expressed in the horizontal Fourier at depth x3. 
+      !! expressed in the horizontal Fourier domain at depth x3. 
       !!
       !! Combines the solution to the Boussinesq's and the Cerruti's 
       !! problem in a half-space with buoyancy boundary conditions.
-      !
-      ! sylvain barbot (07-07-07) - original form
-      !                (08-30-10) - account for net surface traction
-      !-----------------------------------------------------------------
+      !!
+      !! For the zero wavenumber, the solution is only depth-dependent and
+      !! satisfies:
+      !!
+      !!                   -q_1
+      !!   u1(k1, k2, x3) = --- (x3 - L)
+      !!                     mu
+      !!
+      !!                   -q_2
+      !!   u2(k1, k2, x3) = --- (x3 - L)
+      !!                     mu
+      !!
+      !!                     1        - q_3 (1 - alpha) 
+      !!   u3(k1, k2, x3) = -- -------------------------------- (x3 - L)
+      !!                    mu  1 + 2 Gamma L alpha (1 - alpha)
+      !!
+      !! sylvain barbot (07-07-07) - original form
+      !!                (08-30-10) - account for net surface traction
+      !!                (04-08-12) - fix a sign error for the zero wavenumber
+      !------------------------------------------------------------------------
       SUBROUTINE cerrutisolcowling(mu,p1,p2,p3,alpha,gamma,u1,u2,u3,k1,k2,x3,L)
         COMPLEX(KIND=4), INTENT(INOUT) :: u1,u2,u3
         REAL*8, INTENT(IN) :: mu,alpha,gamma,k1,k2,x3,L
@@ -636,10 +652,9 @@ CONTAINS
         h=gamma/beta
         
         IF (0==k1 .AND. 0==k2) THEN
-           ! the 1/3 ratio is ad hoc
-           u1=CMPLX(REAL(+p1/mu*(x3-L)/3.d0),0._4)
-           u2=CMPLX(REAL(+p2/mu*(x3-L)/3.d0),0._4)
-           u3=CMPLX(REAL(+p3/mu*(x3-L)*(alpha-1.d0)/(1.d0+2.d0*L*alpha*gamma*(1.d0-alpha))/3.d0),0._4)
+           u1=CMPLX(REAL(+p1/mu*(x3-L)),0._4)
+           u2=CMPLX(REAL(+p2/mu*(x3-L)),0._4)
+           u3=CMPLX(REAL(+p3/mu*(x3-L)*(1.d0-alpha)/(1.d0+2.d0*L*alpha*gamma*(1.d0-alpha))),0._4)
            !u1=CMPLX(0._4,0._4)
            !u2=CMPLX(0._4,0._4)
            !u3=CMPLX(0._4,0._4)

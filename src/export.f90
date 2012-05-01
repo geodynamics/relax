@@ -40,7 +40,7 @@ CONTAINS
   !-------------------------------------------------------------------
   SUBROUTINE reporttime(i,t,repfile)
     INTEGER, INTENT(IN) :: i
-    CHARACTER(80), INTENT(IN) :: repfile
+    CHARACTER(256), INTENT(IN) :: repfile
     REAL*8, INTENT(IN) :: t
 
     INTEGER :: iostatus
@@ -65,7 +65,7 @@ CONTAINS
 
   SUBROUTINE report(i,t,file1,file2,file3,sx1,sx2,repfile)
     INTEGER, INTENT(IN) :: i,sx1,sx2
-    CHARACTER(80), INTENT(IN) :: file1,file2,file3,repfile
+    CHARACTER(256), INTENT(IN) :: file1,file2,file3,repfile
     REAL*8, INTENT(IN) :: t
 
     INTEGER :: iostatus, ind1,ind2,ind3
@@ -95,7 +95,7 @@ CONTAINS
   SUBROUTINE export2d(data,sx1,sx2,filename)
     INTEGER, INTENT(IN) :: sx1,sx2
     REAL*4, INTENT(IN), DIMENSION(sx1,sx2) :: data
-    CHARACTER(80), INTENT(IN) :: filename
+    CHARACTER(256), INTENT(IN) :: filename
 
     INTEGER :: iostatus,i1,i2
     CHARACTER(15) :: form
@@ -124,7 +124,7 @@ CONTAINS
     INTEGER, INTENT(IN) :: sx1,sx2
     REAL*4, INTENT(IN), DIMENSION(sx1,sx2) :: z
     REAL*8, INTENT(IN), DIMENSION(sx1,sx2) :: x,y
-    CHARACTER(80), INTENT(IN) :: filename
+    CHARACTER(256), INTENT(IN) :: filename
 
     INTEGER :: iostatus,i1,i2
 
@@ -149,7 +149,7 @@ CONTAINS
   SUBROUTINE xyzwrite(data,sx1,sx2,dx1,dx2,filename)
     INTEGER, INTENT(IN) :: sx1,sx2
     REAL*4, INTENT(IN), DIMENSION(sx1,sx2) :: data
-    CHARACTER(80), INTENT(IN) :: filename
+    CHARACTER(256), INTENT(IN) :: filename
     REAL*8 :: dx1,dx2
 
     INTEGER :: iostatus,i1,i2
@@ -192,7 +192,7 @@ CONTAINS
     INTEGER, INTENT(IN) :: index,sx1,sx2,sx3,zone
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     REAL*8, INTENT(IN) :: oz,dx1,dx2,dx3,x0,y0,lon0,lat0,scale
-    CHARACTER(80), INTENT(IN) :: wdir
+    CHARACTER(256), INTENT(IN) :: wdir
 
     REAL*4, DIMENSION(:,:), ALLOCATABLE :: t1,t2,t3
     INTEGER :: iostatus,i,j,k,l
@@ -262,14 +262,14 @@ CONTAINS
     REAL*4, INTENT(IN), DIMENSION(sx1,sx2,sx3) :: c1,c2,c3
 #endif
     REAL*8, INTENT(IN) :: oz,dx1,dx2,dx3,x0,y0,lon0,lat0,scale
-    CHARACTER(80), INTENT(IN) :: wdir
+    CHARACTER(256), INTENT(IN) :: wdir
     INTEGER, INTENT(IN), OPTIONAL :: convention
 
     INTEGER :: iostatus,i1,i2,pos,conv
     CHARACTER(3) :: digit
     REAL*4, DIMENSION(:,:), ALLOCATABLE :: t1,t2,t3
     REAL*8, DIMENSION(:,:), ALLOCATABLE :: x,y
-    CHARACTER(80) :: file1,file2,file3
+    CHARACTER(256) :: file1,file2,file3
     REAL*8 :: lon1,lat1
 
     IF (PRESENT(convention)) THEN
@@ -354,11 +354,11 @@ CONTAINS
     REAL*4, INTENT(IN), DIMENSION(sx1,sx2,sx3) :: c1,c2,c3
 #endif
     REAL*8, INTENT(IN) :: oz,dx1,dx2,dx3
-    CHARACTER(80), INTENT(IN) :: wdir
+    CHARACTER(256), INTENT(IN) :: wdir
 
     INTEGER :: iostatus,pos
     REAL*4, DIMENSION(:,:), ALLOCATABLE :: temp1,temp2,temp3
-    CHARACTER(80) :: file1,file2,file3
+    CHARACTER(256) :: file1,file2,file3
     CHARACTER(3) :: digit
 
     ALLOCATE(temp1(sx1,sx2),temp2(sx1,sx2),temp3(sx1,sx2),STAT=iostatus)
@@ -400,12 +400,12 @@ CONTAINS
     REAL*4, INTENT(IN), DIMENSION(sx1,sx2,sx3) :: c1,c2,c3
 #endif
     REAL*8, INTENT(IN) :: oz,dx3,time
-    CHARACTER(80), INTENT(IN) :: wdir,reportfilename
+    CHARACTER(256), INTENT(IN) :: wdir,reportfilename
 
     INTEGER :: iostatus,pos
     REAL*4, DIMENSION(:,:), ALLOCATABLE :: temp1,temp2,temp3
     CHARACTER(3) :: digit
-    CHARACTER(80) :: file1,file2,file3
+    CHARACTER(256) :: file1,file2,file3
     
     ALLOCATE(temp1(sx1,sx2),temp2(sx1,sx2),temp3(sx1,sx2),STAT=iostatus)
     IF (iostatus>0) STOP "could not allocate memory for export"
@@ -458,14 +458,14 @@ CONTAINS
     TYPE(VECTOR_STRUCT), INTENT(IN), DIMENSION(:) :: opts
     CHARACTER(LEN=4), INTENT(IN), DIMENSION(:) :: ptsname
     REAL*8, INTENT(IN) :: dx1,dx2,dx3,time,x0,y0,rot
-    CHARACTER(80), INTENT(IN) :: wdir
+    CHARACTER(256), INTENT(IN) :: wdir
     LOGICAL, INTENT(IN) :: isnew
 
     INTEGER :: i1,i2,i3,n,k
     REAL*8 :: u1,u2,u3,v1,v2,v3,x1,x2,x3,y1,y2,y3
     TYPE(TENSOR) :: lsig
     INTEGER :: i,iostatus
-    CHARACTER(80) :: file1,file2
+    CHARACTER(256) :: file1,file2
 
     i=INDEX(wdir," ")
     n=SIZE(ptsname)
@@ -567,7 +567,7 @@ CONTAINS
     INTEGER, INTENT(IN) :: n
     TYPE(VECTOR_STRUCT), DIMENSION(n) :: opts
     CHARACTER(LEN=4), DIMENSION(n) :: ptsname
-    CHARACTER(80) :: filename
+    CHARACTER(256) :: filename
 
     INTEGER :: k,iostatus
 
@@ -611,7 +611,7 @@ CONTAINS
     TYPE(PLANE_STRUCT), INTENT(IN), DIMENSION(nop) :: op
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     REAL*8, INTENT(IN) :: x0,y0,dx1,dx2,dx3
-    CHARACTER(80), INTENT(IN) :: wdir
+    CHARACTER(256), INTENT(IN) :: wdir
 
     INTEGER :: k,ns1,ns2
     TYPE(SLIPPATCH_STRUCT), DIMENSION(:,:), ALLOCATABLE :: slippatch
@@ -619,16 +619,16 @@ CONTAINS
     CHARACTER(3) :: digit
 #ifdef TXT_EXPORTEIGENSTRAIN
     INTEGER :: iostatus,i1,i2
-    CHARACTER(80) :: outfiletxt
+    CHARACTER(256) :: outfiletxt
 #endif
 !#_indef GRD_EXPORTEIGENSTRAIN
-    CHARACTER(80) :: fn11,fn12,fn13,fn22,fn23,fn33
+    CHARACTER(256) :: fn11,fn12,fn13,fn22,fn23,fn33
     INTEGER :: j,iostat,j1,j2
     REAL*4, ALLOCATABLE, DIMENSION(:,:) :: temp11,temp12,temp13, &
                                            temp22,temp23,temp33
     REAL*8 :: rland=9998.,rdum=9999.
     REAL*8 :: xmin,ymin
-    CHARACTER(80) :: title="monitor tensor field "
+    CHARACTER(256) :: title="monitor tensor field "
 !#_endif
 
     IF (nop .le. 0) RETURN
@@ -741,7 +741,7 @@ END SUBROUTINE exportplanestress
     REAL*4, INTENT(IN), DIMENSION(sx1,sx2,sx3) :: field
 #endif
     REAL*8, INTENT(IN) :: x0,y0,dx1,dx2,dx3
-    CHARACTER(80), INTENT(IN) :: wdir
+    CHARACTER(256), INTENT(IN) :: wdir
 
     INTEGER :: k,ns1,ns2,pos
     TYPE(SLIPPATCH_STRUCT), DIMENSION(:,:), ALLOCATABLE :: slippatch
@@ -749,15 +749,15 @@ END SUBROUTINE exportplanestress
     CHARACTER(3) :: digit
 #ifdef TXT_EXPORTEIGENSTRAIN
     INTEGER :: iostatus,i1,i2
-    CHARACTER(80) :: outfiletxt
+    CHARACTER(256) :: outfiletxt
 #endif
 !#_indef GRD_EXPORTEIGENSTRAIN
-    CHARACTER(80) :: outfilegrd
+    CHARACTER(256) :: outfilegrd
     INTEGER :: j,iostat,j1,j2
     REAL*4, ALLOCATABLE, DIMENSION(:,:) :: temp
     REAL*8 :: rland=9998.,rdum=9999.
     REAL*8 :: xmin,ymin
-    CHARACTER(80) :: title="monitor field "
+    CHARACTER(256) :: title="monitor field "
 !#_endif
 
     IF (nop .le. 0) RETURN
@@ -884,12 +884,12 @@ END SUBROUTINE exporteigenstrain
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
     REAL*8, INTENT(IN) :: x0,y0,dx1,dx2,dx3,beta
-    CHARACTER(80), INTENT(IN) :: wdir
+    CHARACTER(256), INTENT(IN) :: wdir
 
     INTEGER :: k,ns1,ns2,pos
     CHARACTER(5) :: sdigit
     CHARACTER(3) :: digit
-    CHARACTER(80) :: outfile
+    CHARACTER(256) :: outfile
     INTEGER :: skip=3
     INTEGER :: iostatus,i1,i2
 
@@ -990,7 +990,7 @@ END SUBROUTINE exportcreep_asc
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
     REAL*8, INTENT(IN) :: x0,y0,dx1,dx2,dx3,beta
-    CHARACTER(80), INTENT(IN) :: wdir
+    CHARACTER(256), INTENT(IN) :: wdir
 
     INTEGER :: k,ns1,ns2,pos
     CHARACTER(5) :: sdigit
@@ -999,8 +999,8 @@ END SUBROUTINE exportcreep_asc
     REAL*4, ALLOCATABLE, DIMENSION(:,:) :: temp1,temp2,temp3
     REAL*8 :: rland=9998.,rdum=9999.
     REAL*8 :: xmin,ymin
-    CHARACTER(80) :: title="monitor field "
-    CHARACTER(80) :: file1,file2,file3
+    CHARACTER(256) :: title="monitor field "
+    CHARACTER(256) :: file1,file2,file3
 
     IF (np .le. 0) RETURN
 
@@ -1114,12 +1114,12 @@ END SUBROUTINE exportcreep_grd
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
     REAL*8, INTENT(IN) :: x0,y0,dx1,dx2,dx3,beta
-    CHARACTER(80), INTENT(IN) :: wdir
+    CHARACTER(256), INTENT(IN) :: wdir
 
     INTEGER :: k,ns1,ns2,pos
     CHARACTER(5) :: sdigit
     CHARACTER(3) :: digit
-    CHARACTER(80) :: outfile
+    CHARACTER(256) :: outfile
     INTEGER :: skip=3
     INTEGER :: j,iostatus,i1,i2
 
@@ -1197,7 +1197,7 @@ END SUBROUTINE exportcreep_vtk
     INTEGER, INTENT(IN) :: sx1,sx2,sx3,index
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     REAL*8, INTENT(IN) :: dx1,dx2,dx3,origx,origy,oz
-    CHARACTER(80), INTENT(IN) :: wdir
+    CHARACTER(256), INTENT(IN) :: wdir
 
     REAL*4, DIMENSION(:,:), ALLOCATABLE :: t1,t2,t3
     INTEGER :: iostatus,i,j,k,l
@@ -1259,14 +1259,14 @@ END SUBROUTINE exportcreep_vtk
     REAL*4, INTENT(IN), DIMENSION(sx1,sx2,sx3) :: c1,c2,c3
 #endif
     REAL*8, INTENT(IN) :: dx1,dx2,dx3,origx,origy,oz
-    CHARACTER(80), INTENT(IN) :: wdir
+    CHARACTER(256), INTENT(IN) :: wdir
     INTEGER, INTENT(IN), OPTIONAL :: convention
 
     REAL*4, DIMENSION(:,:), ALLOCATABLE :: temp1,temp2,temp3
     REAL*8 :: rland=9998.,rdum=9999.
     INTEGER :: iostatus,k,pos,conv
     REAL*8 :: xmin,ymin
-    CHARACTER(80) :: file1,file2,file3
+    CHARACTER(256) :: file1,file2,file3
     CHARACTER(3) :: digit
 
     IF (PRESENT(convention)) THEN
@@ -1348,7 +1348,7 @@ END SUBROUTINE exportcreep_vtk
   SUBROUTINE exportvtk_grid(sx1,sx2,sx3,dx1,dx2,dx3,cgfilename)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
     REAL*8, INTENT(IN) :: dx1,dx2,dx3
-    CHARACTER(80), INTENT(IN) :: cgfilename
+    CHARACTER(256), INTENT(IN) :: cgfilename
 
     INTEGER :: iostatus
     CHARACTER :: q
@@ -1419,7 +1419,7 @@ END SUBROUTINE exportcreep_vtk
   SUBROUTINE exportxy_rfaults(e,x0,y0,rffilename)
     TYPE(EVENT_STRUC), INTENT(IN) :: e
     REAL*8, INTENT(IN) :: x0, y0
-    CHARACTER(80), INTENT(IN) :: rffilename
+    CHARACTER(256), INTENT(IN) :: rffilename
 
     INTEGER :: iostatus,k
     CHARACTER :: q
@@ -1495,14 +1495,15 @@ END SUBROUTINE exportcreep_vtk
   !------------------------------------------------------------------
   SUBROUTINE exportvtk_rfaults(e,rffilename)
     TYPE(EVENT_STRUC), INTENT(IN) :: e
-    CHARACTER(80), INTENT(IN) :: rffilename
+    CHARACTER(256), INTENT(IN) :: rffilename
 
     INTEGER :: iostatus,k
     CHARACTER :: q
 
-    REAL*8 :: strike,dip,x1,x2,x3,cstrike,sstrike,cdip,sdip,L,W,slip,r
+    REAL*8 :: slip,opening
+    REAL*8 :: strike,dip,x1,x2,x3,cstrike,sstrike,cdip,sdip,L,W,r
          
-    REAL*8, DIMENSION(3) :: s,d
+    REAL*8, DIMENSION(3) :: s,d,n
 
     ! double-quote character
     q=char(34)
@@ -1519,6 +1520,9 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("  <PolyData>")')
 
     DO k=1,e%ns
+
+       ! dyke opening
+       opening=e%s(k)%opening
 
        ! fault slip
        slip=e%s(k)%slip
@@ -1553,6 +1557,11 @@ END SUBROUTINE exportcreep_vtk
        d(1)=+cstrike*sdip
        d(2)=-sstrike*sdip
        d(3)=+cdip
+
+       ! surface normal vector components
+       n(1)=+cdip*cstrike
+       n(2)=-cdip*sstrike
+       n(3)=-sdip
 
        WRITE (15,'("    <Piece NumberOfPoints=",a,"4",a," NumberOfPolys=",a,"1",a,">")'),q,q,q,q
        WRITE (15,'("      <Points>")')
@@ -1597,6 +1606,20 @@ END SUBROUTINE exportcreep_vtk
        WRITE (15,'(3ES11.2)'), (s(1)*cos(r)+d(1)*sin(r))*slip, &
                                (s(2)*cos(r)+d(2)*sin(r))*slip, &
                                (s(3)*cos(r)+d(3)*sin(r))*slip
+
+       WRITE (15,'("        </DataArray>")')
+       WRITE (15,'("      </CellData>")')
+
+       WRITE (15,'("      <CellData Normals=",a,"opening",a,">")'), q,q
+       WRITE (15,'("        <DataArray type=",a,"Float32",a, &
+                           	" Name=",a,"opening",a, &
+                                " NumberOfComponents=",a,"3",a, &
+                                " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+
+
+       WRITE (15,'(3ES11.2)'), n(1)*opening, &
+                               n(2)*opening, &
+                               n(3)*opening
 
        WRITE (15,'("        </DataArray>")')
        WRITE (15,'("      </CellData>")')
@@ -1666,7 +1689,7 @@ END SUBROUTINE exportcreep_vtk
     INTEGER, INTENT(IN) :: sx1,sx2,sx3,nsop
     REAL*8, INTENT(IN) :: dx1,dx2,dx3
     TYPE(SEGMENT_STRUCT), INTENT(INOUT), DIMENSION(nsop) :: sop
-    CHARACTER(80), INTENT(IN) :: rffilename
+    CHARACTER(256), INTENT(IN) :: rffilename
     INTEGER, INTENT(IN), OPTIONAL :: convention
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3), OPTIONAL :: sig
 
@@ -1803,7 +1826,7 @@ END SUBROUTINE exportcreep_vtk
     INTEGER, INTENT(IN) :: sx1,sx2,sx3,nsop
     REAL*8, INTENT(IN) :: dx1,dx2,dx3
     TYPE(SEGMENT_STRUCT), INTENT(INOUT), DIMENSION(nsop) :: sop
-    CHARACTER(80), INTENT(IN) :: rffilename
+    CHARACTER(256), INTENT(IN) :: rffilename
     INTEGER, INTENT(IN), OPTIONAL :: convention
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3), OPTIONAL :: sig
 
@@ -2033,13 +2056,13 @@ END SUBROUTINE exportcreep_vtk
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(SEGMENT_STRUCT), INTENT(INOUT), DIMENSION(nsop) :: sop
     REAL*8, INTENT(IN) :: dx1,dx2,dx3,time
-    CHARACTER(80), INTENT(IN) :: wdir
+    CHARACTER(256), INTENT(IN) :: wdir
     LOGICAL, INTENT(IN) :: isnew
 
     INTEGER :: iostatus,k,i1,i2,i3
     CHARACTER :: q
     CHARACTER(4) :: digit4
-    CHARACTER(80) :: file
+    CHARACTER(256) :: file
     REAL*8 :: strike,dip,x1,x2,x3,cstrike,sstrike,cdip,sdip,L,W
     ! segment normal vector, strike direction, dip direction
     REAL*8, DIMENSION(3) :: n,s,d
@@ -2150,7 +2173,7 @@ END SUBROUTINE exportcreep_vtk
   !------------------------------------------------------------------
   SUBROUTINE exportvtk_rectangle(x1,x2,x3,L,W,strike,dip,filename)
     REAL*8 :: x1,x2,x3,L,W,strike,dip
-    CHARACTER(80), INTENT(IN) :: filename
+    CHARACTER(256), INTENT(IN) :: filename
 
     INTEGER :: iostatus
     CHARACTER :: q
@@ -2237,7 +2260,7 @@ END SUBROUTINE exportcreep_vtk
   !------------------------------------------------------------------
   SUBROUTINE exportxy_brick(x1,x2,x3,L,W,T,strike,dip,filename)
     REAL*8 :: x1,x2,x3,L,W,T,strike,dip
-    CHARACTER(80), INTENT(IN) :: filename
+    CHARACTER(256), INTENT(IN) :: filename
 
     INTEGER :: iostatus
 
@@ -2298,7 +2321,7 @@ END SUBROUTINE exportcreep_vtk
   !------------------------------------------------------------------
   SUBROUTINE exportvtk_brick(x1,x2,x3,L,W,T,strike,dip,filename)
     REAL*8 :: x1,x2,x3,L,W,T,strike,dip
-    CHARACTER(80), INTENT(IN) :: filename
+    CHARACTER(256), INTENT(IN) :: filename
 
     INTEGER :: iostatus
     CHARACTER :: q
@@ -2437,7 +2460,7 @@ END SUBROUTINE exportcreep_vtk
     REAL*4, INTENT(IN), DIMENSION(sx1,sx2,sx3) :: u1,u2,u3
 #endif
     REAL*8, INTENT(IN) :: dx1,dx2,dx3
-    CHARACTER(80), INTENT(IN) :: vcfilename
+    CHARACTER(256), INTENT(IN) :: vcfilename
 
     INTEGER :: iostatus,idum,i1,i2,i3
     CHARACTER :: q
@@ -2578,7 +2601,7 @@ END SUBROUTINE exportcreep_vtk
     REAL*4, INTENT(IN), DIMENSION(sx1,sx2,sx3) :: u1,u2,u3
 #endif
     REAL*8, INTENT(IN) :: dx1,dx2,dx3,oz
-    CHARACTER(80), INTENT(IN) :: vcfilename
+    CHARACTER(256), INTENT(IN) :: vcfilename
 
     INTEGER :: iostatus,idum,i1,i2
     CHARACTER :: q

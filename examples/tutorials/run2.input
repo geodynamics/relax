@@ -11,7 +11,7 @@
 # the slip distribution on faults beta=0.2 and beta=0.3 are good values
 # nyquist is the minimum size of fault patches, relative to the sampling size
 # sampling size, smoothing & nyquist (dx1,dx2,dx3,beta,nq)
-0.05 0.05 0.05 0.2 2
+0.05 0.05 0.05 0.2 0000
 # origin position & rotation
 0 0 0
 # observation depth (displacements and stress) (stress is only exported in GRD)
@@ -24,7 +24,7 @@ output2
 1 1 8.33e-4
 # integration time refers to the length in units of time of the simulation.
 # integration time (t1)
-100 -1 0.5
+00 -1 0.5
 # observation planes are arbitrary planes where the inelastic strain rate
 # is sampled for output.
 # number of observation planes
@@ -61,11 +61,13 @@ output2
 # number of coseismic events
 1
 # number of shear dislocations (strike-slip and dip-slip faults)
+0
+# index slip x1 x2 x3 length width strike dip rake
+#     1    1 -1  0 0.4      2     1      0  45   90
+# number of tensile cracks
 1
 # index slip x1 x2 x3 length width strike dip rake
-      1    1 -1  0  0      2     1      0  90    0
-# number of tensile cracks
-0
+      1    1 -1  0  0      2     1      0  70   90
 # volumetric deformation (Mogi source)
 # number of dilatation sources
 0

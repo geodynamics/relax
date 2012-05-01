@@ -193,6 +193,7 @@ PROGRAM relax
   USE types
   USE input
   USE green
+  USE green_space
   USE elastic3d
   USE viscoelastic3d
   USE friction3d
@@ -213,7 +214,7 @@ PROGRAM relax
   REAL*8 :: maxwell(3)
   TYPE(SIMULATION_STRUC) :: in
 #ifdef VTK
-  CHARACTER(80) :: filename,title,name
+  CHARACTER(256) :: filename,title,name
   CHARACTER(3) :: digit
 #endif
   CHARACTER(4) :: digit4
@@ -349,6 +350,12 @@ PROGRAM relax
      ! apply the 3d elastic transfer function
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3, &
                                in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
+
+     ! add displacement from analytic solutions for small patches (avoid
+     ! aliasing)
+     CALL dislocations_disp(in%events(e),in%lambda,in%mu, &
+                            in%sx1,in%sx2,in%sx3, &
+                            in%dx1,in%dx2,in%dx3,v1,v2,v3)
   END IF
   
   ! transfer solution
@@ -360,6 +367,12 @@ PROGRAM relax
   CALL tensorfieldadd(sig,tau,in%sx1,in%sx2,in%sx3/2,c1=0._4,c2=-1._4)
   CALL stressupdate(u1,u2,u3,in%lambda,in%mu, &
                     in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,sig)
+
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -   export observation points, map view of displacement,
+  ! -   map view of stress components, Coulomb stress on observation
+  ! -   patches, and full displacement and stress field.
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   ! export displacements
 #ifdef TXT
@@ -413,7 +426,7 @@ PROGRAM relax
 
   ! export initial stress
 #ifdef GRD
-  CALL exportplanestress(sig,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
+  CALL exportplanestress(sig,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi-1)
   IF (in%isoutputgrd .AND. in%isoutputstress) THEN
      CALL exportstressgrd(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
                           in%ozs,in%x0,in%y0,in%wdir,0)
@@ -463,6 +476,10 @@ PROGRAM relax
   IF (in%interval .LE. 0) THEN
      GOTO 100 ! no time integration
   END IF
+
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -   start the relaxation
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   ALLOCATE(moment(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
   IF (iostatus>0) STOP "could not allocate the mechanical structure"
@@ -716,6 +733,10 @@ PROGRAM relax
              in%opts,in%ptsname,t,in%wdir,.FALSE.,in%x0,in%y0,in%rot)
      END IF
 
+     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     ! -   export displacement and stress
+     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
      ! output only at discrete intervals (skip=0, odt>0),
      ! or every "skip" computational steps (skip>0, odt<0),
      ! or anytime a coseismic event occurs
@@ -807,6 +828,7 @@ PROGRAM relax
 
         ! export stress
 #ifdef GRD
+        CALL exportplanestress(sig,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
         IF (in%isoutputgrd .AND. in%isoutputstress) THEN
            CALL exportstressgrd(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
                                 in%ozs,in%x0,in%y0,in%wdir,oi)
@@ -942,12 +964,15 @@ CONTAINS
     IF (.NOT. (PRESENT(eigenstress))) THEN
        ! forcing term in equivalent body force
        DO i=1,event%ns
-          ! adding sources in the space domain
-          CALL source(mu,slip_factor*event%s(i)%slip, &
-               event%s(i)%x,event%s(i)%y,event%s(i)%z, &
-               event%s(i)%width,event%s(i)%length, &
-               event%s(i)%strike,event%s(i)%dip,event%s(i)%rake, &
-               event%s(i)%beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3,t1,t2,t3)
+          IF (in%nyquist*MIN(in%dx1,in%dx2,in%dx3).LT.event%s(i)%length .OR. &
+              in%nyquist*MIN(in%dx1,in%dx2,in%dx3).LT.event%s(i)%width) THEN
+             ! adding sources in the space domain
+             CALL source(mu,slip_factor*event%s(i)%slip, &
+                  event%s(i)%x,event%s(i)%y,event%s(i)%z, &
+                  event%s(i)%width,event%s(i)%length, &
+                  event%s(i)%strike,event%s(i)%dip,event%s(i)%rake, &
+                  event%s(i)%beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3,t1,t2,t3)
+          END IF
        END DO
     ELSE
        ! forcing term in moment density
@@ -975,17 +1000,20 @@ CONTAINS
     IF (.NOT. (PRESENT(eigenstress))) THEN
        ! forcing term in equivalent body force
        DO i=1,event%nt
-          ! adding sources in the space domain
-          CALL tensilesource(lambda,mu,slip_factor*event%ts(i)%slip, &
-               event%ts(i)%x,event%ts(i)%y,event%ts(i)%z, &
-               event%ts(i)%width,event%ts(i)%length, &
-               event%ts(i)%strike,event%ts(i)%dip, &
-               beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3)
+          IF (in%nyquist*MIN(in%dx1,in%dx2,in%dx3).LT.event%tsc(i)%length .OR. &
+              in%nyquist*MIN(in%dx1,in%dx2,in%dx3).LT.event%tsc(i)%width) THEN
+             ! adding sources in the space domain
+             CALL tensilesource(lambda,mu,slip_factor*event%ts(i)%opening, &
+                  event%ts(i)%x,event%ts(i)%y,event%ts(i)%z, &
+                  event%ts(i)%width,event%ts(i)%length, &
+                  event%ts(i)%strike,event%ts(i)%dip, &
+                  beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3)
+          END IF
        END DO
     ELSE
        ! forcing term in moment density
        DO i=1,event%nt
-          CALL momentdensitytensile(lambda,mu,slip_factor*event%ts(i)%slip, &
+          CALL momentdensitytensile(lambda,mu,slip_factor*event%ts(i)%opening, &
                event%ts(i)%x,event%ts(i)%y,event%ts(i)%z,&
                event%ts(i)%width,event%ts(i)%length, &
                event%ts(i)%strike,event%ts(i)%dip,event%ts(i)%rake, &
@@ -995,7 +1023,7 @@ CONTAINS
 
     DO i=1,event%nt
        ! removing corresponding eigenmoment
-       CALL momentdensitytensile(lambda,mu,slip_factor*event%ts(i)%slip, &
+       CALL momentdensitytensile(lambda,mu,slip_factor*event%ts(i)%opening, &
             event%ts(i)%x,event%ts(i)%y,event%ts(i)%z,&
             event%ts(i)%width,event%ts(i)%length, &
             event%ts(i)%strike,event%ts(i)%dip,event%ts(i)%rake, &
@@ -1030,6 +1058,66 @@ CONTAINS
     END DO
     
   END SUBROUTINE dislocations
+
+  !--------------------------------------------------------------------
+  !> subroutine dislocations_disp
+  !! evaluate the displacement due to the motion of dislocation (shear
+  !! and opening)
+  !!
+  !! \author sylvain barbot (01/01/08) - original form 
+  !--------------------------------------------------------------------
+  SUBROUTINE dislocations_disp(event,lambda,mu,sx1,sx2,sx3,dx1,dx2,dx3, &
+                          v1,v2,v3,factor)
+    TYPE(EVENT_STRUC), INTENT(IN) :: event
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3
+    REAL*8, INTENT(IN) :: lambda,mu,dx1,dx2,dx3
+    REAL*4, DIMENSION(:,:,:), INTENT(INOUT) :: v1,v2,v3
+    REAL*8, INTENT(IN), OPTIONAL :: factor
+    
+    INTEGER :: i
+    REAL*8 :: slip_factor
+    
+    IF (PRESENT(factor)) THEN
+       slip_factor=factor
+    ELSE
+       slip_factor=1._8
+    END IF
+    
+    ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ! -             shear dislocations
+    ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    ! forcing term in equivalent body force
+    DO i=1,event%ns
+       IF (in%nyquist*MIN(in%dx1,in%dx2,in%dx3).GE.event%s(i)%length .OR. &
+           in%nyquist*MIN(in%dx1,in%dx2,in%dx3).GE.event%s(i)%width) THEN
+          ! adding sources in the space domain
+          CALL grnfct_okada(lambda,mu,slip_factor*event%sc(i)%slip,0._8, &
+               event%sc(i)%x,event%sc(i)%y,event%sc(i)%z, &
+               event%sc(i)%width,event%sc(i)%length, &
+               event%sc(i)%strike,event%sc(i)%dip,event%sc(i)%rake, &
+               sx1,sx2,sx3/2,dx1,dx2,dx3,v1,v2,v3)
+       END IF
+    END DO
+
+    ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ! -             load tensile cracks
+    ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    ! forcing term in equivalent body force
+    DO i=1,event%nt
+       IF (in%nyquist*MIN(in%dx1,in%dx2,in%dx3).GE.event%tsc(i)%length .OR. &
+           in%nyquist*MIN(in%dx1,in%dx2,in%dx3).GE.event%tsc(i)%width) THEN
+          ! adding sources in the space domain
+          CALL grnfct_okada(lambda,mu,0._8,slip_factor*event%tsc(i)%opening, &
+               event%tsc(i)%x,event%tsc(i)%y,event%tsc(i)%z, &
+               event%tsc(i)%width,event%tsc(i)%length, &
+               event%tsc(i)%strike,event%tsc(i)%dip,0._8, &
+               sx1,sx2,sx3/2,dx1,dx2,dx3,v1,v2,v3)
+       END IF
+    END DO
+
+  END SUBROUTINE dislocations_disp
 
   !--------------------------------------------------------------------
   !> function IsOutput

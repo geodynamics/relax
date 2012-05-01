@@ -8,7 +8,7 @@ if [ $# -eq 0 ]; then
         echo "$self converts an .flt file to a vtp polygon"
 	echo "file in xml format for visualization in Paraview"
 	echo ""
-	echo "usage: $self [-c com] file.flt"
+	echo "usage: $self file.flt"
 	echo "       $self file1.flt file2.flt file3.flt "
 	echo ""
 	echo "file foo.flt is converted to foo.vtp"
@@ -16,23 +16,6 @@ if [ $# -eq 0 ]; then
 	echo ""
 
 	exit
-fi
-
-# optional command-line parameters
-while getopts "c:" flag
-do
-  case "$flag" in
-    c) cset=1;com=$OPTARG;;
-  esac
-done
-for item in $cset ;do
-	shift;shift
-done
-
-if [ "$cset" != "1" ]; then
-	com=">"
-else
-	echo $self: using separator $com
 fi
 
 # loop over list of files to convert
@@ -59,6 +42,7 @@ grep -v "#" $FLTFILE | awk '
 	}
 	{
 		i=$1;
+		if (NF==9){
 		x1=$2;
 		x2=$3;
 		x3=$4;
@@ -66,6 +50,20 @@ grep -v "#" $FLTFILE | awk '
 		W=$6;
 		strike=$7*pi/180;
 		dip=$8*pi/180;
+		} else {
+		slip=$2
+		x1=$3;
+		x2=$4;
+		x3=$5;
+		L=$6;
+		W=$7;
+		strike=$8*pi/180;
+		dip=$9*pi/180;
+		rake=$10*pi/180;
+		b[0]=slip*cos(strike)*cos(rake)+sin(strike)*cos(dip)*sin(rake);
+		b[1]=slip*sin(strike)*cos(rake)-cos(strike)*cos(dip)*sin(rake);
+		b[2]=slip*(-1)*sin(dip)*sin(rake);
+		}
 		s[0]=cos(strike);
 		s[1]=sin(strike);
 		s[2]=0;
@@ -89,6 +87,13 @@ grep -v "#" $FLTFILE | awk '
 		printf("          4\n");
 		printf("        </DataArray>\n");
 		printf("      </Polys>\n");
+		if (10==NF){
+		printf("      <CellData Normals=\"slip\">\n");
+		printf("        <DataArray type=\"Float32\" Name=\"slip\" NumberOfComponents=\"3\" format=\"ascii\">\n");
+		printf("%f %f %f\n",b[0],b[1],b[2]);
+		printf("        </DataArray>\n");
+		printf("      </CellData>\n");
+		}
 		printf("    </Piece>\n");
 	}
 	END{

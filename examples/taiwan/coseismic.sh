@@ -1,6 +1,6 @@
 #/bin/sh
 
-# Chi Chi coseismic displacements
+# 1999 Mw 7.6 Chi Chi coseismic displacements
 
 FLT=faults/chichi.flt
 # output directory based on script name.
@@ -11,7 +11,7 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time ../../relax $* <<EOF | tee $WDIR/in.param
+time ../../build/relax $* <<EOF | tee $WDIR/in.param
 # grid dimension (sx1,sx2,sx3)
 512 512 512
 # sampling (dx1,dx2,dx3), smoothing (beta, nyquist)

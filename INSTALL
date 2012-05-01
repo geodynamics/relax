@@ -42,6 +42,15 @@ find them.  For example, on Mac OS X using Fink, you may have to run the command
 
   export DYLD_LIBRARY_PATH=/sw/lib:/sw/lib/netcdf-gfortran/lib
 
+To build Relax on Caltech's Fram cluster, use the commands:
+
+module load ifort
+module load gmt
+
+CPPFLAGS="-I/opt/GMT-4.5.7/netcdf/include" LDFLAGS="-L/usr/lib64 -lgdal" ./waf configure --gmt-dir=/opt/GMT-4.5.7 --mkl-incdir=/opt/intel/composer_xe_2011_sp1.6.233/mkl/include/ --mkl-libdir=/opt/intel/composer_xe_2011_sp1.6.233/mkl/lib/intel64/ --check-c-compiler=icc --check-fortran-compiler=ifort
+
+./waf build
+
 -------
 Doxygen
 -------

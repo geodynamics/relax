@@ -47,8 +47,8 @@ CONTAINS
     INTEGER, OPTIONAL, INTENT(INOUT) :: unit
 
     CHARACTER :: ch
-    CHARACTER(180) :: dataline
-    CHARACTER(80) :: rffilename,filename
+    CHARACTER(256) :: dataline
+    CHARACTER(256) :: rffilename,filename
 #ifdef VTK
     CHARACTER(3) :: digit
     CHARACTER(4) :: digit4
@@ -904,20 +904,22 @@ CONTAINS
        ALLOCATE(in%inter%ts(in%inter%nt),in%inter%tsc(in%inter%nt),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate the tensile source list"
        PRINT 2000
-       PRINT '(a)',"no.  opening       xs       ys       ", &
-                   "zs  length   width strike   dip"
+       PRINT '("no.  opening       xs       ys       ", &
+                   "zs  length   width strike   dip")'
        PRINT 2000
        DO k=1,in%inter%nt
           CALL getdata(iunit,dataline)
-          READ  (dataline,*) i,in%inter%ts(k)%slip, &
+          READ  (dataline,*) i,in%inter%ts(k)%opening, &
                in%inter%ts(k)%x,in%inter%ts(k)%y,in%inter%ts(k)%z, &
                in%inter%ts(k)%length,in%inter%ts(k)%width, &
                in%inter%ts(k)%strike,in%inter%ts(k)%dip
+
+          in%inter%ts(k)%slip=0._8
           ! copy the input format for display
           in%inter%tsc(k)=in%inter%ts(k)
           
           PRINT '(I3.3,4ES9.2E1,2ES8.2E1,f7.1,f6.1)', i, &
-               in%inter%tsc(k)%slip,&
+               in%inter%tsc(k)%opening, &
                in%inter%tsc(k)%x,in%inter%tsc(k)%y,in%inter%tsc(k)%z, &
                in%inter%tsc(k)%length,in%inter%tsc(k)%width, &
                in%inter%tsc(k)%strike,in%inter%tsc(k)%dip
@@ -1063,10 +1065,11 @@ CONTAINS
                 minwidth =in%events(e)%s(k)%width
              END IF
              
+             ! this is replaced by the exact solution (Okada 1992)
              ! smooth out the slip distribution
-             CALL antialiasingfilter(in%events(e)%s(k)%slip, &
-                              in%events(e)%s(k)%length,in%events(e)%s(k)%width, &
-                              in%dx1,in%dx2,in%dx3,in%nyquist)
+             !CALL antialiasingfilter(in%events(e)%s(k)%slip, &
+             !                 in%events(e)%s(k)%length,in%events(e)%s(k)%width, &
+             !                 in%dx1,in%dx2,in%dx3,in%nyquist)
 
              ! comply to Wang's convention
              CALL wangconvention(in%events(e)%s(k)%slip, &
@@ -1103,20 +1106,24 @@ CONTAINS
                STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the tensile source list"
           PRINT 2000
-          PRINT '(a)',"no. opening xs ys zs  length width  strike dip"
+          PRINT '("no.  opening       xs       ys       ", &
+                      "zs  length   width strike   dip")'
           PRINT 2000
           DO k=1,in%events(e)%nt
 
              CALL getdata(iunit,dataline)
-             READ  (dataline,*) i,in%events(e)%ts(k)%slip, &
+             READ  (dataline,*) i,in%events(e)%ts(k)%opening, &
                   in%events(e)%ts(k)%x,in%events(e)%ts(k)%y,in%events(e)%ts(k)%z, &
                   in%events(e)%ts(k)%length,in%events(e)%ts(k)%width, &
                   in%events(e)%ts(k)%strike,in%events(e)%ts(k)%dip
+
+             in%events(e)%ts(k)%slip=in%events(e)%ts(k)%opening
+
              ! copy the input format for display
              in%events(e)%tsc(k)=in%events(e)%ts(k)
              
              PRINT '(I3.3,4ES9.2E1,2ES8.2E1,f7.1,f6.1)',k, &
-                  in%events(e)%tsc(k)%slip,&
+                  in%events(e)%tsc(k)%opening,&
                   in%events(e)%tsc(k)%x,in%events(e)%tsc(k)%y,in%events(e)%tsc(k)%z, &
                   in%events(e)%tsc(k)%length,in%events(e)%tsc(k)%width, &
                   in%events(e)%tsc(k)%strike,in%events(e)%tsc(k)%dip
@@ -1132,10 +1139,11 @@ CONTAINS
                 minwidth =in%events(e)%ts(k)%width
              END IF
              
+             ! this is replaced by the exact solution (Okada 1992)
              ! smooth out the slip distribution
-             CALL antialiasingfilter(in%events(e)%ts(k)%slip, &
-                              in%events(e)%ts(k)%length,in%events(e)%ts(k)%width, &
-                              in%dx1,in%dx2,in%dx3,in%nyquist)
+             !CALL antialiasingfilter(in%events(e)%ts(k)%slip, &
+             !                 in%events(e)%ts(k)%length,in%events(e)%ts(k)%width, &
+             !                 in%dx1,in%dx2,in%dx3,in%nyquist)
 
              ! comply to Wang's convention
              CALL wangconvention(in%events(e)%ts(k)%slip, &
@@ -1145,6 +1153,16 @@ CONTAINS
                   in%x0,in%y0,in%rot)
 
           END DO
+#ifdef VTK
+          ! export the fault segments in VTK format for the current event
+          WRITE (digit,'(I3.3)') e
+
+          rffilename=trim(in%wdir)//"/rdykes-"//digit//".vtp"
+          CALL exportvtk_rfaults(in%events(e),rffilename)
+#endif
+          rffilename=trim(in%wdir)//"/rdykes-"//digit//".xy"
+          CALL exportxy_rfaults(in%events(e),in%x0,in%y0,rffilename)
+
           PRINT 2000
        END IF
        

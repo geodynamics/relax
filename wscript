@@ -196,6 +196,8 @@ def build(bld):
                         'src/ctfft.f',
                         'src/fourier.f90',
                         'src/green.f90',
+                        'src/okada/green_space.f90',
+                        'src/okada/dc3d.f',
                         'src/elastic3d.f90',
                         'src/friction3d.f90',
                         'src/viscoelastic3d.f90',

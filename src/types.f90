@@ -23,7 +23,7 @@ MODULE types
 
   TYPE SOURCE_STRUCT
      SEQUENCE
-     REAL*8 :: slip,x,y,z,width,length,strike,dip,rake,period,phase,beta
+     REAL*8 :: slip,x,y,z,width,length,strike,dip,rake,period,phase,beta,opening
   END TYPE SOURCE_STRUCT
 
   TYPE LAYER_STRUCT
@@ -113,10 +113,10 @@ MODULE types
      REAL*8 :: oz,ozs
 
      ! output directory
-     CHARACTER(80) :: wdir
+     CHARACTER(256) :: wdir
 
      ! filenames
-     CHARACTER(80) :: reportfilename,reporttimefilename
+     CHARACTER(256) :: reportfilename,reporttimefilename
 
      ! elastic moduli and gravity parameter
      REAL*8 :: lambda,mu,gam
