@@ -50,14 +50,19 @@
 #
 # type relax --help to display options.
 #
-# modify the number of threads used with
+# modify the number of threads used with all parallel programs in the session with
 #
 #   export OMP_NUM_THREADS=N with sh and ksh shells
 #
 # or
 #
-#  setenv OMP_NUM_THREADS N with csh
+#   setenv OMP_NUM_THREADS N with csh
 #
+# alternatively, alter the number of threads used for the current command line with
+#
+#   OMP_NUM_THREADS=N command
+#
+# where N is the desired number of threads.
 
 WDIR=./output1
 
