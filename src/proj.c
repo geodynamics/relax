@@ -16,7 +16,7 @@ void proj_(double *x, double *y, int * n,
            double * lon0, double * lat0, int * zone) {
 
   projPJ pj_utm, pj_latlong;
-  int p, i;
+  int i;
   char zonestr[3];
   char cmd_utm[100], cmd_latlong[100];
   char * to;
@@ -47,14 +47,14 @@ void proj_(double *x, double *y, int * n,
   (*lon0)*=DEG_TO_RAD;
   (*lat0)*=DEG_TO_RAD;
 
-  p = pj_transform(pj_latlong, pj_utm, 1, 1, lon0, lat0, NULL);
+  pj_transform(pj_latlong, pj_utm, 1, 1, lon0, lat0, NULL);
 
   // add UTM coordinates of the origin
   for (i=0;i<(*n);i++){
     x[i]+=(*lon0);
     y[i]+=(*lat0);
   }
-  p = pj_transform(pj_utm, pj_latlong, (*n), 1, x, y, NULL);
+  pj_transform(pj_utm, pj_latlong, (*n), 1, x, y, NULL);
 
   // convert longitude and latitude to degrees
   for (i=0;i<(*n);i++){
