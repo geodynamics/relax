@@ -37,7 +37,7 @@ CONTAINS
 
     ! from Okada's subroutine DC3D0:
     INTEGER IRET
-    REAL*4 ALPHA,X,Y,Z,DEPTH,DIP,POT1,POT2,POT3,POT4,& 
+    REAL*4 ALPHA,X,Y,Z,DEPTH,DIP,POT3,POT4,& 
            UX,UY,UZ,UXX,UYX,UZX,UXY,UYY,UZY,UXZ,UYZ,UZZ
 
     ! more from Okada's subroutine DC3D:
@@ -47,7 +47,6 @@ CONTAINS
     REAL*8 degtorad,eps
     PARAMETER(degtorad=1.745329252E-02,eps=1.0d-06)
 
-    INTEGER is
     REAL*8 st,di,ra
     REAL*8 csst,ssst,csra,ssra,csdi,ssdi
 
@@ -58,7 +57,7 @@ CONTAINS
     DISL3=0.0
     AL1=0.0
     AW2=0.0
-    Z=-zrec
+    Z=REAL(-zrec)
 
     ! initialization
     disp(:)=0.d0

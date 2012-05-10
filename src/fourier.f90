@@ -135,18 +135,18 @@ CONTAINS
     
     DO i3=1,sx3
        IF (i3 < sx3/2+1) THEN
-          exp3=-(DBLE(i3)-1._8)
+          exp3=-REAL(DBLE(i3)-1._8,4)
        ELSE
-          exp3= (DBLE(sx3-i3)+1._8)
+          exp3= REAL(DBLE(sx3-i3)+1._8,4)
        END IF
        DO i2=1,sx2
           IF (i2 < sx2/2+1) THEN
-             exp2=-(DBLE(i2)-1._8)
+             exp2=-REAL(DBLE(i2)-1._8,4)
           ELSE
-             exp2= (DBLE(sx2-i2)+1._8)
+             exp2= REAL(DBLE(sx2-i2)+1._8,4)
           END IF
           DO i1=1,sx1/2+1
-             exp1=(DBLE(i1)-1._8)
+             exp1=REAL(DBLE(i1)-1._8,4)
              spec(2*i1-1:2*i1,i2,i3) = &
                   spec(2*i1-1:2*i1,i2,i3)*((-1._4)**(exp1+exp2+exp3))
           END DO
@@ -193,9 +193,9 @@ CONTAINS
     CALL sfftw_destroy_plan(plan)
 
    IF (FFT_INVERSE == direction) THEN
-     data=data/(sx1*dx1*sx2*dx2*sx3*dx3)
+     data=data/REAL(sx1*dx1*sx2*dx2*sx3*dx3,4)
    ELSE
-     data=data*(dx1*dx2*dx3)
+     data=data*REAL(dx1*dx2*dx3,4)
    END IF
 
   END SUBROUTINE fft3
@@ -375,9 +375,9 @@ CONTAINS
     CALL sfftw_destroy_plan(plan)
 
     IF (FFT_INVERSE == direction) THEN
-      data=data/(sx1*dx1*sx2*dx2)
+      data=data/REAL(sx1*dx1*sx2*dx2,4)
     ELSE
-      data=data*(dx1*dx2)
+      data=data*REAL(dx1*dx2,4)
     END IF
 
   END SUBROUTINE fft2
@@ -619,9 +619,9 @@ CONTAINS
 
     CALL ctfft(data,sx,1,direction,FOURT_DS,FOURT_WORK,FOURT_NW)
     IF (FFT_INVERSE == direction) THEN
-       data=data/(sx*dx)
+       data=data/(REAL(sx*dx,4))
     ELSE
-       data=data*dx
+       data=data*REAL(dx,4)
     END IF
 
   END SUBROUTINE fft1

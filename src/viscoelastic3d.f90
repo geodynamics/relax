@@ -81,15 +81,15 @@ CONTAINS
                     (u2(i1,i2p,i3)-u2(i1,i2m,i3))/px2+&
                     (u3(i1,i2,i3p)-u3(i1,i2,i3m))/px3)/3._8
              
-             s%s11=2._8*mu*( (u1(i1p,i2,i3)-u1(i1m,i2,i3))/px1-epskk )
-             s%s12=     mu*( (u1(i1,i2p,i3)-u1(i1,i2m,i3))/px2+ &
-                             (u2(i1p,i2,i3)-u2(i1m,i2,i3))/px1)
-             s%s13=     mu*( (u1(i1,i2,i3p)-u1(i1,i2,i3m))/px3+ &
-                             (u3(i1p,i2,i3)-u3(i1m,i2,i3))/px1)
-             s%s22=2._8*mu*( (u2(i1,i2p,i3)-u2(i1,i2m,i3))/px2-epskk )
-             s%s23=     mu*( (u2(i1,i2,i3p)-u2(i1,i2,i3m))/px3+ &
-                             (u3(i1,i2p,i3)-u3(i1,i2m,i3))/px2)
-             s%s33=2._8*mu*( (u3(i1,i2,i3p)-u3(i1,i2,i3m))/px3-epskk )
+             s%s11=REAL(2._8*mu*( (u1(i1p,i2,i3)-u1(i1m,i2,i3))/px1-epskk ))
+             s%s12=REAL(mu*( (u1(i1,i2p,i3)-u1(i1,i2m,i3))/px2+ &
+                             (u2(i1p,i2,i3)-u2(i1m,i2,i3))/px1))
+             s%s13=REAL(mu*( (u1(i1,i2,i3p)-u1(i1,i2,i3m))/px3+ &
+                             (u3(i1p,i2,i3)-u3(i1m,i2,i3))/px1))
+             s%s22=REAL(2._8*mu*( (u2(i1,i2p,i3)-u2(i1,i2m,i3))/px2-epskk ))
+             s%s23=REAL(mu*( (u2(i1,i2,i3p)-u2(i1,i2,i3m))/px3+ &
+                             (u3(i1,i2p,i3)-u3(i1,i2m,i3))/px2))
+             s%s33=REAL(2._8*mu*( (u3(i1,i2,i3p)-u3(i1,i2,i3m))/px3-epskk ))
              
              sig(i1,i2,i3)= s .minus. tau(i1,i2,i3)
              
@@ -200,10 +200,10 @@ CONTAINS
              moment(i1,i2,i3)=moment(i1,i2,i3) .plus. &
                   (REAL(2._8*mu*gammadot) .times. R)
 
-             tm=MIN(tm,tauc/mu/gammadot)
+             tm=MIN(tm,REAL(tauc/mu/gammadot))
 
              IF (PRESENT(gamma)) &
-                  gamma(i1,i2,i3)=gammadot
+                  gamma(i1,i2,i3)=REAL(gammadot)
              
           END DO
        END DO
