@@ -78,6 +78,11 @@ CXXFLAGS
     Selects compilation options for when the C++ compiler is used,
     e.g. "-Wall".
 
+FCFLAGS
+
+    Selects compilation options for when the Fortran compiler is used,
+    e.g. "-Wall".
+
 CPPFLAGS
 
     Selects C preprocessor options, e.g. "-DFOO=bar"
