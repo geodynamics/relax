@@ -687,9 +687,9 @@ PROGRAM relax
 
 #ifdef VTK
      IF (in%isoutputvtkrelax) THEN
-        u1r=u1r+Dt*v1
-        u2r=u2r+Dt*v2
-        u3r=u3r+Dt*v3 
+        u1r=REAL(u1r+Dt*v1)
+        u2r=REAL(u2r+Dt*v2)
+        u3r=REAL(u3r+Dt*v3) 
      END IF
 #endif
 
@@ -924,10 +924,8 @@ PROGRAM relax
 #endif
 
 0990 FORMAT (" I  |   Dt   | tm(ve) | tm(pl) | tm(as) |     t/tmax     | power  |  C:E^i | ")
-1000 FORMAT (I3.3,"*",ES9.2E2,"                            ",ES9.2E2,"/",ES7.2E1)
 1100 FORMAT (I3.3," ",ES9.2E2,3ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
 1101 FORMAT (I3.3,"*",ES9.2E2,3ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
-1200 FORMAT ("----------------------------------------------------------------------------")
 
 CONTAINS
 
