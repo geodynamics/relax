@@ -48,14 +48,10 @@ def options(opt):
     other.add_option('--use-ctfft', action='store_true', default=False,
                      help='Use slow internal CTFFT instead of MKL or FFTW')
 
-# def ifort_modifier_darwin(conf):
-#     from waflib.Tools import fc_config
-#     fc_config.fortran_modifier_darwin(conf)
-
 def configure(cnf):
-    # from waflib.Configure import conf
-    # conf(ifort_modifier_darwin)
     cnf.load('compiler_c compiler_fc')
+    
+    cnf.check_fortran()
 
     # Find Proj
     if cnf.options.proj_dir:
@@ -152,7 +148,7 @@ def configure(cnf):
                      use='openmp', define_name='IMKL_FFT')
 
     # Check for -zero or -finit-local-zero
-    frag="program main\n" + "end program main\n"
+    frag="program main\n  INTEGER :: foo\n  call exit(foo)\n" + "end program main\n"
     zero_flags=['-zero','-finit-local-zero']
     if cnf.options.zero_flag:
         zero_flags=[cnf.options.zero_flag]
@@ -160,7 +156,7 @@ def configure(cnf):
     for flag in zero_flags:
         try:
             cnf.check_fc(fragment=frag,msg="Checking option " + flag,
-                         fcflags=flag,uselib_store='zero')
+                         fcflags=flag,uselib_store='zero',execute=True)
         except:
             continue
         else:
