@@ -477,7 +477,7 @@ CONTAINS
        IF (isnew) THEN
           OPEN (UNIT=15,FILE=file1,IOSTAT=iostatus,FORM="FORMATTED")
           WRITE (15,'("#         t         u1         u2         u3        ", &
-                      "s11        s12        s13        s22        s23        s33")')
+                    & "s11        s12        s13        s22        s23        s33")')
           OPEN (UNIT=16,FILE=file2,IOSTAT=iostatus,FORM="FORMATTED")
        ELSE
           OPEN (UNIT=15,FILE=file1,POSITION="APPEND",&
@@ -618,8 +618,7 @@ CONTAINS
     CHARACTER(3) :: sdigit
     CHARACTER(3) :: digit
 #ifdef TXT_EXPORTEIGENSTRAIN
-    INTEGER :: iostatus,i1,i2
-    CHARACTER(256) :: outfiletxt
+    INTEGER :: iostatus
 #endif
 !#_indef GRD_EXPORTEIGENSTRAIN
     CHARACTER(256) :: fn11,fn12,fn13,fn22,fn23,fn33
@@ -806,7 +805,7 @@ END SUBROUTINE exportplanestress
 
        DO j2=1,ns2
           DO j1=1,ns1
-             temp(ns1+1-j1,j2)=slippatch(j1,j2)%slip
+             temp(ns1+1-j1,j2)=REAL(slippatch(j1,j2)%slip)
           END DO
        END DO
 
@@ -910,8 +909,8 @@ END SUBROUTINE exporteigenstrain
        IF (iostatus>0) STOP "could not open file for export"
           
        WRITE (15,'("#        x1         x2         x3          yr        yz", &
-                   "       slip strike-slip  dip-slip   velocity     ss vel", &
-                   "     ds vel       taus      sig11      sig12      sig13      sig22      sig23      sig33")')
+                 & "       slip strike-slip  dip-slip   velocity     ss vel", &
+                 & "     ds vel       taus      sig11      sig12      sig13      sig22      sig23      sig33")')
        WRITE (15,'(18ES11.3E2)') ((n(k)%patch(i1,i2)%x1,n(k)%patch(i1,i2)%x3,n(k)%patch(i1,i2)%x3, &
                                   n(k)%patch(i1,i2)%lx,n(k)%patch(i1,i2)%lz, &
                                   n(k)%patch(i1,i2)%slip, &
@@ -1031,9 +1030,9 @@ END SUBROUTINE exportcreep_asc
 
        DO i2=1,ns2
           DO i1=1,ns1
-             temp1(ns1+1-i1,i2)=n(k)%patch(i1,i2)%ds
-             temp2(ns1+1-i1,i2)=n(k)%patch(i1,i2)%ss
-             temp3(ns1+1-i1,i2)=n(k)%patch(i1,i2)%slip
+             temp1(ns1+1-i1,i2)=REAL(n(k)%patch(i1,i2)%ds)
+             temp2(ns1+1-i1,i2)=REAL(n(k)%patch(i1,i2)%ss)
+             temp3(ns1+1-i1,i2)=REAL(n(k)%patch(i1,i2)%slip)
           END DO
        END DO
 
@@ -1064,9 +1063,9 @@ END SUBROUTINE exportcreep_asc
 
        DO i2=1,ns2
           DO i1=1,ns1
-             temp1(ns1+1-i1,i2)=n(k)%patch(i1,i2)%vds
-             temp2(ns1+1-i1,i2)=n(k)%patch(i1,i2)%vss
-             temp3(ns1+1-i1,i2)=n(k)%patch(i1,i2)%v
+             temp1(ns1+1-i1,i2)=REAL(n(k)%patch(i1,i2)%vds)
+             temp2(ns1+1-i1,i2)=REAL(n(k)%patch(i1,i2)%vss)
+             temp3(ns1+1-i1,i2)=REAL(n(k)%patch(i1,i2)%v)
           END DO
        END DO
 
@@ -1120,8 +1119,7 @@ END SUBROUTINE exportcreep_grd
     CHARACTER(5) :: sdigit
     CHARACTER(3) :: digit
     CHARACTER(256) :: outfile
-    INTEGER :: skip=3
-    INTEGER :: j,iostatus,i1,i2
+    INTEGER :: iostatus,i1,i2
 
     IF (np .le. 0) RETURN
 
@@ -1158,25 +1156,25 @@ END SUBROUTINE exportcreep_grd
        WRITE (15,'("POINT_DATA ",i0)') (ns1)*(ns2)
        WRITE (15,'("SCALARS afterslip float")')
        WRITE (15,'("LOOKUP_TABLE default")')
-       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%slip,i1=1,ns1),i2=1,ns2)
+       WRITE (15,*) ((n(k)%patch(i1,i2)%slip,i1=1,ns1),i2=1,ns2)
        WRITE (15,'("SCALARS strike_slip float")')
        WRITE (15,'("LOOKUP_TABLE default")')
-       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%ss,i1=1,ns1),i2=1,ns2)
+       WRITE (15,*) ((n(k)%patch(i1,i2)%ss,i1=1,ns1),i2=1,ns2)
        WRITE (15,'("SCALARS dip-slip float")')
        WRITE (15,'("LOOKUP_TABLE default")')
-       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%ds,i1=1,ns1),i2=1,ns2)
+       WRITE (15,*) ((n(k)%patch(i1,i2)%ds,i1=1,ns1),i2=1,ns2)
        WRITE (15,'("SCALARS velocity float")')
        WRITE (15,'("LOOKUP_TABLE default")')
-       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%v,i1=1,ns1),i2=1,ns2)
+       WRITE (15,*) ((n(k)%patch(i1,i2)%v,i1=1,ns1),i2=1,ns2)
        WRITE (15,'("SCALARS velocity_strike_slip float")')
        WRITE (15,'("LOOKUP_TABLE default")')
-       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%vss,i1=1,ns1),i2=1,ns2)
+       WRITE (15,*) ((n(k)%patch(i1,i2)%vss,i1=1,ns1),i2=1,ns2)
        WRITE (15,'("SCALARS velocity_dip_slip float")')
        WRITE (15,'("LOOKUP_TABLE default")')
-       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%vds,i1=1,ns1),i2=1,ns2)
+       WRITE (15,*) ((n(k)%patch(i1,i2)%vds,i1=1,ns1),i2=1,ns2)
        WRITE (15,'("SCALARS shear_stress float")')
        WRITE (15,'("LOOKUP_TABLE default")')
-       WRITE (15,'(f)') ((n(k)%patch(i1,i2)%taus,i1=1,ns1),i2=1,ns2)
+       WRITE (15,*) ((n(k)%patch(i1,i2)%taus,i1=1,ns1),i2=1,ns2)
        CLOSE(15)
 
     END DO
@@ -1368,9 +1366,9 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("    <Piece NumberOfPoints=",a,"8",a," NumberOfPolys=",a,"6",a,">")'),q,q,q,q
     WRITE (15,'("      <Points>")')
     WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                            " Name=",a,"Computational Grid",a, &
-                            " NumberOfComponents=",a,"3",a, &
-                            " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
+                           & " Name=",a,"Computational Grid",a, &
+                           & " NumberOfComponents=",a,"3",a, &
+                           & " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
     WRITE (15,'(24ES9.2E1)') &
                  -sx1*dx1/2, -sx2*dx2/2, sx3*dx3/2, &
                  +sx1*dx1/2, -sx2*dx2/2, sx3*dx3/2, &
@@ -1384,17 +1382,17 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("      </Points>")')
     WRITE (15,'("      <Polys>")')
     WRITE (15,'("        <DataArray type=",a,"Int32",a, &
-                             " Name=",a,"connectivity",a, &
-                             " format=",a,"ascii",a, &
-                             " RangeMin=",a,"0",a, &
-                             " RangeMax=",a,"7",a,">")'), q,q,q,q,q,q,q,q,q,q
+                            & " Name=",a,"connectivity",a, &
+                            & " format=",a,"ascii",a, &
+                            & " RangeMin=",a,"0",a, &
+                            & " RangeMax=",a,"7",a,">")'), q,q,q,q,q,q,q,q,q,q
     WRITE (15,'("0 1 2 3 4 5 6 7 2 3 7 6 0 3 7 4 0 1 5 4 1 2 6 5")')
     WRITE (15,'("        </DataArray>")')
     WRITE (15,'("        <DataArray type=",a,"Int32",a, &
-                                  " Name=",a,"offsets",a, &
-                                  " format=",a,"ascii",a, &
-                                  " RangeMin=",a,"4",a, &
-                                  " RangeMax=",a,"24",a,">")'), q,q,q,q,q,q,q,q,q,q
+                                 & " Name=",a,"offsets",a, &
+                                 & " format=",a,"ascii",a, &
+                                 & " RangeMin=",a,"4",a, &
+                                 & " RangeMax=",a,"24",a,">")'), q,q,q,q,q,q,q,q,q,q
     WRITE (15,'("          4 8 12 16 20 24")')
     WRITE (15,'("        </DataArray>")')
     WRITE (15,'("      </Polys>")')
@@ -1566,9 +1564,9 @@ END SUBROUTINE exportcreep_vtk
        WRITE (15,'("    <Piece NumberOfPoints=",a,"4",a," NumberOfPolys=",a,"1",a,">")'),q,q,q,q
        WRITE (15,'("      <Points>")')
        WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                            " Name=",a,"Fault Patch",a, &
-                            " NumberOfComponents=",a,"3",a, &
-                            " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
+                           & " Name=",a,"Fault Patch",a, &
+                           & " NumberOfComponents=",a,"3",a, &
+                           & " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
 
        ! fault edge coordinates
        WRITE (15,'(12ES11.2)') &
@@ -1581,26 +1579,26 @@ END SUBROUTINE exportcreep_vtk
        WRITE (15,'("      </Points>")')
        WRITE (15,'("      <Polys>")')
        WRITE (15,'("        <DataArray type=",a,"Int32",a, &
-                             " Name=",a,"connectivity",a, &
-                             " format=",a,"ascii",a, &
-                             " RangeMin=",a,"0",a, &
-                             " RangeMax=",a,"3",a,">")'), q,q,q,q,q,q,q,q,q,q
+                            & " Name=",a,"connectivity",a, &
+                            & " format=",a,"ascii",a, &
+                            & " RangeMin=",a,"0",a, &
+                            & " RangeMax=",a,"3",a,">")'), q,q,q,q,q,q,q,q,q,q
        WRITE (15,'("0 1 2 3")')
        WRITE (15,'("        </DataArray>")')
        WRITE (15,'("        <DataArray type=",a,"Int32",a, &
-                                  " Name=",a,"offsets",a, &
-                                  " format=",a,"ascii",a, &
-                                  " RangeMin=",a,"4",a, &
-                                  " RangeMax=",a,"4",a,">")'), q,q,q,q,q,q,q,q,q,q
+                                 & " Name=",a,"offsets",a, &
+                                 & " format=",a,"ascii",a, &
+                                 & " RangeMin=",a,"4",a, &
+                                 & " RangeMax=",a,"4",a,">")'), q,q,q,q,q,q,q,q,q,q
        WRITE (15,'("          4")')
        WRITE (15,'("        </DataArray>")')
        WRITE (15,'("      </Polys>")')
 
        WRITE (15,'("      <CellData Normals=",a,"slip",a,">")'), q,q
        WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                           	" Name=",a,"slip",a, &
-                                " NumberOfComponents=",a,"3",a, &
-                                " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+                               & " Name=",a,"slip",a, &
+                               & " NumberOfComponents=",a,"3",a, &
+                               & " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
 
 
        WRITE (15,'(3ES11.2)'), (s(1)*cos(r)+d(1)*sin(r))*slip, &
@@ -1612,9 +1610,9 @@ END SUBROUTINE exportcreep_vtk
 
        WRITE (15,'("      <CellData Normals=",a,"opening",a,">")'), q,q
        WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                           	" Name=",a,"opening",a, &
-                                " NumberOfComponents=",a,"3",a, &
-                                " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+                               & " Name=",a,"opening",a, &
+                               & " NumberOfComponents=",a,"3",a, &
+                               & " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
 
 
        WRITE (15,'(3ES11.2)'), n(1)*opening, &
@@ -1944,9 +1942,9 @@ END SUBROUTINE exportcreep_vtk
        WRITE (15,'("    <Piece NumberOfPoints=",a,"4",a," NumberOfPolys=",a,"1",a,">")'),q,q,q,q
        WRITE (15,'("      <Points>")')
        WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                            " Name=",a,"Fault Patch",a, &
-                            " NumberOfComponents=",a,"3",a, &
-                            " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
+                           & " Name=",a,"Fault Patch",a, &
+                           & " NumberOfComponents=",a,"3",a, &
+                           & " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
        ! fault edge coordinates
        WRITE (15,'(12ES11.2)') &
                      x1-d(1)*W/2-s(1)*L/2, x2-d(2)*W/2-s(2)*L/2, x3-d(3)*W/2-s(3)*L/2, &
@@ -1958,17 +1956,17 @@ END SUBROUTINE exportcreep_vtk
        WRITE (15,'("      </Points>")')
        WRITE (15,'("      <Polys>")')
        WRITE (15,'("        <DataArray type=",a,"Int32",a, &
-                             " Name=",a,"connectivity",a, &
-                             " format=",a,"ascii",a, &
-                             " RangeMin=",a,"0",a, &
-                             " RangeMax=",a,"3",a,">")'), q,q,q,q,q,q,q,q,q,q
+                            & " Name=",a,"connectivity",a, &
+                            & " format=",a,"ascii",a, &
+                            & " RangeMin=",a,"0",a, &
+                            & " RangeMax=",a,"3",a,">")'), q,q,q,q,q,q,q,q,q,q
        WRITE (15,'("0 1 2 3")')
        WRITE (15,'("        </DataArray>")')
        WRITE (15,'("        <DataArray type=",a,"Int32",a, &
-                                  " Name=",a,"offsets",a, &
-                                  " format=",a,"ascii",a, &
-                                  " RangeMin=",a,"4",a, &
-                                  " RangeMax=",a,"4",a,">")'), q,q,q,q,q,q,q,q,q,q
+                                 & " Name=",a,"offsets",a, &
+                                 & " format=",a,"ascii",a, &
+                                 & " RangeMin=",a,"4",a, &
+                                 & " RangeMax=",a,"4",a,">")'), q,q,q,q,q,q,q,q,q,q
        WRITE (15,'("          4")')
        WRITE (15,'("        </DataArray>")')
        WRITE (15,'("      </Polys>")')
@@ -1976,44 +1974,44 @@ END SUBROUTINE exportcreep_vtk
        WRITE (15,'("      <CellData Normals=",a,"stress",a,">")'), q,q
 
        WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                           	" Name=",a,"stress tensor",a, &
-                                " NumberOfComponents=",a,"6",a, &
-                                " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+                               & " Name=",a,"stress tensor",a, &
+                               & " NumberOfComponents=",a,"6",a, &
+                               & " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
        WRITE (15,'(6ES11.2)'), lsig%s11,lsig%s12,lsig%s13,lsig%s22,lsig%s23,lsig%s33
        WRITE (15,'("        </DataArray>")')
 
        WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                           	" Name=",a,"shear stress",a, &
-                                " NumberOfComponents=",a,"1",a, &
-                                " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+                               & " Name=",a,"shear stress",a, &
+                               & " NumberOfComponents=",a,"1",a, &
+                               & " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
        WRITE (15,'(ES11.2)'), taus
        WRITE (15,'("        </DataArray>")')
 
        WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                           	" Name=",a,"normal stress",a, &
-                                " NumberOfComponents=",a,"1",a, &
-                                " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+                               & " Name=",a,"normal stress",a, &
+                               & " NumberOfComponents=",a,"1",a, &
+                               & " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
        WRITE (15,'(ES11.2)'), taun
        WRITE (15,'("        </DataArray>")')
 
        WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                           	" Name=",a,"Coulomb stress",a, &
-                                " NumberOfComponents=",a,"1",a, &
-                                " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+                               & " Name=",a,"Coulomb stress",a, &
+                               & " NumberOfComponents=",a,"1",a, &
+                               & " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
        WRITE (15,'(ES11.2)'), taucoulomb
        WRITE (15,'("        </DataArray>")')
 
        WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                           	" Name=",a,"stress in strike direction",a, &
-                                " NumberOfComponents=",a,"1",a, &
-                                " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+                               & " Name=",a,"stress in strike direction",a, &
+                               & " NumberOfComponents=",a,"1",a, &
+                               & " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
        WRITE (15,'(ES11.2)'), taustrike
        WRITE (15,'("        </DataArray>")')
 
        WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                           	" Name=",a,"stress in dip direction",a, &
-                                " NumberOfComponents=",a,"1",a, &
-                                " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+                               & " Name=",a,"stress in dip direction",a, &
+                               & " NumberOfComponents=",a,"1",a, &
+                               & " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
        WRITE (15,'(ES11.2)'), taudip
        WRITE (15,'("        </DataArray>")')
 
@@ -2093,7 +2091,7 @@ END SUBROUTINE exportcreep_vtk
           OPEN (UNIT=15,FILE=file,IOSTAT=iostatus,FORM="FORMATTED")
           WRITE (15,'("# center position (north, east, down): ",3ES9.2)') x1,x2,x3
           WRITE (15,'("#         t        s11        s12        s13        ", &
-          "s22        s23        s33       taus       taud        tau       taun    Coulomb")')
+               & "s22        s23        s33       taus       taud        tau       taun    Coulomb")')
        ELSE
           OPEN (UNIT=15,FILE=file,POSITION="APPEND",&
                IOSTAT=iostatus,FORM="FORMATTED")
@@ -2213,9 +2211,9 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("    <Piece NumberOfPoints=",a,"4",a," NumberOfPolys=",a,"1",a,">")'),q,q,q,q
     WRITE (15,'("      <Points>")')
     WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                         " Name=",a,"Fault Patch",a, &
-                         " NumberOfComponents=",a,"3",a, &
-                         " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
+                        & " Name=",a,"Fault Patch",a, &
+                        & " NumberOfComponents=",a,"3",a, &
+                        & " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
 
     ! fault edge coordinates
     WRITE (15,'(12ES11.2)') &
@@ -2228,17 +2226,17 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("      </Points>")')
     WRITE (15,'("      <Polys>")')
     WRITE (15,'("        <DataArray type=",a,"Int32",a, &
-                          " Name=",a,"connectivity",a, &
-                          " format=",a,"ascii",a, &
-                          " RangeMin=",a,"0",a, &
-                          " RangeMax=",a,"3",a,">")'), q,q,q,q,q,q,q,q,q,q
+                         & " Name=",a,"connectivity",a, &
+                         & " format=",a,"ascii",a, &
+                         & " RangeMin=",a,"0",a, &
+                         & " RangeMax=",a,"3",a,">")'), q,q,q,q,q,q,q,q,q,q
     WRITE (15,'("0 1 2 3")')
     WRITE (15,'("        </DataArray>")')
     WRITE (15,'("        <DataArray type=",a,"Int32",a, &
-                               " Name=",a,"offsets",a, &
-                               " format=",a,"ascii",a, &
-                               " RangeMin=",a,"4",a, &
-                               " RangeMax=",a,"4",a,">")'), q,q,q,q,q,q,q,q,q,q
+                              & " Name=",a,"offsets",a, &
+                              & " format=",a,"ascii",a, &
+                              & " RangeMin=",a,"4",a, &
+                              & " RangeMax=",a,"4",a,">")'), q,q,q,q,q,q,q,q,q,q
     WRITE (15,'("          4")')
     WRITE (15,'("        </DataArray>")')
     WRITE (15,'("      </Polys>")')
@@ -2366,9 +2364,9 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("    <Piece NumberOfPoints=",a,"8",a," NumberOfPolys=",a,"1",a,">")'),q,q,q,q
     WRITE (15,'("      <Points>")')
     WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                         " Name=",a,"Weak Zone",a, &
-                         " NumberOfComponents=",a,"3",a, &
-                         " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
+                        & " Name=",a,"Weak Zone",a, &
+                        & " NumberOfComponents=",a,"3",a, &
+                        & " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
 
     ! fault edge coordinates
     WRITE (15,'(24ES11.2)') &
@@ -2385,17 +2383,17 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("      </Points>")')
     WRITE (15,'("      <Polys>")')
     WRITE (15,'("        <DataArray type=",a,"Int32",a, &
-                          " Name=",a,"connectivity",a, &
-                          " format=",a,"ascii",a, &
-                          " RangeMin=",a,"0",a, &
-                          " RangeMax=",a,"6",a,">")'), q,q,q,q,q,q,q,q,q,q
+                         & " Name=",a,"connectivity",a, &
+                         & " format=",a,"ascii",a, &
+                         & " RangeMin=",a,"0",a, &
+                         & " RangeMax=",a,"6",a,">")'), q,q,q,q,q,q,q,q,q,q
     WRITE (15,'("7 4 5 6 7 4 3 2 7 2 1 6")')
     WRITE (15,'("        </DataArray>")')
     WRITE (15,'("        <DataArray type=",a,"Int32",a, &
-                               " Name=",a,"offsets",a, &
-                               " format=",a,"ascii",a, &
-                               " RangeMin=",a,"12",a, &
-                               " RangeMax=",a,"12",a,">")'), q,q,q,q,q,q,q,q,q,q
+                              & " Name=",a,"offsets",a, &
+                              & " format=",a,"ascii",a, &
+                              & " RangeMin=",a,"12",a, &
+                              & " RangeMax=",a,"12",a,">")'), q,q,q,q,q,q,q,q,q,q
     WRITE (15,'("          12")')
     WRITE (15,'("        </DataArray>")')
     WRITE (15,'("      </Polys>")')
@@ -2404,9 +2402,9 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("    <Piece NumberOfPoints=",a,"8",a," NumberOfPolys=",a,"1",a,">")'),q,q,q,q
     WRITE (15,'("      <Points>")')
     WRITE (15,'("        <DataArray type=",a,"Float32",a, &
-                         " Name=",a,"Weak Zone",a, &
-                         " NumberOfComponents=",a,"3",a, &
-                         " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
+                        & " Name=",a,"Weak Zone",a, &
+                        & " NumberOfComponents=",a,"3",a, &
+                        & " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
 
     ! fault edge coordinates
     WRITE (15,'(24ES11.2)') &
@@ -2423,17 +2421,17 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("      </Points>")')
     WRITE (15,'("      <Polys>")')
     WRITE (15,'("        <DataArray type=",a,"Int32",a, &
-                          " Name=",a,"connectivity",a, &
-                          " format=",a,"ascii",a, &
-                          " RangeMin=",a,"0",a, &
-                          " RangeMax=",a,"7",a,">")'), q,q,q,q,q,q,q,q,q,q
+                         & " Name=",a,"connectivity",a, &
+                         & " format=",a,"ascii",a, &
+                         & " RangeMin=",a,"0",a, &
+                         & " RangeMax=",a,"7",a,">")'), q,q,q,q,q,q,q,q,q,q
     WRITE (15,'("0 1 2 3 0 5 4 3 0 1 6 5")')
     WRITE (15,'("        </DataArray>")')
     WRITE (15,'("        <DataArray type=",a,"Int32",a, &
-                               " Name=",a,"offsets",a, &
-                               " format=",a,"ascii",a, &
-                               " RangeMin=",a,"12",a, &
-                               " RangeMax=",a,"12",a,">")'), q,q,q,q,q,q,q,q,q,q
+                              & " Name=",a,"offsets",a, &
+                              & " format=",a,"ascii",a, &
+                              & " RangeMin=",a,"12",a, &
+                              & " RangeMax=",a,"12",a,">")'), q,q,q,q,q,q,q,q,q,q
     WRITE (15,'("          12")')
     WRITE (15,'("        </DataArray>")')
     WRITE (15,'("      </Polys>")')
@@ -2462,7 +2460,7 @@ END SUBROUTINE exportcreep_vtk
     REAL*8, INTENT(IN) :: dx1,dx2,dx3
     CHARACTER(256), INTENT(IN) :: vcfilename
 
-    INTEGER :: iostatus,idum,i1,i2,i3
+    INTEGER :: iostatus,idum,i1,i2
     CHARACTER :: q
     INTEGER :: k1,k2,k3
     REAL*8 :: x1,x2,x3
@@ -2484,8 +2482,8 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("    <PointData Scalars=",a,"Vector Field",a,">")') q,q
 
     WRITE (15,'("    <DataArray type=",a,"Float32",a, &
-                        " Name=",a,"X Velocity",a, &
-                        " format=",a,"ascii",a,">")') q,q,q,q,q,q
+                       & " Name=",a,"X Velocity",a, &
+                       & " format=",a,"ascii",a,">")') q,q,q,q,q,q
 
     ! write first component values
     DO k3=0,sx3-1,j3
@@ -2503,8 +2501,8 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("    </DataArray>")')
 
     WRITE (15,'("    <DataArray type=",a,"Float32",a, &
-                        " Name=",a,"Y Velocity",a, &
-                        " format=",a,"ascii",a,">")') q,q,q,q,q,q
+                       & " Name=",a,"Y Velocity",a, &
+                       & " format=",a,"ascii",a,">")') q,q,q,q,q,q
 
     ! write second component values
     DO k3=0,sx3-1,j3
@@ -2523,8 +2521,8 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("    </DataArray>")')
 
     WRITE (15,'("    <DataArray type=",a,"Float32",a, &
-                        " Name=",a,"Z Velocity",a, &
-                        " format=",a,"ascii",a,">")') q,q,q,q,q,q
+                       & " Name=",a,"Z Velocity",a, &
+                       & " format=",a,"ascii",a,">")') q,q,q,q,q,q
 
     ! write third component values
     DO k3=0,sx3-1,j3
@@ -2547,30 +2545,30 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("  <Coordinates>")')
 
     WRITE (15,'("    <DataArray type=",a,"Float32",a, &
-                        " Name=",a,"Array 1",a, &
-                        " format=",a,"ascii",a, &
-                        " RangeMin=",a,ES12.2,a, &
-                        " RangeMax=",a,ES12.2,a,">")') q,q,q,q,q,q,q,-sx1/2*dx1,q,q,(sx1/2-1)*dx1,q
+                       & " Name=",a,"Array 1",a, &
+                       & " format=",a,"ascii",a, &
+                       & " RangeMin=",a,ES12.2,a, &
+                       & " RangeMax=",a,ES12.2,a,">")') q,q,q,q,q,q,q,-sx1/2*dx1,q,q,(sx1/2-1)*dx1,q
     DO k1=-sx1/2,sx1/2-1,j1
        x1=REAL(k1,8)
        WRITE (15,'(ES12.2)') x1*dx1
     END DO
     WRITE (15,'("    </DataArray>")')
     WRITE (15,'("    <DataArray type=",a,"Float32",a, &
-                        " Name=",a,"Array 2",a, &
-                        " format=",a,"ascii",a, &
-                        " RangeMin=",a,ES12.2,a, &
-                        " RangeMax=",a,ES12.2,a,">")') q,q,q,q,q,q,q,-sx2/2*dx2,q,q,(sx2/2-1)*dx2,q
+                       & " Name=",a,"Array 2",a, &
+                       & " format=",a,"ascii",a, &
+                       & " RangeMin=",a,ES12.2,a, &
+                       & " RangeMax=",a,ES12.2,a,">")') q,q,q,q,q,q,q,-sx2/2*dx2,q,q,(sx2/2-1)*dx2,q
     DO k2=-sx2/2,sx2/2-1,j2
        x2=REAL(k2,8)
        WRITE (15,'(ES12.2)') x2*dx2
     END DO
     WRITE (15,'("    </DataArray>")')
     WRITE (15,'("    <DataArray type=",a,"Float32",a, &
-                        " Name=",a,"Array 3",a, &
-                        " format=",a,"ascii",a, &
-                        " RangeMin=",a,ES12.2,a, &
-                        " RangeMax=",a,ES12.2,a,">")') q,q,q,q,q,q,q,0,q,q,(sx3-1)*dx3,q
+                       & " Name=",a,"Array 3",a, &
+                       & " format=",a,"ascii",a, &
+                       & " RangeMin=",a,ES12.2,a, &
+                       & " RangeMax=",a,ES12.2,a,">")') q,q,q,q,q,q,q,0,q,q,(sx3-1)*dx3,q
     DO k3=0,sx3-1,j3
        x3=REAL(k3,8)
        WRITE (15,'(ES12.2)') x3*dx3
@@ -2625,8 +2623,8 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("    <PointData Scalars=",a,"Vector Field",a,">")') q,q
 
     WRITE (15,'("    <DataArray type=",a,"Float32",a, &
-                        " Name=",a,"X Velocity",a, &
-                        " format=",a,"ascii",a,">")') q,q,q,q,q,q
+                       & " Name=",a,"X Velocity",a, &
+                       & " format=",a,"ascii",a,">")') q,q,q,q,q,q
 
     ! write first component values
     x3=oz/dx3
@@ -2642,8 +2640,8 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("    </DataArray>")')
 
     WRITE (15,'("    <DataArray type=",a,"Float32",a, &
-                        " Name=",a,"Y Velocity",a, &
-                        " format=",a,"ascii",a,">")') q,q,q,q,q,q
+                       & " Name=",a,"Y Velocity",a, &
+                       & " format=",a,"ascii",a,">")') q,q,q,q,q,q
 
     ! write second component values
     x3=oz/dx3
@@ -2660,8 +2658,8 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("    </DataArray>")')
 
     WRITE (15,'("    <DataArray type=",a,"Float32",a, &
-                        " Name=",a,"Z Velocity",a, &
-                        " format=",a,"ascii",a,">")') q,q,q,q,q,q
+                       & " Name=",a,"Z Velocity",a, &
+                       & " format=",a,"ascii",a,">")') q,q,q,q,q,q
 
     ! write third component values
     x3=oz/dx3
@@ -2682,30 +2680,30 @@ END SUBROUTINE exportcreep_vtk
     WRITE (15,'("  <Coordinates>")')
 
     WRITE (15,'("    <DataArray type=",a,"Float32",a, &
-                        " Name=",a,"Array 1",a, &
-                        " format=",a,"ascii",a, &
-                        " RangeMin=",a,ES12.2,a, &
-                        " RangeMax=",a,ES12.2,a,">")') q,q,q,q,q,q,q,-sx1/2*dx1,q,q,(sx1/2-1)*dx1,q
+                       & " Name=",a,"Array 1",a, &
+                       & " format=",a,"ascii",a, &
+                       & " RangeMin=",a,ES12.2,a, &
+                       & " RangeMax=",a,ES12.2,a,">")') q,q,q,q,q,q,q,-sx1/2*dx1,q,q,(sx1/2-1)*dx1,q
     DO k1=-sx1/2,sx1/2-1,j1
        x1=REAL(k1,8)
        WRITE (15,'(ES12.2)') x1*dx1
     END DO
     WRITE (15,'("    </DataArray>")')
     WRITE (15,'("    <DataArray type=",a,"Float32",a, &
-                        " Name=",a,"Array 2",a, &
-                        " format=",a,"ascii",a, &
-                        " RangeMin=",a,ES12.2,a, &
-                        " RangeMax=",a,ES12.2,a,">")') q,q,q,q,q,q,q,-sx2/2*dx1,q,q,(sx2/2-1)*dx2,q
+                       & " Name=",a,"Array 2",a, &
+                       & " format=",a,"ascii",a, &
+                       & " RangeMin=",a,ES12.2,a, &
+                       & " RangeMax=",a,ES12.2,a,">")') q,q,q,q,q,q,q,-sx2/2*dx1,q,q,(sx2/2-1)*dx2,q
     DO k2=-sx2/2,sx2/2-1,j2
        x2=REAL(k2,8)
        WRITE (15,'(ES12.2)') x2*dx2
     END DO
     WRITE (15,'("    </DataArray>")')
     WRITE (15,'("    <DataArray type=",a,"Float32",a, &
-                        " Name=",a,"Array 3",a, &
-                        " format=",a,"ascii",a, &
-                        " RangeMin=",a,ES12.2,a, &
-                        " RangeMax=",a,ES12.2,a,">")') q,q,q,q,q,q,q,oz,q,q,oz,q
+                       & " Name=",a,"Array 3",a, &
+                       & " format=",a,"ascii",a, &
+                       & " RangeMin=",a,ES12.2,a, &
+                       & " RangeMax=",a,ES12.2,a,">")') q,q,q,q,q,q,q,oz,q,q,oz,q
     WRITE (15,'(2ES12.2)') oz
     WRITE (15,'("    </DataArray>")')
 
