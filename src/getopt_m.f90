@@ -88,20 +88,20 @@
 ! - knows the length of longopts, so does not need an empty last record
 
 module getopt_m
-	implicit none
-	character(len=80):: optarg
-	character:: optopt
-	integer:: optind=1
-	logical:: opterr=.true.
-	
-	type option_s
-		character(len=80) :: name
-		logical           :: has_arg
-		character         :: val
-	end type
-	
-	! grpind is index of next option within group; always >= 2
-	integer, private:: grpind=2
+        implicit none
+        character(len=80):: optarg
+        character:: optopt
+        integer:: optind=1
+        logical:: opterr=.true.
+        
+        type option_s
+                character(len=80) :: name
+                logical           :: has_arg
+                character         :: val
+        end type
+        
+        ! grpind is index of next option within group; always >= 2
+        integer, private:: grpind=2
 
 contains
 
@@ -115,119 +115,119 @@ contains
 !     if ( substr(str, i+1, i+1) == ':' ) then
 
 character function substr( str, i, j )
-	! arguments
-	character(len=*), intent(in):: str
-	integer, intent(in):: i, j
-	
-	if ( 1 <= i .and. i <= j .and. j <= len(str)) then
-		substr = str(i:j)
-	else
-		substr = ''
-	endif
+        ! arguments
+        character(len=*), intent(in):: str
+        integer, intent(in):: i, j
+        
+        if ( 1 <= i .and. i <= j .and. j <= len(str)) then
+                substr = str(i:j)
+        else
+                substr = ''
+        endif
 end function substr
 
 
 ! ----------------------------------------
 character function getopt( optstring, longopts )
-	! arguments
-	character(len=*), intent(in):: optstring
-	type(option_s),   intent(in), optional:: longopts(:)
-	
-	! local variables
-	character(len=80):: arg
-	
-	optarg = ''
-	if ( optind > iargc()) then
-		getopt = char(0)
-	endif
-	
-	call getarg( optind, arg )
-	if ( present( longopts ) .and. arg(1:2) == '--' ) then
-		getopt = process_long( longopts, arg )
-	elseif ( arg(1:1) == '-' ) then
-		getopt = process_short( optstring, arg )
-	else
-		getopt = char(0)
-	endif
+        ! arguments
+        character(len=*), intent(in):: optstring
+        type(option_s),   intent(in), optional:: longopts(:)
+        
+        ! local variables
+        character(len=80):: arg
+        
+        optarg = ''
+        if ( optind > iargc()) then
+                getopt = char(0)
+        endif
+        
+        call getarg( optind, arg )
+        if ( present( longopts ) .and. arg(1:2) == '--' ) then
+                getopt = process_long( longopts, arg )
+        elseif ( arg(1:1) == '-' ) then
+                getopt = process_short( optstring, arg )
+        else
+                getopt = char(0)
+        endif
 end function getopt
 
 
 ! ----------------------------------------
 character function process_long( longopts, arg )
-	! arguments
-	type(option_s),   intent(in):: longopts(:)
-	character(len=*), intent(in):: arg
-	
-	! local variables
-	integer:: i
-	
-	! search for matching long option
-	optind = optind + 1
-	do i = 1, size(longopts)
-		if ( arg(3:) == longopts(i)%name ) then
-			optopt = longopts(i)%val
-			process_long = optopt
-			if ( longopts(i)%has_arg ) then
-				if ( optind <= iargc()) then
-					call getarg( optind, optarg )
-					optind = optind + 1
-				elseif ( opterr ) then
-					 WRITE (0,'(a,a,a)')  "error: option '", trim(arg), "' requires an argument"
-				endif
-			endif
-			return
-		endif
-	end do
-	! else not found
-	process_long = '?'
-	if ( opterr ) then
-		WRITE (0,'(a,a,a)'), "error: unrecognized option '", trim(arg), "'"
-	endif
+        ! arguments
+        type(option_s),   intent(in):: longopts(:)
+        character(len=*), intent(in):: arg
+        
+        ! local variables
+        integer:: i
+        
+        ! search for matching long option
+        optind = optind + 1
+        do i = 1, size(longopts)
+                if ( arg(3:) == longopts(i)%name ) then
+                        optopt = longopts(i)%val
+                        process_long = optopt
+                        if ( longopts(i)%has_arg ) then
+                                if ( optind <= iargc()) then
+                                        call getarg( optind, optarg )
+                                        optind = optind + 1
+                                elseif ( opterr ) then
+                                         WRITE (0,'(a,a,a)')  "error: option '", trim(arg), "' requires an argument"
+                                endif
+                        endif
+                        return
+                endif
+        end do
+        ! else not found
+        process_long = '?'
+        if ( opterr ) then
+                WRITE (0,'(a,a,a)'), "error: unrecognized option '", trim(arg), "'"
+        endif
 end function process_long
 
 
 ! ----------------------------------------
 character function process_short( optstring, arg )
-	! arguments
-	character(len=*), intent(in):: optstring, arg
-	
-	! local variables
-	integer:: i, arglen
-	
-	arglen = len( trim( arg ))
-	optopt = arg(grpind:grpind)
-	process_short = optopt
-	
-	i = index( optstring, optopt )
-	if ( i == 0 ) then
-		! unrecognized option
-		process_short = '?'
-		if ( opterr ) then
-			print '(a,a,a)', "Error: unrecognized option '-", optopt, "'"
-		endif
-	endif
-	if ( i > 0 .and. substr( optstring, i+1, i+1 ) == ':' ) then
-		! required argument
-		optind = optind + 1
-		if ( arglen > grpind ) then
-			! -xarg, return remainder of arg
-			optarg = arg(grpind+1:arglen)
-		elseif ( optind <= iargc()) then
-			! -x arg, return next arg
-			call getarg( optind, optarg )
-			optind = optind + 1
-		elseif ( opterr ) then
-			WRITE (0,'(a,a,a)') "error: option '-", optopt, "' requires an argument"
-		endif
-		grpind = 2
-	elseif ( arglen > grpind ) then
-		! no argument (or unrecognized), go to next option in argument (-xyz)
-		grpind = grpind + 1
-	else
-		! no argument (or unrecognized), go to next argument
-		grpind = 2
-		optind = optind + 1
-	endif
+        ! arguments
+        character(len=*), intent(in):: optstring, arg
+        
+        ! local variables
+        integer:: i, arglen
+        
+        arglen = len( trim( arg ))
+        optopt = arg(grpind:grpind)
+        process_short = optopt
+        
+        i = index( optstring, optopt )
+        if ( i == 0 ) then
+                ! unrecognized option
+                process_short = '?'
+                if ( opterr ) then
+                        print '(a,a,a)', "Error: unrecognized option '-", optopt, "'"
+                endif
+        endif
+        if ( i > 0 .and. substr( optstring, i+1, i+1 ) == ':' ) then
+                ! required argument
+                optind = optind + 1
+                if ( arglen > grpind ) then
+                        ! -xarg, return remainder of arg
+                        optarg = arg(grpind+1:arglen)
+                elseif ( optind <= iargc()) then
+                        ! -x arg, return next arg
+                        call getarg( optind, optarg )
+                        optind = optind + 1
+                elseif ( opterr ) then
+                        WRITE (0,'(a,a,a)') "error: option '-", optopt, "' requires an argument"
+                endif
+                grpind = 2
+        elseif ( arglen > grpind ) then
+                ! no argument (or unrecognized), go to next option in argument (-xyz)
+                grpind = grpind + 1
+        else
+                ! no argument (or unrecognized), go to next argument
+                grpind = 2
+                optind = optind + 1
+        endif
 end function process_short
 
 end module getopt_m
