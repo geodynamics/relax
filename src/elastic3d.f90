@@ -54,25 +54,6 @@ MODULE elastic3d
 CONTAINS
 
   !------------------------------------------------------------
-  !> function SIGN
-  !! returns the sign of the input -1 for negtive, 0 for zero
-  !! and +1 for positive arguments.
-  !------------------------------------------------------------
-  REAL*8 FUNCTION sign(x)
-    REAL*8, INTENT(IN) :: x
-
-    IF (x .gt. 0._8) THEN
-       sign=1._8
-    ELSE
-       IF (x .lt. 0._8) THEN
-          sign=-1._8
-       ELSE
-          sign=0._8
-       END IF
-    END IF
-  END FUNCTION sign
-
-  !------------------------------------------------------------
   !> function fix
   !! returns the closest integer scalar
   !
@@ -97,24 +78,15 @@ CONTAINS
   !> function SINH
   !! computes the hyperbolic sine
   !------------------------------------------------------------
-  REAL*8 FUNCTION sinh(x)
+  REAL*8 FUNCTION my_sinh(x)
     REAL*8, INTENT(IN) :: x
 
-    IF (abs(x) .GT. 85._8) THEN
-       sinh=sign(x)*exp(85._8)/2._8
+    IF (abs(x) .GT. 11._8) THEN
+       my_sinh=sign(1._8,x)*sinh(11._8)
     ELSE
-       sinh=(exp(x)-exp(-x))/2._8
+       my_sinh=sinh(x)
     END IF
-  END FUNCTION sinh
-
-  !------------------------------------------------------------
-  !> function ASINH
-  !! computes the inverse hyperbolic sine
-  !------------------------------------------------------------
-  REAL*8 FUNCTION asinh(x)
-    REAL*8, INTENT(IN) :: x
-    asinh=log(x+sqrt(x*x+1))
-  END FUNCTION asinh
+  END FUNCTION my_sinh
 
   !-----------------------------------------------------------------
   !> subroutine Neighbor
@@ -155,9 +127,9 @@ CONTAINS
     epskk=tensortrace(t)
 
     t = REAL(2._8*mu) .times. t
-    t%s11=t%s11+lambda*epskk
-    t%s22=t%s22+lambda*epskk
-    t%s33=t%s33+lambda*epskk
+    t%s11=REAL(t%s11+lambda*epskk)
+    t%s22=REAL(t%s22+lambda*epskk)
+    t%s33=REAL(t%s33+lambda*epskk)
 
   END SUBROUTINE isotropicstressstrain
 
@@ -227,12 +199,12 @@ CONTAINS
     REAL*8, DIMENSION(3), INTENT(IN) :: a,b
 
     tensorsymmetricdyadprod=TENSOR( &
-          a(1)*b(1),                 & ! 11
-         (a(1)*b(2)+a(2)*b(1))/2._8, & ! 12
-         (a(1)*b(3)+a(3)*b(1))/2._8, & ! 13
-          a(2)*b(2),                 & ! 22
-         (a(2)*b(3)+a(3)*b(2))/2._8, & ! 23
-          a(3)*b(3)                  & ! 33
+          REAL(a(1)*b(1)),                 & ! 11
+         REAL((a(1)*b(2)+a(2)*b(1))/2._8), & ! 12
+         REAL((a(1)*b(3)+a(3)*b(1))/2._8), & ! 13
+          REAL(a(2)*b(2)),                 & ! 22
+         REAL((a(2)*b(3)+a(3)*b(2))/2._8), & ! 23
+          REAL(a(3)*b(3))                  & ! 33
           )
 
   END FUNCTION tensorsymmetricdyadprod
@@ -327,12 +299,12 @@ CONTAINS
     
     gamma=tensornorm(t)
 
-    R%s11=t%s11/gamma
-    R%s12=t%s12/gamma
-    R%s13=t%s13/gamma
-    R%s22=t%s22/gamma
-    R%s23=t%s23/gamma
-    R%s33=t%s33/gamma
+    R%s11=REAL(t%s11/gamma)
+    R%s12=REAL(t%s12/gamma)
+    R%s13=REAL(t%s13/gamma)
+    R%s22=REAL(t%s22/gamma)
+    R%s23=REAL(t%s23/gamma)
+    R%s33=REAL(t%s33/gamma)
 
   END SUBROUTINE tensordecomposition
 
@@ -582,6 +554,8 @@ CONTAINS
     sx3=SIZE(vstruct,1)
 
     IF (0 .ge. nv) THEN
+
+       WRITE (0,'("error at line ",I5.5," of source file ",a)') __LINE__,__FILE__
        WRITE_DEBUG_INFO
        WRITE (0,'("invalid tensor structure. exiting.")')
        STOP 1
@@ -978,9 +952,9 @@ CONTAINS
          i1m=mod(sx1+i1-1-l,sx1)+1
          i1p=mod(i1-1+l,sx1)+1
 
-         e%s11=e%s11+(v1(i1p,i2,i3)-v1(i1m,i2,i3))*ker1(l)
-         e%s12=e%s12+(v2(i1p,i2,i3)-v2(i1m,i2,i3))*ker1(l)
-         e%s13=e%s13+(v3(i1p,i2,i3)-v3(i1m,i2,i3))*ker1(l)
+         e%s11=REAL(e%s11+(v1(i1p,i2,i3)-v1(i1m,i2,i3))*ker1(l))
+         e%s12=REAL(e%s12+(v2(i1p,i2,i3)-v2(i1m,i2,i3))*ker1(l))
+         e%s13=REAL(e%s13+(v3(i1p,i2,i3)-v3(i1m,i2,i3))*ker1(l))
       END DO
 
       DO l=1,len2
@@ -988,9 +962,9 @@ CONTAINS
          i2m=mod(sx2+i2-1-l,sx2)+1
          i2p=mod(i2-1+l,sx2)+1
 
-         e%s12=e%s12+(v1(i1,i2p,i3)-v1(i1,i2m,i3))*ker2(l)
-         e%s22=e%s22+(v2(i1,i2p,i3)-v2(i1,i2m,i3))*ker2(l)
-         e%s23=e%s23+(v3(i1,i2p,i3)-v3(i1,i2m,i3))*ker2(l)
+         e%s12=REAL(e%s12+(v1(i1,i2p,i3)-v1(i1,i2m,i3))*ker2(l))
+         e%s22=REAL(e%s22+(v2(i1,i2p,i3)-v2(i1,i2m,i3))*ker2(l))
+         e%s23=REAL(e%s23+(v3(i1,i2p,i3)-v3(i1,i2m,i3))*ker2(l))
       END DO
 
       DO l=1,len3
@@ -998,14 +972,14 @@ CONTAINS
          i3m=i3-l
          i3p=i3+l
          
-         e%s13=e%s13+(v1(i1,i2,i3p)-v1(i1,i2,i3m))*ker3(l)
-         e%s23=e%s23+(v2(i1,i2,i3p)-v2(i1,i2,i3m))*ker3(l)
-         e%s33=e%s33+(v3(i1,i2,i3p)-v3(i1,i2,i3m))*ker3(l)
+         e%s13=REAL(e%s13+(v1(i1,i2,i3p)-v1(i1,i2,i3m))*ker3(l))
+         e%s23=REAL(e%s23+(v2(i1,i2,i3p)-v2(i1,i2,i3m))*ker3(l))
+         e%s33=REAL(e%s33+(v3(i1,i2,i3p)-v3(i1,i2,i3m))*ker3(l))
       END DO
       
-      e%s12=e%s12/2._8
-      e%s13=e%s13/2._8
-      e%s23=e%s23/2._8
+      e%s12=REAL(e%s12/2._8)
+      e%s13=REAL(e%s13/2._8)
+      e%s23=REAL(e%s23/2._8)
       
     END SUBROUTINE localstrain_fir2
 
@@ -1029,9 +1003,9 @@ CONTAINS
          i1m=mod(sx1+i1-1-l,sx1)+1
          i1p=mod(i1-1+l,sx1)+1
 
-         e%s11=e%s11+(v1(i1p,i2,i3)-v1(i1m,i2,i3))*ker1(l)
-         e%s12=e%s12+(v2(i1p,i2,i3)-v2(i1m,i2,i3))*ker1(l)
-         e%s13=e%s13+(v3(i1p,i2,i3)-v3(i1m,i2,i3))*ker1(l)
+         e%s11=REAL(e%s11+(v1(i1p,i2,i3)-v1(i1m,i2,i3))*ker1(l))
+         e%s12=REAL(e%s12+(v2(i1p,i2,i3)-v2(i1m,i2,i3))*ker1(l))
+         e%s13=REAL(e%s13+(v3(i1p,i2,i3)-v3(i1m,i2,i3))*ker1(l))
       END DO
 
       DO l=1,len2
@@ -1039,9 +1013,9 @@ CONTAINS
          i2m=mod(sx2+i2-1-l,sx2)+1
          i2p=mod(i2-1+l,sx2)+1
 
-         e%s12=e%s12+(v1(i1,i2p,i3)-v1(i1,i2m,i3))*ker2(l)
-         e%s22=e%s22+(v2(i1,i2p,i3)-v2(i1,i2m,i3))*ker2(l)
-         e%s23=e%s23+(v3(i1,i2p,i3)-v3(i1,i2m,i3))*ker2(l)
+         e%s12=REAL(e%s12+(v1(i1,i2p,i3)-v1(i1,i2m,i3))*ker2(l))
+         e%s22=REAL(e%s22+(v2(i1,i2p,i3)-v2(i1,i2m,i3))*ker2(l))
+         e%s23=REAL(e%s23+(v3(i1,i2p,i3)-v3(i1,i2m,i3))*ker2(l))
       END DO
 
       DO l=1,len3
@@ -1049,14 +1023,14 @@ CONTAINS
          i3m=i3-l
          i3p=i3+l
 
-         e%s13=e%s13+(v1(i1,i2,i3p)-v1(i1,i2,i3m))*ker3(l)
-         e%s23=e%s23+(v2(i1,i2,i3p)-v2(i1,i2,i3m))*ker3(l)
-         e%s33=e%s33+(v3(i1,i2,i3p)-v3(i1,i2,i3m))*ker3(l)
+         e%s13=REAL(e%s13+(v1(i1,i2,i3p)-v1(i1,i2,i3m))*ker3(l))
+         e%s23=REAL(e%s23+(v2(i1,i2,i3p)-v2(i1,i2,i3m))*ker3(l))
+         e%s33=REAL(e%s33+(v3(i1,i2,i3p)-v3(i1,i2,i3m))*ker3(l))
       END DO
 
-      e%s12=e%s12/2._8
-      e%s13=e%s13/2._8
-      e%s23=e%s23/2._8
+      e%s12=REAL(e%s12/2._8)
+      e%s13=REAL(e%s13/2._8)
+      e%s23=REAL(e%s23/2._8)
 
     END SUBROUTINE localstrain_fir
 
@@ -1074,7 +1048,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: i3m, i3p
       REAL*8, INTENT(IN) :: px3
 
-      INTEGER :: l,i1m,i2m,i1p,i2p,foo,dum
+      INTEGER :: l,i1m,i2m,i1p,i2p
 
       e=TENSOR(0._4,0._4,0._4,0._4,0._4,0._4)
 
@@ -1083,9 +1057,9 @@ CONTAINS
          i1m=mod(sx1+i1-1-l,sx1)+1
          i1p=mod(i1-1+l,sx1)+1
 
-         e%s11=e%s11+(v1(i1p,i2,i3)-v1(i1m,i2,i3))*ker1(l)
-         e%s12=e%s12+(v2(i1p,i2,i3)-v2(i1m,i2,i3))*ker1(l)
-         e%s13=e%s13+(v3(i1p,i2,i3)-v3(i1m,i2,i3))*ker1(l)
+         e%s11=REAL(e%s11+(v1(i1p,i2,i3)-v1(i1m,i2,i3))*ker1(l))
+         e%s12=REAL(e%s12+(v2(i1p,i2,i3)-v2(i1m,i2,i3))*ker1(l))
+         e%s13=REAL(e%s13+(v3(i1p,i2,i3)-v3(i1m,i2,i3))*ker1(l))
       END DO
 
       DO l=1,len2
@@ -1093,19 +1067,19 @@ CONTAINS
          i2m=mod(sx2+i2-1-l,sx2)+1
          i2p=mod(i2-1+l,sx2)+1
 
-         e%s12=e%s12+(v1(i1,i2p,i3)-v1(i1,i2m,i3))*ker2(l)
-         e%s22=e%s22+(v2(i1,i2p,i3)-v2(i1,i2m,i3))*ker2(l)
-         e%s23=e%s23+(v3(i1,i2p,i3)-v3(i1,i2m,i3))*ker2(l)
+         e%s12=REAL(e%s12+(v1(i1,i2p,i3)-v1(i1,i2m,i3))*ker2(l))
+         e%s22=REAL(e%s22+(v2(i1,i2p,i3)-v2(i1,i2m,i3))*ker2(l))
+         e%s23=REAL(e%s23+(v3(i1,i2p,i3)-v3(i1,i2m,i3))*ker2(l))
       END DO
 
       ! finite difference in the 3rd direction
-      e%s13=e%s13 + (v1(i1,i2,i3p)-v1(i1,i2,i3m))/px3
-      e%s23=e%s23 + (v2(i1,i2,i3p)-v2(i1,i2,i3m))/px3
-      e%s33=(v3(i1,i2,i3p)-v3(i1,i2,i3m))/px3
+      e%s13=REAL(e%s13 + (v1(i1,i2,i3p)-v1(i1,i2,i3m))/px3)
+      e%s23=REAL(e%s23 + (v2(i1,i2,i3p)-v2(i1,i2,i3m))/px3)
+      e%s33=REAL((v3(i1,i2,i3p)-v3(i1,i2,i3m))/px3)
 
-      e%s12=e%s12/2._8
-      e%s13=e%s13/2._8
-      e%s23=e%s23/2._8
+      e%s12=REAL(e%s12/2._8)
+      e%s13=REAL(e%s13/2._8)
+      e%s23=REAL(e%s23/2._8)
 
     END SUBROUTINE localstrain_ani
 
@@ -1369,7 +1343,7 @@ CONTAINS
       REAL*8, INTENT(IN) :: px3
       TYPE(TENSOR), INTENT(IN), DIMENSION(:,:,:) :: sig
 
-      INTEGER :: l,i1m,i1p,i2m,i2p,foo,dum
+      INTEGER :: l,i1m,i1p,i2m,i2p
 
       f1=0._8; f2=0._8; f3=0._8
 
@@ -1469,11 +1443,11 @@ CONTAINS
     sdip=sin(dip)
     cr=cos(rake)
     sr=sin(rake)
-    scale=i*mu*s*L*W
+    scale=CMPLX(i*mu*s*L*W)
 
     DO i3=1,sx3
        CALL wavenumber3(i3,sx3,dx3,k3)
-       down=exp(-i*k3*(L/2._8+d))
+       down=CMPLX(exp(-i*k3*(L/2._8+d)))
        up=conjg(down)
        DO i2=1,sx2
           CALL wavenumber2(i2,sx2,dx2,k2)
@@ -1490,28 +1464,28 @@ CONTAINS
              
              !integrate at depth and along strike with raised cosine taper
              !and shift sources to x,y,z coordinate
-             shift=exp(-i*(x*k1+y*k2))
-             aperture=scale*omegak(W*k2s,beta)
-             source=omegak(L*k3s,beta)*aperture*shift*down
-             image =omegak(L*k3i,beta)*aperture*shift*up
+             shift=CMPLX(exp(-i*(x*k1+y*k2)))
+             aperture=CMPLX(scale*omegak(W*k2s,beta))
+             source=CMPLX(omegak(L*k3s,beta)*aperture*shift*down)
+             image =CMPLX(omegak(L*k3i,beta)*aperture*shift*up)
 
              !convolve source and image with a 1-D gaussian
-             source=source*exp(-(pi*dx1*k1s)**2)
-             image = image*exp(-(pi*dx1*k1i)**2)
+             source=CMPLX(source*exp(-(pi*dx1*k1s)**2))
+             image = CMPLX(image*exp(-(pi*dx1*k1i)**2))
              
-             cbuf1= cdip*cstrike*( &
+             cbuf1= CMPLX(cdip*cstrike*( &
                   -(cr*k2s+sr*k3s)*source-(cr*k2s-sr*k3i)*image) &
                   +cr*sstrike*(-k1s*source-k1i*image) &
-                  -sr*sdip*cstrike*(-k1s*source-k1i*image)
+                  -sr*sdip*cstrike*(-k1s*source-k1i*image))
              !change -sr*sdip back to +sr*sdip above and below
-             cbuf2=-cdip*sstrike*( &
+             cbuf2=CMPLX(-cdip*sstrike*( &
                   -(cr*k2s+sr*k3s)*source-(cr*k2s-sr*k3i)*image) &
                   +cr*cstrike*(-k1s*source-k1i*image) &
-                  -sr*sdip*sstrike*(-k1s*source-k1i*image)
+                  -sr*sdip*sstrike*(-k1s*source-k1i*image))
              !change -sdip back to +sdip here
-             cbuf3=-sdip*((-sr*k3s-cr*k2s)*source &
+             cbuf3=CMPLX(-sdip*((-sr*k3s-cr*k2s)*source &
                   +(-sr*k3i+cr*k2s)*image) &
-                  +sr*cdip*(-k1s*source+k1i*image)
+                  +sr*cdip*(-k1s*source+k1i*image))
 
              f1(2*i1-1:2*i1,i2,i3)=&
                   f1(2*i1-1:2*i1,i2,i3)+(/REAL(cbuf1),AIMAG(cbuf1)/)
@@ -1557,11 +1531,11 @@ CONTAINS
     sdip=sin(dip)
     cr=cos(rake)
     sr=sin(rake)
-    scale=i*mu*s*L*W
+    scale=CMPLX(i*mu*s*L*W)
 
     DO i3=1,sx3
        CALL wavenumber3(i3,sx3,dx3,k3)
-       down=exp(-i*k3*(L/2._8+d))
+       down=CMPLX(exp(-i*k3*(L/2._8+d)))
        DO i2=1,sx2
           CALL wavenumber2(i2,sx2,dx2,k2)
           DO i1=1,sx1/2+1
@@ -1575,20 +1549,20 @@ CONTAINS
              !convolve source and image with a 1-D gaussian
              !integrate at depth and along strike with raised cosine taper
              !and shift sources to x,y,z coordinate
-             shift=exp(-i*(x*k1+y*k2))
-             aperture=scale*omegak(W*k2s,beta)*exp(-(pi*dx1*k1s)**2)
-             source=(omegak(L*k3s,beta)*aperture)*shift*down
+             shift=CMPLX(exp(-i*(x*k1+y*k2)))
+             aperture=CMPLX(scale*omegak(W*k2s,beta)*exp(-(pi*dx1*k1s)**2))
+             source=CMPLX((omegak(L*k3s,beta)*aperture)*shift*down)
 
-             cbuf1= cdip*cstrike*( &
+             cbuf1= CMPLX(cdip*cstrike*( &
                   -(cr*k2s+sr*k3s)*source) &
                   +cr*sstrike*(-k1s*source) &
-                  -sr*sdip*cstrike*(-k1s*source)
-             cbuf2=-cdip*sstrike*( &
+                  -sr*sdip*cstrike*(-k1s*source))
+             cbuf2=CMPLX(-cdip*sstrike*( &
                   -(cr*k2s+sr*k3s)*source) &
                   +cr*cstrike*(-k1s*source) &
-                  -sr*sdip*sstrike*(-k1s*source)
-             cbuf3=-sdip*((-sr*k3s-cr*k2s)*source) &
-                  +sr*cdip*(-k1s*source)
+                  -sr*sdip*sstrike*(-k1s*source))
+             cbuf3=CMPLX(-sdip*((-sr*k3s-cr*k2s)*source) &
+                  +sr*cdip*(-k1s*source))
 
              f1(2*i1-1:2*i1,i2,i3)=&
                   f1(2*i1-1:2*i1,i2,i3)+(/REAL(cbuf1),AIMAG(cbuf1)/)
@@ -1769,37 +1743,37 @@ CONTAINS
 
              IF (2.01_8*DEG2RAD .GT. dip) THEN
                 ! use method of images for subvertical faults
-                f1(i1,i2,i3)=f1(i1,i2,i3) &
+                f1(i1,i2,i3)=REAL(f1(i1,i2,i3) &
                      +cr*sstrike*(sourc+image) &
-                       +cr*cdip*cstrike*(dblcp+cplei)
-                f2(i1,i2,i3)=f2(i1,i2,i3) &
+                       +cr*cdip*cstrike*(dblcp+cplei))
+                f2(i1,i2,i3)=REAL(f2(i1,i2,i3) &
                      +cr*cstrike*(sourc+image) &
-                     -cr*cdip*sstrike*(dblcp+cplei)
-                f3(i1,i2,i3)=f3(i1,i2,i3) &
-                     -cr*sdip*(dblcp-cplei)
+                     -cr*cdip*sstrike*(dblcp+cplei))
+                f3(i1,i2,i3)=REAL(f3(i1,i2,i3) &
+                     -cr*sdip*(dblcp-cplei))
              ELSE
                 ! dipping faults do not use method of image
-                f1(i1,i2,i3)=f1(i1,i2,i3) &
+                f1(i1,i2,i3)=REAL(f1(i1,i2,i3) &
                      +cr*sstrike*(sourc) &
-                     +cr*cdip*cstrike*(dblcp)
-                f2(i1,i2,i3)=f2(i1,i2,i3) &
+                     +cr*cdip*cstrike*(dblcp))
+                f2(i1,i2,i3)=REAL(f2(i1,i2,i3) &
                      +cr*cstrike*(sourc) &
-                     -cr*cdip*sstrike*(dblcp)
-                 f3(i1,i2,i3)=f3(i1,i2,i3) &
-                     -cr*sdip*(dblcp)
+                     -cr*cdip*sstrike*(dblcp))
+                 f3(i1,i2,i3)=REAL(f3(i1,i2,i3) &
+                     -cr*sdip*(dblcp))
              END IF
 
              ! dip-slip component
 
-             f1(i1,i2,i3)=f1(i1,i2,i3) &
+             f1(i1,i2,i3)=REAL(f1(i1,i2,i3) &
                   +cdip*sr*cstrike*dipcs &
-                  +sdip*sr*cstrike*sourc
-             f2(i1,i2,i3)=f2(i1,i2,i3) &
+                  +sdip*sr*cstrike*sourc)
+             f2(i1,i2,i3)=REAL(f2(i1,i2,i3) &
                   -cdip*sr*sstrike*dipcs &
-                  -sdip*sr*sstrike*sourc
-             f3(i1,i2,i3)=f3(i1,i2,i3) &
+                  -sdip*sr*sstrike*sourc)
+             f3(i1,i2,i3)=REAL(f3(i1,i2,i3) &
                   +cdip*sr*sourc &
-                  -sdip*sr*dipcs
+                  -sdip*sr*dipcs)
 
           END DO
        END DO
@@ -1949,17 +1923,17 @@ CONTAINS
 
              ! force moments in original coordinate system
 
-             f1(i1,i2,i3)=f1(i1,i2,i3) &
+             f1(i1,i2,i3)=REAL(f1(i1,i2,i3) &
                   +cstrike*cdip*(sourc+image) &
                   +sstrike*(dblcp+cplei) &
-                  +cstrike*sdip*(dipcs+dipci)
-             f2(i1,i2,i3)=f2(i1,i2,i3) &
+                  +cstrike*sdip*(dipcs+dipci))
+             f2(i1,i2,i3)=REAL(f2(i1,i2,i3) &
                   -sstrike*cdip*(sourc+image) &
                   +cstrike*(dblcp+cplei) &
-                  -sstrike*sdip*(dipcs+dipci)
-             f3(i1,i2,i3)=f3(i1,i2,i3) &
+                  -sstrike*sdip*(dipcs+dipci))
+             f3(i1,i2,i3)=REAL(f3(i1,i2,i3) &
                   -sdip*(sourc-image) &
-                  +cdip*(dipcs-dipci)
+                  +cdip*(dipcs-dipci))
 
           END DO
        END DO
@@ -2055,9 +2029,9 @@ CONTAINS
              image3=scale*temp1*temp2*gaussp(x3+zs,dx3)
 
              ! equivalent body-force density
-             f1(i1,i2,i3)=f1(i1,i2,i3)+(source1+image1)
-             f2(i1,i2,i3)=f2(i1,i2,i3)+(source2+image2)
-             f3(i1,i2,i3)=f3(i1,i2,i3)+(source3-image3)
+             f1(i1,i2,i3)=REAL(f1(i1,i2,i3)+(source1+image1))
+             f2(i1,i2,i3)=REAL(f2(i1,i2,i3)+(source2+image2))
+             f3(i1,i2,i3)=REAL(f3(i1,i2,i3)+(source3-image3))
 
           END DO
        END DO
@@ -2126,11 +2100,11 @@ CONTAINS
                 period=e%l(i)%period
                 phi=e%l(i)%phase
 
-                t3(i1,i2)=t3(i1,i2)-amp*(sin(2*pi*(t+Dt)/period+phi)-sin(2*pi*t/period+phi))
+                t3(i1,i2)=REAL(t3(i1,i2)-amp*(sin(2*pi*(t+Dt)/period+phi)-sin(2*pi*t/period+phi)))
              ELSE
                 IF (e%l(i)%period .LE. 0) THEN
                    ! surface tractions
-                   t3(i1,i2)=t3(i1,i2)-amp
+                   t3(i1,i2)=REAL(t3(i1,i2)-amp)
                 END IF
              END IF
           END DO
@@ -2542,7 +2516,7 @@ CONTAINS
              gammai=kappa*gammai
 
              ! eigenstrain (diagonal second-order tensor)
-             m=TENSOR(gamma,0,0,gamma,0,gamma)
+             m=TENSOR(REAL(gamma),0,0,REAL(gamma),0,REAL(gamma))
 
              ! moment density (pure shear)
              sig(i1,i2,i3)=sig(i1,i2,i3) .plus. m
@@ -2653,9 +2627,9 @@ CONTAINS
              image=temp1*temp2*temp3
 
              ! surface normal vector components
-             n1(i1,i2,i3)=n1(i1,i2,i3)+cdip*cstrike*(sourc+image)
-             n2(i1,i2,i3)=n2(i1,i2,i3)-cdip*sstrike*(sourc+image)
-             n3(i1,i2,i3)=n3(i1,i2,i3)-sdip*(sourc+image)
+             n1(i1,i2,i3)=REAL(n1(i1,i2,i3)+cdip*cstrike*(sourc+image))
+             n2(i1,i2,i3)=REAL(n2(i1,i2,i3)-cdip*sstrike*(sourc+image))
+             n3(i1,i2,i3)=REAL(n3(i1,i2,i3)-sdip*(sourc+image))
              
           END DO
        END DO
@@ -2739,7 +2713,7 @@ CONTAINS
       TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
       TYPE(TENSOR), INTENT(OUT) :: lsig
     
-      INTEGER :: i1,i2,i3,i,j,k,l1,l2,l3,i1p,i2p,i3p
+      INTEGER :: i,j,k,l1,l2,l3,i1p,i2p,i3p
       INTEGER, PARAMETER :: RANGE=2
       REAL*8 :: sum,weight,x,y,z
       REAL*8, PARAMETER :: EPS=1e-2
@@ -2927,7 +2901,7 @@ CONTAINS
     REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(IN) :: field
 #endif
     
-      INTEGER :: i1,i2,i3,i,j,k,l1,l2,l3,i1p,i2p,i3p
+      INTEGER :: i,j,k,l1,l2,l3,i1p,i2p,i3p
       INTEGER, PARAMETER :: RANGE=2
       REAL*8 :: sum,weight,x,y,z
       REAL*8, PARAMETER :: EPS=1e-2
@@ -3329,8 +3303,8 @@ CONTAINS
     
     INTEGER :: i1,i2,i3,sx1,sx2,sx3
     REAL*8 :: k3
-    COMPLEX*8, PARAMETER :: i=CMPLX(0._8,pi2)
-    COMPLEX*8 :: sum,exp3
+    COMPLEX(KIND=8), PARAMETER :: i=CMPLX(0._8,pi2)
+    COMPLEX(KIND=8) :: sum,exp3
     REAL*4 :: exp1,exp2
   
     sx1=SIZE(field,1)-2
@@ -3344,11 +3318,11 @@ CONTAINS
        DO i2=1,sx2
           DO i1=1,sx1/2+1
              sum=CMPLX(field(2*i1-1,i2,i3),field(2*i1,i2,i3))*exp3
-             s(2*i1-1:2*i1,i2)=s(2*i1-1:2*i1,i2)+(/REAL(sum),AIMAG(sum)/)
+             s(2*i1-1:2*i1,i2)=REAL(s(2*i1-1:2*i1,i2)+(/REAL(sum),AIMAG(sum)/))
           END DO
        END DO
     END DO
-    s=s/(sx3*dx3)
+    s=REAL(s/(sx3*dx3))
     
     !fftshift
     DO i2=1,sx2
@@ -3360,7 +3334,7 @@ CONTAINS
        DO i1=1,sx1/2+1
           exp1=i1-1._4
           sum=CMPLX(s(2*i1-1,i2),s(2*i1,i2))*((-1._4)**(exp1+exp2))
-          s(2*i1-1:2*i1,i2)=(/REAL(sum),AIMAG(sum)/)
+          s(2*i1-1:2*i1,i2)=REAL((/REAL(sum),AIMAG(sum)/))
        END DO
     END DO
     CALL fft2(s,sx1,sx2,dx1,dx2,FFT_INVERSE)

@@ -158,14 +158,14 @@ CONTAINS
              ts=ts/taus
 
              ! deviatoric strain rate
-             gammadot=vo*2*sinh(taue/tauc)
+             gammadot=vo*2*my_sinh(taue/tauc)
 
              IF (PRESENT(maxwelltime)) &
                   maxwelltime=MIN(maxwelltime,taue/mu/gammadot)
 
              ! provide the strain-rate on request
              IF (PRESENT(gamma)) THEN
-                gamma(i1,i2,i3)=gamma(i1,i2,i3)+gammadot*impulse*scaling*dt
+                gamma(i1,i2,i3)=REAL(gamma(i1,i2,i3)+gammadot*impulse*scaling*dt)
              END IF
 
              ! deviatoric strain
@@ -250,7 +250,7 @@ CONTAINS
     REAL*4 :: tm
 
     IF (PRESENT(maxwelltime)) THEN
-       tm=maxwelltime
+       tm=REAL(maxwelltime)
     ELSE
        tm=1e30
     END IF
@@ -356,13 +356,13 @@ CONTAINS
              ts=ts/taus
 
              ! deviatoric strain rate
-             gammadot=vo*2._8*sinh(tau/tauc)
+             gammadot=vo*2._8*my_sinh(tau/tauc)
 
-             tm=MIN(tm,tau/mu/gammadot*(MIN(L,W)/sqrt(dx1*dx3)))
+             tm=MIN(tm,REAL(tau/mu/gammadot*(MIN(L,W)/sqrt(dx1*dx3))))
 
              ! provide the strain-rate on request
              IF (PRESENT(vel)) THEN
-                vel(i1,i2,i3)=vel(i1,i2,i3)+gammadot*impulse*scaling
+                vel(i1,i2,i3)=REAL(vel(i1,i2,i3)+gammadot*impulse*scaling)
              END IF
 
              ! deviatoric strain
@@ -405,7 +405,7 @@ CONTAINS
     TYPE(SLIPPATCH_STRUCT), ALLOCATABLE, DIMENSION(:,:), INTENT(INOUT) :: patch
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
 
-    INTEGER :: i1,i2,i3,px2,px3,j2,j3,status
+    INTEGER :: i1,i2,i3,px2,px3,j2,j3
     REAL*8 :: cstrike,sstrike,cdip,sdip,cr,sr
     REAL*8 :: vo,tauc,taun,taus, &
          friction,tau,cohesion
@@ -496,7 +496,7 @@ CONTAINS
           patch(j2,j3)%taus=taus
 
           ! creep rate
-          patch(j2,j3)%v=vo*2._8*sinh(tau/tauc)
+          patch(j2,j3)%v=vo*2._8*my_sinh(tau/tauc)
 
           ! shear traction direction
           ts=ts/taus
