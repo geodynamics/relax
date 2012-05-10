@@ -117,7 +117,7 @@ CONTAINS
     INTEGER :: i1, i2, i3, sx1, sx2, sx3
     REAL*8 :: k1, k2, k3, modulus
     COMPLEX*8, PARAMETER :: i = CMPLX(0._8,pi2)
-    COMPLEX*8 :: sum, c1, c2, c3
+    COMPLEX(KIND=8) :: sum, c1, c2, c3
     
     sx1=SIZE(u1,1)-2
     sx2=SIZE(u1,2)
@@ -142,7 +142,7 @@ CONTAINS
           END DO
        END DO
     END DO
-    p=p/(sx3*dx3)
+    p=REAL(p/(sx3*dx3),4)
     
   END SUBROUTINE surfacenormaltraction
 
@@ -232,12 +232,12 @@ CONTAINS
            u2=CMPLX(0.,0.)
            u3=CMPLX(0.,0.)
         ELSE
-           b=p/(2._8*mu*alpha*beta**3._8)
-           u1=i*alpha*pi2*beta*b*(1._8-1._8/alpha+beta*x3)*depthdecay
+           b=CMPLX(p/(2._8*mu*alpha*beta**3._8))
+           u1=CMPLX(i*alpha*pi2*beta*b*(1._8-1._8/alpha+beta*x3)*depthdecay)
            u2=u1
-           u1=u1*k1
-           u2=u2*k2
-           u3=-p/(2*mu*beta)*(1._8/alpha+beta*x3)*depthdecay
+           u1=CMPLX(u1*k1)
+           u2=CMPLX(u2*k2)
+           u3=CMPLX(-p/(2*mu*beta)*(1._8/alpha+beta*x3)*depthdecay)
         END IF
         
       END SUBROUTINE steketeesolution
@@ -301,9 +301,9 @@ CONTAINS
     END DO
 !$omp end parallel do
 
-    p1=p1/(sx3*dx3)
-    p2=p2/(sx3*dx3)
-    p3=p3/(sx3*dx3)
+    p1=p1/REAL(sx3*dx3,4)
+    p2=p2/REAL(sx3*dx3,4)
+    p3=p3/REAL(sx3*dx3,4)
 
   END SUBROUTINE surfacetraction
 
@@ -332,8 +332,8 @@ CONTAINS
     
     INTEGER :: i1,i2,i3,sx1,sx2,sx3
     REAL*8 :: k1,k2,k3,modulus,alpha,grav
-    COMPLEX*8, PARAMETER :: i=CMPLX(0._8,pi2)
-    COMPLEX*8 :: sum1,sum2,sum3,c1,c2,c3
+    COMPLEX(KIND=8), PARAMETER :: i=CMPLX(0._8,pi2)
+    COMPLEX(KIND=8) :: sum1,sum2,sum3,c1,c2,c3
     
     sx1=SIZE(u1,1)-2
     sx2=SIZE(u1,2)
@@ -362,17 +362,17 @@ CONTAINS
              sum2=i*mu*(k3*c2+k2*c3)
              sum3=i*(modulus*k3*c3+lambda*(k1*c1+k2*c2))-grav*c3
              
-             p1(2*i1-1:2*i1,i2)=p1(2*i1-1:2*i1,i2)+(/REAL(sum1),AIMAG(sum1)/)
-             p2(2*i1-1:2*i1,i2)=p2(2*i1-1:2*i1,i2)+(/REAL(sum2),AIMAG(sum2)/)
-             p3(2*i1-1:2*i1,i2)=p3(2*i1-1:2*i1,i2)+(/REAL(sum3),AIMAG(sum3)/)
+             p1(2*i1-1:2*i1,i2)=p1(2*i1-1:2*i1,i2)+(/REAL(sum1,4),REAL(AIMAG(sum1),4)/)
+             p2(2*i1-1:2*i1,i2)=p2(2*i1-1:2*i1,i2)+(/REAL(sum2,4),REAL(AIMAG(sum2),4)/)
+             p3(2*i1-1:2*i1,i2)=p3(2*i1-1:2*i1,i2)+(/REAL(sum3,4),REAL(AIMAG(sum3),4)/)
           END DO
        END DO
     END DO
 !$omp end parallel do
 
-    p1=p1/(sx3*dx3)
-    p2=p2/(sx3*dx3)
-    p3=p3/(sx3*dx3)
+    p1=p1/REAL(sx3*dx3,4)
+    p2=p2/REAL(sx3*dx3,4)
+    p3=p3/REAL(sx3*dx3,4)
     
   END SUBROUTINE surfacetractioncowling
 
@@ -509,9 +509,9 @@ CONTAINS
            v3=v3+b1*i*k1*beta*(1._8/alpha-1._8+beta*x3)
 
            ! b2 contribution & switch to single-precision
-           u1=v1+b2*k1*k2*temp
-           u2=v2+b2*(-2._8*beta**2+k2**2*temp)
-           u3=v3+b2*i*k2*beta*(1._8/alpha-1._8+beta*x3)
+           u1=CMPLX(v1+b2*k1*k2*temp)
+           u2=CMPLX(v2+b2*(-2._8*beta**2+k2**2*temp))
+           u3=CMPLX(v3+b2*i*k2*beta*(1._8/alpha-1._8+beta*x3))
         END IF
 
       END SUBROUTINE cerrutisolution
@@ -677,9 +677,9 @@ CONTAINS
            v3=v3+b1*i*k1*beta*(1._8/alpha-1._8+beta*x3)/(1+h)
            
            ! b2 contribution & switch to single-precision
-           u1=v1+b2*k1*k2*temp
-           u2=v2+b2*(-2._8*beta**2+k2**2*temp)
-           u3=v3+b2*i*k2*beta*(1._8/alpha-1._8+beta*x3)/(1+h)
+           u1=CMPLX(v1+b2*k1*k2*temp)
+           u2=CMPLX(v2+b2*(-2._8*beta**2+k2**2*temp))
+           u3=CMPLX(v3+b2*i*k2*beta*(1._8/alpha-1._8+beta*x3)/(1+h))
         END IF
 
       END SUBROUTINE cerrutisolcowling
@@ -799,9 +799,9 @@ CONTAINS
          v3=v3+b1*i*k1*beta*(1._8/alpha-1._8+beta*x3)/(1+h)
            
          ! b2 contribution & switch to single-precision
-         u1=v1+b2*k1*k2*temp
-         u2=v2+b2*(-2._8*beta**2+k2**2*temp)
-         u3=v3+b2*i*k2*beta*(1._8/alpha-1._8+beta*x3)/(1+h)
+         u1=CMPLX(v1+b2*k1*k2*temp)
+         u2=CMPLX(v2+b2*(-2._8*beta**2+k2**2*temp))
+         u3=CMPLX(v3+b2*i*k2*beta*(1._8/alpha-1._8+beta*x3)/(1+h))
       END IF
 
     END SUBROUTINE cerrutisolcowling
