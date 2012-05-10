@@ -47,6 +47,8 @@ def options(opt):
                      help="Fortran compiler flag to run the C preprocessor")
     other.add_option('--use-ctfft', action='store_true', default=False,
                      help='Use slow internal CTFFT instead of MKL or FFTW')
+    other.add_option('--length-flag',
+                     help='Fortran compiler option to allow unlimited line length')
 
 def configure(cnf):
     cnf.load('compiler_c compiler_fc')
@@ -155,7 +157,7 @@ def configure(cnf):
     found_zero=False
     for flag in zero_flags:
         try:
-            cnf.check_fc(fragment=frag,msg="Checking option " + flag,
+            cnf.check_fc(fragment=frag,msg="Checking zero option " + flag,
                          fcflags=flag,uselib_store='zero',execute=True)
         except:
             continue
@@ -172,7 +174,7 @@ def configure(cnf):
     found_cpp=False
     for flag in cpp_flags:
         try:
-            cnf.check_fc(fragment=frag,msg="Checking option " + flag,
+            cnf.check_fc(fragment=frag,msg="Checking preprocessor option " + flag,
                          fcflags=flag,uselib_store='cpp')
         except:
             continue
@@ -181,6 +183,24 @@ def configure(cnf):
             break
     if not found_cpp:
         cnf.fatal("Could not find an option for running the C preprocessor")
+
+    # Check for line length option
+    frag="program main\n" +"  WRITE(*,*) \"                                                                                                                                                      \"\n" + "end program main\n"
+    length_flags=['','-ffree-line-length-none']
+    if cnf.options.length_flag:
+        length_flags=[cnf.options.length_flag]
+    found_length=False
+    for flag in length_flags:
+        try:
+            cnf.check_fc(fragment=frag,msg="Checking length option " + flag,
+                         fcflags=flag,uselib_store='length')
+        except:
+            continue
+        else:
+            found_length=True
+            break
+    if not found_length:
+        cnf.fatal("Could not find an option for allowing long lines")
 
 
     cnf.write_config_header('config.h')
