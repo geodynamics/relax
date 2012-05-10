@@ -904,8 +904,7 @@ CONTAINS
        ALLOCATE(in%inter%ts(in%inter%nt),in%inter%tsc(in%inter%nt),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate the tensile source list"
        PRINT 2000
-       PRINT '("no.  opening       xs       ys       ", &
-                   "zs  length   width strike   dip")'
+       PRINT '("no.  opening       xs       ys       ","zs  length   width strike   dip")'
        PRINT 2000
        DO k=1,in%inter%nt
           CALL getdata(iunit,dataline)
@@ -1106,8 +1105,7 @@ CONTAINS
                STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the tensile source list"
           PRINT 2000
-          PRINT '("no.  opening       xs       ys       ", &
-                      "zs  length   width strike   dip")'
+          PRINT '("no.  opening       xs       ys       ", "zs  length   width strike   dip")'
           PRINT 2000
           DO k=1,in%events(e)%nt
 
@@ -1293,9 +1291,7 @@ CONTAINS
 
 2000 FORMAT ("----------------------------------------------------------------------------")
 2100 FORMAT ("no.        x1       x2       x3   length    width strike    dip")
-2200 FORMAT ("no. slip        x1         x2         x3    length   width strike  dip  rake")
 2300 FORMAT ("no. name       x1       x2       x3 (name is a 4-character string)")
-2400 FORMAT ("no. strain       x1       x2       x3 (positive for extension)")
 2500 FORMAT ("no.        x1       x2       x3   length    width strike    dip   rake")
 
   END SUBROUTINE init
