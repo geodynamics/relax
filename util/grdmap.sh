@@ -1,112 +1,20 @@
 #!/bin/sh
 
+##############################################
+# script map.sh
+# display a map view of GMT .grd files with
+# overlay from user-provided GMT scripts.
+#
+# Sylvain Barbot (01/01/07) - original form
+##############################################
+
 set -e
 self=$(basename $0)
 selfdir=$(dirname $0)
 cmdline=$*
 trap 'echo $self: Some errors occurred. Exiting.; exit' ERR
 
-my_gmt(){
-
-grdimage $U3 -R$bds -J${PROJ} \
-    $AXIS \
-    -K -C$colors -P -X1.2i -Y${YSHIFT}i $illumination \
-    > $PSFILE
-
-# running all required subprograms
-for subprog in $EXTRA;do
-if [ -e "$selfdir/$subprog" ]; then
-	#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
-	eval "$subprog $PSFILE $bds $VECTOR $U3 $HEIGHT"
-else
-	if [ -e "$subprog" ]; then
-		#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
-		eval "$subprog $PSFILE $bds $VECTOR $U3 $HEIGHT"
-	fi
-fi
-done
-
-# plotting vectors
-if [ -e $U1 ]; then
-
-#echo $self": found "$U1": plotting vectors"
-echo $self": Using VECTOR="$VECTOR", STEP="$ADX
-
-# arrowwidth/headlength/headwidth
-# grdvector crashes with wrong sampling
-#	-Q0.51c/0.8c/0.7cn1.0c \
-grdvector $U1 $U2 -K -J${PROJ} -O -R$bds -I$ADX/$ADX \
-	-Q0.3c/0.5c/0.4cn1.0c \
-	-S$VECTOR -W0.1p/0/0/0 \
-	-G255/255/255 \
-	 >> $PSFILE
-fi
-
-# plot the vector legend if $VECTOR is set
-if [ "$VECTOR" != "-" ]; then
-UL=`echo $bds | awk -F "/" '{print $1,$4}' `
-pstext -O -K -J${PROJ} -N -R$bds \
-	-G0/0/0 -Ya0.3i \
-	<<EOF >> $PSFILE
-$UL 14 0 4 LM $SIZE $unit
-EOF
-psxy -O -K -J${PROJ} -R$bds -N \
-	-W0.5p/0/0/0 -Xa0.9i \
-	-Sv0.2c/1.0c/0.4cn1.0c \
-	<<EOF >> $PSFILE
-$UL 0 1
-EOF
-REVERT="-Xa-0.9i -Ya-0.3i"
-fi
-
-	#-Q0.20c/1.0c/0.4cn1.0c \
-psscale -O -B$PSSCALE/:$unit: -D2.0i/-0.8i/3.1i/0.2ih \
-	-C$colors $REVERT \
-	>> $PSFILE 
-
-rm -f $colors
-
-}
-
-gmtset LABEL_FONT_SIZE 12p
-gmtset HEADER_FONT_SIZE 12p
-gmtset ANOT_FONT_SIZE 12p 
-gmtset COLOR_BACKGROUND 0/0/255
-gmtset COLOR_FOREGROUND 255/0/0
-gmtset COLOR_NAN 255/255/255
-gmtset PAPER_MEDIA a5
-
-libdir=$(dirname $0)
-EXTRA=""
-
-while getopts "b:c:e:ghi:o:p:v:s:t:u:xrY:" flag
-do
-  case "$flag" in
-    b) bset=1;bds=$OPTARG;;
-    c) cset=1;carg=$OPTARG;;
-    e) eset=1;EXTRA="$EXTRA $OPTARG";;
-    g) gset=1;;
-    h) hset=1;;
-    i) iset=1;illumination="-I$OPTARG";;
-    o) oset=1;ODIR=$OPTARG;;
-    p) pset=1;P=$OPTARG;PSSCALE=`echo $OPTARG | awk -F"/" 'function abs(x){return x<0?-x:x}{print abs($2-$1)/4}'`;echo $PSSCALE;;
-    v) vset=1;SIZE=$OPTARG;VECTOR=$OPTARG"c";;
-    r) rset=1;;
-    s) sset=1;ADX=$OPTARG;;
-    t) tset=1;tick=$OPTARG;;
-    u) uset=1;unit=$OPTARG;;
-    x) xset=1;;
-    Y) Yset=1;Yshift=$OPTARG;;
-  esac
-done
-for item in $bset $cset $iset $oset $pset $vset $sset $tset $uset $Yset $EXTRA;do
-	shift;shift
-done
-for item in $gset $hset $xset $rset;do
-	shift;
-done
-
-if [ $# -lt "1" ] || [ "$hset" == "1" ] ; then
+usage(){
         echo "usage: map.sh [-b -5/5/-5/5] [-p -1.5/1.5/0.1] [...] file1.grd ... fileN.grd"
 	echo "or"
         echo "       map.sh [-b -5/5/-5/5] [-p -1.5/1.5/0.1] [...] dir1/index1 ... dirN/indexN"
@@ -126,6 +34,7 @@ if [ $# -lt "1" ] || [ "$hset" == "1" ] ; then
         echo "         -v vector sets the vector scale to vector"
 	echo "         -t tick interval"
 	echo "         -x do not display map (only create .ps file)"
+	echo "         -E file.ps only plot base map with extra scripts"
         echo "         -Y shift the plot vertically on the page"
 	echo ""
 	echo "Creates N maps based on grd files file1.grd ... fileN.grd, or based"
@@ -133,131 +42,305 @@ if [ $# -lt "1" ] || [ "$hset" == "1" ] ; then
 	echo ""
         
         exit
-fi
+}
 
-while [ "$#" != "0" ];do
+my_gmt(){
 
-WDIR=`dirname $1`
-INDEX=`basename $1`
+	if [ -e "$U3" ]; then
+		grdimage $U3 -R$bds -J${PROJ} \
+		    $AXIS \
+		    -K -C$colors -P -X1.2i -Y${YSHIFT}i $illumination \
+		    > $PSFILE
+	else
+		psbasemap -R$bds -J${PROJ} \
+		    $AXIS \
+		     -K -P -X1.2i -Y${YSHIFT}i \
+		    > $PSFILE
+	fi
 
-# default names
-U1=$WDIR/$INDEX-east.grd
-U2=$WDIR/$INDEX-north.grd
-U3=$WDIR/$INDEX-up.grd
+	# running all required subprograms
+	for subprog in $EXTRA;do
+	if [ -e "$selfdir/$subprog" ]; then
+		#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
+		eval "$subprog $PSFILE $bds $VECTOR $U3 $HEIGHT"
+	else
+		if [ -e "$subprog" ]; then
+			#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
+			eval "$subprog $PSFILE $bds $VECTOR $U3 $HEIGHT"
+		fi
+	fi
+	done
 
-if [ -e $U3 ]; then
-	U3=$U3;
-else
-	U3=$WDIR/$INDEX
-fi
+	# plotting vectors
+	if [ -e "$U1" ]; then
 
-echo $self": Using directory "$WDIR", plotting index "$INDEX
+		#echo $self": found "$U1": plotting vectors"
+		echo $self": Using VECTOR="$VECTOR", STEP="$ADX
 
-# defaults
-if [ "$bset" != "1" ]; then
-	bds=`grdinfo -C $U3 | awk '{s=1;print $2/s"/"$3/s"/"$4/s"/"$5/s}'`
-fi
+		# arrowwidth/headlength/headwidth
+		# grdvector crashes with wrong sampling
+		#	-Q0.51c/0.8c/0.7cn1.0c \
+		grdvector $U1 $U2 -K -J${PROJ} -O -R$bds -I$ADX/$ADX \
+			-Q0.3c/0.5c/0.4cn1.0c \
+			-S$VECTOR -W0.1p/0/0/0 \
+			-G255/255/255 \
+			 >> $PSFILE
+	fi
+
+	# plot the vector legend if $VECTOR is set
+	if [ "$VECTOR" != "-" ]; then
+		UL=`echo $bds | awk -F "/" '{print $1,$4}' `
+	pstext -O -K -J${PROJ} -N -R$bds \
+		-G0/0/0 -Ya0.3i \
+		<<EOF >> $PSFILE
+$UL 14 0 4 LM $SIZE $unit
+EOF
+	psxy -O -K -J${PROJ} -R$bds -N \
+		-W0.5p/0/0/0 -Xa0.9i \
+		-Sv0.2c/1.0c/0.4cn1.0c \
+		<<EOF >> $PSFILE
+$UL 0 1
+EOF
+	REVERT="-Xa-0.9i -Ya-0.3i"
+	fi
+
+	if [ -e "$colors" ]; then
+		#-Q0.20c/1.0c/0.4cn1.0c \
+		psscale -O -K -B$PSSCALE/:$unit: -D2.0i/-0.8i/3.1i/0.2ih \
+			-C$colors $REVERT \
+			>> $PSFILE 
+		
+		#rm -f $colors
+	fi
+
+	echo 0 0 | psxy -O -J${PROJ} -R$bds -Sp0.001c >> $PSFILE
+
+}
+
+gmtset LABEL_FONT_SIZE 12p
+gmtset HEADER_FONT_SIZE 12p
+gmtset ANOT_FONT_SIZE 12p 
+gmtset COLOR_BACKGROUND 0/0/255
+gmtset COLOR_FOREGROUND 255/0/0
+gmtset COLOR_NAN 255/255/255
+gmtset PAPER_MEDIA a5
+
+libdir=$(dirname $0)
+EXTRA=""
+
+while getopts "b:c:e:ghi:o:p:v:s:t:u:xrE:Y:" flag
+do
+	case "$flag" in
+	b) bset=1;bds=$OPTARG;;
+	c) cset=1;carg=$OPTARG;;
+	e) eset=1;EXTRA="$EXTRA $OPTARG";;
+	g) gset=1;;
+	h) hset=1;;
+	i) iset=1;illumination="-I$OPTARG";;
+	o) oset=1;ODIR=$OPTARG;;
+	p) pset=1;P=$OPTARG;PSSCALE=`echo $OPTARG | awk -F"/" 'function abs(x){return x<0?-x:x}{print abs($2-$1)/4}'`;;
+	r) rset=1;;
+	s) sset=1;ADX=$OPTARG;;
+	t) tset=1;tick=$OPTARG;;
+	u) uset=1;unit=$OPTARG;;
+	v) vset=1;SIZE=$OPTARG;VECTOR=$OPTARG"c";;
+	x) xset=1;;
+	E) Eset=1;PSFILE=$OPTARG;;
+	Y) Yset=1;Yshift=$OPTARG;;
+	esac
+done
+for item in $bset $cset $iset $oset $pset $vset $sset $tset $uset $Yset $Eset $EXTRA;do
+	shift;shift
+done
+for item in $gset $hset $xset $rset;do
+	shift;
+done
+
+#-------------------------------------------------------- 
+# DEFAULTS
+#-------------------------------------------------------- 
+
+# unused value but preserve the number of elements in call to subroutine
+VECTOR="-"
+
+
+# tick marks
 if [ "$tset" != "1" ]; then
 	tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/4}'`
 fi
-if [ "$gset" != "1" ]; then
-	HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*4)}'`
-	if [ "$rset" != "1" ]; then
-		PROJ="X4i/"$HEIGHT
-	else
-		PROJ="X4i/"-$HEIGHT
-	fi
-        AXIS=-Ba${tick}:"":/a${tick}:""::."$U3":WSne
-else
-	HEIGHT=4i
-	PROJ="M0/0/$HEIGHT"
-        AXIS=-B${tick}:"":/${tick}:""::."$U3":WSne
-fi
+tickf=`echo $tick | awk '{print $1/2}'`
 
-if [ "$uset" != "1" ]; then
-	# retrieve the "Remarks"
-	# use grdedit -D:=:=:=:=:=:=:cm: file.grd to update the value
-	unit=`grdinfo $U3 | grep "Remark" | awk -F ": " '{print $3}'`
-fi
-
+# vertical shift of plot
 if [ "$Yset" != "1" ]; then
 	YSHIFT=2.0
 else
 	YSHIFT=`echo $Yshift | awk '{print $1+2}'`
 fi
 
+# color scale
 if [ "$cset" != "1" ]; then
 	#cptfile=hot
 	cptfile=$libdir/my_jet
 	#cptfile=$libdir/my_hot_inv
 else
-	if [ -e $libdir/$carg ]; then 
+	if [ -e "$libdir/$carg" ]; then 
 		cptfile=$libdir/$carg
 	else 
 		cptfile=$carg;
 	fi
 fi
-
-colors=$WDIR/palette.cpt
 echo $self: using colorfile $cptfile
-if [ "$pset" != "1" ]; then
-	# cool, copper, gebco, globe, gray, haxby, hot, jet, no_green, ocean
-	# polar, rainbow, red2green, relief, topo, sealand, seis, split, wysiwyg  
-	PSSCALE=`grdinfo $U3 -C | awk 'function abs(x){return x<0?-x:x}{if (abs($6) >= abs($7)) print abs($6)/2; else print abs($7)/2}'`
-	if [ "0" == $PSSCALE ]; then
-		grd2cpt $U3 -C$cptfile -Z -T= -L-1/1 > $colors
-		PSSCALE=0.5
+
+# usage
+if [ $# -lt "1" -a "$Eset" != "1" ] || [ "$hset" == "1" ] ; then
+	usage
+fi
+
+
+# loop over grd files
+while [ "$#" != "0" -o "$Eset" == "1" ];do
+
+	if [ "$1" != "" ]; then
+		WDIR=`dirname $1`
+		INDEX=`basename $1`
+
+		# default names
+		U1=$WDIR/$INDEX-east.grd
+		U2=$WDIR/$INDEX-north.grd
+		U3=$WDIR/$INDEX-up.grd
+
+		if [ -e "$U3" ]; then
+			U3=$U3;
+		else
+			U3=$WDIR/$INDEX
+		fi
+		if [ "$bset" != "1" ]; then
+			bds=`grdinfo -C $U3 | awk '{s=1;print $2/s"/"$3/s"/"$4/s"/"$5/s}'`
+		fi
+
+		echo $self": Using directory "$WDIR", plotting index "$INDEX
+
+		# defaults
+
+		# output directory
+		if [ "$oset" != "1" ]; then
+			ODIR=$WDIR
+		fi
+
+		# units
+		if [ "$uset" != "1" ]; then
+			# retrieve the "Remarks"
+			# use grdedit -D:=:=:=:=:=:=:cm: file.grd to update the value
+			unit=`grdinfo $U3 | grep "Remark" | awk -F ": " '{print $3}'`
+		fi
+
+		colors=$WDIR/palette.cpt
+		if [ "$pset" != "1" ]; then
+			# cool, copper, gebco, globe, gray, haxby, hot, jet, no_green, ocean
+			# polar, rainbow, red2green, relief, topo, sealand, seis, split, wysiwyg  
+			PSSCALE=`grdinfo $U3 -C | awk 'function abs(x){return x<0?-x:x}{if (abs($6) >= abs($7)) print abs($6)/2; else print abs($7)/2}'`
+			if [ "0" == $PSSCALE ]; then
+				grd2cpt $U3 -C$cptfile -Z -T= -L-1/1 > $colors
+				PSSCALE=0.5
+			else
+				grd2cpt $U3 -C$cptfile -Z -T= > $colors
+			fi
+		fi
+
+		if [ -e "$U1" ]; then
+			if [ "$vset" != "1" ]; then
+		                MAX1=`grdinfo $U1 -C | awk '{if (sqrt($7^2)>sqrt($6^2)){print sqrt($7^2)}else{print sqrt($6^2)}}'`
+		                MAX2=`grdinfo $U2 -C | awk '{if (sqrt($7^2)>sqrt($6^2)){print sqrt($7^2)}else{print sqrt($6^2)}}'`
+				SIZE=`echo "$MAX1 $MAX2"| awk '{if (0==$1 && 0==$2){print 1}else{print ($1+$2)*0.95}}'`
+				VECTOR=$SIZE"c"
+			fi
+			if [ "$sset" != "1" ]; then
+				ADX=`grdinfo $U2 -C | awk '{printf "5*%11.9f\n", $8}' | bc`
+			fi
+		fi
+	
+		if [ "$gset" != "1" ]; then
+			# Cartesian coordinates
+			HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*4)}'`
+			if [ "$rset" != "1" ]; then
+				PROJ="X4i/"$HEIGHT
+			else
+				PROJ="X4i/"-$HEIGHT
+			fi
+		        AXIS=-Bf${tickf}a${tick}:"":/f${tickf}a${tick}:""::."$U3":WSne
+		else
+			# geographic coordinates
+			HEIGHT=4i
+			PROJ="M0/0/$HEIGHT"
+		        AXIS=-B${tick}:"":/${tick}:""::."$U3":WSne
+		fi
+
+		echo $self": z-min/z-max for "$U3": "`grdinfo -C $U3 | awk '{print $6,$7}'`
+	
+		PSFILE=$ODIR/$INDEX-plot.ps
+		PDFFILE=$ODIR/$INDEX-plot.pdf
+	
 	else
-		grd2cpt $U3 -C$cptfile -Z -T= > $colors
+		WDIR=$(dirname $PSFILE)
+		ODIR=$WDIR
+		TITLE=$(basename $PSFILE .ps)
+		#PSFILE=$ODIR/plot.ps
+		PDFFILE=$ODIR/$(basename $PSFILE .ps).pdf
+		
+		if [ "$pset" == "1" ]; then
+			colors=$WDIR/palette.cpt
+		fi
+		if [ "$bset" != "1" ]; then
+			echo "$self: -b option should be set with the -E option. exiting."
+			echo ""
+			usage
+		else
+			# Cartesian vs geographic coordinates
+			if [ "$gset" != "1" ]; then
+				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*4)}'`
+				if [ "$rset" != "1" ]; then
+					PROJ="X4i/"$HEIGHT
+				else
+					PROJ="X4i/"-$HEIGHT
+				fi
+			        AXIS=-Ba${tick}:"":/a${tick}:""::."$TITLE":WSne
+			else
+				HEIGHT=4i
+				PROJ="M0/0/$HEIGHT"
+			        AXIS=-B${tick}:"":/${tick}:""::."$TITLE":WSne
+			fi
+		fi
 	fi
-else
-	makecpt -C$cptfile -T$P -D > $colors;
-fi
-if [ "$oset" != "1" ]; then
-	ODIR=$WDIR
-fi
-if [ -e $U1 ]; then
-	if [ "$vset" != "1" ]; then
-                MAX1=`grdinfo $U1 -C | awk '{if (sqrt($7^2)>sqrt($6^2)){print sqrt($7^2)}else{print sqrt($6^2)}}'`
-                MAX2=`grdinfo $U2 -C | awk '{if (sqrt($7^2)>sqrt($6^2)){print sqrt($7^2)}else{print sqrt($6^2)}}'`
-		SIZE=`echo "$MAX1 $MAX2"| awk '{if (0==$1 && 0==$2){print 1}else{print ($1+$2)*0.95}}'`
-		VECTOR=$SIZE"c"
+
+	# color bounds
+	if [ "$pset" == "1" ]; then
+		makecpt -C$cptfile -T$P -D > $colors;
 	fi
-	if [ "$sset" != "1" ]; then
-		ADX=`grdinfo $U2 -C | awk '{printf "5*%11.9f\n", $8}' | bc`
+
+	my_gmt $INDEX
+	
+	# add trailer information
+	echo %% Postscript created with >> $PSFILE
+	echo %% $(basename $0) $cmdline >> $PSFILE
+	
+	# open file for display
+	echo $self": Created map "$PSFILE
+	
+	if [ "$xset" != "1" ]; then
+		#display -trim $PSFILE &
+		#gv -spartan $PSFILE &
+		ps2pdf -sPAPERSIZE="a4" $PSFILE $PDFFILE
+		echo $self": Converted to pdf file "$PDFFILE
+		xpdf -paper "A5" $PDFFILE -z 100 -g 565x655 >& /dev/null &
 	fi
-else
-	# unused value but preserve the number of elements in call to subroutine
-	if [ "$vset" != "1" ]; then
-		VECTOR="-"
+	
+	if [ "$#" != "0" ];then
+		shift
+		if [ "$#" != "0" ];then
+			echo ""
+		fi
 	fi
-fi
 
-echo $self": z-min/z-max for "$U3": "`grdinfo -C $U3 | awk '{print $6,$7}'`
-
-PSFILE=$ODIR/$INDEX-plot.ps
-PDFFILE=$ODIR/$INDEX-plot.pdf
-
-my_gmt $INDEX
-
-# add trailer information
-echo %% Postscript created with >> $PSFILE
-echo %% $(basename $0) $cmdline >> $PSFILE
-
-# open file for display
-echo $self": Created map "$PSFILE
-
-if [ "$xset" != "1" ]; then
-	#display -trim $PSFILE &
-	#gv -spartan $PSFILE &
-	ps2pdf -sPAPERSIZE="a4" $PSFILE $PDFFILE
-	echo $self": Converted to pdf file "$PDFFILE
-	xpdf -paper "A5" $PDFFILE -z 100 -g 565x655 >& /dev/null &
-fi
-
-shift
-if [ "$#" != "0" ];then
-	echo ""
-fi
+	# prevent more empty plots (cancel -E option)
+	Eset=""
 done
-
