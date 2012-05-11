@@ -622,7 +622,7 @@ CONTAINS
 #endif
 !#_indef GRD_EXPORTEIGENSTRAIN
     CHARACTER(256) :: fn11,fn12,fn13,fn22,fn23,fn33
-    INTEGER :: j,iostat,j1,j2
+    INTEGER :: j,j1,j2
     REAL*4, ALLOCATABLE, DIMENSION(:,:) :: temp11,temp12,temp13, &
                                            temp22,temp23,temp33
     REAL*8 :: rland=9998.,rdum=9999.
@@ -671,7 +671,7 @@ CONTAINS
        fn33(j:j)=char(0)
 
        ALLOCATE(temp11(ns1,ns2),temp12(ns1,ns2),temp13(ns1,ns2), &
-                temp22(ns1,ns2),temp23(ns1,ns2),temp33(ns1,ns2),STAT=iostat)
+                temp22(ns1,ns2),temp23(ns1,ns2),temp33(ns1,ns2),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate temporary array for GRD slip export."
 
        DO j2=1,ns2
@@ -752,7 +752,7 @@ END SUBROUTINE exportplanestress
 #endif
 !#_indef GRD_EXPORTEIGENSTRAIN
     CHARACTER(256) :: outfilegrd
-    INTEGER :: j,iostat,j1,j2
+    INTEGER :: j,j1,j2
     REAL*4, ALLOCATABLE, DIMENSION(:,:) :: temp
     REAL*8 :: rland=9998.,rdum=9999.
     REAL*8 :: xmin,ymin
@@ -800,7 +800,7 @@ END SUBROUTINE exportplanestress
        j=INDEX(outfilegrd," ")
        outfilegrd(j:j)=char(0)
 
-       ALLOCATE(temp(ns1,ns2),STAT=iostat)
+       ALLOCATE(temp(ns1,ns2),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate temporary array for GRD slip export."
 
        DO j2=1,ns2
