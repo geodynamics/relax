@@ -24,7 +24,7 @@
 #   map.sh -b -5/5/-5/5 -p -0.002/0.002/0.0001 -v 0.005 output1/00{1,2,3,4}-relax
 #
 # type map.sh for a description of command-line options.
-# type ../relax --help for more info about command-line options.
+# type relax --help for more info about command-line options.
 #
 # to visualize in 3-D with Paraview (www.paraview.org),
 # load the following files:
@@ -43,4 +43,4 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time ../../build/relax --no-stress-output --no-proj-output $* < run4.input | tee $WDIR/in.param
+time relax --no-stress-output --no-proj-output $* < run4.input | tee $WDIR/in.param

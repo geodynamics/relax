@@ -64,4 +64,4 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-OMP_NUM_THREADS=4 ../relax --no-proj-output $* < co-stress.input | tee $WDIR/in.param
+OMP_NUM_THREADS=4 relax --no-proj-output $* < co-stress.input | tee $WDIR/in.param
