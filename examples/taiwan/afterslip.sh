@@ -12,7 +12,7 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time ../../relax --no-proj-output --no-stress-output $* <<EOF | tee $WDIR/in.param
+time relax --no-proj-output --no-stress-output $* <<EOF | tee $WDIR/in.param
 # grid dimension (sx1,sx2,sx3)
 512 512 512
 # sampling (dx1,dx2,dx3), smoothing (beta, nyquist)

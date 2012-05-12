@@ -14,7 +14,7 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time ../../relax <<EOF --no-vtk-output --no-proj-output \
+time relax <<EOF --no-vtk-output --no-proj-output \
 	--no-stress-output $* | tee $WDIR/in.param
 # grid size (sx1,sx2,sx3)
 512 512 512

@@ -28,7 +28,7 @@ SX=512
 DX=0.3
 L=`echo $SX $DX | awk '{print $1*$2/2}'`
 
-OMP_NUM_THREADS=4 ../../../build/relax --no-proj-output $* <<EOF | tee $WDIR/in.param
+OMP_NUM_THREADS=4 relax --no-proj-output $* <<EOF | tee $WDIR/in.param
 # use '#' character to include comments in your input file
 # grid size (sx1,sx2,sx3)
 $SX $SX $SX
