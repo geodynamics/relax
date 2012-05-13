@@ -226,6 +226,6 @@ def build(bld):
                         'src/input.f90',
                         'src/mkl_dfti.f90'],
                 includes=['build'],
-                use=['gmt','proj','openmp','fftw','imkl','zero','cpp'],
+                use=['gmt','proj','openmp','fftw','imkl','zero','cpp','length'],
                 target='relax'
                 )
