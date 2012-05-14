@@ -717,6 +717,7 @@ CONTAINS
     READ  (dataline,*) in%nfc
     PRINT '(I5)', in%nfc
 
+    in%np=0
     IF (in%nfc .GT. 0) THEN
        ALLOCATE(in%faultcreeplayer(in%nfc),in%faultcreepstruc(in%sx3/2),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate the layer structure"
