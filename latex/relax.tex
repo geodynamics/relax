@@ -259,7 +259,7 @@ specific run, prepend the variable definition to your command
 {\color{orange}OMP_NUM_THREADS=4 relax --option}
 \end{alltt}
 
-Some examples of simple calculations are provided in the \verb'examples' directory. For instance, to run the first example, change into the \verb'examples' directory and run
+Some examples of simple calculations are provided in the \verb'examples/tutorials' directory. For instance, to run the first example, change into the \verb'examples/tutorials' directory and run
 \begin{alltt}
 {\color{orange}./run1.sh}  # for Linux and Mac
 {\color{orange}./run1.bat} # for Windows
@@ -505,7 +505,7 @@ The coseismic slip distribution of a real earthquake can be a long and detailed 
 0
 EOF
 \end{alltt}
-The inclusion of unix commands in the input file allows more complex operations, such as filtering out data, shift, rotation and scaling of models, and others. An example complex coseismic slip distribution for the 1992 Mw 7.3 Landers earthquake can be found in the \verb'examples' directory.
+The inclusion of unix commands in the input file allows more complex operations, such as filtering out data, shift, rotation and scaling of models, and others. An example complex coseismic slip distribution for the 1992 Mw 7.3 Landers earthquake can be found in the \verb'examples/mojave' directory.
 
 \subsection{Simple viscoelastic model}
 
@@ -696,6 +696,25 @@ coseismic event 001
 \end{alltt}
 and shows a monotonic decrease of the power and a gradual increase of the time steps.
 
+
+\subsection{Published slip distribution models}
+
+The directory \verb'examples' contains a comprehensive list of input files with published slip distributions of recent earthquakes. The database includes the case of the 1999 M$_w$ 7.6 Chi-Chi~\citep{johnson+01}, the 1964 M$_w$ 9.2 Alaska~\citep{johnson+96}, the 1992 M$_w$ 7.3 Landers~\citep{fi04c}, 1999 M$_w$ 7.1 Hector Mine~\citep{si+02a}, the 2012 Canterbury (New Zealand)~\citep{elliott+12}, the 2004 M$_w$ 6.0 Parkfield~\citep{bruhat+11}, the 2001 M$_w$ 7.8 Kokoxili (Tibet)~\citep{lasserre+05,ryder+11}, the 2010 M$_w$ 6.8 Yushu (Tibet)~\citep{li+11}, the 2008 M$_w$ 7.1 Yutian (Tibet)~\citep{elliott+10} earthquakes, organized by geography. New slip distributions will continue to be included and placed in this repository.
+
+The utility \verb'util/flt2vtk.sh' transforms the slip distribution in the Paraview format for visualization in three dimensions.
+
+%
+\begin{figure*}[h]
+\centering
+\includegraphics[width=\textwidth]{alaska.jpg}
+\caption{\small Coseismic slip distribution of the 1964 M$_w$ 9.2 Alaska earthquake~\citep{johnson+96}. The utility 'flt2vtk.sh' transforms the slip distribution in the Paraview format for visualization in three dimensions.}
+\label{fig:alaska}
+\end{figure*}
+%
+
+
+
+
 \pagebreak
 \section{Outputs}
 
@@ -744,6 +763,12 @@ Some other files only contain geometrical information, such as geometry of fault
 \end{tabular}\\
 
 The time series of stress and displacement for observation points are in files \verb'NAME.txt'.
+
+
+
+
+
+
 
 \pagebreak
 \section{Benchmarks}
@@ -904,8 +929,130 @@ The first option, \verb`--with-vtk-output`, enforces the output in \verb`vtk` fo
 %
 
 \pagebreak
-\bibliography{../../../latex/reference}
+%\bibliography{../../../latex/reference}
 \bibliographystyle{agu}
+
+\begin{thebibliography}{19}
+\providecommand{\natexlab}[1]{#1}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+
+\bibitem[{\textit{Aki and Richards}(1980)}]{aki&richards80a}
+Aki, K., and P.~G. Richards, \textit{Quantitative Seismology}, vol.~I, W. H.
+  Freeman and company, New York, 1980.
+
+\bibitem[{\textit{Barbot and Fialko}(2010{\natexlab{a}})}]{barbot&fialko10a}
+Barbot, S., and Y.~Fialko, Fourier-domain {G}reen function for an elastic
+  semi-infinite solid under gravity, with applications to earthquake and
+  volcano deformation, \textit{Geophys. J. Int.}, \textit{182}(2), 568Ð582,
+  \doi{10.1111/j.1365-246X.2010.04655.x}, 2010{\natexlab{a}}.
+
+\bibitem[{\textit{Barbot and Fialko}(2010{\natexlab{b}})}]{barbot&fialko10b}
+Barbot, S., and Y.~Fialko, A unified continuum representation of postseismic
+  relaxation mechanisms: semi-analytic models of afterslip, poroelastic rebound
+  and viscoelastic flow, \textit{Geophys. J. Int.}, \textit{182}(3),
+  1124--1140, \doi{10.1111/j.1365-246X.2010.04678.x}, 2010{\natexlab{b}}.
+
+\bibitem[{\textit{Barbot et~al.}(2009{\natexlab{a}})\textit{Barbot, Fialko, and
+  Bock}}]{barbot+09a}
+Barbot, S., Y.~Fialko, and Y.~Bock, {Postseismic Deformation due to the Mw\,6.0
+  2004 Parkfield Earthquake: Stress-Driven Creep on a Fault with Spatially
+  Variable Rate-and-State Friction Parameters}, \textit{J. Geophys. Res.},
+  \textit{114}(B07405), \doi{10.1029/2008JB005748}, 2009{\natexlab{a}}.
+
+\bibitem[{\textit{Barbot et~al.}(2009{\natexlab{b}})\textit{Barbot, Fialko, and
+  Sandwell}}]{barbot+09b}
+Barbot, S., Y.~Fialko, and D.~Sandwell, {Three-Dimensional Models of
+  Elasto-Static Deformation in Heterogeneous Media, with Applications to the
+  Eastern California Shear Zone}, \textit{Geophys. J. Int.}, \textit{179}(1),
+  500--520, 2009{\natexlab{b}}.
+
+\bibitem[{\textit{Bruhat et~al.}(2011)\textit{Bruhat, Barbot, and
+  Avouac}}]{bruhat+11}
+Bruhat, L., S.~Barbot, and J.~P. Avouac, {Evidence for postseismic deformation
+  of the lower crust following the 2004 Mw6.0 Parkfield earthquake}, \textit{J.
+  Geophys. Res.}, \textit{116}, 10, 2011.
+
+\bibitem[{\textit{Elliott et~al.}(2010)\textit{Elliott, Walters, England,
+  Jackson, Li, and Parsons}}]{elliott+10}
+Elliott, J.~R., R.~J. Walters, P.~C. England, J.~A. Jackson, Z.~Li, and
+  B.~Parsons, {Extension on the Tibetan plateau: recent normal faulting
+  measured by InSAR and body wave seismology}, \textit{Geophys. J. Int.},
+  \textit{183}(2), 503Ð535, 2010.
+
+\bibitem[{\textit{Elliott et~al.}(2012)\textit{Elliott, Nissen, England,
+  Jackson, Lamb, Li, Oehlers, and Parsons}}]{elliott+12}
+Elliott, J.~R., E.~K. Nissen, P.~C. England, J.~A. Jackson, S.~Lamb, Z.~Li,
+  M.~Oehlers, and B.~Parsons, {Slip in the 2010-2011 Canterbury earthquakes,
+  New Zealand}, \textit{J. Geophys. Res.}, \textit{117}(B03401), 36, 2012.
+
+\bibitem[{\textit{Fialko}(2004)}]{fi04c}
+Fialko, Y., {Evidence of fluid-filled upper crust from observations of
+  post-seismic deformation due to the 1992 M$_w$7.3 Landers earthquake},
+  \textit{J. Geophys. Res.}, \textit{109}, B08,401, 10.1029/2004JB002,985,
+  2004.
+
+\bibitem[{\textit{Johnson et~al.}(1996)\textit{Johnson, Satake, Holdahl, and
+  Sauber}}]{johnson+96}
+Johnson, J.~M., K.~Satake, S.~R. Holdahl, and J.~Sauber, {The 1964 Prince
+  William Sound earthquake: Joint inversion of tsunami and geodetic data},
+  \textit{J. Geophys. Res.}, \textit{101}(B1), 523--532, 1996.
+
+\bibitem[{\textit{Johnson et~al.}(2001)\textit{Johnson, Hsu, Segall, and
+  Yu}}]{johnson+01}
+Johnson, K.~M., Y.~J. Hsu, P.~Segall, and S.~B. Yu, Fault geometry and slip
+  distribution of the 1999 chi-chi, taiwan earthquake imaged from inversion of
+  gps data, \textit{Geophys. Res. Lett}, \textit{28}(11), 2285--2288, 2001.
+
+\bibitem[{\textit{Lasserre et~al.}()\textit{Lasserre, Peltzer, Cramp\'{e},
+  Klinger, der Woerd, and Tapponnier}}]{lasserre+05}
+Lasserre, C., G.~Peltzer, F.~Cramp\'{e}, Y.~Klinger, J.~V. der Woerd, and
+  P.~Tapponnier.
+
+\bibitem[{\textit{Li et~al.}(2011)\textit{Li, Elliott, Feng, Jackson, Parsons,
+  and Walters}}]{li+11}
+Li, Z., J.~R. Elliott, W.~Feng, J.~A. Jackson, B.~E. Parsons, and R.~J.
+  Walters, {The 2010 MW 6.8 Yushu (Qinghai, China) earthquake: Constraints
+  provided by InSAR and body wave seismology}, \textit{J. Geophys. Res.},
+  \textit{116}(B10302), 16, 2011.
+
+\bibitem[{\textit{Mogi}(1958)}]{mogi58}
+Mogi, K., Relations between the eruptions of various volcanoes and the
+  deformations of the ground surfaces around them, \textit{Bull. Earthquake
+  Res. Inst. Univ. Tokyo}, \textit{36}, 99--134, 1958.
+
+\bibitem[{\textit{Okada}(1992)}]{okada92}
+Okada, Y., Internal deformation due to shear and tensile faults in a
+  half-space, \textit{Bull. Seism. Soc. Am.}, \textit{82}, 1018--1040, 1992.
+
+\bibitem[{\textit{Ryder et~al.}(2011)\textit{Ryder, B\"{u}rgmann, and
+  Pollitz}}]{ryder+11}
+Ryder, I., R.~B\"{u}rgmann, and F.~Pollitz, {Lower crustal relaxation beneath
+  the Tibetan Pleateau and Qaidam Basin following the 2001 Kokoxili
+  earthquake}, \textit{Geophys. J. Int.}, \textit{187}, 613--630, 2011.
+
+\bibitem[{\textit{Simons et~al.}(2002)\textit{Simons, Fialko, and
+  Rivera}}]{si+02a}
+Simons, M., Y.~Fialko, and L.~Rivera, {Coseismic deformation from the 1999
+  $M_w7.1$ Hector Mine, California, earthquake, as inferred from InSAR and GPS
+  observations}, \textit{Bull. Seism. Soc. Am.}, \textit{92}, 1390--1402, 2002.
+
+\bibitem[{\textit{Wang et~al.}(2003)\textit{Wang, Martin, and Roth}}]{wang+03a}
+Wang, R., F.~Martin, and F.~Roth, {Computation of deformation induced by
+  earthquakes in a multi-layered elastic crust - FORTRAN programs EDGRN/EDCMP},
+  \textit{Comp. Geosci.}, \textit{29}, 195--207, 2003.
+
+\bibitem[{\textit{Wang et~al.}(2006)\textit{Wang, Lorenzo-Martin, and
+  Roth}}]{wang+06a}
+Wang, R., F.~Lorenzo-Martin, and F.~Roth, {PSGRN/PSCMP}-a new code for
+  calculating co- and post-seismic deformation, geoid and gravity changes based
+  on the viscoelastic-gravitational dislocation theory, \textit{Computers and
+  Geosciences}, \textit{32}, 527--541, 2006.
+
+\end{thebibliography}
+
 
 
 \clearpage
