@@ -55,8 +55,6 @@ Finally, configure relax
 
 Build relax, cd into build/, and redo the link line
 
-  gcc -Wl,--enable-auto-import -Wl,--enable-auto-import relax.f90.1.o types.f90.1.o ctfft.f.1.o fourier.f90.1.o green.f90.1.o elastic3d.f90.1.o friction3d.f90.1.o viscoelastic3d.f90.1.o writevtk.c.1.o writegrd4.2.c.1.o proj.c.1.o export.f90.1.o getdata.f.1.o getopt_m.f90.1.o input.f90.1.o mkl_dfti.f90.1.o -o /home/walter/src/relax/relax/build/relax.exe -Wl,-rpath,/home/walter/src/relax/relax-bin/lib -Wl,-rpath,/home/walter/src/relax/relax-bin//lib -Wl,-rpath,None -Wl,-Bstatic -Wl,-Bdynamic -L/home/walter/src/relax/relax-bin/lib -L/home/walter/src/relax/relax-bin//lib -LNone -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads /usr/lib/libhdf5_hl.a /usr/lib/libhdf5.a /usr/lib/libz.a `gcc -print-file-name=libgfortran.a` `gcc -print-file-name=libgomp.a`
-
   gcc -Wl,--enable-auto-import -Wl,--enable-auto-import -fopenmp src/relax.f90.1.o src/types.f90.1.o src/ctfft.f.1.o src/fourier.f90.1.o src/green.f90.1.o src/okada/green_space.f90.1.o src/okada/dc3d.f.1.o src/elastic3d.f90.1.o src/friction3d.f90.1.o src/viscoelastic3d.f90.1.o src/writevtk.c.1.o src/writegrd4.2.c.1.o src/proj.c.1.o src/export.f90.1.o src/getdata.f.1.o src/getopt_m.f90.1.o src/input.f90.1.o src/mkl_dfti.f90.1.o -o /home/walter/src/relax/relax/build/relax.exe -Wl,-rpath,/home/walter/src/relax/relax-bin/lib -Wl,-rpath,/home/walter/src/relax/relax-bin//lib -Wl,-rpath,None -Wl,-Bstatic -Wl,-Bdynamic -L/home/walter/src/relax/relax-bin/lib -L/home/walter/src/relax/relax-bin//lib -LNone -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads /usr/lib/libhdf5_hl.a /usr/lib/libhdf5.a /usr/lib/libz.a `gcc -print-file-name=libgfortran.a` `gcc -print-file-name=libgomp.a`
 
 
@@ -90,6 +88,10 @@ You will first need a fortran compiler.  Compile gcc 4.6.2 with
 Then build and install it.  Set the path to point to the new compiler
 
   export PATH=/Users/walter/src/gcc-4.6.2-bin/bin:$PATH
+
+Tell the compiler to produce binaries that are compatible with 10.5.
+
+  export MACOSX_DEPLOYMENT_TARGET=10.5
 
 Configure HDF5 1.8.8 
 
@@ -163,21 +165,39 @@ which is a standard system library available on all Macs.
 Linux
 -----
 
-Install fftw using apt.  Set the path to use Pylith's compilers
+First install gmp
 
-  export PATH=/home/buildbot/install/pylith_linux_x86_64_binbot/bin:$PATH
-  export LD_LIBRARY_PATH=/home/buildbot/install/pylith_linux_x86_64_binbot/lib
+  ./configure --prefix=/home/walter/src/gcc-4.7.0-bin
 
-for io.geodynamics.org or 
+then mpfr
 
-  export PATH=/home/buildbot/install/pylith_linux_i686_binbot/bin:$PATH
-  export LD_LIBRARY_PATH=/home/buildbot/install/pylith_linux_i686_binbot/lib
+  ./configure --prefix=/home/walter/src/gcc-4.7.0-bin --with-gmp=/home/walter/src/gcc-4.7.0-bin
 
-for nix.geodynamics.org.  You may have to change the permissions of
-the directories, since the binbot likes to make then non-readable to
-the world.
+then mpc
 
-Manually install hdf5 1.8.8 using the configure line
+  ./configure --prefix=/home/walter/src/gcc-4.7.0-bin --with-gmp=/home/walter/src/gcc-4.7.0-bin --with-mpfr=/home/walter/src/gcc-4.7.0-bin/
+
+On nix (32 bit), set
+
+  export LD_LIBRARY_PATH=/home/walter/src/gcc-4.7.0-bin/lib
+
+while on io (64 bit), set
+
+  export LD_LIBRARY_PATH=/home/walter/src/gcc-4.7.0-bin/lib64:/home/walter/src/gcc-4.7.0-bin/lib
+
+Then unpack gcc 4.7.0.  Make
+
+  mkdir gcc-4.7.0-build
+  cd gcc-4.7.0-build
+  ../gcc-4.7.0/configure --prefix=/home/walter/src/gcc-4.7.0-bin --enable-languages=c,c++,fortran --with-gmp=/home/walter/src/gcc-4.7.0-bin/ --with-mpfr=/home/walter/src/gcc-4.7.0-bin/ --with-mpc=/home/walter/src/gcc-4.7.0-bin/
+  make
+  make install
+
+Now set the path
+
+  export PATH=/home/walter/src/gcc-4.7.0-bin/bin:$PATH
+
+Install fftw using apt.  Manually install hdf5 1.8.8 using the configure line
 
   ./configure --prefix=/home/walter/src/relax/relax-bin --disable-shared --disable-parallel
 
@@ -195,11 +215,11 @@ Install Proj 4.7.0 with the configure line
 
 Finally, configure relax with the line
 
-  python2.5 waf configure --use-fftw --gmt-dir=/home/walter/src/relax/relax-bin/ --proj-dir=/home/walter/src/relax/relax-bin/
+  python2.5 waf configure --use-fftw --gmt-dir=/home/walter/src/relax/relax-bin/ --proj-dir=/home/walter/src/relax/relax-bin/ --zero-flag=-finit-local-zero
 
 Build relax, cd into build/, and redo the link with a command like
 
-  gcc src/relax.f90.1.o src/types.f90.1.o src/ctfft.f.1.o src/fourier.f90.1.o src/green.f90.1.o src/okada/green_space.f90.1.o src/okada/dc3d.f.1.o src/elastic3d.f90.1.o src/friction3d.f90.1.o src/viscoelastic3d.f90.1.o src/writevtk.c.1.o src/writegrd4.2.c.1.o src/proj.c.1.o src/export.f90.1.o src/getdata.f.1.o src/getopt_m.f90.1.o src/input.f90.1.o src/mkl_dfti.f90.1.o -o /home/walter/src/relax/relax/build/relax -Wl,-rpath,/home/walter/src/relax/relax-bin//lib -Wl,-rpath,/home/walter/src/relax/relax-bin//lib -Wl,-rpath,None -Wl,-Bstatic -Wl,-Bdynamic -L/home/walter/src/relax/relax-bin//lib -L/home/walter/src/relax/relax-bin//lib -LNone -lgmt -lnetcdf -lhdf5_hl -lhdf5 -lproj /usr/lib/libfftw3f.a /usr/lib/libfftw3f_threads.a /usr/lib/libz.a `gcc -print-file-name=libgfortran.a` `gcc -print-file-name=libgomp.a` -lm -lpthread -lrt
+  gcc src/relax.f90.1.o src/types.f90.1.o src/ctfft.f.1.o src/fourier.f90.1.o src/green.f90.1.o src/okada/green_space.f90.1.o src/okada/dc3d.f.1.o src/elastic3d.f90.1.o src/friction3d.f90.1.o src/viscoelastic3d.f90.1.o src/writevtk.c.1.o src/writegrd4.2.c.1.o src/proj.c.1.o src/export.f90.1.o src/getdata.f.1.o src/getopt_m.f90.1.o src/input.f90.1.o src/mkl_dfti.f90.1.o -o /home/walter/src/relax/relax/build/relax -Wl,-rpath,/home/walter/src/relax/relax-bin//lib -Wl,-rpath,/home/walter/src/relax/relax-bin//lib -Wl,-rpath,None -Wl,-Bstatic -Wl,-Bdynamic -L/home/walter/src/relax/relax-bin//lib -L/home/walter/src/relax/relax-bin//lib -LNone -lgmt -lnetcdf -lhdf5_hl -lhdf5 -lproj /usr/lib/libfftw3f.a /usr/lib/libfftw3f_threads.a /usr/lib/libz.a `gcc -print-file-name=libgfortran.a` `gcc -print-file-name=libgomp.a` -lm -lpthread -lrt -static-libgcc
 
 The changes to the default link line are
   1) Change gfortran to gcc and add in
@@ -209,17 +229,18 @@ The changes to the default link line are
   3) Change fftw to static libs.
   4) Remove -fopenmp and add in
    `gcc -print-file-name=libgfortran.a`
-  5) add in -lm, -lpthread, and -lrt
+  5) Add in -lm, -lpthread, and -lrt
+  6) Add in -static-libgcc
 
 Running ldd on the binary gives
 
   $ ldd relax
-	linux-vdso.so.1 =>  (0x00007fffcc3f6000)
-	libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f9741499000)
-	libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007f974127d000)
-	librt.so.1 => /lib/x86_64-linux-gnu/librt.so.1 (0x00007f9741074000)
-	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f9740cf0000)
-	/lib64/ld-linux-x86-64.so.2 (0x00007f9741738000)
+        linux-gate.so.1 =>  (0xb7797000)
+        libm.so.6 => /lib/tls/i686/cmov/libm.so.6 (0xb776c000)
+        libpthread.so.0 => /lib/tls/i686/cmov/libpthread.so.0 (0xb7754000)
+        librt.so.1 => /lib/tls/i686/cmov/librt.so.1 (0xb774a000)
+        libc.so.6 => /lib/tls/i686/cmov/libc.so.6 (0xb75fb000)
+        /lib/ld-linux.so.2 (0xb7798000)
 
 which are all things provided by the system.
 
@@ -227,13 +248,35 @@ which are all things provided by the system.
 Linux Centos 5
 --------------
 
-Log in as buildbot and use the pylith compilers
+Mostly the same as regular linux, but log in as the buildbot.  So
+s/walter/buildbot/ in the instructions.  You also have to build FFTW.
+To be concrete, first install gmp
 
-export CC=/home/buildbot/install/pylith_centos_x86_64_binbot/bin/gcc
-export CXX=/home/buildbot/install/pylith_centos_x86_64_binbot/bin/g++
-export F90=/home/buildbot/install/pylith_centos_x86_64_binbot/bin/gfortran
-export F77=/home/buildbot/install/pylith_centos_x86_64_binbot/bin/gfortran
-export FC=/home/buildbot/install/pylith_centos_x86_64_binbot/bin/gfortran
+  ./configure --prefix=/home/buildbot/src/gcc-4.7.0-bin
+
+then mpfr
+
+  ./configure --prefix=/home/buildbot/src/gcc-4.7.0-bin --with-gmp=/home/buildbot/src/gcc-4.7.0-bin
+
+then mpc
+
+  ./configure --prefix=/home/buildbot/src/gcc-4.7.0-bin --with-gmp=/home/buildbot/src/gcc-4.7.0-bin --with-mpfr=/home/buildbot/src/gcc-4.7.0-bin/
+
+Set
+
+  export LD_LIBRARY_PATH=/home/buildbot/src/gcc-4.7.0-bin/lib64:/home/buildbot/src/gcc-4.7.0-bin/lib
+
+Then unpack gcc 4.7.0.  Make
+
+  mkdir gcc-4.7.0-build
+  cd gcc-4.7.0-build
+  ../gcc-4.7.0/configure --prefix=/home/buildbot/src/gcc-4.7.0-bin --enable-languages=c,c++,fortran --with-gmp=/home/buildbot/src/gcc-4.7.0-bin/ --with-mpfr=/home/buildbot/src/gcc-4.7.0-bin/ --with-mpc=/home/buildbot/src/gcc-4.7.0-bin/
+  make
+  make install
+
+Now set the path
+
+  export PATH=/home/buildbot/src/gcc-4.7.0-bin/bin:$PATH
 
 Configure HDF5
 
@@ -257,11 +300,8 @@ Configure FFTW 3.3
 
 Finally, configure Relax
 
-  export PATH=/home/buildbot/install/pylith_centos_x86_64_binbot/bin:$PATH
-  export LD_LIBRARY_PATH=/home/buildbot/install/pylith_centos_x86_64_binbot/lib64:/home/buildbot/install/pylith_centos_x86_64_binbot/lib
-
   ./waf configure --use-fftw --gmt-dir=/home/buildbot/src/relax/relax-bin/ --proj-dir=/home/buildbot/src/relax/relax-bin/ --fftw-dir=/home/buildbot/src/relax/relax-bin/
 
 This will fail to link.  cd into build/ and redo the final link with
 
-  gcc src/relax.f90.1.o src/types.f90.1.o src/ctfft.f.1.o src/fourier.f90.1.o src/green.f90.1.o src/okada/green_space.f90.1.o src/okada/dc3d.f.1.o src/elastic3d.f90.1.o src/friction3d.f90.1.o src/viscoelastic3d.f90.1.o src/writevtk.c.1.o src/writegrd4.2.c.1.o src/proj.c.1.o src/export.f90.1.o src/getdata.f.1.o src/getopt_m.f90.1.o src/input.f90.1.o src/mkl_dfti.f90.1.o -o /home/buildbot/src/relax/relax/build/relax -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-Bstatic -Wl,-Bdynamic -L/home/buildbot/src/relax/relax-bin//lib -L/home/buildbot/src/relax/relax-bin//lib -L/home/buildbot/src/relax/relax-bin//lib -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads -lhdf5_hl -lhdf5 -lz -lm `gcc -print-file-name=libgfortran.a` `gcc -print-file-name=libgomp.a` -lpthread -lrt
+  gcc src/relax.f90.1.o src/types.f90.1.o src/ctfft.f.1.o src/fourier.f90.1.o src/green.f90.1.o src/okada/green_space.f90.1.o src/okada/dc3d.f.1.o src/elastic3d.f90.1.o src/friction3d.f90.1.o src/viscoelastic3d.f90.1.o src/writevtk.c.1.o src/writegrd4.2.c.1.o src/proj.c.1.o src/export.f90.1.o src/getdata.f.1.o src/getopt_m.f90.1.o src/input.f90.1.o src/mkl_dfti.f90.1.o -o /home/buildbot/src/relax/relax/build/relax -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-Bstatic -Wl,-Bdynamic -L/home/buildbot/src/relax/relax-bin//lib -L/home/buildbot/src/relax/relax-bin//lib -L/home/buildbot/src/relax/relax-bin//lib -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads -lhdf5_hl -lhdf5 -lz -lm `gcc -print-file-name=libgfortran.a` `gcc -print-file-name=libgomp.a` -lpthread -lrt -static-libgcc
