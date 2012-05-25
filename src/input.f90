@@ -969,13 +969,13 @@ CONTAINS
     
     DO e=1,in%ne
        IF (1 .NE. e) THEN
-          PRINT '("time of next coseismic event")'
+          PRINT '("time of next event")'
           CALL getdata(iunit,dataline)
           READ (dataline,*) in%events(e)%time
           
           IF (0 .EQ. in%skip) THEN
              ! change event time to multiples of output time step
-             in%events(e)%time=int(in%events(e)%time/in%odt)*in%odt
+             in%events(e)%time=nint(in%events(e)%time/in%odt)*in%odt
           END IF
 
           PRINT '(ES9.2E1," (multiple of ",ES9.2E1,")")', &

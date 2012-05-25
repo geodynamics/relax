@@ -695,7 +695,7 @@ PROGRAM relax
 
      ! time increment
      t=t+Dt
-     
+    
      ! next event
      IF (e .LT. in%ne) THEN
         IF (abs(t-in%events(e+1)%time) .LT. 1e-6) THEN

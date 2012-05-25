@@ -2096,11 +2096,13 @@ CONTAINS
                  mu*e%l(i)%slip
 
              IF (israte) THEN
-                ! surface tractions rate
-                period=e%l(i)%period
-                phi=e%l(i)%phase
+                IF (0 .NE. period) THEN
+                   ! surface tractions rate
+                   period=e%l(i)%period
+                   phi=e%l(i)%phase
 
-                t3(i1,i2)=REAL(t3(i1,i2)-amp*(sin(2*pi*(t+Dt)/period+phi)-sin(2*pi*t/period+phi)))
+                   t3(i1,i2)=REAL(t3(i1,i2)-amp*(sin(2*pi*(t+Dt)/period+phi)-sin(2*pi*t/period+phi)))
+                END IF
              ELSE
                 IF (e%l(i)%period .LE. 0) THEN
                    ! surface tractions
