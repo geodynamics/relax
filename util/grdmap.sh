@@ -164,12 +164,6 @@ done
 VECTOR="-"
 
 
-# tick marks
-if [ "$tset" != "1" ]; then
-	tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/4}'`
-fi
-tickf=`echo $tick | awk '{print $1/2}'`
-
 # vertical shift of plot
 if [ "$Yset" != "1" ]; then
 	YSHIFT=2.0
@@ -217,6 +211,13 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 		if [ "$bset" != "1" ]; then
 			bds=`grdinfo -C $U3 | awk '{s=1;print $2/s"/"$3/s"/"$4/s"/"$5/s}'`
 		fi
+
+		# tick marks
+		if [ "$tset" != "1" ]; then
+			tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/4}'`
+			echo $tick
+		fi
+		tickf=`echo $tick | awk '{print $1/2}'`
 
 		echo $self": Using directory "$WDIR", plotting index "$INDEX
 
@@ -295,6 +296,14 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 			echo ""
 			usage
 		else
+
+			# tick marks
+			if [ "$tset" != "1" ]; then
+				tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/4}'`
+				echo $tick
+			fi
+			tickf=`echo $tick | awk '{print $1/2}'`
+
 			# Cartesian vs geographic coordinates
 			if [ "$gset" != "1" ]; then
 				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*4)}'`
