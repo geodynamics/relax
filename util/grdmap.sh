@@ -215,7 +215,6 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 		# tick marks
 		if [ "$tset" != "1" ]; then
 			tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/4}'`
-			echo $tick
 		fi
 		tickf=`echo $tick | awk '{print $1/2}'`
 
