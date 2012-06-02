@@ -1,8 +1,17 @@
 Before building Relax, you must have
 
+  Fortran 90 and C compilers (e.g. gfortran)
   GMT 4.5 or greater
   Proj 4.7.1 or greater
   Python 2.4 or greater
+
+***************************** NOTE ***********************************
+Versions 4.5.1 and 4.5.2 of gfortran (and perhaps others) are
+unable to compile Relax with OpenMP and optimizations.  This manifests
+itself as a compiler error when compiling viscoelastic3D.f90.  One
+workaround is to compile Relax without optimizations, but a better
+solution is to use a different compiler.
+**********************************************************************
 
 A fast fft library, such as FFTW or MKL, is also highly recommended.
 An implementation of the Cooley-Tukey FFT algorithm is included, but
