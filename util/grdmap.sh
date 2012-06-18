@@ -33,6 +33,7 @@ usage(){
         echo "         -u defines the color scale unit"
         echo "         -v vector sets the vector scale to vector"
 	echo "         -t tick interval"
+	echo "         -T title header"
 	echo "         -x do not display map (only create .ps file)"
 	echo "         -E file.ps only plot base map with extra scripts"
         echo "         -Y shift the plot vertically on the page"
@@ -90,18 +91,18 @@ my_gmt(){
 	# plot the vector legend if $VECTOR is set
 	if [ "$VECTOR" != "-" ]; then
 		UL=`echo $bds | awk -F "/" '{print $1,$4}' `
-	pstext -O -K -J${PROJ} -N -R$bds \
-		-G0/0/0 -Ya0.3i \
-		<<EOF >> $PSFILE
+		pstext -O -K -J${PROJ} -N -R$bds \
+			-G0/0/0 -Yr0.3i \
+			<<EOF >> $PSFILE
 $UL 14 0 4 LM $SIZE $unit
 EOF
-	psxy -O -K -J${PROJ} -R$bds -N \
-		-W0.5p/0/0/0 -Xa0.9i \
-		-Sv0.2c/1.0c/0.4cn1.0c \
-		<<EOF >> $PSFILE
+		psxy -O -K -J${PROJ} -R$bds -N \
+			-W0.5p/0/0/0 -Xr0.9i \
+			-Sv0.2c/1.0c/0.4cn1.0c \
+			<<EOF >> $PSFILE
 $UL 0 1
 EOF
-	REVERT="-Xa-0.9i -Ya-0.3i"
+		REVERT="-Xr-0.9i -Yr-0.3i"
 	fi
 
 	if [ -e "$colors" ]; then
@@ -110,7 +111,7 @@ EOF
 			-C$colors $REVERT \
 			>> $PSFILE 
 		
-		#rm -f $colors
+		rm -f $colors
 	fi
 
 	echo 0 0 | psxy -O -J${PROJ} -R$bds -Sp0.001c >> $PSFILE
@@ -128,7 +129,7 @@ gmtset PAPER_MEDIA a5
 libdir=$(dirname $0)
 EXTRA=""
 
-while getopts "b:c:e:ghi:o:p:v:s:t:u:xrE:Y:" flag
+while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrE:Y:" flag
 do
 	case "$flag" in
 	b) bset=1;bds=$OPTARG;;
@@ -142,6 +143,7 @@ do
 	r) rset=1;;
 	s) sset=1;ADX=$OPTARG;;
 	t) tset=1;tick=$OPTARG;;
+	T) Tset=1;title=$OPTARG;;
 	u) uset=1;unit=$OPTARG;;
 	v) vset=1;SIZE=$OPTARG;VECTOR=$OPTARG"c";;
 	x) xset=1;;
@@ -149,7 +151,7 @@ do
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
 done
-for item in $bset $cset $iset $oset $pset $vset $sset $tset $uset $Yset $Eset $EXTRA;do
+for item in $bset $cset $iset $oset $pset $vset $sset $tset $Tset $uset $Yset $Eset $EXTRA;do
 	shift;shift
 done
 for item in $gset $hset $xset $rset;do
@@ -160,8 +162,10 @@ done
 # DEFAULTS
 #-------------------------------------------------------- 
 
-# unused value but preserve the number of elements in call to subroutine
-VECTOR="-"
+if [ "$vset" != "1" ]; then
+	# unused value but preserve the number of elements in call to subroutine
+	VECTOR="-"
+fi
 
 
 # vertical shift of plot
@@ -183,11 +187,12 @@ else
 		cptfile=$carg;
 	fi
 fi
-echo $self: using colorfile $cptfile
 
 # usage
 if [ $# -lt "1" -a "$Eset" != "1" ] || [ "$hset" == "1" ] ; then
 	usage
+else
+	echo $self: using colorfile $cptfile
 fi
 
 
@@ -195,6 +200,7 @@ fi
 while [ "$#" != "0" -o "$Eset" == "1" ];do
 
 	if [ "$1" != "" ]; then
+		echo $1
 		WDIR=`dirname $1`
 		INDEX=`basename $1`
 
@@ -221,6 +227,11 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 		echo $self": Using directory "$WDIR", plotting index "$INDEX
 
 		# defaults
+
+		# output directory
+		if [ "$Tset" != "1" ]; then
+			title=$U3
+		fi
 
 		# output directory
 		if [ "$oset" != "1" ]; then
@@ -267,12 +278,12 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 			else
 				PROJ="X4i/"-$HEIGHT
 			fi
-		        AXIS=-Bf${tickf}a${tick}:"":/f${tickf}a${tick}:""::."$U3":WSne
+		        AXIS=-Bf${tickf}a${tick}:"":/f${tickf}a${tick}:""::."$title":WSne
 		else
 			# geographic coordinates
 			HEIGHT=4i
 			PROJ="M0/0/$HEIGHT"
-		        AXIS=-B${tick}:"":/${tick}:""::."$U3":WSne
+		        AXIS=-B${tick}:"":/${tick}:""::."$title":WSne
 		fi
 
 		echo $self": z-min/z-max for "$U3": "`grdinfo -C $U3 | awk '{print $6,$7}'`
