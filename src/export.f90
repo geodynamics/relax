@@ -1606,9 +1606,7 @@ END SUBROUTINE exportcreep_vtk
                                (s(3)*cos(r)+d(3)*sin(r))*slip
 
        WRITE (15,'("        </DataArray>")')
-       WRITE (15,'("      </CellData>")')
 
-       WRITE (15,'("      <CellData Normals=",a,"opening",a,">")'), q,q
        WRITE (15,'("        <DataArray type=",a,"Float32",a, &
                                & " Name=",a,"opening",a, &
                                & " NumberOfComponents=",a,"3",a, &
