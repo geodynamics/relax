@@ -36,7 +36,7 @@ fi
 SX=512
 DX=2
 
-R=`echo $SX $DX | awk '{print $1*$2/2}'`
+R=`echo $SX $DX | awk '{print ($1-1)*$2/2}'`
 
 OMP_NUM_THREADS=4 relax --no-proj-output --no-stress-output $* <<EOF | tee $WDIR/in.param
 # use '#' character to include comments in your input file
