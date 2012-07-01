@@ -13,7 +13,8 @@
 
 WDIR=./wenchuan
 
-FLT=faults/tong+10.flt
+#FLT=faults/tong+10.flt
+FLT=faults/shen+09.flt
 
 if [ ! -e $WDIR ]; then
 	echo adding directory $WDIR
@@ -21,7 +22,7 @@ if [ ! -e $WDIR ]; then
 fi
 
 SX=512
-DX=0.6
+DX=2
 
 R=`echo $SX $DX | awk '{print ($1-1)*$2/2}'`
 
@@ -46,18 +47,23 @@ $WDIR
 # elastic parameters and gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
 30 30 8.33e-4
 # integration time (in unit of time), step (negative for automatic) and scaling of computed value
-0 -1 1
+1 -1 1
 # number of observation planes
 0
 # no   x1 x2 x3 length width strike dip
 # number of observation points
-0
+1
 # i NAME x1 x2 x3
+  1 GPS1  0  0  0
 # number of Coulomb patches
 0
 # number of prestress interfaces
 0
 # number of linear viscous interfaces (where viscosity changes)
+1
+# nb depth gammadot0 cohesion
+   1    20         1        0
+# number of ductile zones
 0
 # number of powerlaw viscous interfaces
 0
