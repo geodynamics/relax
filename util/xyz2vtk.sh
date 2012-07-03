@@ -4,58 +4,7 @@ set -e
 self=$(basename $0)
 trap 'echo $self: Some errors occurred. Exiting.; exit' ERR
 
-if [ $# -eq 0 ]; then
-        echo "$self converts an xyz file to a vtp line polydata"
-	echo "file in xml format for visualization in Paraview"
-	echo ""
-	echo "usage: $self [-c com] file.xyz "
-	echo "       $self file1.xyz file2.xyz file3.xyz"
-	echo ""
-	echo "options:"
-	echo "         -c com sets the segment separator [default >]"
-	echo ""
-	echo "file foo.xyz is converted to foo.vtp"
-	echo "files foo.ext are converted to foo.ext.vtp"
-	echo "note that the 3rd column of the .xyz file is"
-	echo "interpreted as height in Paraview."
-	echo ""
-
-	exit
-fi
-
-# optional command-line parameters
-while getopts "c:" flag
-do
-  case "$flag" in
-    c) cset=1;com=$OPTARG;;
-  esac
-done
-for item in $cset ;do
-	shift;shift
-done
-
-if [ "$cset" != "1" ]; then
-	com=">"
-else
-	echo $self: using separator $com
-fi
-
-# loop over list of files to convert
-while [ $# -ne 0 ];do
-
-XYZFILE=$1
-
-if [ ! -e $XYZFILE ]; then
-	echo $self: could not find $XYZFILE. exiting.
-	exit 2
-fi
-
-EXT=`echo $1 | awk '{print substr($0,length($0)-2,3)}'`
-
-# define output file name (file.xyz is converted to file.vtp, file.ext to file.ext.vtp)
-VTKFILE=$(dirname $1)/$(basename $1 .xyz).vtp
-
-echo $self: converting $1 to $VTKFILE
+xyz2vtk(){
 
 cat $XYZFILE | awk -v c=$com '
 	BEGIN{
@@ -115,6 +64,71 @@ cat $XYZFILE | awk -v c=$com '
 	printf("  </PolyData>\n");
 	printf("</VTKFile>\n");
 	}' > $VTKFILE
+}
 
-	shift
+usage(){
+        echo "$self converts an xyz file (or standard input) to"
+	echo "a vtp line polydata file in xml format for"
+	echo "visualization in Paraview"
+	echo ""
+	echo "usage: $self [-c com] file.xyz "
+	echo "       $self file1.xyz file2.xyz file3.xyz"
+	echo ""
+	echo "or from the standard input"
+	echo ""
+	echo "       cat file.xyz | $self"
+	echo ""
+	echo "options:"
+	echo "         -c com sets the segment separator [default >]"
+	echo ""
+	echo "file foo.xyz is converted to foo.vtp"
+	echo "files foo.ext are converted to foo.ext.vtp"
+	echo "note that the 3rd column of the .xyz file is"
+	echo "interpreted as height in Paraview."
+	echo ""
+}
+
+# print usage is no arguments are supplied
+if [ -t 0 ] && [ $# -eq 0 ]; then
+	usage
+	exit
+fi
+
+# optional command-line parameters
+while getopts "c:" flag
+do
+  case "$flag" in
+    c) cset=1;com=$OPTARG;;
+  esac
 done
+for item in $cset ;do
+	shift;shift
+done
+
+if [ "$cset" != "1" ]; then
+	com=">"
+else
+	echo $self: using separator $com
+fi
+
+if [ ! -t 0 ]; then
+	# reading standard input, printing to standard output
+	XYZFILE=-
+	VTKFILE=/dev/stdout
+	xyz2vtk
+else
+	# loop over list of files to convert
+	while [ $# -ne 0 ];do
+		# define output file name (file.xyz is converted to file.vtp, file.ext to file.ext.vtp)
+		VTKFILE=$(dirname $1)/$(basename $1 .xyz).vtp
+		XYZFILE=$1
+		if [ ! -e $XYZFILE ]; then
+			echo $self: could not find $XYZFILE. exiting.
+			exit 2
+		fi
+		echo $self: converting $1 to $VTKFILE
+		xyz2vtk
+		shift
+	done
+fi
+
