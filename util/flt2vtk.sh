@@ -4,36 +4,9 @@ set -e
 self=$(basename $0)
 trap 'echo $self: Some errors occurred. Exiting.; exit' ERR
 
-if [ $# -eq 0 ]; then
-        echo "$self converts an .flt file to a vtp polygon"
-	echo "file in xml format for visualization in Paraview"
-	echo ""
-	echo "usage: $self file.flt"
-	echo "       $self file1.flt file2.flt file3.flt "
-	echo ""
-	echo "file foo.flt is converted to foo.vtp"
-	echo "files foo.ext are converted to foo.ext.vtp"
-	echo ""
+flt2vtk(){
 
-	exit
-fi
-
-# loop over list of files to convert
-while [ $# -ne 0 ];do
-
-FLTFILE=$1
-
-if [ ! -e $FLTFILE ]; then
-	echo $self: could not find $FLTFILE. exiting.
-	exit 2
-fi
-
-# define output file name (file.flt is converted to file.vtp, file.ext to file.ext.vtp)
-VTKFILE=$(dirname $1)/$(basename $1 .flt).vtp
-
-echo $self: converting $1 to $VTKFILE
-
-grep -v "#" $FLTFILE | awk '
+	grep -v "#" $FLTFILE | awk '
 	BEGIN{
 		pi=atan2(1,0)*2;
 		printf("<?xml version=\"1.0\"?>\n");
@@ -100,6 +73,46 @@ grep -v "#" $FLTFILE | awk '
 		printf("  </PolyData>\n");
 		printf("</VTKFile>\n");
 	}' > $VTKFILE
+}
 
-	shift
-done
+usage(){
+        echo "$self converts an .flt file to a vtp polygon"
+	echo "file in xml format for visualization in Paraview"
+	echo ""
+	echo "usage: $self file.flt"
+	echo "       $self file1.flt file2.flt file3.flt "
+	echo ""
+	echo "or from the standard input"
+	echo ""
+	echo "       cat file.flt | $self > file.vtp"
+	echo ""
+	echo "file foo.flt is converted to foo.vtp"
+	echo "files foo.ext are converted to foo.ext.vtp"
+	echo ""
+}
+
+if [ -t 0 ] && [ $# -eq 0 ]; then
+	usage
+	exit
+fi
+
+if [ ! -t 0 ]; then
+	FLTFILE=$1
+	VTKFILE=/dev/stdout
+	flt2vtk
+else
+	# loop over list of files to convert
+	while [ $# -ne 0 ];do
+		# define output file name (file.flt is converted to file.vtp, file.ext to file.ext.vtp)
+		VTKFILE=$(dirname $1)/$(basename $1 .flt).vtp
+		FLTFILE=$1
+		if [ ! -e $FLTFILE ]; then
+			echo $self: could not find $FLTFILE. exiting.
+			exit 2
+		fi
+		echo $self: converting $1 to $VTKFILE
+		flt2vtk
+		shift
+	done
+fi
+

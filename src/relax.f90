@@ -407,16 +407,16 @@ PROGRAM relax
      filename=trim(in%wdir)//"/disp-000.vtk"//char(0)
      title="coseismic displacement vector field"//char(0)
      name="displacement"//char(0)
-     CALL exportvtk_vectors_legacy(u1,u2,u3,in%sx1,in%sx2,in%sx3/8,in%dx1,in%dx2,in%dx3, &
-                                   4,4,8,filename,title,name)
+     CALL exportvtk_vectors_legacy(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
+                                   4,4,4,filename,title,name)
      !CALL exportvtk_vectors_slice(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,filename)
   END IF
   IF (in%isoutputvtkrelax) THEN
      filename=trim(in%wdir)//"/disp-relax-0000.vtk"//char(0)
      title="postseismic displacement vector field"//char(0)
      name="displacement"//char(0)
-     CALL exportvtk_vectors_legacy(u1r,u2r,u3r,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
-                                   4,4,8,filename,title,name)
+     CALL exportvtk_vectors_legacy(u1r,u2r,u3r,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
+                                   4,4,4,filename,title,name)
   END IF
 #endif
   IF (ALLOCATED(in%ptsname)) THEN
