@@ -519,7 +519,7 @@ CONTAINS
 
           rffilename=trim(in%wdir)//"/linearlayer-"//digit//".vtp"
           CALL exportvtk_rectangle(0.d0,0.d0,in%linearlayer(k)%z, &
-                                   DBLE(in%sx1)*in%dx1,DBLE(in%sx2)*in%dx2, &
+                                   DBLE(in%sx2)*in%dx2,DBLE(in%sx1)*in%dx1, &
                                    0._8,1.5708d0,rffilename)
 #endif
        END DO
@@ -633,7 +633,7 @@ CONTAINS
           ! export the viscous layer in VTK format
           rffilename=trim(in%wdir)//"/nonlinearlayer-"//digit//".vtp"
           CALL exportvtk_rectangle(0.d0,0.d0,in%nonlinearlayer(k)%z, &
-                                   DBLE(in%sx1)*in%dx1,DBLE(in%sx2)*in%dx2, &
+                                   DBLE(in%sx2)*in%dx2,DBLE(in%sx1)*in%dx1, &
                                    0._8,1.57d0,rffilename)
 #endif
        END DO
