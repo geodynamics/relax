@@ -5,7 +5,6 @@ self=$(basename $0)
 trap 'echo $self: Some errors occurred. Exiting.; exit' ERR
 
 flt2vtk(){
-
 	grep -v "#" $FLTFILE | awk '
 	BEGIN{
 		pi=atan2(1,0)*2;
@@ -97,7 +96,7 @@ if [ -t 0 ] && [ $# -eq 0 ]; then
 fi
 
 if [ ! -t 0 ]; then
-	FLTFILE=$1
+	FLTFILE=-
 	VTKFILE=/dev/stdout
 	flt2vtk
 else

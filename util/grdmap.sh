@@ -200,7 +200,6 @@ fi
 while [ "$#" != "0" -o "$Eset" == "1" ];do
 
 	if [ "$1" != "" ]; then
-		echo $1
 		WDIR=`dirname $1`
 		INDEX=`basename $1`
 
