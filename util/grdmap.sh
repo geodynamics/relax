@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ##############################################
 # script map.sh
@@ -147,7 +147,7 @@ do
 	u) uset=1;unit=$OPTARG;;
 	v) vset=1;SIZE=$OPTARG;VECTOR=$OPTARG"c";;
 	x) xset=1;;
-	E) Eset=1;PSFILE=$OPTARG;;
+	E) Eset=1;PSFILE=$(dirname $OPTARG)/$(basename $OPTARG .ps).ps;;
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
 done
@@ -281,7 +281,7 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 		else
 			# geographic coordinates
 			HEIGHT=4i
-			PROJ="M0/0/$HEIGHT"
+			PROJ="M$HEIGHT"
 		        AXIS=-B${tick}:"":/${tick}:""::."$title":WSne
 		fi
 
@@ -309,7 +309,6 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 			# tick marks
 			if [ "$tset" != "1" ]; then
 				tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/4}'`
-				echo $tick
 			fi
 			tickf=`echo $tick | awk '{print $1/2}'`
 
@@ -346,10 +345,10 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 	
 	if [ "$xset" != "1" ]; then
 		#display -trim $PSFILE &
-		#gv -spartan $PSFILE &
+		#gv -geometry +0+0 -spartan $PSFILE &
 		ps2pdf -sPAPERSIZE="a4" $PSFILE $PDFFILE
 		echo $self": Converted to pdf file "$PDFFILE
-		xpdf -paper "A5" $PDFFILE -z 100 -g 565x655 >& /dev/null &
+		xpdf -geometry +0+0 -paper "A5" $PDFFILE -z 100 -g 565x655 >& /dev/null &
 	fi
 	
 	if [ "$#" != "0" ];then
