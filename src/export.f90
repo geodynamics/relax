@@ -482,19 +482,6 @@ CONTAINS
        END IF
        IF (iostatus>0) STOP "could not open point file for writing"
 
-       IF (0.NE.rot) THEN
-          file2=wdir(1:i-1) // "/" // ptsname(k) // ".c.txt"
-          IF (isnew) THEN
-             WRITE (15,'("#         t         u1         u2         u3        ", &
-                       & "s11        s12        s13        s22        s23        s33")')
-             OPEN (UNIT=16,FILE=file2,IOSTAT=iostatus,FORM="FORMATTED")
-          ELSE
-             OPEN (UNIT=16,FILE=file2,POSITION="APPEND",&
-                  IOSTAT=iostatus,FORM="FORMATTED")
-          END IF
-          IF (iostatus>0) STOP "could not open point file for writing"
-       END IF
-
        x1=opts(k)%v1
        x2=opts(k)%v2
        x3=opts(k)%v3
@@ -524,8 +511,19 @@ CONTAINS
                                  lsig%s22,lsig%s23,lsig%s33
        CLOSE(15)
 
-       IF (0.NE.rot) THEN
-          WRITE (16,'(7ES11.3E2)') x1,x2,x3,time,u1,u2,u3
+       ! output in rotated coordinates system
+       IF (0._8.NE.rot) THEN
+          file2=wdir(1:i-1) // "/" // ptsname(k) // ".c.txt"
+          IF (isnew) THEN
+             OPEN (UNIT=16,FILE=file2,IOSTAT=iostatus,FORM="FORMATTED")
+             WRITE (16,'("#         t         u1         u2         u3")')
+          ELSE
+             OPEN (UNIT=16,FILE=file2,POSITION="APPEND",&
+                   IOSTAT=iostatus,FORM="FORMATTED")
+          END IF
+          IF (iostatus>0) STOP "could not open point file for writing"
+
+          WRITE (16,'(7ES11.3E2)') time,u1,u2,u3
           CLOSE(16)
        END IF
 
