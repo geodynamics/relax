@@ -41,7 +41,7 @@ while [ "$#" != "0" ]; do
 		OFILE=$WDIR/$(basename $1 .txt)-relax.txt
 		echo $self: changing $IFILE to $OFILE
 		grep -v "#" $IFILE | 
-			awk '{if (1==NR){i2=$2;i3=$3;i4=$4;i5=$5;i6=$6;i7=$7;i8=$8;i9=$9;i10=$10}; \
+			awk 'BEGIN{print "#         t         u1         u2         u3        s11        s12        s13        s22        s23        s33"}{if (1==NR){i2=$2;i3=$3;i4=$4;i5=$5;i6=$6;i7=$7;i8=$8;i9=$9;i10=$10}; \
 			$2=$2-i2;$3=$3-i3;$4=$4-i4;$5=$5-i5;$6=$6-i6;$7=$7-i7;$8=$8-i8;$9=$9-i9;$10=$10-i10;print $0}' > $OFILE
 	else
 		# postseismic displacement relative to reference station
@@ -50,7 +50,7 @@ while [ "$#" != "0" ]; do
 		grep -v "#" $IFILE | awk '{if (1==NR){i2=$2;i3=$3;i4=$4;i5=$5;i6=$6;i7=$7;i8=$8;i9=$9;i10=$10}; \
 			$2=$2-i2;$3=$3-i3;$4=$4-i4;$5=$5-i5;$6=$6-i6;$7=$7-i7;$8=$8-i8;$9=$9-i9;$10=$10ii10;print $0}' | \
 			paste - $TMP | \
-			awk '{$2=$2-$11;$3=$3-$12;$4=$4-$13;$5=$5-$14;$6=$6-$15;$7=$7-$16;$8=$8-$18;$9=$9-$18;$10=$10-$19; \
+			awk 'BEGIN{print "#         t         u1         u2         u3        s11        s12        s13        s22        s23        s33"}{$2=$2-$11;$3=$3-$12;$4=$4-$13;$5=$5-$14;$6=$6-$15;$7=$7-$16;$8=$8-$18;$9=$9-$18;$10=$10-$19; \
 				$11="";$12="";$13="";print $0}' > $OFILE
 	fi
 	shift
