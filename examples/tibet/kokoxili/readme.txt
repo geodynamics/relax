@@ -14,13 +14,13 @@
 ./kokoxili_co.sh
 
 # then, to plot a cross-section of the shear stress across the fault, use
-map.sh -b -50/50/-100/0 -p -1/1/0.01 -t 25 -u MPa kokoxili_co/001.op001-s12.grd
+grdmap.sh -b -50/50/-100/0 -p -1/1/0.01 -t 25 -u MPa kokoxili_co/001.op001-s12.grd
 
 # to map the shear stress at 10 km depth, use
-map.sh -b -300/300/-300/300 -p -1/1/0.01 -t 50 -u MPa kokoxili_co/000-s12.grd
+grdmap.sh -b -300/300/-300/300 -p -1/1/0.01 -t 50 -u MPa kokoxili_co/000-s12.grd
 
 # and to map the 3-d surface displacement, use
-map.sh -b -250/250/-300/300 -p -0.2/0.2/0.01 -v 2 -s 20 -u m -e rpatch.sh kokoxili_co/000
+grdmap.sh -b -250/250/-300/300 -p -0.2/0.2/0.01 -v 2 -s 20 -u m -e erpatch.sh kokoxili_co/000
 
 
 
@@ -51,4 +51,4 @@ obsrelax.sh kokoxili_vs3d/????.txt
 
 # a comparative plot of the layered and the 3-d viscous models
 # can be obtained with
-map.sh -b -260/340/-240/260 -p -0.01/0.01/0.0001 -v 0.03 -s 25 -e rpatch.sh -e ./eopts-relax.sh kokoxili_{vs,vs3d}/002-relax-up.grd
+grdmap.sh -b -260/340/-240/260 -p -0.01/0.01/0.0001 -v 0.03 -s 25 -e erpatch.sh -e ./eopts-relax.sh kokoxili_{vs,vs3d}/002-relax-up.grd

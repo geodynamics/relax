@@ -1,4 +1,4 @@
-#/bin/sh
+#/bin/bash
 
 # 1999 Mw 7.6 Chi Chi coseismic displacements
 

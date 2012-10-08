@@ -1,4 +1,4 @@
-#/bin/sh
+#/bin/bash
 
 # Mw 9.0 2011 Tohoku (Japan) earthquake coseismic displacements
 #

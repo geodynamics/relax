@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Landers earthquake 
 # Newtonian viscosity

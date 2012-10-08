@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Coseismic and viscoelastic deformation due to the 1992 Mw7.3 
 # Landers, CA earthquake. The Earth model is uniform elastic 

@@ -1,4 +1,4 @@
-#/bin/sh
+#/bin/bash
 
 # postseismic viscoelastic relaxation due to the 1999 Chi-Chi earthquake
 

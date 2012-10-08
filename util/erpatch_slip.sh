@@ -57,6 +57,7 @@ EOF
 	        	 -W0.5p/20/20/20 \
 	        	<<EOF >> $PSFILE
 `awk '{if (">"==$1){print $0}else{print $2,$1}}' $WDIR/rdykes-???.xy`
+EOF
 	fi
 fi
 

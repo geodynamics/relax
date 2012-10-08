@@ -9,7 +9,7 @@ To compute the coseismic displacement, run
 
 Create a map of the coseismic slip displacements with
 
-  grdmap.sh -b -100/100/-100/100 -p -2/2/0.01 -v 15 -e erpatch.sh -e ./wcoasts.sh -e ./efaults.sh coseismic/000
+  grdmap.sh -b -100/100/-100/100 -p -2/2/0.01 -v 15 -e erpatch.sh -e ./ecoasts.sh -e ./efaults.sh coseismic/000
 
 To compute the viscoelastic deformation, assuming a stratified viscoelastic earth with a viscoelastic substrate below 25km, run 
 

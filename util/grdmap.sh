@@ -15,9 +15,9 @@ cmdline=$*
 trap 'echo $self: Some errors occurred. Exiting.; exit' ERR
 
 usage(){
-        echo "usage: map.sh [-b -5/5/-5/5] [-p -1.5/1.5/0.1] [...] file1.grd ... fileN.grd"
+        echo "usage: $self [-b -5/5/-5/5] [-p -1.5/1.5/0.1] [...] file1.grd ... fileN.grd"
 	echo "or"
-        echo "       map.sh [-b -5/5/-5/5] [-p -1.5/1.5/0.1] [...] dir1/index1 ... dirN/indexN"
+        echo "       $self [-b -5/5/-5/5] [-p -1.5/1.5/0.1] [...] dir1/index1 ... dirN/indexN"
 	echo ""
         echo "options:"
         echo "         -b bds sets the map bound to bds"

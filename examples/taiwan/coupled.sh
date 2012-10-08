@@ -1,4 +1,4 @@
-#/bin/sh
+#/bin/bash
 
 # this is Rousset et al. (in prep. 2012) preferred model for the 1999 Mw 7.1 
 # Chi-Chi earthquake including viscoelastic relaxation in a three-dimensional 

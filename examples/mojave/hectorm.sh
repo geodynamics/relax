@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Hector Mine earthquake 
 # Newtonian viscosity

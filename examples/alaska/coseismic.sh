@@ -1,4 +1,4 @@
-#/bin/sh
+#/bin/bash
 
 # Mw 9.4 1964 Alaska earthquake coseismic displacements
 
