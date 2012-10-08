@@ -60,16 +60,16 @@ my_gmt(){
 	fi
 
 	# running all required subprograms
-	for subprog in $EXTRA;do
-	if [ -e "$selfdir/$subprog" ]; then
-		#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
-		eval "$subprog $PSFILE $bds $VECTOR $U3 $HEIGHT"
-	else
-		if [ -e "$subprog" ]; then
+	for subprog in $EXTRA; do
+		if [ -e "$selfdir/$subprog" ]; then
 			#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
-			eval "$subprog $PSFILE $bds $VECTOR $U3 $HEIGHT"
+			eval "$subprog $gset -b $bds -v $VECTOR -p $U3 -H $HEIGHT $PSFILE"
+		else
+			if [ -e "$subprog" ]; then
+				#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
+				eval "$subprog $gset -b $bds -v $VECTOR -p $U3 -H $HEIGHT $PSFILE"
+			fi
 		fi
-	fi
 	done
 
 	# plotting vectors
@@ -133,9 +133,9 @@ while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrE:Y:" flag
 do
 	case "$flag" in
 	b) bset=1;bds=$OPTARG;;
-	c) cset=1;carg=$OPTARG;;
+	c) cset="-c";carg=$OPTARG;;
 	e) eset=1;EXTRA="$EXTRA $OPTARG";;
-	g) gset=1;;
+	g) gset="-g";;
 	h) hset=1;;
 	i) iset=1;illumination="-I$OPTARG";;
 	o) oset=1;ODIR=$OPTARG;;
@@ -176,7 +176,7 @@ else
 fi
 
 # color scale
-if [ "$cset" != "1" ]; then
+if [ "$cset" != "-c" ]; then
 	#cptfile=hot
 	cptfile=$libdir/my_jet
 	#cptfile=$libdir/my_hot_inv
@@ -269,7 +269,7 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 			fi
 		fi
 	
-		if [ "$gset" != "1" ]; then
+		if [ "$gset" != "-g" ]; then
 			# Cartesian coordinates
 			HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*4)}'`
 			if [ "$rset" != "1" ]; then
@@ -313,7 +313,7 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 			tickf=`echo $tick | awk '{print $1/2}'`
 
 			# Cartesian vs geographic coordinates
-			if [ "$gset" != "1" ]; then
+			if [ "$gset" != "-g" ]; then
 				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*4)}'`
 				if [ "$rset" != "1" ]; then
 					PROJ="X4i/"$HEIGHT

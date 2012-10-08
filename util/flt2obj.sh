@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 
 #  This is a cube with negative vertex reference numbers. Each element
