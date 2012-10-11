@@ -42,14 +42,14 @@
 \title{\bf Relax: Nonlinear Postseismic Relaxation\\in the Fourier Domain}
 
 \author
-{User Manual\\
+{User's Manual\\
 \\
-\normalsize{Sylvain Barbot (sbarbot@caltech.edu)}\\
-\normalsize{Division of Geological and Planetary Sciences, Caltech}\\
+\normalsize{Sylvain Barbot (sbarbot@ntu.edu.sg)}\\
+\normalsize{Earth Observatory of Singapore, Nanyang Technological University}\\
 }
 
 % Include the date command, but leave its argument blank.
-\date{Oct. 11th, 2011, last revision Dec. 28th, 2011}
+\date{Oct. 11th, 2011, last revision Oct. 11th, 2012}
 
 \begin{document} 
 
@@ -286,7 +286,7 @@ Many simulations imply the relaxation of the stress perturbation from a coseismi
 %
 \begin{figure*}[h]
 \centering\includegraphics[width=0.6\textwidth]{geologic_fault.pdf}
-\caption{Geologic model of slip on a fault. The fault is described by the position of its top tip, its length in the along-strike direction, width in the down-dip direction, its strike angle and its dip angle. The rake indicates the orientation of slip. For volumes (such as those used to define slabs and shear zones), an extra thickness parameter indicates how the rectangular volume is extruded from its center.}
+\caption{Geologic model of slip on a fault. The fault is described by the position of its top tip, its length in the along-strike direction, width in the down-dip direction, its strike angle and its dip angle. The rake indicates the orientation of slip.}
 \label{fig:geologic_fault}
 \end{figure*}
 %
@@ -335,6 +335,38 @@ Let's look at how to define a viscosity profile for a jelly sandwich model, with
 {\color{orange}   5  70.0       0.2      0.0}
 \end{alltt}
 Here, the lower crust relaxes with a Maxwell time of $t_m=10\,$yr, and the asthenosphere with a Maxwell time of $t_m=5\,$yr. There is no need to specify the viscosity in the upper 15\,km, which is assumed infinite.
+
+
+
+
+\subsection{Lateral variations of viscosity}
+Subducting slabs and shear zones below a transform boundary are examples of major structural elements that introduce lateral variations in viscosity in the lithosphere. Including these elements in the Earth structure is done using ductile zones, which are rectangular regions where the viscosity is modified from the background, depth-dependent, value. The volume where the viscosity changes is defined similarly to a fault (using start position, length, width, strike and dip), but a additional thickness parameter indicates how the volume is extruded from the central plane (Fig.~\ref{fig:geologic_zone}).
+
+%
+\begin{figure*}[h]
+\centering\includegraphics[width=0.6\textwidth]{geologic_zone.pdf}
+\caption{Geometry of a ductile zone anomaly. The ductile zone is described by the position of the tip of the central plane (length in the strike direction, width in the dip direction, strike and dip angles). The thickness parameter indicates how the rectangular volume is extruded from its center plane. The $\Delta\dot{\gamma}_0$ parameter adds to the background value of the fluidity.}
+\label{fig:geologic_zone}
+\end{figure*}
+%
+
+
+Let's look at how to define a viscosity profile where the depth of the brittle-ductile transition changes across a geological boundary. We start with an elastic plate overriding a viscoelastic half space with a uniform brittle-ductile transition depth of 15\,km with a Maxwell time of $t_m=1\,$yr.
+\begin{alltt}
+...
+# number of linear viscous interfaces
+{\color{orange}1}
+# no depth gammadot0 cohesion
+{\color{orange}   1  15.0         1      0.0}
+# number of linear ductile shear zones
+{\color{orange}1}
+# no dgammadot0 x1  x2 x3 length width thickness strike dip
+{\color{orange}   1         -1  0   0 10    200     5       200     90  90}
+...
+\end{alltt}
+We then add a large volume abutting the center of the computational volume, where we modify the fluidity from $\dot{\gamma}_0=1\,$yr$^{-1}$ to $\dot{\gamma}_0=0$, using $\Delta\dot{\gamma}_0=-1\,$yr$^{-1}$. As a null fluidity corresponds to elastic behavior, the brittle-ductile transition occurs 5\,km deeper going west to east across the $x_1$ (north-south) axis. The geometry of a slab can be obtained by modifying the strike and dip angles. Changing the strike of the ductile zone from 90 to 0$^\circ$ would make the transition occur from south to north. If the background and anomalous fluidities add to a negative, unphysical, value, the sum is corrected to null, and the result is an effective elastic property. Realistic structures can be accounted for from structural data using a large quantity of ductile anomalies tuned to observations.
+
+
 
 \pagebreak
 \section{Examples}
@@ -543,7 +575,7 @@ where $n$ is the power exponent (usually in the range $n=2-5$). In this example,
 0
 ...
 \end{alltt}
-Note that the time step asked by the program is only the output time step, that is, at what time to output the result. Internally, an optimal time step is always evaluated and the real time step used for the calculation is the smallest of either the internally evaluated value or the time step required to produce an output every multiple of the required time step. The internally evaluated value is always $\Delta t^{\text{internal}}=t_m/10$. Prescribing the output time step can only reduce the computational time step. Note that is a background viscosity has been established, the program requests so called ``ductile zones", which are finite volumes where the background viscosity is perturbed. These volumes are described similarly as for a fault, but with an extra ``thickness" parameter indicating how the volumes extrudes from the center plane. The standard output of this simulation looks as follows
+Note that the time step asked by the program is only the output time step, that is, at what time to output the result. Internally, an optimal time step is always evaluated and the real time step used for the calculation is the smallest of either the internally evaluated value or the time step required to produce an output every multiple of the required time step. The internally evaluated value is always $\Delta t^{\text{internal}}=t_m/10$. Prescribing the output time step can only reduce the computational time step. Note that is a background viscosity has been established, the program requests so called ``ductile zones", which are finite volumes where the background viscosity is perturbed. These volumes are described similarly to for a fault, but with an extra ``thickness" parameter indicating how the volumes extrudes from the center plane. The standard output of this simulation looks as follows
 \begin{alltt}
 coseismic event 001
  I  |   Dt   | tm(ve) | tm(pl) | tm(as) |     t/tmax     | power  |  C:E^i |

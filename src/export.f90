@@ -2451,6 +2451,154 @@ END SUBROUTINE exportcreep_vtk
   END SUBROUTINE exportvtk_brick
 
   !------------------------------------------------------------------
+  !> subroutine ExportVTK_AllBricks
+  !! creates a .vtp file (in the VTK PolyData XML format) containing
+  !! a brick (3d rectangle, cuboid).
+  !!
+  !! \author sylvain barbot 06/24/09 - original form
+  !------------------------------------------------------------------
+  SUBROUTINE exportvtk_allbricks(swz,weakzones,filename)
+    INTEGER, INTENT(IN) :: swz
+    TYPE(WEAK_STRUCT), DIMENSION(swz), INTENT(IN) :: weakzones
+    CHARACTER(256), INTENT(IN) :: filename
+
+    INTEGER :: iostatus,i
+    CHARACTER :: q
+
+    REAL*8 :: x1,x2,x3,L,W,T,strike,dip
+    REAL*8 :: cstrike,sstrike,cdip,sdip
+    REAL*8, DIMENSION(3) :: s,d,n
+
+    ! double-quote character
+    q=char(34)
+
+    OPEN (UNIT=15,FILE=filename,IOSTAT=iostatus,FORM="FORMATTED")
+    IF (iostatus>0) THEN
+       WRITE_DEBUG_INFO
+       PRINT '(a)', filename
+       STOP "could not open file for export in ExportVTK_Brick"
+    END IF
+
+    WRITE (15,'("<?xml version=",a,"1.0",a,"?>")') q,q
+    WRITE (15,'("<VTKFile type=",a,"PolyData",a," version=",a,"0.1",a,">")') q,q,q,q
+    WRITE (15,'("  <PolyData>")')
+
+    DO i=1,swz
+       x1=weakzones(i)%x
+       x2=weakzones(i)%y
+       x3=weakzones(i)%z
+       L=weakzones(i)%length
+       W=weakzones(i)%width
+       T=weakzones(i)%thickness
+       strike=weakzones(i)%strike
+       dip=weakzones(i)%dip
+
+       cstrike=cos(strike)
+       sstrike=sin(strike)
+       cdip=cos(dip)
+       sdip=sin(dip)
+ 
+       ! strike-slip unit direction
+       s(1)=sstrike
+       s(2)=cstrike
+       s(3)=0._8
+
+       ! dip-slip unit direction
+       d(1)=+cstrike*sdip
+       d(2)=-sstrike*sdip
+       d(3)=+cdip
+
+       ! surface normal vector components
+       n(1)=+cdip*cstrike
+       n(2)=-cdip*sstrike
+       n(3)=-sdip
+
+       WRITE (15,'("    <Piece NumberOfPoints=",a,"8",a," NumberOfPolys=",a,"1",a,">")'),q,q,q,q
+       WRITE (15,'("      <Points>")')
+       WRITE (15,'("        <DataArray type=",a,"Float32",a, &
+                           & " Name=",a,"Weak Zone",a, &
+                           & " NumberOfComponents=",a,"3",a, &
+                           & " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
+
+       ! fault edge coordinates
+       WRITE (15,'(24ES11.2)') &
+                  x1-d(1)*W/2-s(1)*L/2-n(1)*T/2.d0, x2-d(2)*W/2-s(2)*L/2-n(2)*T/2.d0, x3-d(3)*W/2-s(3)*L/2-n(3)*T/2.d0, &
+                  x1-d(1)*W/2+s(1)*L/2-n(1)*T/2.d0, x2-d(2)*W/2+s(2)*L/2-n(2)*T/2.d0, x3-d(3)*W/2+s(3)*L/2-n(3)*T/2.d0, &
+                  x1+d(1)*W/2+s(1)*L/2-n(1)*T/2.d0, x2+d(2)*W/2+s(2)*L/2-n(2)*T/2.d0, x3+d(3)*W/2+s(3)*L/2-n(3)*T/2.d0, &
+                  x1+d(1)*W/2-s(1)*L/2-n(1)*T/2.d0, x2+d(2)*W/2-s(2)*L/2-n(2)*T/2.d0, x3+d(3)*W/2-s(3)*L/2-n(3)*T/2.d0, &
+                  x1+d(1)*W/2-s(1)*L/2+n(1)*T/2.d0, x2+d(2)*W/2-s(2)*L/2+n(2)*T/2.d0, x3+d(3)*W/2-s(3)*L/2+n(3)*T/2.d0, &
+                  x1-d(1)*W/2-s(1)*L/2+n(1)*T/2.d0, x2-d(2)*W/2-s(2)*L/2+n(2)*T/2.d0, x3-d(3)*W/2-s(3)*L/2+n(3)*T/2.d0, &
+                  x1-d(1)*W/2+s(1)*L/2+n(1)*T/2.d0, x2-d(2)*W/2+s(2)*L/2+n(2)*T/2.d0, x3-d(3)*W/2+s(3)*L/2+n(3)*T/2.d0, &
+                  x1+d(1)*W/2+s(1)*L/2+n(1)*T/2.d0, x2+d(2)*W/2+s(2)*L/2+n(2)*T/2.d0, x3+d(3)*W/2+s(3)*L/2+n(3)*T/2.d0
+
+       WRITE (15,'("        </DataArray>")')
+       WRITE (15,'("      </Points>")')
+       WRITE (15,'("      <Polys>")')
+       WRITE (15,'("        <DataArray type=",a,"Int32",a, &
+                         & " Name=",a,"connectivity",a, &
+                         & " format=",a,"ascii",a, &
+                         & " RangeMin=",a,"0",a, &
+                         & " RangeMax=",a,"6",a,">")'), q,q,q,q,q,q,q,q,q,q
+       WRITE (15,'("7 4 5 6 7 4 3 2 7 2 1 6")')
+       WRITE (15,'("        </DataArray>")')
+       WRITE (15,'("        <DataArray type=",a,"Int32",a, &
+                              & " Name=",a,"offsets",a, &
+                              & " format=",a,"ascii",a, &
+                              & " RangeMin=",a,"12",a, &
+                              & " RangeMax=",a,"12",a,">")'), q,q,q,q,q,q,q,q,q,q
+       WRITE (15,'("          12")')
+       WRITE (15,'("        </DataArray>")')
+       WRITE (15,'("      </Polys>")')
+       WRITE (15,'("    </Piece>")')
+
+       WRITE (15,'("    <Piece NumberOfPoints=",a,"8",a," NumberOfPolys=",a,"1",a,">")'),q,q,q,q
+       WRITE (15,'("      <Points>")')
+       WRITE (15,'("        <DataArray type=",a,"Float32",a, &
+                        & " Name=",a,"Weak Zone",a, &
+                        & " NumberOfComponents=",a,"3",a, &
+                        & " format=",a,"ascii",a,">")'),q,q,q,q,q,q,q,q
+
+       ! fault edge coordinates
+       WRITE (15,'(24ES11.2)') &
+               x1-d(1)*W/2.d0-s(1)*L/2.d0-n(1)*T/2.d0, x2-d(2)*W/2.d0-s(2)*L/2.d0-n(2)*T/2.d0,x3-d(3)*W/2-s(3)*L/2-n(3)*T/2.d0, &
+               x1-d(1)*W/2.d0+s(1)*L/2.d0-n(1)*T/2.d0, x2-d(2)*W/2.d0+s(2)*L/2.d0-n(2)*T/2.d0,x3-d(3)*W/2+s(3)*L/2-n(3)*T/2.d0, &
+               x1+d(1)*W/2.d0+s(1)*L/2.d0-n(1)*T/2.d0, x2+d(2)*W/2.d0+s(2)*L/2.d0-n(2)*T/2.d0,x3+d(3)*W/2+s(3)*L/2-n(3)*T/2.d0, &
+               x1+d(1)*W/2.d0-s(1)*L/2.d0-n(1)*T/2.d0, x2+d(2)*W/2.d0-s(2)*L/2.d0-n(2)*T/2.d0,x3+d(3)*W/2-s(3)*L/2-n(3)*T/2.d0, &
+               x1+d(1)*W/2.d0-s(1)*L/2.d0+n(1)*T/2.d0, x2+d(2)*W/2.d0-s(2)*L/2.d0+n(2)*T/2.d0,x3+d(3)*W/2-s(3)*L/2+n(3)*T/2.d0, &
+               x1-d(1)*W/2.d0-s(1)*L/2.d0+n(1)*T/2.d0, x2-d(2)*W/2.d0-s(2)*L/2.d0+n(2)*T/2.d0,x3-d(3)*W/2-s(3)*L/2+n(3)*T/2.d0, &
+               x1-d(1)*W/2.d0+s(1)*L/2.d0+n(1)*T/2.d0, x2-d(2)*W/2.d0+s(2)*L/2.d0+n(2)*T/2.d0,x3-d(3)*W/2+s(3)*L/2+n(3)*T/2.d0, &
+               x1+d(1)*W/2.d0+s(1)*L/2.d0+n(1)*T/2.d0, x2+d(2)*W/2.d0+s(2)*L/2.d0+n(2)*T/2.d0,x3+d(3)*W/2+s(3)*L/2+n(3)*T/2.d0
+
+       WRITE (15,'("        </DataArray>")')
+       WRITE (15,'("      </Points>")')
+       WRITE (15,'("      <Polys>")')
+       WRITE (15,'("        <DataArray type=",a,"Int32",a, &
+                         & " Name=",a,"connectivity",a, &
+                         & " format=",a,"ascii",a, &
+                         & " RangeMin=",a,"0",a, &
+                         & " RangeMax=",a,"7",a,">")'), q,q,q,q,q,q,q,q,q,q
+       WRITE (15,'("0 1 2 3 0 5 4 3 0 1 6 5")')
+       WRITE (15,'("        </DataArray>")')
+       WRITE (15,'("        <DataArray type=",a,"Int32",a, &
+                              & " Name=",a,"offsets",a, &
+                              & " format=",a,"ascii",a, &
+                              & " RangeMin=",a,"12",a, &
+                              & " RangeMax=",a,"12",a,">")'), q,q,q,q,q,q,q,q,q,q
+       WRITE (15,'("          12")')
+       WRITE (15,'("        </DataArray>")')
+       WRITE (15,'("      </Polys>")')
+       WRITE (15,'("    </Piece>")')
+
+    END DO
+
+    WRITE (15,'("  </PolyData>")')
+    WRITE (15,'("</VTKFile>")')
+
+    CLOSE(15)
+
+  END SUBROUTINE exportvtk_allbricks
+
+  !------------------------------------------------------------------
   !> subroutine ExportVTK_Vectors
   !! creates a .vtr file (in the VTK Rectilinear XML format) 
   !! containing a vector field.

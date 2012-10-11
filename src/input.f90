@@ -567,21 +567,26 @@ CONTAINS
                   in%linearweakzone(k)%strike,in%linearweakzone(k)%dip, &
                   dummy,in%x0,in%y0,in%rot)
 
-                  WRITE (digit,'(I3.3)') k
+             WRITE (digit,'(I3.3)') k
 
 #ifdef VTK
-                  ! export the ductile zone in VTK format
-                  rffilename=trim(in%wdir)//"/weakzone-"//digit//".vtp"
-                  CALL exportvtk_brick(in%linearweakzone(k)%x,in%linearweakzone(k)%y,in%linearweakzone(k)%z, &
-                                       in%linearweakzone(k)%length,in%linearweakzone(k)%width,in%linearweakzone(k)%thickness, &
-                                       in%linearweakzone(k)%strike,in%linearweakzone(k)%dip,rffilename)
+             ! export the ductile zone in VTK format
+             rffilename=trim(in%wdir)//"/weakzone-"//digit//".vtp"
+             CALL exportvtk_brick(in%linearweakzone(k)%x,in%linearweakzone(k)%y,in%linearweakzone(k)%z, &
+                                  in%linearweakzone(k)%length,in%linearweakzone(k)%width,in%linearweakzone(k)%thickness, &
+                                  in%linearweakzone(k)%strike,in%linearweakzone(k)%dip,rffilename)
 #endif
-                  ! export the ductile zone in GMT .xy format
-                  rffilename=trim(in%wdir)//"/weakzone-"//digit//".xy"
-                  CALL exportxy_brick(in%linearweakzone(k)%x,in%linearweakzone(k)%y,in%linearweakzone(k)%z, &
-                                      in%linearweakzone(k)%length,in%linearweakzone(k)%width,in%linearweakzone(k)%thickness, &
-                                      in%linearweakzone(k)%strike,in%linearweakzone(k)%dip,rffilename)
+             ! export the ductile zone in GMT .xy format
+             rffilename=trim(in%wdir)//"/weakzone-"//digit//".xy"
+             CALL exportxy_brick(in%linearweakzone(k)%x,in%linearweakzone(k)%y,in%linearweakzone(k)%z, &
+                                 in%linearweakzone(k)%length,in%linearweakzone(k)%width,in%linearweakzone(k)%thickness, &
+                                 in%linearweakzone(k)%strike,in%linearweakzone(k)%dip,rffilename)
           END DO
+#ifdef VTK
+          ! export the ductile zone in VTK format
+          rffilename=trim(in%wdir)//"/weakzones-linear.vtp"
+          CALL exportvtk_allbricks(in%nlwz,in%linearweakzone,rffilename)
+#endif
        END IF
     END IF ! end linear viscous
        
@@ -706,6 +711,11 @@ CONTAINS
                                        in%nonlinearweakzone(k)%strike, &
                                        in%nonlinearweakzone(k)%dip,rffilename)
           END DO
+#ifdef VTK
+          ! export the ductile zone in VTK format
+          rffilename=trim(in%wdir)//"/weakzones-nonlinear.vtp"
+          CALL exportvtk_allbricks(in%nnlwz,in%nonlinearweakzone,rffilename)
+#endif
        END IF
     END IF ! end nonlinear viscous
 
