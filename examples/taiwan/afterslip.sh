@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # model of afterslip on down-dip extension of the Chelungpu Fault.
 # notice the reduced sampling size to better resolve deformation

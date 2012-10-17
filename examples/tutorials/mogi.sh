@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # viscoelastic relaxation following a dilatation (Mogi) source
 # viscous flow governed by a power-law viscosity with

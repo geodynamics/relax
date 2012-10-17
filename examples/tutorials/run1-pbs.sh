@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # example input file for a queueing system (for a single node of a cluster)
 
@@ -25,7 +25,7 @@ fi
 #   qsub ./run1-pbs.sh
 #
 
-mpiexec -n 8 relax <<EOF
+OMP_NUM_THREADS=12 relax <<EOF
 # use '#' character to include comments in your input file
 # grid size (sx1,sx2,sx3)
 256 256 256

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # nonlinear viscoelastic relaxation (power exponent n=3)
 # following slip on a strike-slip fault
