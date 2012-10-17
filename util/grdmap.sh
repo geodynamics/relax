@@ -89,7 +89,7 @@ my_gmt(){
 	fi
 
 	# plot the vector legend if $VECTOR is set
-	if [ "$VECTOR" != "" ]; then
+	if [ "$VECTOR" != "-" ]; then
 		UL=`echo $bds | awk -F "/" '{print $1,$4}' `
 		pstext -O -K -J${PROJ} -N -R$bds \
 			-G0/0/0 -Yr0.3i \
@@ -161,6 +161,11 @@ done
 #-------------------------------------------------------- 
 # DEFAULTS
 #-------------------------------------------------------- 
+
+if [ "$vset" != "1" ]; then
+	# unused value but preserve the number of elements in call to subroutine
+	VECTOR="-"
+fi
 
 # vertical shift of plot
 if [ "$Yset" != "1" ]; then
