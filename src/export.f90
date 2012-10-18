@@ -1806,10 +1806,10 @@ END SUBROUTINE exportcreep_vtk
        taucoulomb=taus+friction*taun
 
        WRITE (15,'("> -Z",5ES11.2)') taus, taun, taucoulomb, taustrike, taudip
-       WRITE (15,'(3ES11.2)') x1-d(1)*W/2-s(1)*L/2, x2-d(2)*W/2-s(2)*L/2
-       WRITE (15,'(3ES11.2)') x1-d(1)*W/2+s(1)*L/2, x2-d(2)*W/2+s(2)*L/2
-       WRITE (15,'(3ES11.2)') x1+d(1)*W/2+s(1)*L/2, x2+d(2)*W/2+s(2)*L/2
-       WRITE (15,'(3ES11.2)') x1+d(1)*W/2-s(1)*L/2, x2+d(2)*W/2-s(2)*L/2
+       WRITE (15,'(3ES11.2)') x2-d(2)*W/2-s(2)*L/2, x1-d(1)*W/2-s(1)*L/2
+       WRITE (15,'(3ES11.2)') x2-d(2)*W/2+s(2)*L/2, x1-d(1)*W/2+s(1)*L/2
+       WRITE (15,'(3ES11.2)') x2+d(2)*W/2+s(2)*L/2, x1+d(1)*W/2+s(1)*L/2
+       WRITE (15,'(3ES11.2)') x2+d(2)*W/2-s(2)*L/2, x1+d(1)*W/2-s(1)*L/2
 
     END DO
 
