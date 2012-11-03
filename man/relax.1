@@ -1,0 +1,539 @@
+.\" Manpage for Relax 1.0.3.
+.\" Contact sbarbot@ntu.edu.sg to correct errors or typos.
+.TH man 1 "02 Nov 2012" "1.0.3" "relax man page"
+.SH NAME
+relax \- Evaluates the deformation due to fault slip, surface loading or inflation and the time series of postseismic relaxation that follows due to fault creep or viscoelastic flow.
+.SH SYNOPSIS
+
+relax [-h] [--dry-run] [--help] [--no-grd-output] [--no-proj-output] [--no-relax-output] [--no-stress-output] [--no-txt-output] [--no-vtk-output] [--no-xyz-output]
+
+.SH DESCRIPTION
+
+relax computes nonlinear time-dependent viscoelastic deformation with powerlaw rheology and rate-strengthening friction in a half space due to coseismic stress changes, initial stress, surface loads, and/or moving faults.
+
+.SH OPTIONS
+
+.TP
+.B \-h
+print a short message and abort calculation
+.TP
+.B \-\-dry-run
+write lightweigh geometry files and abort calculation
+.TP
+.B \-\-help
+print a short message and abort calculation
+.TP
+.B \-\-no-grd-output
+cancel output in GMT grd binary format
+.TP
+.B \-\-no-proj-output
+cancel output in geographic projection
+.TP
+.B \-\-no-relax-output
+cancel output of the postseismic contribution
+.TP
+.B \-\-no-stress-output
+cancel output of stress tensor in any format
+.TP
+.B \-\-no-txt-output
+cancel output in text format
+.TP
+.B \-\-no-vtk-output
+cancel output in Paraview VTK format
+.TP
+.B \-\-no-xyz-output
+cancel output in GMT xyz format
+.TP
+.B \-\-with-stress-output
+export stress tensor
+.TP
+.B \-\-with-vtk-output
+export output in Paraview VTK format
+.TP
+.B \-\-with-vtk-relax-output
+export relaxation to VTK format
+
+.SH ENVIRONMENT
+
+The environment variable OMP_NUM_THREADS controls the number of threads used by OpenMP at execution. For example, the calls
+
+.nf
+OMP_NUM_THREADS=4 ./relax
+.fi
+
+and
+
+.nf
+export OMP_NUM_THREADS=4
+relax
+.fi
+
+produce the same output.
+
+.SH "INPUT PARAMETERS"
+
+.TP
+.B grid size (sx1,sx2,sx3)
+Defines the number of samples in the three directions. sx1, sx2 and sx3 must be powers of two for optimal efficiency of the Fast Fourier Transform. sx3 must be even for internal memory management considerations.
+
+             sx2
+        +------------+
+    1  /            /|
+   x  /            / |       x1 (north)
+  s  /            /  |       /
+    /            /   |      /
+   +------------+    +     +-------> x2 (east)
+ s |            |   /      |
+ x |            |  /       |
+ 3 |            | /      x3 (depth)
+   |            |/
+   +------------+
+.TP
+.B sampling size, smoothing & nyquist (dx1,dx2,dx3,beta,nq)
+dx1,dx2,dx3 control the sampling size of the model and the size of the computational domain. 
+
+beta is a roll-off parameter (0 <= beta <= 0.5) that controls the tapering of the slip distribution on faults. beta=0.2-0.3 are recommended values. 
+
+nyquist controls how the slip distribution is evaluated: is a fault patch dimension is smaller than nyquist*dx, then it is evaluated using the Okada's equations; otherwise, fault slip is represented by equivalent body forces, which leads to a much faster calculation.
+
+The extent of the computational grid is exported to 
+.I wdir/cgrid.vtp 
+for visualization in Paraview.
+
+.TP
+.B origin position & rotation (xo,yo,rot)
+Indicates the coordinates (xo,yo) and orientation of the computational coordinate system. Use 0 0 0.
+
+.TP
+.B observation depths for displacements and stress
+Indicates depths at which map views of displacement and stress are exported in GMT.
+
+.TP
+.B output directory (wdir)
+All output files are written to the specified directory.
+
+.TP
+.B elastic parameters and the buoyancy wavelength (lambda, mu, gamma)
+The uniform Lame parameter (lambda), shear modulus (mu) and the buoyancy wavelength (gamma=(1-nu)*rho*g/mu), where nu is Poisson's ration, rho is the density of the crust, g is the gravity acceleration. For the Earth, typical values are lambda=mu=30 GPa, and gamma = 8.33e-7 /m = 8.33e-4 /km
+
+.TP
+.B integration time and output time parameters (T,dt,a)
+Integration time (T) refers to the duration of the calculation in physical units. dt is the time step of output files (dt<T). Negative integer values for dt indicates output tied to internally optimized time steps: -1 corresponds to output every time step, -2 to output every other time steps. Scaling parameter a modifies the internally evaluated time step. 0 < a < 1 improves the accuracy of the time evolution. a > 1 reduces the accuracy of the explicit time integration but speeds up the calculation.
+
+.TP
+.B number of observation planes (nop)
+Observation planes are planar surface of arbitrary orientation where displacement and stress are exported in ASCII and GMT .grd format for visualization. Integer nop indicates the number of such planes. If nop > 0 then relax asks for the geometry of each planes, with one line per plane, as follows:
+
+# nb x1 x2 x3 length width strike dip
+
+where nb is an index running from 1 to nop, x1, x2 and x3 are the reference coordinates, length and width, and strike and dip are the dimension and the orientation of the observation plane. These parameters are defined in Section 
+.B FAULT GEOMETRY.
+
+.TP
+.B number of observation points (np)
+Observation points are locations where displacement and stress are exported as time series in ASCII. Integer no indicates the number of such points. If np > 0 then relax asks for the name and location of each point, with one line per point, as follows:
+
+# nb NAME x1 x2 x3
+
+where nb is an index running from 1 to np, NAME is a four-character name used to identify the output file, x1, x2 and x3 are the point coordinates. Time series of displacement and stress at these points are written to file NAME.txt, where NAME is the user-provided name.
+
+.TP
+.B number of stress observation segments (nsp)
+Stress observation segments are fault patches where stress (shear, normal, dip-shear, strike-shear, Coulomb stress) evaluated and exported in GMT and VTK formats. This is how Coulomb and other time-dependent stress calculations are carried out in relax. Integer nsp indicates the number of such patches. If nsp > 0 then relax asks for the definition of each fault patch, with one line per patch, as follows:
+
+# nb x1 x2 x3 length width strike dip friction
+
+where nb is an index running from 1 to nsp, x1, x2, x3, length, width, strike and dip are the position, dimension and orientation of the fault patches and friction is the friction coefficient (usually chosen at 0.6) used to compute Coulomb stress. The geometry parameters are defined in section 
+.B FAULT GEOMETRY.
+
+All receiver faults for Coulomb stress calculations are exported in 
+.I wdir/rfaults-dsigma-0000.vtp 
+for visualization in Paraview.
+
+.TP
+.B number of pre-stress interface (npsi)
+Pre-stress interfaces specify at what depth and how pre stress changes. If npsi > 0, then relax requires the depths and stress values at each interface, one line per interface, as follows:
+
+# nb depth sigma11 sigma12 sigma13 sigma22 sigma23 sigma33
+
+where nb is an index running from 1 to npsi, depth is the depth where pre-stress changes, and sigma11, 12, 13, 22, 23, and 33 and the components of the symmatric stress tensor.
+
+.TP
+.B number of linear viscous interfaces (nlvi)
+Viscous interfaces specify at what depth and how the viscosity changes in the Earth, and define the background 1-D viscosity model that can be subsequently modified using ductile zones. If nlvi > 0, then relax requires the depths and viscosity and cohesion values at each interface, one line per interface, as follows:
+
+# nb depth gammadot0 cohesion
+
+where nb is an index running from 1 to nlvi, depth is the depth where cohesion and gammadot0 change, gammadot0 is the fluidity (defined as gammadot0 = mu / eta, where eta is the viscosity), the reciprocal of the Maxwell relaxation time, and cohesion is the minimum value of stress to drive viscoelastic flow. The definition of the 1-D model is explained in Section 
+.B DEPTH-DEPENDENT STRUCTURE.
+
+All viscous interface are exported to 
+.I wdir/linearlayer-nb.vtp
+, where nb is the interface index, for visualization in Paraview.
+
+The definition of the 1-D depth-dependent model is followed by:
+
+.B number of linear ductile zones (nldz)
+
+Ductile zones are volumes where the background viscosity is ammended. If nldz > 0, then relax requires the list of ductile zones, defined as 
+
+# nb dgammadot0 x1 x2 x3 length width thickness strike dip
+
+where nb is an index running from 1 to nldz, dgammadot0 is the modifier to the background fluidity, x1, x2, x3, length, width, thickness, strike and dip are the position, dimension and orientation of the rectangular volume. The fluidity used to drive viscoelastic flow is gammadot0+dgammadot0. If gammadot0+dgammadot0<=0, no flow occurs. Therefore, setting large negative values of dgammadot0 makes the region elastic. The geometric parameters are defined in Section 
+.B LATERAL VARIATIONS OF VISCOUS PROPERTIES.
+
+All ductile zones are exported to
+.I wdir/weakzones-linear.vtp 
+for visualization in Paraview, including when computation is aborted with the --dry-run option.
+
+.TP
+.B number of nonlinear viscous interfaces (nnlvi)
+Nonlinear viscous interfaces specify at what depth and how the power-law rheology parameters change in the Earth, and define the background 1-D viscosity model that can be subsequently modified using ductile zones. Viscoelastic relaxation in relax can have ontributions from both linear and nonlinear rheologies. If nnlvi > 0, then relax requires the depths, viscosity, power and cohesion at each interface, one line per interface, as follows:
+
+# nb depth gammadot0 power cohesion
+
+where nb is an index running from 1 to nnlvi, depth is the depth where cohesion and gammadot0 change, gammadot0 is the reference fluidity, power is the power-law rheology power exponent (strain rate = gammadot0 ( tau / mu ) ^ power, where tau is the coseismic stress change plus the prestress), and cohesion is the minimum value of stress to drive viscoelastic flow.
+
+The definition of the 1-D depth-dependent power-law model is followed by:
+
+.B number of nonlinear ductile zones (nnldz)
+
+Nonlinear ductile zones are volumes where the background nonlinear viscosity is ammended. If nnldz > 0, then relax requires the list of nonlinear ductile zones, defined as 
+
+# nb dgammadot0 x1 x2 x3 length width thickness strike dip
+
+where nb is an index running from 1 to nnldz, dgammadot0 is the modifier to the background fluidity, x1, x2, x3, length, width, thickness, strike and dip are the position, dimension and orientation of the rectangular volume. The power exponent of the ductile zone is the same as in the background model.
+
+All ductile zones are exported to 
+.I wdir/weakzones-nonlinear.vtp 
+for visualization in Paraview, including when computation is aborted with the --dry-run option.
+
+.TP
+.B number of friction interfaces (nfi)
+Friction interfaces define the variations of fault friction properties with depth, using the framework of rate-strengthening friction. If nfi < 0, relax requires the depth, reference velocity, strengthening parameter and cohesion at each depth, one line per interface, as follows:
+
+# nb depth gamma0 (a-b)sigma friction cohesion
+
+where nb is an index running from 1 to nfi, depth is the depth where friction properties change, (a-b)sigma is the reference stress (typically of the order of 1 MPa), friction is the friction coefficient (usually 0.6) and cohesion is the stress enveloppe. If nfi > 0 the list of interface is followed by a definition of faults where stress-driven slip occurs:
+
+.B "number of afterslip planes (nap)"
+
+Afterslip planes are rectangular surfaces where stress-driven slip occurs. If nap > 0, relax requires the list of afterslip planes, as follows:
+
+# nb x1 x2 x3 length width strike dip rake
+
+where nb is a index running from 1 to nap, x1, x2, x3, length, width, strike and dip are the position, dimension and orientation of the fault plane and rake is a +-90 constrain on the rake of afterslip. If |rake| > 360, the constraint is ignored. Some of these parameters are defined in Section
+.B FAULT GEOMETRY.
+
+All afterslip planes are exported in 
+.I wdir/aplane-nb.vtp
+, where nb in the patch index, for visualization in Paraview.
+
+.TP
+.B number of interseismic loading shear faults (nisf)
+Interseismic shear faults are faults that move at a user-defined constant rate. If nisf > 0, relax requires the list of faults.
+
+.TP
+.B number of interseismic loading opening dykes (niod)
+Interseismic opening dykes are intrusions that open at a user-defined constant rate. If niod > 0, relax requires the list of dykes.
+
+.TP
+.B number of events (ne)
+Events are moments in time when new internal or external forces act of the system (ne >= 1). If ne = 1, then a list of shear faults, opening dyke and surface tractions are required and the change occurs at t = 0. If ne > 1, then a list of shear faults, opening dyke and surface tractions are required for each event. The first event occurs at time 0 and each new event is prescribed a time of occurrence. Having multiple events allows the user to model the effect of a sequence of earthquakes, or to prescribe time-dependent loads.
+
+.TP
+.B number of shear dislocations (strike-slip and dip-slip faults) (nsd)
+Shear dislocations are rectangular slip patches. If nsd > 0, relax expects a list of such slip patches, as follows
+
+# nb slip x1 x2 x3 length width strike dip rake
+
+where nb is an index running from 1 to nsd, x1, x2, x3, length, width, strike dip are the position, dimension and orientation of the slip patch; slip and rake are the slip amplitude and rake. For positive slip, rake = 0 indicates left-lateral slip, and for positive slip and shallow dip (dip <= 90), rake = 90 indicate thrust motion. These parameters are defined in Section 
+.B "FAULT GEOMETRY."
+
+All faults are exported to 
+.I wdir/rfaults-e.vtp
+, where e is the event number, for visualization in Paraview. Export to 
+.I wdir/rfaults-e.xy
+allows visualization with GMT.
+
+.TP
+.B number of tensile cracks (nts)
+Tensile cracks are dykes with opening or closure of the elastic walls. If nts > 0, relax expects a list of cracks:
+
+# nb opening x1 x2 x3 length width strike dip
+
+where nb is an index running from 1 to nts, opening is the normal motion of the walls, and the other parameters define the position, orientation and dimension of the cracks.
+
+.TP
+.B number of surface loads (nsl)
+Surface loads are surface tractions in the vertical direction coming from the loading and unloading of lakes, dams or the freezing or melting of ice. If nsl > 0, relax expects a list of surface loads, defined with their geometry and weight, as follows:
+
+# nb x1 x2 length width t3 T phi
+
+where nb is an index running from 1 to nsl, x1, x2, length and width define the position and dimension of the load, t3 is in units of stress (force/surface), positive down, and T can be a period (T > 0 implies stress=t3*sin(2 pi/T + phi) or not (T <= 0 implies stress = t3 H(t), with H(t) the Heaviside function).
+
+.TP
+.B time of next event (te)
+If the computation includes several events (ne > 0), the second and subsequent events are preceded by their time of occurrence.
+
+.SH "EXAMPLE INPUTS"
+
+The line starting with the '#' symbol are comments.
+
+.IP "CALLING SEQUENCE"
+
+relax < input.dat
+
+or
+
+.nf
+relax <<EOF
+# this line is a comment
+`cat input.dat`
+EOF
+.fi
+
+.IP "COSEISMIC DISPLACEMENT"
+Computes coseismic displacements due to uniform fault slip:
+
+.B relax
+\-\-no\-proj\-output <<EOF
+.nf
+# grid size (sx1,sx2,sx3)
+256 256 256
+# sampling size, smoothing & nyquist (dx1,dx2,dx3,beta,nq)
+0.05 0.05 0.05 0.2 0
+# origin position & rotation
+0 0 0
+# observation depths for displacements and stress
+0 0.5
+# output directory
+output_dir
+# elastic parameters and gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
+30 30 8.33e-4
+# integration time (t1)
+0 -1 1
+# number of observation planes
+0
+# number of observation points
+0
+# number of stress observation segments
+0
+# number of prestress interfaces
+0
+# number of linear viscous interfaces
+0
+# number of powerlaw viscous interfaces
+0
+# number of friction interfaces
+0
+# number of interseismic loading strike-slip and opening
+0
+0
+# number of coseismic events
+1
+# number of shear dislocations (strike-slip and dip-slip faults)
+1
+# index slip x1 x2 x3 length width strike dip rake
+      1    1 -1  0  0      2     1      0  90    0
+# number of tensile cracks
+0
+# number of dilatation sources (Mogi source)
+0
+# number of surface loads
+0
+EOF
+.fi
+.PP
+
+.IP "POSTSEISMIC VISCOELASTIC DEFORMATION"
+Computes time-dependent postseismic viscoelastic deformation driven by stress induced by fault slip:
+
+.B relax
+\-\-no\-proj\-output <<EOF
+.nf
+# grid size (sx1,sx2,sx3)
+512 512 512
+# sampling size, smoothing & nyquist (dx1,dx2,dx3,beta,nq)
+0.5 0.5 0.5 0.2 0
+# origin position & rotation
+0 0 0
+# observation depths for displacements and stress
+0 10
+# output directory
+viscoelastic
+# elastic parameters and gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
+30 30 8.33e-4
+# integration time (t1)
+10 -1 0.5
+# number of observation planes
+0
+# number of observation points
+0
+# number of stress observation segments
+0
+# number of prestress interfaces
+0
+# number of linear viscous interfaces
+1
+# nb depth gammadot0 cohesion
+   1    20         1        0
+# number of linear ductile zones
+0
+# number of powerlaw viscous interfaces
+0
+# number of friction interfaces
+0
+# number of interseismic loading strike-slip and opening
+0
+0
+# number of coseismic events
+1
+# number of shear dislocations
+1
+# index slip  x1 x2 x3 length width strike dip rake
+      1    1 -10  0  0     20    10      0  90    0
+# number of tensile cracks
+0
+# number of dilatation sources
+0
+# number of surface loads
+0
+EOF
+.fi
+.PP
+
+
+
+.SH "FAULT GEOMETRY"
+
+Static dislocation sources are discretized into a series of planar segments. Slip patches are defined in terms of position, orientation, and slip, as illustrated in the following figure. For positive slip, a zero rake corresponds to left-lateral strike-slip motion and a 90 degree rake corresponds to a thrust motion (when dip is smaller than 90 degrees).
+
+               N (x1)
+              /
+             /| strike
+ x1,x2,x3 ->@------------------------    E (x2)
+            |\\        p .            \\ w
+            :-\\      i .              \\ i
+            |  \\    l .                \\ d
+            :90 \\  s .                  \\ t
+            |-dip\\  .                    \\ h
+            :     \\. | Rake               \\
+            |      -------------------------
+            :             l e n g t h
+            Z (x3)
+
+.TP
+Slip distributions are defined as a list of slip on individual patches, for example:
+
+.nf
+# number of shear dislocations
+4
+# nb slip x1 x2 x3 length width strike dip rake
+   1  0.4  0  0  0    1.3   2.3     18  57    0
+   2  1.1  0  1  0    1.3   2.3     18  57    0
+   3  2.7  0  0  2    1.3   2.3     18  57    0
+   4  0.2  0  1  2    1.3   2.3     18  57    0
+.fi
+
+.SH "DEPTH-DEPENDENT STRUCTURE"
+
+Depth-dependent variations of properties is obtained from the interpolation of a series of tie points, following the method employed in the PREM model. For example, the 1-D model below
+
+            @------------------------> (modulus)
+            |.
+            | .
+            |  .
+        z1  |   + v1
+            |      .
+            | v3      .
+     z2,z3  |   +  -  -  + v2
+            |   |
+            |   | 
+            |   | v4
+     z4,z5  |   +  -  -  -  -  -  +  v5
+            |                     |
+            |                     :
+            |                     |
+            |                     :
+            |
+            Z (x3)
+
+.TP
+is specified as follows:
+
+.nf
+# number of interfaces
+6
+# nb depth value
+   1     0     0
+   2    z1    v1
+   3    z2    v2
+   4    z3    v3
+   5    z4    v4
+   6    z5    v5
+.fi
+
+.PP
+and the last value v5 is continued down to the bottom extension of the computational grid.
+
+.SH "LATERAL VARIATIONS OF VISCOUS PROPERTIES"
+
+Lateral variations of viscous properties can occur in rectangular volumes of arbitrary orientation and dimension. The geometry of the anomalous ductile zones is defined with the reference position (x1,x2,x3), length, width, thickness, strike and dip, as illustrated below. The final value of the fluidity that controls viscoelastic flow is the sum of the background value defined in the depth-dependent model and the value in the ductile zones.
+
+               N (x1)
+              /
+             /| strike        
+ x1,x2,x3 ->@------------------------    E (x2)       
+            |\\        p .            \\ w         + 
+            :-\\      i .              \\ i       /
+            |  \\    l .                \\ d     / s
+            :90 \\  s .                  \\ t   / s
+            |-dip\\  .                    \\ h / e
+            :     \\. | Rake               \\ / n
+            |      -------------------------  k
+            :             l e n g t h     /  c
+            |                            /  i
+            :                           /  h
+            |                          /  t
+            :                         /
+            |                        +
+            Z (x3)
+
+.TP
+The input is defined as follows:
+
+.nf
+# number of ductile zones
+1
+# nb dgammadot0 x1 x2 x3 length width thickness strike dip
+   1         -1  0  0  0      1     1         1      0  90
+.fi
+
+.SH "SEE ALSO"
+
+Rousset B., S. Barbot, J.-P. Avouac and Y.-J. Hsu, "Postseismic Deformation Following the 1999 Chi-Chi Earthquake, Taiwan: Implication for Lower-Crust Rheology", J. Geophys. Res., 2012
+
+Bruhat L., S. Barbot and J.-P. Avouac, "Contributions of Afterslip and Viscoelastic Flow Following the 2004 Parkfield Earthquake", J. Geophys. Res., v. 116, B08401, 11 PP., 2011, doi:10.1029/2010JB008073
+
+Barbot S. and Y. Fialko, "A Unified Continuum Representation of Postseismic Relaxation Mechanisms: Semi-Analytic Models of Afterslip, Poroelastic Rebound and Viscoelastic Flow", Geophys. J. Int., v. 182, 3, p. 1124-1140, 2010, doi:10.1111/j.1365-246X.2010.04678.x
+
+Barbot S. and Y. Fialko, "Fourier-Domain Green Function for an Elastic Semi-Infinite Solid under Gravity, with Applications to Earthquake and Volcano Deformation", Geophys. J. Int., v. 182, no. 2, pp. 568-582, 2010, doi:10.1111/j.1365-246X.2010.04655.x
+
+Barbot S., Y. Fialko, Y. Bock, "Postseismic Deformation due to the Mw6.0 2004 Parkfield Earthquake: Stress-Driven Creep on a Fault with Spatially Variable Rate-and-State Friction Parameters", J. Geophys. Res., vol. 114, B07405, 2009, doi:10.1029/2008JB005748
+
+
+
+.SH BUGS
+No known bugs.
+
+.SH AUTHOR
+Sylvain Barbot (sbarbot@ntu.edu.sg)
+
+.SH COPYRIGHT
+
+RELAX is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+RELAX is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with RELAX.  If not, see <http://www.gnu.org/licenses/>.
