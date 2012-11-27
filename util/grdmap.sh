@@ -151,7 +151,7 @@ do
 	u) uset=1;unit=$OPTARG;;
 	v) vset=1;SIZE=$OPTARG;VECTOR=$OPTARG"c";;
 	x) xset=1;;
-	C) Cset="-c";contour=$OPTARG;;
+	C) Cset="-C";contour=$OPTARG;;
 	E) Eset=1;PSFILE=$(dirname $OPTARG)/$(basename $OPTARG .ps).ps;;
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
