@@ -35,6 +35,7 @@ usage(){
 	echo "         -t tick interval"
 	echo "         -T title header"
 	echo "         -x do not display map (only create .ps file)"
+	echo "         -C interval plots contours every interval distance"
 	echo "         -E file.ps only plot base map with extra scripts"
         echo "         -Y shift the plot vertically on the page"
 	echo ""
@@ -52,6 +53,9 @@ my_gmt(){
 		    $AXIS \
 		    -K -C$colors -P -X1.2i -Y${YSHIFT}i $illumination \
 		    > $PSFILE
+		if [ "$Cset" == "-C" ]; then
+			grdcontour $U3 -R$bds -J${PROJ} -S -C$contour >> $PSFILE
+		fi
 	else
 		psbasemap -R$bds -J${PROJ} \
 		    $AXIS \
@@ -129,7 +133,7 @@ gmtset PAPER_MEDIA a5
 libdir=$(dirname $0)
 EXTRA=""
 
-while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrE:Y:" flag
+while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrC:E:Y:" flag
 do
 	case "$flag" in
 	b) bset=1;bds=$OPTARG;;
@@ -147,11 +151,12 @@ do
 	u) uset=1;unit=$OPTARG;;
 	v) vset=1;SIZE=$OPTARG;VECTOR=$OPTARG"c";;
 	x) xset=1;;
+	C) Cset="-c";contour=$OPTARG;;
 	E) Eset=1;PSFILE=$(dirname $OPTARG)/$(basename $OPTARG .ps).ps;;
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
 done
-for item in $bset $cset $iset $oset $pset $vset $sset $tset $Tset $uset $Yset $Eset $EXTRA;do
+for item in $bset $cset $iset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Eset $EXTRA;do
 	shift;shift
 done
 for item in $gset $hset $xset $rset;do
