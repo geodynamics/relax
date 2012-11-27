@@ -54,7 +54,7 @@ my_gmt(){
 		    -K -C$colors -P -X1.2i -Y${YSHIFT}i $illumination \
 		    > $PSFILE
 		if [ "$Cset" == "-C" ]; then
-			grdcontour $U3 -R$bds -J${PROJ} -S -C$contour >> $PSFILE
+			grdcontour -K -O $U3 -R$bds -J${PROJ} -S -C$contour >> $PSFILE
 		fi
 	else
 		psbasemap -R$bds -J${PROJ} \
