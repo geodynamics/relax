@@ -65,13 +65,18 @@ my_gmt(){
 
 	# running all required subprograms
 	for subprog in $EXTRA; do
+		if [ "" == "$U3" ]; then
+			OPTIONP="-p $U3"
+		else
+			OPTIONP=""
+		fi
 		if [ -e "$selfdir/$subprog" ]; then
 			#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
-			eval "$subprog $gset -b $bds -v $VECTOR -p $U3 -H $HEIGHT $PSFILE"
+			eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $PSFILE"
 		else
 			if [ -e "$subprog" ]; then
 				#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
-				eval "$subprog $gset -b $bds -v $VECTOR -p $U3 -H $HEIGHT $PSFILE"
+				eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $PSFILE"
 			fi
 		fi
 	done
