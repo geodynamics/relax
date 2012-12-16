@@ -65,7 +65,7 @@ my_gmt(){
 
 	# running all required subprograms
 	for subprog in $EXTRA; do
-		if [ "" == "$U3" ]; then
+		if [ "" != "$U3" ]; then
 			OPTIONP="-p $U3"
 		else
 			OPTIONP=""
