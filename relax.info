@@ -1,0 +1,26 @@
+Package: relax
+Version: 1.0.4
+Revision: 1
+Source: http://www.its.caltech.edu/~sbarbot/%n-%v.tar.gz
+Maintainer: Sylvain Barbot <sbarbot@ntu.edu.sg>
+HomePage: http://www.geodynamics.org/cig/software/relax/
+License: OSI-Approved
+Description: Semi-analytic solver for earthquake modeling
+Source-MD5: 5299c48b46a041a76e2d5241a5ce7ba7
+BuildDepends: fftw3, gmt-dev, gmt-shlibs, gmt, proj
+CompileScript: <<
+#! /bin/sh -ev
+./waf configure --use-fftw --fftw-dir=%p --proj-dir=%p --gmt-dir=%p
+./waf build
+<<
+InstallScript: <<
+#! /bin/sh -ev
+/usr/bin/install -d -m 755 %i/share/doc/%n
+/usr/bin/install -m 644 ./COPYING %i/share/doc/%n/COPYING
+/usr/bin/install -m 644 ./relax.tex %i/share/doc/%n/relax.tex
+/usr/bin/install -m 644 ./relax.pdf %i/share/doc/%n/relax.pdf
+/usr/bin/install -d -m 755 %i/bin
+/usr/bin/install -m 755 ./build/relax %i/bin/relax
+/usr/bin/install -d -m 755 %i/share/man/man1
+/usr/bin/install -m 644 ./man/man1/relax.1 %i/share/man/man1/relax.1
+<<
