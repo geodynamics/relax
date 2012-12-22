@@ -364,7 +364,55 @@ Let's look at how to define a viscosity profile where the depth of the brittle-d
 {\color{orange}   1         -1  0   0 10    200     5       200     90  90}
 ...
 \end{alltt}
-We then add a large volume abutting the center of the computational volume, where we modify the fluidity from $\dot{\gamma}_0=1\,$yr$^{-1}$ to $\dot{\gamma}_0=0$, using $\Delta\dot{\gamma}_0=-1\,$yr$^{-1}$. As a null fluidity corresponds to elastic behavior, the brittle-ductile transition occurs 5\,km deeper going west to east across the $x_1$ (north-south) axis. The geometry of a slab can be obtained by modifying the strike and dip angles. Changing the strike of the ductile zone from 90 to 0$^\circ$ would make the transition occur from south to north. If the background and anomalous fluidities add to a negative, unphysical, value, the sum is corrected to null, and the result is an effective elastic property. Realistic structures can be accounted for from structural data using a large quantity of ductile anomalies tuned to observations.
+We then add a large volume abutting the center of the computational volume, where we modify the fluidity from $\dot{\gamma}_0=1\,$yr$^{-1}$ to $\dot{\gamma}_0=0$, using $\Delta\dot{\gamma}_0=-1\,$yr$^{-1}$. As a null fluidity corresponds to elastic behavior, the brittle-ductile transition occurs 5\,km deeper going west to east across the $x_1$ (north-south) axis. The geometry of a slab can be obtained by modifying the strike and dip angles. Changing the strike of the ductile zone from 90 to 0$^\circ$ would make the transition occur from south to north. If the background and anomalous fluidities add to a negative, unphysical, value, the sum is corrected to null, and the result is an effective elastic property. 
+
+Realistic structures can be accounted for from structural data using a large quantity of ductile anomalies tuned to observations. Consider the case of the Sunda subduction slab where the top of the elastic slab is described by a series of fault segments:
+\begin{alltt}
+# no         x1          x2          x3      length       width      strike         dip        rake
+001 -1008.183459  976.507098    8.540000   50.000000   50.094787  -53.290307    3.525208   76.733951
+002 -969.881237  944.367717    8.922983   50.000000   50.089914  -51.101544    3.433540   78.917890
+003 -931.579015  912.228337    9.414930   50.000000   50.131393  -50.400541    4.149189   79.626125
+004 -893.276793  880.088956   10.365896   50.000000   50.219974  -48.252647    5.364677   81.783007
+005 -854.974571  847.949576   11.813879   50.000000   50.404913  -46.965533    7.267302   83.089879
+006 -816.672349  815.810195   11.651879   50.000000   50.416558  -46.119837    7.370354   83.930348
+007 -778.370126  783.670815   11.301228   50.000000   50.406643  -44.084141    7.282706   85.948697
+008 -740.067904  751.531434   11.463158   50.000000   50.410988  -41.986592    7.321244   88.029592
+009 -701.765682  719.392054   11.242973   50.000000   50.406957  -40.363071    7.285500   89.639860
+010 -663.463460  687.252674   10.615908   50.000000   50.373596  -40.351118    6.982417   89.651486
+011 -625.161238  655.113293   10.455476   50.000000   50.350356  -40.820083    6.763064   89.185623
+...
+\end{alltt}
+which is saved in the file \verb'sunda.flt'. A three-dimensional model of the elastic slab can be constructed by extending the fault segments into volumes. Lets consider a 80\,km thick slab. We start with a depth-dependent model with visco-elastic relaxation below 80\,km:
+\begin{alltt}
+# number of linear viscous interfaces for elastic plate
+{\color{orange}1}
+# no depth gammadot0 cohesion
+{\color{orange}   1  80.0       1.0      0.0}
+# number of linear ductile zone
+{\color{orange}0}
+\end{alltt}
+and let's add the down-going slab:
+\begin{alltt}
+# number of linear viscous interfaces for elastic plate
+{\color{orange}1}
+# no depth gammadot0 cohesion
+{\color{orange}   1  80.0       1.0      0.0}
+# number of linear ductile zone
+{\color{orange}`grep -v "#" sunda.flt | wc`}
+# nb dgammadot0   x1   x2   x3   length   width   thickness   strike   dip
+{\color{orange}`grep -v "#" sunda.flt | awk '{print NR,-10,$2,$3,$4,$5,80,$6,$7,$8+90}'`}
+...
+\end{alltt}
+The last line creates a list of blocks extending the slab interface down and reducing the fluidity by a large number ($-10\,$yr$^{-1}$) to set the fluidity to 0 and the viscosity to infinity. The slab geometry is shown in Fig.~\ref{fig:sunda}.
+
+%
+\begin{figure*}[h]
+\centering
+\includegraphics[width=\textwidth]{sunda.jpg}
+\caption{\small Three-dimensional viscoelastic structure for the Sunda down-going slab. The opaque interface represent an elastic lithosphere extended at depth by the cubic boxes (ductile zones). The mantle wedge is below Sumatra.}
+\label{fig:sunda}
+\end{figure*}
+%
 
 
 
@@ -733,7 +781,7 @@ and shows a monotonic decrease of the power and a gradual increase of the time s
 
 The directory \verb'examples' contains a comprehensive list of input files with published slip distributions of recent earthquakes. The database includes the case of the 1999 M$_w$ 7.6 Chi-Chi~\citep{johnson+01}, the 1964 M$_w$ 9.2 Alaska~\citep{johnson+96}, the 1992 M$_w$ 7.3 Landers~\citep{fi04c}, 1999 M$_w$ 7.1 Hector Mine~\citep{si+02a}, the 2012 Canterbury (New Zealand)~\citep{elliott+12}, the 2004 M$_w$ 6.0 Parkfield~\citep{bruhat+11}, the 2001 M$_w$ 7.8 Kokoxili (Tibet)~\citep{lasserre+05,ryder+11}, the 2010 M$_w$ 6.8 Yushu (Tibet)~\citep{li+11}, the 2008 M$_w$ 7.1 Yutian (Tibet)~\citep{elliott+10} earthquakes, organized by geography. New slip distributions will continue to be included and placed in this repository.
 
-The utility \verb'util/flt2vtk.sh' transforms the slip distribution in the Paraview format for visualization in three dimensions.
+The utility \verb'util/flt2vtk.sh' transforms the slip distribution in the Paraview format for visualization in three dimensions, for example the 1964 M$_w$ 9.2 Alaska slip model in Fig.~\ref{fig:alaska}.
 
 %
 \begin{figure*}[h]
@@ -791,6 +839,8 @@ Some other files only contain geometrical information, such as geometry of fault
 \verb'aplane-0001.vtp' & Paraview file for the afterslip plane number 1\\
 \verb'linearlayer-001.vtp' & Paraview file for depth of the first linear viscosity change\\
 \verb'cgrid.vtp' & Paraview file for extent of the computational domain\\
+\verb'weakzones-linear.vtp'  & Paraview file for all linear ductile zones\\
+\verb'weakzones-nonlinear.vtp' & Paraview file for all nonlinear ductile zones\\
 \verb'time.txt' &  time associated with time step\\
 \end{tabular}\\
 
