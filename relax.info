@@ -19,7 +19,6 @@ InstallScript: <<
 /usr/bin/install -m 644 ./COPYING %i/share/doc/%n/COPYING
 /usr/bin/install -m 644 ./INSTALL %i/share/doc/%n/INSTALL
 /usr/bin/install -m 644 ./relax.tex %i/share/doc/%n/relax.tex
-/usr/bin/install -m 644 ./relax.pdf %i/share/doc/%n/relax.pdf
 /usr/bin/install -d -m 755 %i/bin
 /usr/bin/install -m 755 ./build/relax %i/bin/relax
 /usr/bin/install -d -m 755 %i/share/man/man1
