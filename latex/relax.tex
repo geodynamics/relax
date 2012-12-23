@@ -71,9 +71,9 @@
 
 \section{Introduction}
 
-The open-source program RELAX evaluates the displacement and stress in a half space with gravity due to dislocations~\citep[e.g.,][]{okada92}, Mogi sources~\citep{mogi58}, and surface tractions; and the nonlinear time-dependent deformation that follows due to power-law rheology materials in the bulk and/or rate-strengthening friction faults. The numerical method is based on a Fourier-domain elastic Green's function~\citep{barbot+09b,barbot&fialko10a} and an equivalent body-force representation of co-seismic and post-seismic deformation processes~\citep{barbot+09a,barbot&fialko10b}. Application of the method for the 2004 Mw 6 Parkfield earthquake can be found in the work of~\cite{barbot+09a} and \cite{bruhat+11}. 
+The open-source program RELAX evaluates the displacement and stress in a half space with gravity due to dislocations~\citep[e.g.,][]{okada92}, Mogi sources~\citep{mogi58}, and surface tractions; and the nonlinear time-dependent deformation that follows due to power-law rheology materials in the bulk and/or rate-strengthening friction faults. The numerical method is based on a Fourier-domain elastic Green's function~\citep{barbot+09b,barbot&fialko10a} and an equivalent body-force representation of co-seismic and post-seismic deformation processes~\citep{barbot+09a,barbot&fialko10b}. Application of the method for the 2004 Mw\,6 Parkfield earthquake can be found in the work of~\cite{barbot+09a} and \cite{bruhat+11}. A coupled model of afterslip and laterally-heterogeneous viscoelastic flow following the 1999 Mw\,7.6 Chi-Chi earthquake using relax is described by~\cite{rousset+12}.
 
-The possible applications for the earthquake-cycle modeling include i) co-seismic displacement and Coulomb stress calculation, ii) quasi-static stress transfer between earthquakes due to a postseismic transient, iii) modeling of postseismic transients including nonlinear rheologies and multiple mechanisms, iv) cycle of multiple earthquakes and spin-up models, v) loading cycle of lakes or the monsoon.
+The possible applications for the earthquake-cycle modeling include i) co-seismic displacement and Coulomb stress calculation, ii) quasi-static stress transfer between earthquakes due to a postseismic transient, iii) modeling of postseismic transients including nonlinear rheologies and multiple mechanisms, iv) cycle of multiple earthquakes and spin-up models, v) loading cycle of lakes or the monsoon, vi) generation of viscoelastic Green's functions for kinematic inversions of geodetic time series.
 
 \section{Acknowledgments}
 We are greatly thankful for the help of Yuri Fialko and Walter Landry, who contributed to the coming about of the software. We appreciate the efforts of Lucile Bruhat, Yaru Hsu, Mikhail Kogan, Zhen Liu and Baptiste Rousset for testing an earlier version of the code. The support of CIG is greatly appreciated.
@@ -228,9 +228,11 @@ In RELAX, the fault thickness is chosen to be the sampling size $T=\Delta x$. A 
 \subsection{Introduction}
 The RELAX code is written in Fortran90 with a few I/O functions written in C. The performance of the code depends greatly on the efficiency of the discrete Fourier transform being used. The program can work with the Cooley-Tukey FFT algorithm, for which the source code is provided. For better performance, it is recommended to use the FFT native to the computer environment. The program can readily use the SGI, the FFTW and the Intel MKL FFTs. While we have found that the Intel MKL FFT provides the most efficient calculation, the package provided by the CIG web site implements FFTW.
 
-Both the post-processing and the storage of the simulation are greatly facilitated by writing output files in the cross-platform NetCDF binary format used by the Generic Mapping Tools (GMT). GMT is convenient to rapidly display the simulation results as it is computed, transform the output into other formats or projections (for example, to project the displacement into the Radar line of sight of a satellite to compare with synthetic aperture radar data), make animations and communicate results. Although RELAX can output in ASCII format, it is recommended to link the code to the GMT 4.5 libraries. A suite of GMT-based post-processing scripts are available in the \verb`util` directory and require GMT to be installed in your system.
+Both the post-processing and the storage of the simulation are greatly facilitated by writing output files in the cross-platform NetCDF binary format used by the Generic Mapping Tools (GMT). GMT is convenient to rapidly display the simulation results as it is computed, transform the output into other formats or projections (for example, to project the displacement into the Radar line of sight of a satellite to compare with synthetic aperture radar data), make animations and communicate results. Although RELAX can output in ASCII format, it is recommended to link the code to the GMT 4.5 libraries. A suite of GMT-based post-processing scripts are available in the \verb`util` directory and require the GMT binaries to be installed in your system.
 
 The output of the simulation can be projected on the fly to geographic coordinates, which is convenient to communicate results to others in a global coordinate system. In RELAX, this is performed with the Proj4 library (Proj4.7.1 or higher). It is recommended to install these libraries on your system to facilitate post processing.
+
+Examples input files can be found in the \verb'examples' directory for many earthquakes with published slip distribution models. The directory \verb'examples/tutorials' includes simple directions to evaluate models and carry out post processing and mapping. The man page (type \verb'man relax' in a terminal) provides a thorough description of every input item, and provides additional examples.
 
 \subsection{Running}
 
@@ -368,18 +370,18 @@ We then add a large volume abutting the center of the computational volume, wher
 
 Realistic structures can be accounted for from structural data using a large quantity of ductile anomalies tuned to observations. Consider the case of the Sunda subduction slab where the top of the elastic slab is described by a series of fault segments:
 \begin{alltt}
-# no         x1          x2          x3      length       width      strike         dip        rake
-001 -1008.183459  976.507098    8.540000   50.000000   50.094787  -53.290307    3.525208   76.733951
-002 -969.881237  944.367717    8.922983   50.000000   50.089914  -51.101544    3.433540   78.917890
-003 -931.579015  912.228337    9.414930   50.000000   50.131393  -50.400541    4.149189   79.626125
-004 -893.276793  880.088956   10.365896   50.000000   50.219974  -48.252647    5.364677   81.783007
-005 -854.974571  847.949576   11.813879   50.000000   50.404913  -46.965533    7.267302   83.089879
-006 -816.672349  815.810195   11.651879   50.000000   50.416558  -46.119837    7.370354   83.930348
-007 -778.370126  783.670815   11.301228   50.000000   50.406643  -44.084141    7.282706   85.948697
-008 -740.067904  751.531434   11.463158   50.000000   50.410988  -41.986592    7.321244   88.029592
-009 -701.765682  719.392054   11.242973   50.000000   50.406957  -40.363071    7.285500   89.639860
-010 -663.463460  687.252674   10.615908   50.000000   50.373596  -40.351118    6.982417   89.651486
-011 -625.161238  655.113293   10.455476   50.000000   50.350356  -40.820083    6.763064   89.185623
+# no         x1         x2        x3 length     width   strike    dip   rake
+001 -1008.18345 976.507098  8.540000 50.000 50.094787 -53.2903 3.5252 76.733
+002 -969.881237 944.367717  8.922983 50.000 50.089914 -51.1015 3.4335 78.917
+003 -931.579015 912.228337  9.414930 50.000 50.131393 -50.4005 4.1491 79.626
+004 -893.276793 880.088956 10.365896 50.000 50.219974 -48.2526 5.3646 81.783
+005 -854.974571 847.949576 11.813879 50.000 50.404913 -46.9655 7.2673 83.089
+006 -816.672349 815.810195 11.651879 50.000 50.416558 -46.1198 7.3703 83.930
+007 -778.370126 783.670815 11.301228 50.000 50.406643 -44.0841 7.2827 85.948
+008 -740.067904 751.531434 11.463158 50.000 50.410988 -41.9865 7.3212 88.029
+009 -701.765682 719.392054 11.242973 50.000 50.406957 -40.3630 7.2855 89.639
+010 -663.463460 687.252674 10.615908 50.000 50.373596 -40.3511 6.9824 89.651
+011 -625.161238 655.113293 10.455476 50.000 50.350356 -40.8200 6.7630 89.185
 ...
 \end{alltt}
 which is saved in the file \verb'sunda.flt'. A three-dimensional model of the elastic slab can be constructed by extending the fault segments into volumes. Lets consider a 80\,km thick slab. We start with a depth-dependent model with visco-elastic relaxation below 80\,km:
@@ -700,8 +702,8 @@ In many cases, the observation points may be the coordinates of GPS stations in 
 ...
 # number of observation points
 {\color{NavyBlue}`wc pos.xy`}
-# no name       x1       x2       x3
-{\color{NavyBlue}`awk '{\textbraceleft}printf("\%d G\%03d \%f \%f 0{\textbackslash}n",NR,NR,$1,$2){\textbraceright}' pos.xy`}
+# no name       x1(north)       x2(east)       x3(depth)
+{\color{NavyBlue}`awk '{\textbraceleft}printf("\%d G\%03d \%f \%f 0{\textbackslash}n",NR,NR,$2,$1){\textbraceright}' pos.xy`}
 # number of stress observation segments
 0
 ...
@@ -716,7 +718,11 @@ Let's use RELAX to simulate the deep afterslip that follows a main shock. To do 
 \begin{equation}
 V=2\,\dot{\gamma}_0\,\sinh\frac{\Delta\tau}{(a-b)\sigma}
 \end{equation}
-where $\Delta\tau$ is the stress perturbation due to the earthquake, which is slowly relaxed, and $(a-b)\sigma$ and $\dot{\gamma}_0$ are constitutive parameters. Attention, since $\sinh(x)\sim\exp(x)$ for $x\gg1$, too small a value for $(a-b)\sigma$ will make the evaluation of the velocity challenging. In this case the execution will stop with an error message indicating a diagnostic value of $\Delta\tau$ and of $(a-b)\sigma$. The time scale of the afterslip scales with
+where $\Delta\tau$ is the stress perturbation due to the earthquake, which is slowly relaxed, and $(a-b)\sigma$ and $\dot{\gamma}_0$ are constitutive parameters. In general, a good value for $(a-b)\sigma$ is of the order of the stress drop of the earthquake, and perhaps slightly smaller. The dimension-less ratio
+\begin{equation}
+k=\frac{\Delta\tau}{(a-b)\sigma}~,
+\end{equation}
+where $\Delta\tau$ is the stress drop, in the range $1\le k\le 7$. Attention, since $\sinh(x)\sim\exp(x)$ for $x\gg1$, too small a value for $(a-b)\sigma$ will make the evaluation of the velocity challenging. In this case the execution will stop with an error message indicating a diagnostic value of $\Delta\tau$ and of $(a-b)\sigma$. The time scale of the afterslip scales with
 \begin{equation}
 t_m^{\text{afterslip}}\propto\frac{L}{2\,\dot{s}_0}\frac{a\,\sigma}{G}
 \end{equation}
@@ -737,7 +743,8 @@ In this case, a third argument is needed to modify the internally-evaluated comp
 ...
 \end{alltt}
 
-To compute the response of afterslip on a deep extension of the rupture defined in the above examples, use
+
+The definition of an afterslip model includes depth-dependent friction properties and the geometry of a receiver fault. To compute the response of afterslip on a deep extension of the rupture defined in the above examples, use
 \begin{alltt}
 ...
 # number of nonlinear viscous interfaces
@@ -855,7 +862,7 @@ The time series of stress and displacement for observation points are in files \
 \pagebreak
 \section{Benchmarks}
 
-The numerical solution produces by RELAX has been compared to many other analytical and numerical solutions. Here, we show two examples for static and time-dependent deformation. In general, it is a good practice to setup simulations using the most resource possible (the largest meshes, the smallest sampling).
+The numerical solution produced by RELAX has been compared to many other analytical and numerical solutions. Here, we show two examples for static and time-dependent deformation. In general, it is a good practice to setup simulations using the most resource possible (the largest meshes, the smallest sampling).
 
 \subsection{Coseismic deformation}
 %
@@ -1014,7 +1021,7 @@ The first option, \verb`--with-vtk-output`, enforces the output in \verb`vtk` fo
 %\bibliography{../../../latex/reference}
 \bibliographystyle{agu}
 
-\begin{thebibliography}{19}
+\begin{thebibliography}{20}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -1108,6 +1115,10 @@ Mogi, K., Relations between the eruptions of various volcanoes and the
 \bibitem[{\textit{Okada}(1992)}]{okada92}
 Okada, Y., Internal deformation due to shear and tensile faults in a
   half-space, \textit{Bull. Seism. Soc. Am.}, \textit{82}, 1018--1040, 1992.
+
+\bibitem[{\textit{Rousset et~al.}(2012)\textit{Rousset, Barbot, Avouac, and
+ Hsu}}]{rousset+12}
+Rousset, B., S.~Barbot, J.-P.~Avouac and Y.-J.~Hsu, {Postseismic deformation following the 1999 Chi-Chi earthquake, Taiwan: Implication for the lower-crust rheology}, \textit{J. Geophys. Res.}, \textit{117}, 2012.
 
 \bibitem[{\textit{Ryder et~al.}(2011)\textit{Ryder, B\"{u}rgmann, and
   Pollitz}}]{ryder+11}
