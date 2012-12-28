@@ -51,10 +51,11 @@ Download and configure Proj 4.7.0
 
 Finally, configure relax
 
-  ./waf configure --use-fftw --gmt-dir=/home/walter/src/relax/relax-bin --proj-dir=/home/walter/src/relax/relax-bin/ --zero-flag=-finit-local-zero
+  ./waf configure --use-fftw --gmt-dir=/home/walter/src/relax/relax-bin --proj-dir=/home/walter/src/relax/relax-bin/
 
 Build relax, cd into build/, and redo the link line
 
+  cd build
   gcc -Wl,--enable-auto-import -Wl,--enable-auto-import -fopenmp src/relax.f90.1.o src/types.f90.1.o src/ctfft.f.1.o src/fourier.f90.1.o src/green.f90.1.o src/okada/green_space.f90.1.o src/okada/dc3d.f.1.o src/elastic3d.f90.1.o src/friction3d.f90.1.o src/viscoelastic3d.f90.1.o src/writevtk.c.1.o src/writegrd4.2.c.1.o src/proj.c.1.o src/export.f90.1.o src/getdata.f.1.o src/getopt_m.f90.1.o src/input.f90.1.o src/mkl_dfti.f90.1.o -o /home/walter/src/relax/relax/build/relax.exe -Wl,-rpath,/home/walter/src/relax/relax-bin/lib -Wl,-rpath,/home/walter/src/relax/relax-bin//lib -Wl,-rpath,None -Wl,-Bstatic -Wl,-Bdynamic -L/home/walter/src/relax/relax-bin/lib -L/home/walter/src/relax/relax-bin//lib -LNone -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads /usr/lib/libhdf5_hl.a /usr/lib/libhdf5.a /usr/lib/libz.a `gcc -print-file-name=libgfortran.a` `gcc -print-file-name=libgomp.a`
 
 
@@ -115,10 +116,11 @@ Configure FFTW 3.3
 
 Finally, configure Relax
 
-  ./waf configure --use-fftw --gmt-dir=/Users/walter/src/relax/relax-bin/ --proj-dir=/Users/walter/src/relax/relax-bin/ --zero-flag="-finit-local-zero" --fftw-dir=/Users/walter/src/relax/relax-bin/
+  ./waf configure --use-fftw --gmt-dir=/Users/walter/src/relax/relax-bin/ --proj-dir=/Users/walter/src/relax/relax-bin/ --fftw-dir=/Users/walter/src/relax/relax-bin/
 
 This will fail to link.  cd into build/ and redo the final link with
 
+  cd build
   gcc src/relax.f90.1.o src/types.f90.1.o src/ctfft.f.1.o src/fourier.f90.1.o src/green.f90.1.o src/okada/green_space.f90.1.o src/okada/dc3d.f.1.o src/elastic3d.f90.1.o src/friction3d.f90.1.o src/viscoelastic3d.f90.1.o src/writevtk.c.1.o src/writegrd4.2.c.1.o src/proj.c.1.o src/export.f90.1.o src/getdata.f.1.o src/getopt_m.f90.1.o src/input.f90.1.o src/mkl_dfti.f90.1.o -o /Users/walter/src/relax/relax/build/relax -Wl,-rpath,/Users/walter/src/relax/relax-bin//lib -Wl,-rpath,/Users/walter/src/relax/relax-bin//lib -Wl,-rpath,/Users/walter/src/relax/relax-bin//lib -L/Users/walter/src/relax/relax-bin//lib -L/Users/walter/src/relax/relax-bin//lib -L/Users/walter/src/relax/relax-bin//lib -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads -lhdf5 -lhdf5_hl -lz `gcc -print-file-name=libgomp.a` `gcc -print-file-name=libquadmath.a` `gcc -print-file-name=libgfortran.a` -static-libgcc
 
 
@@ -215,10 +217,11 @@ Install Proj 4.7.0 with the configure line
 
 Finally, configure relax with the line
 
-  python2.5 waf configure --use-fftw --gmt-dir=/home/walter/src/relax/relax-bin/ --proj-dir=/home/walter/src/relax/relax-bin/ --zero-flag=-finit-local-zero
+  python2.5 waf configure --use-fftw --gmt-dir=/home/walter/src/relax/relax-bin/ --proj-dir=/home/walter/src/relax/relax-bin/
 
 Build relax, cd into build/, and redo the link with a command like
 
+  cd build
   gcc src/relax.f90.1.o src/types.f90.1.o src/ctfft.f.1.o src/fourier.f90.1.o src/green.f90.1.o src/okada/green_space.f90.1.o src/okada/dc3d.f.1.o src/elastic3d.f90.1.o src/friction3d.f90.1.o src/viscoelastic3d.f90.1.o src/writevtk.c.1.o src/writegrd4.2.c.1.o src/proj.c.1.o src/export.f90.1.o src/getdata.f.1.o src/getopt_m.f90.1.o src/input.f90.1.o src/mkl_dfti.f90.1.o -o /home/walter/src/relax/relax/build/relax -Wl,-rpath,/home/walter/src/relax/relax-bin//lib -Wl,-rpath,/home/walter/src/relax/relax-bin//lib -Wl,-rpath,None -Wl,-Bstatic -Wl,-Bdynamic -L/home/walter/src/relax/relax-bin//lib -L/home/walter/src/relax/relax-bin//lib -LNone -lgmt -lnetcdf -lhdf5_hl -lhdf5 -lproj /usr/lib/libfftw3f.a /usr/lib/libfftw3f_threads.a /usr/lib/libz.a `gcc -print-file-name=libgfortran.a` `gcc -print-file-name=libgomp.a` -lm -lpthread -lrt -static-libgcc
 
 The changes to the default link line are
@@ -304,4 +307,5 @@ Finally, configure Relax
 
 This will fail to link.  cd into build/ and redo the final link with
 
+  cd build
   gcc src/relax.f90.1.o src/types.f90.1.o src/ctfft.f.1.o src/fourier.f90.1.o src/green.f90.1.o src/okada/green_space.f90.1.o src/okada/dc3d.f.1.o src/elastic3d.f90.1.o src/friction3d.f90.1.o src/viscoelastic3d.f90.1.o src/writevtk.c.1.o src/writegrd4.2.c.1.o src/proj.c.1.o src/export.f90.1.o src/getdata.f.1.o src/getopt_m.f90.1.o src/input.f90.1.o src/mkl_dfti.f90.1.o -o /home/buildbot/src/relax/relax/build/relax -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-Bstatic -Wl,-Bdynamic -L/home/buildbot/src/relax/relax-bin//lib -L/home/buildbot/src/relax/relax-bin//lib -L/home/buildbot/src/relax/relax-bin//lib -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads -lhdf5_hl -lhdf5 -lz -lm `gcc -print-file-name=libgfortran.a` `gcc -print-file-name=libgomp.a` -lpthread -lrt -static-libgcc
