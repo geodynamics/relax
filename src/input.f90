@@ -159,6 +159,9 @@ CONTAINS
        PRINT '("   Evaluates the deformation due to fault slip, surface loading")'
        PRINT '("   or inflation and the time series of postseismic relaxation")'
        PRINT '("   that follows due to fault creep or viscoelastic flow.")'
+       PRINT '("")'
+       PRINT '("see also: ""man relax""")'
+       PRINT '("")'
        RETURN
     END IF
     PRINT 2000
