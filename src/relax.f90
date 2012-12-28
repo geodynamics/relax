@@ -270,6 +270,7 @@ PROGRAM relax
   IF (in%isoutputrelax) THEN
      ALLOCATE(inter1(in%sx1+2,in%sx2,2),inter2(in%sx1+2,in%sx2,2),inter3(in%sx1+2,in%sx2,2),STAT=iostatus)
      IF (iostatus>0) STOP "could not allocate memory for postseismic displacement"
+     inter1=0;inter2=0;inter3=0;
   END IF
 
   v1=0;v2=0;v3=0;u1=0;u2=0;u3=0;gamma=0;t1=0;t2=0;t3=0
@@ -332,7 +333,7 @@ PROGRAM relax
                          in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,0)
   
   ! export equivalent body forces
-  IF (isoutput(in%skip,t,i,in%odt,oi,in%events(e)%time)) THEN
+  IF (isoutput(in%skip,t,0,in%odt,oi,in%events(e)%time)) THEN
 #ifdef GRD_EQBF
      IF (in%isoutputgrd) THEN
         CALL exportgrd(v1,v2,v3,in%sx1,in%sx2,in%sx3/2, &

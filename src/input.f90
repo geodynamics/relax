@@ -818,6 +818,7 @@ CONTAINS
 
              ALLOCATE(in%n(k)%patch(in%n(k)%px2,in%n(k)%px3),STAT=iostatus)
              IF (iostatus>0) STOP "could not allocate the fault patches"
+             in%n(k)%patch(:,:)=SLIPPATCH_STRUCT(0,0,0,0,0,0,0,0,0,0,0,0,TENSOR(0,0,0,0,0,0))
 
 #ifdef VTK
              ! export the afterslip segment in VTK format
@@ -859,6 +860,7 @@ CONTAINS
                in%inter%s(k)%x,in%inter%s(k)%y,in%inter%s(k)%z, &
                in%inter%s(k)%length,in%inter%s(k)%width, &
                in%inter%s(k)%strike,in%inter%s(k)%dip,in%inter%s(k)%rake
+          in%inter%s(k)%opening=0
 
           ! copy the input format for display
           in%inter%sc(k)=in%inter%s(k)
@@ -1023,6 +1025,7 @@ CONTAINS
                   in%events(e)%s(k)%length,in%events(e)%s(k)%width, &
                   in%events(e)%s(k)%strike,in%events(e)%s(k)%dip,in%events(e)%s(k)%rake, &
                   in%events(e)%s(k)%beta
+             in%events(e)%s(k)%opening=0
 
              SELECT CASE(iostatus)
              CASE (1:)

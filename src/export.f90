@@ -920,7 +920,8 @@ END SUBROUTINE exporteigenstrain
        WRITE (15,'("#        x1         x2         x3          yr        yz", &
                  & "       slip strike-slip  dip-slip   velocity     ss vel", &
                  & "     ds vel       taus      sig11      sig12      sig13      sig22      sig23      sig33")')
-       WRITE (15,'(18ES11.3E2)') ((n(k)%patch(i1,i2)%x1,n(k)%patch(i1,i2)%x3,n(k)%patch(i1,i2)%x3, &
+
+       WRITE (15,'(18ES11.3E2)') ((n(k)%patch(i1,i2)%x1,n(k)%patch(i1,i2)%x2,n(k)%patch(i1,i2)%x3, &
                                   n(k)%patch(i1,i2)%lx,n(k)%patch(i1,i2)%lz, &
                                   n(k)%patch(i1,i2)%slip, &
                                   n(k)%patch(i1,i2)%ss, &

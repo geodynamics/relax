@@ -312,7 +312,6 @@ CONTAINS
           patch(j2,j3)%x3=x3
           patch(j2,j3)%lx=yr
           patch(j2,j3)%lz=zr
-          patch(j2,j3)%sig=s
 
           ! discard out-of-bound locations
           IF (  (x1 .GT. DBLE(sx1/2-1)*dx1) .OR. (x1 .LT. -DBLE(sx1/2)*dx1) &
@@ -330,6 +329,7 @@ CONTAINS
        
           ! traction = sigma . n
           s=sig(i1,i2,i3)
+          patch(j2,j3)%sig=s
           t=s .tdot. n
 
           ! signed normal component
@@ -426,14 +426,14 @@ CONTAINS
        DO j3=1,px3
           ! loop in the strike direction
           DO j2=1,px2
-             ! cumulative creep
-             n(k)%patch(j2,j3)%slip=n(k)%patch(j2,j3)%slip+dt*n(k)%patch(j2,j3)%v
-
              ! cumulative strike-direction creep
              n(k)%patch(j2,j3)%ss=n(k)%patch(j2,j3)%ss+dt*n(k)%patch(j2,j3)%vss
 
              ! cumulative dip-direction creep
              n(k)%patch(j2,j3)%ds=n(k)%patch(j2,j3)%ds+dt*n(k)%patch(j2,j3)%vds
+
+             ! cumulative creep
+             n(k)%patch(j2,j3)%slip=(n(k)%patch(j2,j3)%ds**2+n(k)%patch(j2,j3)%ss**2)**0.5
           END DO
        END DO
 
