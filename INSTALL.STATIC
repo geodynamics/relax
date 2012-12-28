@@ -21,6 +21,18 @@ into the following structure
   share/pslib/PS_font_info.d
   share/proj_def.dat
 
+You can do this by creating this file structure on your own machine,
+added in the documentation, utilities, and examples, and put it in a
+tarball (e.g. files.tgz).  Then on each build machine you untar the
+tarball and rename the directory to the correct place
+(e.g. Relax-Linux32-1_0_4).  Copy the binary to that directory and
+remove unnecessary files (e.g. Linux and Mac do not need .bat files,
+and Windows does not need the .sh or .csh files where there are .bat
+files).  On Windows, also copy the cygwin dll's.  You can get the
+right ones from a previous release of Relax.  To create the final
+file, run tar, zip, or hdiutil (see the instructions for each
+machine).
+
 Then before running set the environment variables
 
   export PROJ_LIB=$PWD/share
@@ -78,6 +90,10 @@ Running ldd on the binary gives
 So you will have to include cygwin1.dll, cygfftw3f-3.dll, and
 cyggcc_s-1.dll with the binary.
 
+Create the binary package with a command like
+
+  zip -r ../Relax-Win-1_0_4.zip *
+
 --------
 Mac OS X
 --------
@@ -122,6 +138,7 @@ This will fail to link.  cd into build/ and redo the final link with
 
   cd build
   gcc src/relax.f90.1.o src/types.f90.1.o src/ctfft.f.1.o src/fourier.f90.1.o src/green.f90.1.o src/okada/green_space.f90.1.o src/okada/dc3d.f.1.o src/elastic3d.f90.1.o src/friction3d.f90.1.o src/viscoelastic3d.f90.1.o src/writevtk.c.1.o src/writegrd4.2.c.1.o src/proj.c.1.o src/export.f90.1.o src/getdata.f.1.o src/getopt_m.f90.1.o src/input.f90.1.o src/mkl_dfti.f90.1.o -o /Users/walter/src/relax/relax/build/relax -Wl,-rpath,/Users/walter/src/relax/relax-bin//lib -Wl,-rpath,/Users/walter/src/relax/relax-bin//lib -Wl,-rpath,/Users/walter/src/relax/relax-bin//lib -L/Users/walter/src/relax/relax-bin//lib -L/Users/walter/src/relax/relax-bin//lib -L/Users/walter/src/relax/relax-bin//lib -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads -lhdf5 -lhdf5_hl -lz `gcc -print-file-name=libgomp.a` `gcc -print-file-name=libquadmath.a` `gcc -print-file-name=libgfortran.a` -static-libgcc
+  strip relax
 
 
 Running otool -L on it gives
@@ -134,6 +151,10 @@ Running otool -L on it gives
 125.2.11)
 
 which are both provided by the system.
+
+Create the binary package with a command like
+
+  hdiutil create -srcfolder Relax-Mac-1_0_4 Relax-Mac-1_0_4.dmg
 
 ------------------
 Mac OS X with Fink
@@ -223,6 +244,7 @@ Build relax, cd into build/, and redo the link with a command like
 
   cd build
   gcc src/relax.f90.1.o src/types.f90.1.o src/ctfft.f.1.o src/fourier.f90.1.o src/green.f90.1.o src/okada/green_space.f90.1.o src/okada/dc3d.f.1.o src/elastic3d.f90.1.o src/friction3d.f90.1.o src/viscoelastic3d.f90.1.o src/writevtk.c.1.o src/writegrd4.2.c.1.o src/proj.c.1.o src/export.f90.1.o src/getdata.f.1.o src/getopt_m.f90.1.o src/input.f90.1.o src/mkl_dfti.f90.1.o -o /home/walter/src/relax/relax/build/relax -Wl,-rpath,/home/walter/src/relax/relax-bin//lib -Wl,-rpath,/home/walter/src/relax/relax-bin//lib -Wl,-rpath,None -Wl,-Bstatic -Wl,-Bdynamic -L/home/walter/src/relax/relax-bin//lib -L/home/walter/src/relax/relax-bin//lib -LNone -lgmt -lnetcdf -lhdf5_hl -lhdf5 -lproj /usr/lib/libfftw3f.a /usr/lib/libfftw3f_threads.a /usr/lib/libz.a `gcc -print-file-name=libgfortran.a` `gcc -print-file-name=libgomp.a` -lm -lpthread -lrt -static-libgcc
+  strip relax
 
 The changes to the default link line are
   1) Change gfortran to gcc and add in
@@ -246,6 +268,10 @@ Running ldd on the binary gives
         /lib/ld-linux.so.2 (0xb7798000)
 
 which are all things provided by the system.
+
+Create the binary package with a command like
+
+  tar -zcvf Relax-Linux64-1_0_4.tgz Relax-Linux64-1_0_4/
 
 --------------
 Linux Centos 5
@@ -309,3 +335,8 @@ This will fail to link.  cd into build/ and redo the final link with
 
   cd build
   gcc src/relax.f90.1.o src/types.f90.1.o src/ctfft.f.1.o src/fourier.f90.1.o src/green.f90.1.o src/okada/green_space.f90.1.o src/okada/dc3d.f.1.o src/elastic3d.f90.1.o src/friction3d.f90.1.o src/viscoelastic3d.f90.1.o src/writevtk.c.1.o src/writegrd4.2.c.1.o src/proj.c.1.o src/export.f90.1.o src/getdata.f.1.o src/getopt_m.f90.1.o src/input.f90.1.o src/mkl_dfti.f90.1.o -o /home/buildbot/src/relax/relax/build/relax -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-rpath,/home/buildbot/src/relax/relax-bin//lib -Wl,-Bstatic -Wl,-Bdynamic -L/home/buildbot/src/relax/relax-bin//lib -L/home/buildbot/src/relax/relax-bin//lib -L/home/buildbot/src/relax/relax-bin//lib -lgmt -lnetcdf -lproj -lfftw3f -lfftw3f_threads -lhdf5_hl -lhdf5 -lz -lm `gcc -print-file-name=libgfortran.a` `gcc -print-file-name=libgomp.a` -lpthread -lrt -static-libgcc
+  strip relax.exe
+
+Create the binary package with a command like
+
+  tar -zcvf Relax-Centos5-1_0_4.tgz Relax-Centos5-1_0_4/
