@@ -41,8 +41,6 @@ def options(opt):
     other=opt.add_option_group('Other Options')
     other.add_option('--openmp-flag',
                      help="C and Fortran compiler flag for OpenMP")
-    other.add_option('--zero-flag',
-                     help="Fortran compiler flag to initialize all values to zero")
     other.add_option('--cpp-flag',
                      help="Fortran compiler flag to run the C preprocessor")
     other.add_option('--use-ctfft', action='store_true', default=False,
@@ -53,25 +51,6 @@ def options(opt):
 def configure(cnf):
     cnf.load('compiler_c compiler_fc')
     
-    # # Check for -zero or -finit-local-zero.  We check it first, before
-    # # setting CFLAGS, because optimization can ruin this test.
-    # frag="program main\n  INTEGER :: foo\n  call exit(foo)\n" + "end program main\n"
-    # zero_flags=['-zero','-finit-local-zero']
-    # if cnf.options.zero_flag:
-    #     zero_flags=[cnf.options.zero_flag]
-    # found_zero=False
-    # for flag in zero_flags:
-    #     try:
-    #         cnf.check_fc(fragment=frag,msg="Checking zero option " + flag,
-    #                      fcflags=flag,uselib_store='zero',execute=True)
-    #     except:
-    #         continue
-    #     else:
-    #         found_zero=True
-    #         break
-    # if not found_zero:
-    #     cnf.fatal("Could not find an option for zero'ing initial values")
-
     # We set the flags here 
     if not cnf.env.CFLAGS:
         cnf.env.CFLAGS=['-O3']
@@ -233,6 +212,7 @@ def build(bld):
                         'src/getopt_m.f90',
                         'src/input.f90',
                         'src/mkl_dfti.f90'],
+                install_path='${PREFIX}/bin',
                 includes=['build'],
                 use=['gmt','proj','openmp','fftw','imkl','cpp','length'],
                 target='relax'
