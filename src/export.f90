@@ -584,6 +584,7 @@ CONTAINS
 
     OPEN (UNIT=15,FILE=filename,IOSTAT=iostatus,FORM="FORMATTED")
     IF (iostatus>0) STOP "could not open .xy file to export observation points"
+    WRITE (15,'("# x1(north) x2(east) x3(down) name(4-char)")')
     DO k=1,n
        WRITE (15,'(3ES11.4E1,X,a)') opts(k)%v1,opts(k)%v2,opts(k)%v3,ptsname(k)
     END DO
