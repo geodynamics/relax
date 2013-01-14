@@ -7,7 +7,18 @@ HomePage: http://www.geodynamics.org/cig/software/relax/
 License: GPL
 Description: Semi-analytic solver for earthquake modeling
 Source-MD5: 11c517fe9060bc49f9db20d9d2744abd
-BuildDepends: fftw3, gmt-dev, gmt-shlibs, gmt, proj
+BuildDepends: <<
+	fftw3, 
+	fftw3-shlibs,
+	gcc47-shlibs,
+	gmt, 
+	gmt-dev, 
+	gmt-shlibs, 
+	netcdf-c7-shlibs,
+	proj,
+	proj-shlibs
+<<
+DocFiles: COPYING INSTALL relax.tex
 CompileScript: <<
 #! /bin/sh -ev
 ./waf configure --use-fftw --fftw-dir=%p --proj-dir=%p --gmt-dir=%p
@@ -15,10 +26,6 @@ CompileScript: <<
 <<
 InstallScript: <<
 #! /bin/sh -ev
-/usr/bin/install -d -m 755 %i/share/doc/%n
-/usr/bin/install -m 644 ./COPYING %i/share/doc/%n/COPYING
-/usr/bin/install -m 644 ./INSTALL %i/share/doc/%n/INSTALL
-/usr/bin/install -m 644 ./relax.tex %i/share/doc/%n/relax.tex
 /usr/bin/install -d -m 755 %i/bin
 /usr/bin/install -m 755 ./build/relax %i/bin/relax
 /usr/bin/install -d -m 755 %i/share/man/man1
