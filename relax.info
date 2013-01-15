@@ -7,16 +7,18 @@ HomePage: http://www.geodynamics.org/cig/software/relax/
 License: GPL
 Description: Semi-analytic solver for earthquake modeling
 Source-MD5: 11c517fe9060bc49f9db20d9d2744abd
-BuildDepends: <<
-	fftw3, 
+Depends: <<
 	fftw3-shlibs,
 	gcc47-shlibs,
-	gmt, 
-	gmt-dev, 
 	gmt-shlibs, 
 	netcdf-c7-shlibs,
-	proj,
 	proj-shlibs
+<<
+BuildDepends: <<
+	fftw3, 
+	gmt, 
+	gmt-dev, 
+	proj
 <<
 DocFiles: COPYING INSTALL relax.tex
 CompileScript: <<
