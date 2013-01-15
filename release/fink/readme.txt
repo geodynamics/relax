@@ -21,3 +21,5 @@ fink -m --build-as-nobody rebuild relax
 # check out the content of the package
 dpkg --contents /sw/fink/dists/local/main/binary-darwin-x86_64/relax_1.0.4-1_darwin-x86_64.deb 
 
+# check the details of the fink package
+dpkg --info /sw/fink/dists/local/main/binary-darwin-x86_64/relax_1.0.4-1_darwin-x86_64.deb
