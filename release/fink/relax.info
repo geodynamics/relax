@@ -1,7 +1,7 @@
 Package: relax
 Version: 1.0.4
 Revision: 1
-Source: http://www.geodynamics.org/cig/software/relax/fink/Relax-MacFinkInstall-1_0_4.tar.gz
+Source: http://www.geodynamics.org/cig/software/relax/Relax-MacFinkInstall-1_0_4.tar.gz
 Maintainer: Sylvain Barbot <sbarbot@ntu.edu.sg>
 HomePage: http://www.geodynamics.org/cig/software/relax/
 License: GPL
