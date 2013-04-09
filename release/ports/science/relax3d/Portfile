@@ -24,7 +24,7 @@ use_bzip2                 yes
 checksums                 rmd160 ed82d798758783657f54cd6d5cc6f274fa381793 \
                           sha256 1b5dd4914256a39c6fb64bc2fd29215f8f0d188c57a057c4c5fcc06a4068e0a9
 
-depends_build-append      port:gcc47
+#depends_build-append      port:gcc47
 depends_lib-append        port:fftw-3-single \
                           port:gcc47 \
                           port:gmt4 \
@@ -32,16 +32,13 @@ depends_lib-append        port:fftw-3-single \
                           port:python27
 depends_run-append        port:gmt4 \
                           port:proj47 \
-                          port:fftw-3-single \
-                          port:gcc47
+                          port:fftw-3-single
 
 # gmt4 is not universal
 universal_variant no
 
-require_active_variants fftw-3-single gcc47
+default_variants          +gcc47
 
-configure.cc              gcc-mp-4.7
-configure.fc              gfortran-mp-4.7
 configure.ldflags-append  "-L${prefix}/lib -lfftw3 -lfftw3_threads -lfftw3f -lfftw3f_threads"
 
 configure.args            --use-fftw \
@@ -60,39 +57,26 @@ destroot {
         xinstall -m 755 ${worksrcpath}/man/man1/relax.1 ${destroot}${prefix}/share/man/man1/relax.1
 }
 
-variant gcc44 description {build with gfortran from gcc46} conflicts gcc45 gcc46 gcc47 {
-    configure.cc              gcc-mp-4.4
-    configure.fc              gfortran-mp-4.4
-    depends_build-delete      port:gcc47
-    depends_lib-delete        port:gcc47
-    depends_run-delete        port:gcc47
-    depends_build-append      port:gcc44
-    depends_lib-append        port:gcc44
-    depends_run-append        port:gcc44
-    require_active_variants   fftw-3-single gcc44
-}
-
-variant gcc45 description {build with gfortran from gcc45} conflicts gcc44 gcc46 gcc47 {
+variant gcc45 description {build with gfortran from gcc45} conflicts gcc46 gcc47 {
     configure.cc              gcc-mp-4.5
     configure.fc              gfortran-mp-4.5
-    depends_build-delete      port:gcc47
-    depends_lib-delete        port:gcc47
-    depends_run-delete        port:gcc47
     depends_build-append      port:gcc45
     depends_lib-append        port:gcc45
-    depends_run-append        port:gcc45
     require_active_variants   fftw-3-single gcc45
 }
 
-variant gcc46 description {build with gfortran from gcc46} conflicts gcc44 gcc45 gcc47 {
+variant gcc46 description {build with gfortran from gcc46} conflicts gcc45 gcc47 {
     configure.cc              gcc-mp-4.6
     configure.fc              gfortran-mp-4.6
-    depends_build-delete      port:gcc47
-    depends_lib-delete        port:gcc47
-    depends_run-delete        port:gcc47
     depends_build-append      port:gcc46
     depends_lib-append        port:gcc46
-    depends_run-append        port:gcc46
     require_active_variants   fftw-3-single gcc46
 }
 
+variant gcc47 description {build with gfortran from gcc47} conflicts gcc45 gcc46 {
+    configure.cc              gcc-mp-4.7
+    configure.fc              gfortran-mp-4.7
+    depends_build-append      port:gcc47
+    depends_lib-append        port:gcc47
+    require_active_variants   fftw-3-single gcc47
+}
