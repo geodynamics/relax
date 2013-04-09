@@ -28,7 +28,7 @@ GRDFILEC1=$ITEMC-east.grd
 GRDFILEC2=$ITEMC-north.grd
 GRDFILEC3=$ITEMC-up.grd
 
-if [ -e $ITEMA ]; then
+if [ -e $(dirname $ITEMA)/$(basename $ITEMA .grd).grd ]; then
 	if [ "$ITEMB" == "0" ]; then
 		echo ${self}: copying to $(dirname $ITEMC), file $(basename $ITEMC)
 		cp $ITEMA $ITEMC
