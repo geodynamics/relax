@@ -105,7 +105,7 @@ if [ -e $XYZFILE3 ]; then
 		fi
 	fi
 
-	echo $self": Created files "$GRDFILE1", "$GRDFILE2", "$GRDFILE3
+	echo $self": Created files "$(basename $GRDFILE1)", "$(basename $GRDFILE2)", "$(basename $GRDFILE3)
 else
 	# single file
 	XYZFILE=$WDIR/$(basename $ITEM .xyz).xyz
