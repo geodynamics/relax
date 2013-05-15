@@ -49,7 +49,7 @@ usage(){
 my_gmt(){
 
 	if [ -e "$U3" ]; then
-		grdimage $U3 -R$bds -J${PROJ} \
+		grdimage $U3 -R$bds -J${PROJ} -Q \
 		    $AXIS \
 		    -K -C$colors -P -X1.2i -Y${YSHIFT}i $illumination \
 		    > $PSFILE
@@ -253,7 +253,7 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 			unit=`grdinfo $U3 | grep "Remark" | awk -F ": " '{print $3}'`
 		fi
 
-		colors=$WDIR/palette.cpt
+		colors=$ODIR/palette.cpt
 		if [ "$pset" != "1" ]; then
 			# cool, copper, gebco, globe, gray, haxby, hot, jet, no_green, ocean
 			# polar, rainbow, red2green, relief, topo, sealand, seis, split, wysiwyg  
