@@ -2095,10 +2095,11 @@ CONTAINS
                  omega((x2-y)/W,beta)* &
                  mu*e%l(i)%slip
 
+             period=e%l(i)%period
+
              IF (israte) THEN
                 IF (0 .NE. period) THEN
                    ! surface tractions rate
-                   period=e%l(i)%period
                    phi=e%l(i)%phase
 
                    t3(i1,i2)=REAL(t3(i1,i2)-amp*(sin(2*pi*(t+Dt)/period+phi)-sin(2*pi*t/period+phi)))
