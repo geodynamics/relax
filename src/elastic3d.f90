@@ -2102,7 +2102,7 @@ CONTAINS
                    ! surface tractions rate
                    phi=e%l(i)%phase
 
-                   t3(i1,i2)=REAL(t3(i1,i2)-amp*(sin(2*pi*(t+Dt)/period+phi)-sin(2*pi*t/period+phi)))
+                   t3(i1,i2)=REAL(t3(i1,i2)-amp*(sin(2*pi*(t+Dt)/period+phi)-sin(2*pi*t/period+phi))/Dt)
                 END IF
              ELSE
                 IF (e%l(i)%period .LE. 0) THEN
