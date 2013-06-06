@@ -44,7 +44,7 @@ def main():
     isvscale=False
  
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hb:d:n:r:w:", ["help","bounds=","ddir=","network=","relax","range=","weight="])
+        opts, args = getopt.getopt(sys.argv[1:], "hb:d:n:r:w:", ["help","bounds=","ddir=","network=","relax","range=","vscale=","weight="])
     except getopt.GetoptError, err:
         # print help information and exit:
         print >> sys.stderr, 'obsres.py:', str(err) # will print something like "option -a not recognized"
