@@ -199,18 +199,19 @@ MODULE types
      TYPE(EVENT_STRUC), DIMENSION(:), ALLOCATABLE :: events
 
      ! overrides output to formats
+     LOGICAL :: isoutputgrd=.TRUE.
      LOGICAL :: isoutputproj=.TRUE.
      LOGICAL :: isoutputrelax=.TRUE.
+     LOGICAL :: isoutputstress=.TRUE.
      LOGICAL :: isoutputtxt=.TRUE.
      LOGICAL :: isoutputvtk=.TRUE.
      LOGICAL :: isoutputvtkrelax=.FALSE.
-     LOGICAL :: isoutputgrd=.TRUE.
      LOGICAL :: isoutputxyz=.TRUE.
-     LOGICAL :: isoutputstress=.TRUE.
 
      ! other options
      LOGICAL :: isdryrun=.FALSE.
      LOGICAL :: ishelp=.FALSE.
+     LOGICAL :: isversion=.FALSE.
 
   END TYPE SIMULATION_STRUC
 

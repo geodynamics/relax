@@ -57,7 +57,7 @@ CONTAINS
 !$  INTEGER :: omp_get_num_procs,omp_get_max_threads
     REAL*8 :: dummy,dum1,dum2
     REAL*8 :: minlength,minwidth
-    TYPE(OPTION_S) :: opts(12)
+    TYPE(OPTION_S) :: opts(13)
 
     INTEGER :: k,iostatus,i,e
 
@@ -76,11 +76,12 @@ CONTAINS
     opts( 5)=OPTION_S("no-grd-output",.FALSE.,CHAR(24))
     opts( 6)=OPTION_S("no-xyz-output",.FALSE.,CHAR(25))
     opts( 7)=OPTION_S("no-stress-output",.FALSE.,CHAR(26))
-    opts( 8)=OPTION_S("with-stress-output",.FALSE.,CHAR(27))
-    opts( 9)=OPTION_S("with-vtk-output",.FALSE.,CHAR(28))
-    opts(10)=OPTION_S("with-vtk-relax-output",.FALSE.,CHAR(29))
-    opts(11)=OPTION_S("dry-run",.FALSE.,CHAR(30))
-    opts(12)=OPTION_S("help",.FALSE.,'h')
+    opts( 8)=OPTION_S("version",.FALSE.,CHAR(27))
+    opts( 9)=OPTION_S("with-stress-output",.FALSE.,CHAR(28))
+    opts(10)=OPTION_S("with-vtk-output",.FALSE.,CHAR(29))
+    opts(11)=OPTION_S("with-vtk-relax-output",.FALSE.,CHAR(30))
+    opts(12)=OPTION_S("dry-run",.FALSE.,CHAR(31))
+    opts(13)=OPTION_S("help",.FALSE.,'h')
 
     DO
        ch=getopt("h",opts)
@@ -106,18 +107,21 @@ CONTAINS
           ! option no-xyz-output
           in%isoutputxyz=.FALSE.
        CASE(CHAR(26))
-          ! option stress output
+          ! option no-stress-output
           in%isoutputstress=.FALSE.
        CASE(CHAR(27))
-          ! option dry-run
-          in%isoutputstress=.TRUE.
+          ! option version
+          in%isversion=.TRUE.
        CASE(CHAR(28))
-          ! option with-output-vtk
-          in%isoutputvtk=.TRUE.
+          ! option with-stress-output
+          in%isoutputstress=.TRUE.
        CASE(CHAR(29))
-          ! option with-output-vtk-relax
-          in%isoutputvtkrelax=.TRUE.
+          ! option with-vtk-output
+          in%isoutputvtk=.TRUE.
        CASE(CHAR(30))
+          ! option with-vtk-relax-output
+          in%isoutputvtkrelax=.TRUE.
+       CASE(CHAR(31))
           ! option dry-run
           in%isdryrun=.TRUE.
        CASE('h')
@@ -134,6 +138,11 @@ CONTAINS
        END SELECT
     END DO
 
+    IF (in%isversion) THEN
+       PRINT '("relax version 1.0.5, compiled on ",a)', __DATE__
+       PRINT '("")'
+       RETURN
+    END IF
     IF (in%ishelp) THEN
        PRINT '("usage:")'
        PRINT '("relax [-h] [--dry-run] [--help] [--no-grd-output] [--no-proj-output]")' 
@@ -151,6 +160,7 @@ CONTAINS
        PRINT '("   --no-txt-output         cancel output in text format")'
        PRINT '("   --no-vtk-output         cancel output in Paraview VTK format")'
        PRINT '("   --no-xyz-output         cancel output in GMT xyz format")'
+       PRINT '("   --version               print version number and exit")'
        PRINT '("   --with-stress-output    export stress tensor")'
        PRINT '("   --with-vtk-output       export output in Paraview VTK format")'
        PRINT '("   --with-vtk-relax-output export relaxation to VTK format")'

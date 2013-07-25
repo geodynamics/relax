@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright 2007-2012, Sylvain Barbot
+! Copyright 2007-2013, Sylvain Barbot
 !
 ! This file is part of RELAX
 !
@@ -176,6 +176,7 @@
   !!              and allow scaling of computed time steps.        <br>
   !! (04-26-11) - include command-line arguments
   !! (11-04-11) - compatible with gfortran                         <br>
+  !! (07-25-13) - include cylindrical and spherical ductile zones  <br>
   !!
   !! \todo 
   !!   - homogenize VTK output so that geometry of events match event index
@@ -187,6 +188,7 @@
   !!   - check the fully-relaxed afterslip for uniform stress change
   !!   - include topography of parameter interface
   !!   - export afterslip output in VTK legacy format (binary)
+  !!   - export ductile zones for cylindrical and spherical geometries
   !------------------------------------------------------------------------
 PROGRAM relax
 
