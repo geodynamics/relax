@@ -227,7 +227,7 @@ CONTAINS
        TYPE(WEAK_STRUCT), INTENT(IN), DIMENSION(nz) :: zones
        REAL*8, INTENT(IN) :: x1,x2,x3,beta
 
-       REAL*8 :: dg,x,y,z,L,W,D,strike,dip,LM
+       REAL*8 :: dg,x,y,z,L,W,D,strike,dip,LM,r,rho
        REAL*8 :: cstrike,sstrike,cdip,sdip, &
                  xr,yr,zr,x2r,Wp,Lp,Dp,x1s,x2s,x3s
        INTEGER :: i
@@ -276,9 +276,27 @@ CONTAINS
           x2s= sstrike*x1 +cstrike*x2
           x3s= sdip   *x2r+cdip   *x3
 
-          dgammadot0=dgammadot0+omega((x1s-xr)/D,beta) &
-                               *omega((x2s-yr)/W,beta) &
-                               *omega((x3s-zr)/L,beta)*dg
+          IF (D.GE.0 .AND. W.GE.0 .AND. L.GE.0) THEN
+             dgammadot0=dgammadot0+omega((x1s-xr)/D,beta) &
+                                  *omega((x2s-yr)/W,beta) &
+                                  *omega((x3s-zr)/L,beta)*dg
+          ELSE IF (D.LT.0 .AND. W.LT.0 .AND. L.LT.0) THEN
+             ! spherical ductile zone
+             r=SQRT(((x1s-xr)/D)**2+((x2s-yr)/W)**2+((x3s-zr)/L)**2)
+             dgammadot0=dgammadot0+omega(r,beta)*dg
+          ELSE IF (D.LT.0 .AND. W.LT.0) THEN
+             ! cylindrical ductile zone
+             rho=SQRT(((x1s-xr)/D)**2+((x2s-yr)/W)**2)
+             dgammadot0=dgammadot0+omega(rho,beta)*omega((x3s-zr)/L,beta)*dg
+          ELSE IF (D.LT.0 .AND. L.LT.0) THEN
+             ! cylindrical ductile zone
+             rho=SQRT(((x1s-xr)/D)**2+((x3s-zr)/L)**2)
+             dgammadot0=dgammadot0+omega(rho,beta)*omega((x2s-yr)/W,beta)*dg
+          ELSE IF (W.LT.0 .AND. L.LT.0) THEN
+             ! cylindrical ductile zone
+             rho=SQRT(((x2s-yr)/W)**2+((x3s-zr)/L)**2)
+             dgammadot0=dgammadot0+omega(rho,beta)*omega((x1s-xr)/D,beta)*dg
+          ENDIF
        END DO
 
     END FUNCTION dgammadot0
