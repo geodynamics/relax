@@ -44,6 +44,9 @@ cancel output in Paraview VTK format
 .B \-\-no-xyz-output
 cancel output in GMT xyz format
 .TP
+.B \-\-version
+display version number and exit (no input file required)
+.TP
 .B \-\-with-stress-output
 export stress tensor
 .TP
@@ -114,7 +117,7 @@ All output files are written to the specified directory.
 
 .TP
 .B elastic parameters and the buoyancy wavelength (lambda, mu, gamma)
-The uniform Lame parameter (lambda), shear modulus (mu) and the buoyancy wavelength (gamma=(1-nu)*rho*g/mu), where nu is Poisson's ration, rho is the density of the crust, g is the gravity acceleration. For the Earth, typical values are lambda=mu=30 GPa, and gamma = 8.33e-7 /m = 8.33e-4 /km
+The uniform Lame parameter (lambda), shear modulus (mu) and the buoyancy wavelength (gamma=(1-nu)*rho*g/mu), where nu is Poisson's ration, rho is the density of the crust, g is the gravity acceleration. For the Earth, typical values are lambda=mu=30 GPa, and gamma = 8.33e-7 /m = 8.33e-4 /km. All physical quantities are assumed in SI units (meters, Pascals, seconds).
 
 .TP
 .B integration time and output time parameters (T,dt,a)
@@ -509,6 +512,10 @@ The input is defined as follows:
 # nb dgammadot0 x1 x2 x3 length width thickness strike dip
    1         -1  0  0  0      1     1         1      0  90
 .fi
+
+.SH "PHYSICAL UNITS"
+
+All physical quantities are assumed to be in SI units (meters, Pascals, seconds). To setup your model using years instead of seconds, you can change the physical quantities accordingly. For example, in a simple viscoelastic model with a viscosity of 1E18 Pa s and a rigidity of 3E10 Pa, setting the fluidity (gammadot0) to 3E-8 or to 1 corresponds to using seconds or years, respectively. Time units of fluidity and time interval should match. For stress, to use MPa instead of Pa, define all physical quantities in MPa, including for example the friction parameter (a-b)sigma, the Lame parameters (lambda and mu), and the surface tractions (t3). Units of position, dimension and slip should match, otherwise stress values become biased. For example, using fault displacement in meters and dimension in kilometers introduces a factor of 1E3 in the stress which can be compensated for by multiplying the Lame parameters by a factor of 1E-3 and the buoyancy parameter (Gamma) by a factor of 1E3.
 
 .SH "SEE ALSO"
 
