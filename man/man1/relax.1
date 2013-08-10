@@ -270,7 +270,7 @@ Surface loads are surface tractions in the vertical direction coming from the lo
 
 # nb x1 x2 length width t3 T phi
 
-where nb is an index running from 1 to nsl, x1, x2, length and width define the position and dimension of the load, t3 is in units of stress (force/surface), positive down, and T can be a period (T > 0 implies stress=t3*sin(2 pi/T + phi) or not (T <= 0 implies stress = t3 H(t), with H(t) the Heaviside function).
+where nb is an index running from 1 to nsl, x1, x2, length and width define the position and dimension of the load, t3 is in units of stress (force/surface), positive down, and T can be a period (T != 0 implies stress=t3*sin(2 pi/T + phi) or not (T = 0 implies stress = t3 H(t), with H(t) the Heaviside function).
 
 .TP
 .B time of next event (te)

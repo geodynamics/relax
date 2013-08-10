@@ -648,7 +648,7 @@ PROGRAM relax
      CALL equivalentbodyforce(moment,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,v1,v2,v3,t1,t2,t3)
 
      ! add time-dependent surface loads
-     CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,Dt,t3,rate=.true.)
+     CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,Dt,t3,rate=.TRUE.)
 
      ! export equivalent body forces
      IF (isoutput(in%skip,t,i,in%odt,oi,in%events(e)%time)) THEN
