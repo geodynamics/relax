@@ -2074,6 +2074,9 @@ CONTAINS
        x=e%l(i)%x
        y=e%l(i)%y
 
+       period=e%l(i)%period
+       phi=e%l(i)%phase
+
        L=e%l(i)%length
        W=e%l(i)%width
 
@@ -2095,19 +2098,17 @@ CONTAINS
                  omega((x2-y)/W,beta)* &
                  e%l(i)%slip
 
-             period=e%l(i)%period
-
              IF (israte) THEN
+                ! surface tractions rate
                 IF (0 .NE. period) THEN
-                   ! surface tractions rate
-                   phi=e%l(i)%phase
-
                    t3(i1,i2)=REAL(t3(i1,i2)-amp*(sin(2*pi*(t+Dt)/period+phi)-sin(2*pi*t/period+phi))/Dt)
                 END IF
              ELSE
-                IF (e%l(i)%period .LE. 0) THEN
-                   ! surface tractions
+                ! surface tractions
+                IF (period .EQ. 0) THEN
                    t3(i1,i2)=REAL(t3(i1,i2)-amp)
+                ELSE
+                   t3(i1,i2)=REAL(t3(i1,i2)-amp*sin(2*pi*t/period+phi))
                 END IF
              END IF
           END DO
