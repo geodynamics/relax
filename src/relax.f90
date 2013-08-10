@@ -246,7 +246,7 @@ PROGRAM relax
   IF (in%isdryrun) THEN
      PRINT '("dry run: abort calculation")'
   END IF
-  IF (in%isdryrun .OR. in%ishelp) THEN
+  IF (in%isdryrun .OR. in%ishelp .OR. in%isversion) THEN
      ! exit program
      GOTO 100
   END IF
