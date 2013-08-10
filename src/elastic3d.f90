@@ -2093,7 +2093,7 @@ CONTAINS
 
              amp=omega((x1-x)/L,beta)* &
                  omega((x2-y)/W,beta)* &
-                 mu*e%l(i)%slip
+                 e%l(i)%slip
 
              period=e%l(i)%period
 

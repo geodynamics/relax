@@ -1239,7 +1239,7 @@ CONTAINS
                STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the load list"
           PRINT 2000
-          PRINT '(a)',"t3 in units of force/surface/rigidity, positive down"
+          PRINT '(a)',"t3 in units of force/surface, positive down"
           PRINT '(a)',"T>0 for t3 sin(2pi/T+phi), T<=0 for t3 H(t)"
           PRINT '(a)',"no.       xs       ys   length    width       t3        T      phi"
           PRINT 2000
