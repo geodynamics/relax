@@ -6,18 +6,19 @@ cmdline=$*
 trap 'echo $self: Some errors occurred. Exiting.; exit' ERR
 
 usage(){
-	echo "usage: $self [-r gpsr.txt] [-t time0] [-t time1] gps1.txt [... gpsN.txt]"
+	echo "usage: $self [-r gpsr.txt] [-t time0/../time1] gps1.txt [... gpsN.txt]"
 	echo or
-	echo "       $self -t 0 -t 7 gp*.txt"
+	echo "       $self -t 0/7 gp*.txt"
 	echo  
 	echo removes the coseismic component from the time series gps1.txt ... gpsN.txt
 	echo and optionally outputs the displacement relative to station gpsr
 	echo ""
 	echo options:
-	echo    -r  gps1.txt compute the displacements relative to station gps1.txt
-	echo    -t  time     remove a coseismic displacement at given time [0].
+	echo    -r  gps1.txt  compute the displacements relative to station gps1.txt
+	echo    -t  time      remove coseismic displacements at given times t1/../t3 [0].
 	echo 
 	echo example:  obsrelax.sh "output{1,2,3,4,5,6,7}/{lae1,lae2,lae3,lae4,law1,law2,law3,law4,oldw,oldd,meek,rich,sanh}"
+	echo 
 }
 
 stripoffset(){
@@ -26,7 +27,7 @@ stripoffset(){
 	if [ "$rset" != "1" ];then
 		EVENTS=`grep -v "#" $IFILE | \
 			awk -v t="$EPOCHS" 'BEGIN{ \
-			split(t,time," "); \
+			split(t,time,"/"); \
 			}{ \
 			for (t in time){ \
 				if (time[t]<=$1){ \
@@ -88,10 +89,10 @@ while getopts "r:t:" flag
 do
   case "$flag" in
     r) rset=1;RFILE=$OPTARG;;
-    t) tset=1;EPOCHS="$EPOCHS $OPTARG";;
+    t) tset=1;EPOCHS="$OPTARG";;
   esac
 done
-for i in $rset $EPOCHS; do
+for i in $rset $tset; do
         shift;shift
 done
 
