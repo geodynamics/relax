@@ -58,7 +58,10 @@ $WDIR
 # observation points are GPS points, for example, where time series of
 # displacement are output.
 # number of observation points
-0
+2
+# i NAME x1 x2 x3
+  1 GPS1  1  1  0
+  2 GPS2  1  2  0
 # stress observation segments are patches where Coulomb and other
 # stress components are evaluated.
 # number of stress observation segments
