@@ -80,7 +80,7 @@ def seg2flt(index,x1o,x2o,x3o,L,W,strike,dip,rake,lo,wo,alphal,alphaw):
             x3=x3o+i*lt*Sv[2]+sum(w.take(range(j+1)))*Dv[2]
             index=index+1
             savetxt(stdout,[[index,x1,x2,x3,lt,w[j+1],strike,dip,rake]],delimiter=" ",fmt="%4i %8.4f %8.4f %8.4f %8.3f %8.3f %8.2f %5.2f %4.1f")
-            
+
     return index
     
 def main():
@@ -127,3 +127,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
