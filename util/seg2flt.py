@@ -1,4 +1,4 @@
-#!/opt/local/bin/python2
+#!/opt/local/bin/python
 
 """
 Created on Mon Jul  2 06:15:53 2012
@@ -104,7 +104,7 @@ def main():
         fid=stdin
     else:
         fname=argv[1]
-        print fname, len(argv)
+        #print fname, len(argv)
         #if not path.isfile(fname):
         #    raise ValueError("invalid file name: " + fname)
         fid=open(fname, 'r')
