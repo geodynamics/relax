@@ -228,7 +228,7 @@ PROGRAM relax
   REAL*4, DIMENSION(:,:), ALLOCATABLE :: t1,t2,t3
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: inter1,inter2,inter3
   TYPE(TENSOR), DIMENSION(:,:,:), ALLOCATABLE :: tau,sig,moment
-  
+
 #ifdef FFTW3_THREADS
   CALL sfftw_init_threads(iret)
 #ifdef _OPENMP

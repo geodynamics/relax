@@ -38,13 +38,12 @@ CONTAINS
   !! OUTPUT:
   !! @param in
   !---------------------------------------------------------------------
-  SUBROUTINE init(in,unit)
+  SUBROUTINE init(in)
     USE types
     USE export
     USE getopt_m
 
     TYPE(SIMULATION_STRUC), INTENT(OUT) :: in
-    INTEGER, OPTIONAL, INTENT(INOUT) :: unit
 
     CHARACTER :: ch
     CHARACTER(256) :: dataline
@@ -53,20 +52,13 @@ CONTAINS
     CHARACTER(3) :: digit
     CHARACTER(4) :: digit4
 #endif
-    INTEGER :: iunit
+    INTEGER :: iunit,noptions
 !$  INTEGER :: omp_get_num_procs,omp_get_max_threads
     REAL*8 :: dummy,dum1,dum2
     REAL*8 :: minlength,minwidth
     TYPE(OPTION_S) :: opts(13)
 
     INTEGER :: k,iostatus,i,e
-
-    ! default is standard input
-    IF (.NOT. PRESENT(unit)) THEN
-       iunit=5
-    ELSE
-       iunit=unit
-    END IF
 
     ! parse the command line for options
     opts( 1)=OPTION_S("no-proj-output",.FALSE.,CHAR(20))
@@ -83,6 +75,7 @@ CONTAINS
     opts(12)=OPTION_S("dry-run",.FALSE.,CHAR(31))
     opts(13)=OPTION_S("help",.FALSE.,'h')
 
+    noptions=0;
     DO
        ch=getopt("h",opts)
        SELECT CASE(ch)
@@ -136,6 +129,7 @@ CONTAINS
           WRITE_DEBUG_INFO
           STOP 3
        END SELECT
+       noptions=noptions+1
     END DO
 
     IF (in%isversion) THEN
@@ -234,6 +228,15 @@ CONTAINS
     END IF
 #endif
     PRINT 2000
+
+    IF (noptions .LT. COMMAND_ARGUMENT_COUNT()) THEN
+       iunit=25
+       CALL GET_COMMAND_ARGUMENT(noptions+1,filename)
+       OPEN (UNIT=iunit,FILE=filename,IOSTAT=iostatus)
+    ELSE
+       ! default is standard input
+       iunit=5
+    END IF
 
     PRINT '(a)', "grid dimension (sx1,sx2,sx3)"
     CALL getdata(iunit,dataline)
