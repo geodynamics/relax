@@ -54,7 +54,9 @@ $WDIR
 # observation planes are arbitrary planes where the inelastic strain rate
 # is sampled for output.
 # number of observation planes
-0
+1
+# n x1 x2 x3 length width strike dip
+  1  0 -3  0      6     5     90  90
 # observation points are GPS points, for example, where time series of
 # displacement are output.
 # number of observation points

@@ -775,7 +775,7 @@ PROGRAM relax
            END IF
         END IF
 #endif
-        !CALL exporteigenstrain(gamma,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
+        CALL exporteigenstrain(gamma,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
 #ifdef GRD
         IF (in%isoutputgrd) THEN
            IF (in%isoutputrelax) THEN
