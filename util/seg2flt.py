@@ -1,4 +1,4 @@
-#!/opt/local/bin/python
+#!/usr/bin/env python
 
 """
 Created on Mon Jul  2 06:15:53 2012
@@ -33,7 +33,7 @@ from sys import argv,exit,stdin,stdout
 def usage():
     print 'seg2flt.py converts a segment definition to finely sampled fault file'
     print ''
-    print 'usage: seg2flt.py file.seg'
+    print 'usage: seg2flt.py [--with-slip] file.seg'
     print ''
     print 'or from the standard input:'
     print ''
@@ -43,7 +43,7 @@ def usage():
     print ''
     exit()
     
-def seg2flt(index,x1o,x2o,x3o,L,W,strike,dip,rake,lo,wo,alphal,alphaw):
+def seg2flt(index,x1o,x2o,x3o,L,W,strike,dip,rake,lo,wo,alphal,alphaw,slip=None):
     
     d2r=pi/180
     # create wi
@@ -70,7 +70,7 @@ def seg2flt(index,x1o,x2o,x3o,L,W,strike,dip,rake,lo,wo,alphal,alphaw):
     for j in range(Nw):
         lt=lo*alphal**j
         Nl=int(ceil(L/lt))
-        
+
         lt=L/Nl
         
         # loop in strike direction
@@ -79,51 +79,68 @@ def seg2flt(index,x1o,x2o,x3o,L,W,strike,dip,rake,lo,wo,alphal,alphaw):
             x2=x2o+i*lt*Sv[1]+sum(w.take(range(j+1)))*Dv[1]
             x3=x3o+i*lt*Sv[2]+sum(w.take(range(j+1)))*Dv[2]
             index=index+1
-            savetxt(stdout,[[index,x1,x2,x3,lt,w[j+1],strike,dip,rake]],delimiter=" ",fmt="%4i %8.4f %8.4f %8.4f %8.3f %8.3f %8.2f %5.2f %4.1f")
+            if slip is None:
+                savetxt(stdout,[[index,x1,x2,x3,lt,w[j+1],strike,dip,rake]],delimiter=" ",fmt="%4i %8.4f %8.4f %8.4f %8.3f %8.3f %8.2f %5.2f %4.1f")
+            else:
+                savetxt(stdout,[[index,slip,x1,x2,x3,lt,w[j+1],strike,dip,rake]],delimiter=" ",fmt="%4i %+10.3e %8.4f %8.4f %8.4f %8.3f %8.3f %8.2f %5.2f %4.1f")
 
     return index
     
 def main():
 
     try:
-        opts, args = getopt.getopt(argv[1:], "h", ["help"])
+        opts, args = getopt.getopt(argv[1:], "h", ["help","with-slip"])
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
         usage()
         exit(2)
 
+    # default parameters
+    isWithSlip=False
+
+    offset=0
     for o, a in opts:
         if o in ("-h","--help"):
             usage()
             exit()
+	elif o == "--with-slip":
+            isWithSlip=True
+            offset=offset+1
         else:
             assert False, "unhandled option"
     
-    if 1==len(argv):
+    if 1+offset==len(argv):
         fid=stdin
     else:
-        fname=argv[1]
+        fname=argv[1+offset]
         #print fname, len(argv)
         #if not path.isfile(fname):
         #    raise ValueError("invalid file name: " + fname)
         fid=open(fname, 'r')
-        
-    print '# nb       x1       x2       x3   length    width   strike   dip  rake'
+       
+    if isWithSlip:
+        print '# nb       slip       x1       x2       x3   length    width   strike   dip  rake'
+    else:
+        print '# nb       x1       x2       x3   length    width   strike   dip  rake'
         
     k=0
     for line in iter(fid.readlines()):
         if '#'==line[0]:
-            continue
+		continue
         numbers=map(float, line.split())
+        s=None
         if 13==len(numbers):
             i,x1,x2,x3,length,width,strike,dip,rake,Lo,Wo,al,aw=numbers
         elif 14==len(numbers):
-            i,x1,x2,x3,length,width,strike,dip,rake,drake,Lo,Wo,al,aw=numbers
+            if isWithSlip:
+                i,s,x1,x2,x3,length,width,strike,dip,rake,Lo,Wo,al,aw=numbers
+            else:
+                i,x1,x2,x3,length,width,strike,dip,rake,drake,Lo,Wo,al,aw=numbers
         else:
             ValueError("invalid number of column in input file "+fname)
             
-        k=seg2flt(k,x1,x2,x3,length,width,strike,dip,rake,Lo,Wo,al,aw)
+        k=seg2flt(k,x1,x2,x3,length,width,strike,dip,rake,Lo,Wo,al,aw,slip=s)
 
 if __name__ == "__main__":
     main()
