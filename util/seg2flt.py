@@ -41,6 +41,9 @@ def usage():
     print ''
     print 'write the list of patches to the standard output'
     print ''
+    print 'options:'
+    print '  -with-slip interpolates a slip distribution'
+    print ''
     exit()
     
 def seg2flt(index,x1o,x2o,x3o,L,W,strike,dip,rake,lo,wo,alphal,alphaw,slip=None):
