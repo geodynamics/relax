@@ -37,6 +37,7 @@ usage(){
 	echo "         -x do not display map (only create .ps file)"
 	echo "         -C interval plots contours every interval distance"
 	echo "         -E file.ps only plot base map with extra scripts"
+	echo "         -J overwrites the geographic projections"
         echo "         -Y shift the plot vertically on the page"
 	echo ""
 	echo "Creates N maps based on grd files file1.grd ... fileN.grd, or based"
@@ -138,7 +139,7 @@ gmtset PAPER_MEDIA a5
 libdir=$(dirname $0)
 EXTRA=""
 
-while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrC:E:Y:" flag
+while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrC:E:J:Y:" flag
 do
 	case "$flag" in
 	b) bset=1;bds=$OPTARG;;
@@ -158,10 +159,11 @@ do
 	x) xset=1;;
 	C) Cset="-C";contour=$OPTARG;;
 	E) Eset=1;PSFILE=$(dirname $OPTARG)/$(basename $OPTARG .ps).ps;;
+	J) Jset=1;PROJ=$OPTARG;;
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
 done
-for item in $bset $cset $iset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Eset $EXTRA;do
+for item in $bset $cset $iset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Eset $Jset $EXTRA;do
 	shift;shift
 done
 for item in $gset $hset $xset $rset;do
@@ -279,14 +281,18 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 		fi
 	
 		if [ "$gset" != "-g" ]; then
-			# Cartesian coordinates
-			HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*4)}'`
-			if [ "$rset" != "1" ]; then
-				PROJ="X4i/"$HEIGHT
+			if [ "$Jset" == "" ]; then
+				# Cartesian coordinates
+				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*4)}'`
+				if [ "$rset" != "1" ]; then
+					PROJ="X4i/"$HEIGHT
+				else
+					PROJ="X4i/"-$HEIGHT
+				fi
 			else
-				PROJ="X4i/"-$HEIGHT
+				HEIGHT="-"
 			fi
-		        AXIS=-Bf${tickf}a${tick}:"":/f${tickf}a${tick}:""::."$title":WSne
+			AXIS=-Bf${tickf}a${tick}:"":/f${tickf}a${tick}:""::."$title":WSne
 		else
 			# geographic coordinates
 			HEIGHT=4i
