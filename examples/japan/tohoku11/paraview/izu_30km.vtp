@@ -1,0 +1,3021 @@
+<?xml version="1.0"?>
+<VTKFile type="PolyData" version="0.1">
+  <PolyData>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-700.000000 -300.000000 223.308731
+-729.998819 -300.266214 223.308731
+-729.732605 -330.265033 263.573012
+-699.733786 -329.998819 263.573012
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-179.491562
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+53.311043
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999961 -0.008874 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-670.000000 -300.000000 213.925308
+-699.991374 -300.719360 213.925308
+-699.272014 -330.710734 254.169178
+-669.280640 -329.991374 254.169178
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-178.625992
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+53.297123
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999712 -0.023979 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-640.000000 -300.000000 204.500183
+-669.970569 -301.328520 204.500183
+-668.642050 -331.299089 244.260711
+-638.671480 -329.970569 244.260711
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-177.461884
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+52.964821
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999019 -0.044284 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-610.000000 -300.000000 197.279434
+-639.935097 -301.972298 197.279434
+-637.962799 -331.907395 235.195647
+-608.027702 -329.935097 235.195647
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-176.230469
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+51.648312
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.997837 -0.065743 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-580.000000 -300.000000 192.766327
+-609.878024 -302.702533 192.766327
+-607.175491 -332.580557 227.706242
+-577.297467 -329.878024 227.706242
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-174.831535
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+49.350056
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.995934 -0.090084 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-550.000000 -300.000000 190.990463
+-579.808720 -303.382335 190.990463
+-576.426385 -333.191056 222.213268
+-546.617665 -329.808721 222.213268
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-173.526451
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+46.144218
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.993624 -0.112745 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-520.000000 -300.000000 185.989944
+-549.694002 -304.273900 185.989944
+-545.420102 -333.967902 214.538377
+-515.726100 -329.694002 214.538377
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-171.809586
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+43.579781
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.989800 -0.142463 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-490.000000 -300.000000 180.059067
+-519.536626 -305.252404 180.059067
+-514.284222 -334.789029 207.313778
+-484.747596 -329.536625 207.313778
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-169.916679
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+42.254845
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.984554 -0.175080 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-460.000000 -300.000000 169.879303
+-489.209691 -306.840611 169.879303
+-482.369080 -336.050302 194.790379
+-453.159389 -329.209691 194.790379
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-166.819450
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+39.705196
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.973656 -0.228020 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-430.000000 -300.000000 156.144714
+-458.689493 -308.770005 156.144714
+-449.919488 -337.459498 178.234669
+-421.229995 -328.689493 178.234669
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-163.002289
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+36.365398
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.956316 -0.292333 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-400.000000 -300.000000 142.859344
+-428.056408 -310.622522 142.859344
+-417.433885 -338.678930 162.403044
+-389.377478 -328.056408 162.403044
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-159.262680
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+33.082500
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.935214 -0.354084 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-370.000000 -300.000000 129.670227
+-397.352820 -312.321657 129.670227
+-385.031163 -339.674477 146.968800
+-357.678343 -327.352820 146.968800
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-155.749809
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+29.968571
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.911761 -0.410722 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-700.000000 -270.000000 183.671799
+-729.998886 -270.258489 183.671799
+-729.740398 -300.257375 221.894088
+-699.741511 -299.998887 221.894088
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-179.506317
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+51.872257
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999963 -0.008616 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-670.000000 -270.000000 173.979630
+-699.990748 -270.745011 173.979630
+-699.245737 -300.735759 211.822055
+-669.254989 -299.990748 211.822055
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-178.576988
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+51.593990
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999692 -0.024834 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-640.000000 -270.000000 165.399384
+-669.969748 -271.346913 165.399384
+-668.622835 -301.316662 202.457684
+-638.653087 -299.969748 202.457684
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-177.426720
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+51.008610
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.998992 -0.044897 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-610.000000 -270.000000 160.001312
+-639.931651 -272.023923 160.001312
+-637.907728 -301.955574 195.096502
+-607.976077 -299.931651 195.096502
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-176.131653
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+49.475582
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.997722 -0.067464 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-580.000000 -270.000000 158.456451
+-609.875208 -272.733484 158.456451
+-607.141724 -302.608692 191.048533
+-577.266516 -299.875208 191.048533
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-174.772179
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+47.371395
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.995840 -0.091116 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-550.000000 -270.000000 160.126617
+-579.802828 -273.433863 160.126617
+-576.368965 -303.236691 189.580962
+-546.566137 -299.802828 189.580962
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-173.427399
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+44.474171
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.993428 -0.114462 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-520.000000 -270.000000 157.318390
+-549.667971 -274.451010 157.318390
+-545.216961 -304.118981 184.285987
+-515.548990 -299.667971 184.285987
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-171.467697
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+41.953003
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.988932 -0.148367 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-490.000000 -270.000000 150.578232
+-519.433307 -275.803484 150.578232
+-513.629823 -305.236791 175.698649
+-484.196516 -299.433307 175.698649
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-168.845840
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+39.941029
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.981110 -0.193449 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-460.000000 -270.000000 141.744934
+-489.047241 -277.500521 141.744934
+-481.546720 -306.547761 164.564879
+-452.499479 -299.047241 164.564879
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-165.521461
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+37.258972
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.968241 -0.250017 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-430.000000 -270.000000 130.514038
+-458.468678 -279.462262 130.514038
+-449.006416 -307.930939 150.763426
+-420.537738 -298.468677 150.763426
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-161.614510
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+34.018547
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.948956 -0.315409 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-400.000000 -270.000000 118.084618
+-427.792355 -281.295354 118.084618
+-416.497000 -309.087709 135.945593
+-388.704646 -297.792354 135.945593
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-157.882217
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+30.768124
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.926412 -0.376512 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-370.000000 -270.000000 105.953148
+-397.040133 -282.993506 105.953148
+-384.046628 -310.033639 121.671936
+-357.006494 -297.040133 121.671936
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-154.334473
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+27.652723
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.901338 -0.433117 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-700.000000 -240.000000 148.395386
+-729.998963 -240.249457 148.395386
+-729.749506 -270.248420 183.332119
+-699.750543 -269.998963 183.332119
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-179.523567
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+49.347477
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999965 -0.008315 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-670.000000 -240.000000 138.217957
+-699.990804 -240.742758 138.217957
+-699.248045 -270.733562 171.919551
+-669.257242 -269.990804 171.919551
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-178.581291
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+48.325623
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999693 -0.024759 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-640.000000 -240.000000 130.597198
+-669.969375 -241.355202 130.597198
+-668.614172 -271.324577 162.872125
+-638.644798 -269.969375 162.872125
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-177.410873
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+47.092106
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.998979 -0.045173 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-610.000000 -240.000000 127.330894
+-639.928239 -242.073773 127.330894
+-637.854465 -272.002012 157.318673
+-607.926227 -269.928239 157.318673
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-176.036224
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+44.988327
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.997608 -0.069126 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-580.000000 -240.000000 128.220978
+-609.872721 -242.760531 128.220978
+-607.112190 -272.633252 156.499365
+-577.239469 -269.872721 156.499365
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-174.720306
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+43.307907
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.995757 -0.092018 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-550.000000 -240.000000 132.708969
+-579.798935 -243.467486 132.708969
+-576.331449 -273.266421 159.447849
+-546.532514 -269.798935 159.447849
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-173.362755
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+41.710491
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.993298 -0.115583 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-520.000000 -240.000000 131.369598
+-549.646461 -244.592095 131.369598
+-545.054366 -274.238557 156.361430
+-515.407905 -269.646461 156.361430
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-171.195129
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+39.796364
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.988215 -0.153070 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-490.000000 -240.000000 124.559914
+-519.329080 -246.309124 124.559914
+-513.019957 -275.638204 147.493830
+-483.690876 -269.329080 147.493830
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-167.859825
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+37.396606
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.977636 -0.210304 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-460.000000 -240.000000 116.020943
+-488.876910 -248.131671 116.020943
+-480.745239 -277.008581 136.722343
+-451.868329 -268.876910 136.722343
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-164.272903
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+34.607487
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.962564 -0.271056 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-430.000000 -240.000000 105.584602
+-458.206482 -250.217356 105.584602
+-447.989127 -278.423838 123.803616
+-419.782644 -268.206482 123.803616
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-160.087875
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+31.270329
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.940216 -0.340579 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-400.000000 -240.000000 95.967384
+-427.511864 -251.962329 95.967384
+-415.549535 -279.474194 112.123875
+-388.037671 -267.511865 112.123875
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-156.500298
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+28.304672
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.917062 -0.398744 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-700.000000 -210.000000 115.292015
+-729.999015 -210.243133 115.292015
+-729.755882 -240.242147 146.103875
+-699.756867 -239.999014 146.103875
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-179.535645
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+45.764874
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999967 -0.008104 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-670.000000 -210.000000 106.395996
+-699.990302 -210.762758 106.395996
+-699.227544 -240.753060 134.945129
+-669.237242 -239.990302 134.945129
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-178.543083
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+43.580482
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999677 -0.025425 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-640.000000 -210.000000 100.750824
+-669.969008 -211.363287 100.750824
+-668.605721 -241.332295 127.345812
+-638.636713 -239.969008 127.345812
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-177.395416
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+41.556976
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.998967 -0.045443 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-610.000000 -210.000000 99.813950
+-639.926428 -212.099743 99.813950
+-637.826684 -242.026171 124.407804
+-607.900257 -239.926428 124.407804
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-175.986504
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+39.344734
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.997548 -0.069991 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-580.000000 -210.000000 102.345558
+-609.869409 -212.796146 102.345558
+-607.073263 -242.665554 126.030140
+-577.203854 -239.869409 126.030140
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-174.651993
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+38.290600
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.995647 -0.093205 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-550.000000 -210.000000 107.449913
+-579.796081 -213.491927 107.449913
+-576.304154 -243.288008 131.175784
+-546.508073 -239.796081 131.175784
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-173.315758
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+38.339146
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.993203 -0.116398 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-520.000000 -210.000000 107.491966
+-549.613011 -214.803078 107.491966
+-544.809933 -244.416089 130.286029
+-515.196922 -239.613011 130.286029
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-170.787148
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+37.227646
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.987100 -0.160103 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-490.000000 -210.000000 101.142059
+-519.235692 -216.728621 101.142059
+-512.507071 -245.964312 121.974069
+-483.271379 -239.235691 121.974069
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-167.039024
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+34.776127
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.974523 -0.224287 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-460.000000 -210.000000 93.054543
+-488.682790 -218.791904 93.054543
+-479.890885 -247.474694 111.654103
+-451.208096 -238.682790 111.654103
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-162.958549
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+31.798306
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.956093 -0.293063 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-430.000000 -210.000000 83.570427
+-457.949285 -220.901260 83.570427
+-447.048025 -248.850545 99.833241
+-419.098740 -237.949285 99.833241
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-158.692368
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+28.461847
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.931643 -0.363375 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-400.000000 -210.000000 75.297577
+-427.220384 -222.611531 75.297577
+-414.608853 -249.831915 89.691139
+-387.388469 -237.220384 89.691139
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-155.141144
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+25.631012
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.907346 -0.420384 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-700.000000 -180.000000 85.529755
+-729.998980 -180.247423 85.529755
+-729.751556 -210.246403 112.184680
+-699.752577 -209.998980 112.184680
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-179.527451
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+41.621010
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999966 -0.008247 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-670.000000 -180.000000 79.846298
+-699.989934 -180.777098 79.846298
+-699.212836 -210.767032 102.883055
+-669.222902 -209.989934 102.883055
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-178.515686
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+37.520367
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999664 -0.025903 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-640.000000 -180.000000 77.063965
+-669.966624 -181.414724 77.063965
+-668.551900 -211.381348 97.707194
+-638.585276 -209.966624 97.707194
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-177.297073
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+34.532158
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.998887 -0.047157 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-610.000000 -180.000000 78.605904
+-639.923758 -182.137460 78.605904
+-637.786298 -212.061217 98.905155
+-607.862540 -209.923758 98.905155
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-175.914291
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+34.083920
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.997459 -0.071249 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-580.000000 -180.000000 81.132271
+-609.860093 -182.893929 81.132271
+-606.966164 -212.754022 101.715811
+-577.106071 -209.860093 101.715811
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-174.464394
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+34.454720
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.995336 -0.096464 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-550.000000 -180.000000 84.955666
+-579.780052 -183.626087 84.955666
+-576.153965 -213.406140 106.440550
+-546.373913 -209.780052 106.440550
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-173.057709
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+35.608829
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.992668 -0.120870 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-520.000000 -180.000000 83.884941
+-549.566867 -185.079407 83.884941
+-544.487460 -214.646274 104.716141
+-514.920593 -209.566867 104.716141
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-170.252090
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+34.775082
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.985562 -0.169314 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-490.000000 -180.000000 78.559937
+-519.121268 -187.207757 78.559937
+-511.913511 -216.329025 97.362586
+-482.792243 -209.121268 97.362586
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-166.098198
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+32.077633
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.970709 -0.240259 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-460.000000 -180.000000 72.441742
+-488.496477 -189.378209 72.441742
+-479.118268 -217.874686 89.105278
+-450.621791 -208.496477 89.105278
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-161.783592
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+29.050035
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.949883 -0.312607 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-430.000000 -180.000000 64.617004
+-457.693454 -191.535711 64.617004
+-446.157743 -219.229164 79.030465
+-418.464289 -207.693454 79.030465
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-157.385826
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+25.661896
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.923115 -0.384524 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-700.000000 -150.000000 61.160419
+-729.998779 -150.270640 61.160419
+-729.728139 -180.269419 82.532540
+-699.729360 -179.998779 82.532540
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-179.483109
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+35.466225
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999959 -0.009021 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-670.000000 -150.000000 58.471676
+-699.989637 -150.788459 58.471676
+-699.201178 -180.778096 76.928853
+-669.211541 -179.989637 76.928853
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-178.493980
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+31.601460
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999655 -0.026282 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-640.000000 -150.000000 57.811291
+-669.965751 -151.433091 57.811291
+-668.532660 -181.398842 74.538043
+-638.566909 -179.965751 74.538043
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-177.261955
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+29.142220
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.998858 -0.047770 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-610.000000 -150.000000 60.047733
+-639.921509 -152.168709 60.047733
+-637.752800 -182.090218 77.353775
+-607.831291 -179.921509 77.353775
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-175.854454
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+29.979275
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.997384 -0.072290 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-580.000000 -150.000000 62.227108
+-609.852446 -152.971780 62.227108
+-606.880666 -182.824226 80.453325
+-577.028220 -179.852446 80.453325
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-174.314995
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+31.280378
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.995082 -0.099059 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-550.000000 -150.000000 63.893147
+-579.759088 -153.794295 63.893147
+-575.964794 -183.553383 83.148823
+-546.205705 -179.759088 83.148823
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-172.733971
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+32.694614
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.991970 -0.126476 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-520.000000 -150.000000 63.210381
+-549.511410 -155.392278 63.210381
+-544.119132 -184.903688 81.918467
+-514.607722 -179.511411 81.918467
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-169.645233
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+31.947783
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.983714 -0.179743 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-490.000000 -150.000000 58.990330
+-518.989624 -157.720215 58.990330
+-511.269409 -186.709839 75.568517
+-482.279785 -178.989624 75.568517
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-165.087685
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+28.925314
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.966321 -0.257340 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-460.000000 -150.000000 53.682858
+-488.277403 -160.019406 53.682858
+-478.257997 -188.296808 68.083422
+-449.980594 -178.277402 68.083422
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-160.489464
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+25.641882
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.942580 -0.333980 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-430.000000 -150.000000 47.651260
+-457.407813 -162.198844 47.651260
+-445.208969 -189.606657 59.912290
+-417.801156 -177.407813 59.912290
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-156.006805
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+22.229883
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.913594 -0.406628 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-700.000000 -120.000000 42.557335
+-729.998701 -120.279192 42.557335
+-729.719508 -150.277893 58.524732
+-699.720808 -149.998700 58.524732
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-179.466774
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+28.023987
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999957 -0.009306 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-670.000000 -120.000000 41.913273
+-699.989398 -120.797504 41.913273
+-699.191894 -150.786903 56.525276
+-669.202496 -149.989398 56.525276
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-178.476700
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+25.969173
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999647 -0.026583 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-640.000000 -120.000000 42.311359
+-669.965078 -121.447105 42.311359
+-668.517973 -151.412182 56.376268
+-638.552895 -149.965078 56.376268
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-177.235161
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+25.118607
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.998836 -0.048237 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-610.000000 -120.000000 43.796215
+-639.919417 -122.197375 43.796215
+-637.722042 -152.116793 58.813687
+-607.802625 -149.919418 58.813687
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-175.799561
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+26.591740
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.997314 -0.073246 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-580.000000 -120.000000 45.019573
+-609.844230 -123.053183 45.019573
+-606.791047 -152.897413 61.030687
+-576.946817 -149.844231 61.030687
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-174.158737
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+28.089010
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.994808 -0.101773 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-550.000000 -120.000000 45.760948
+-579.735946 -123.971587 45.760948
+-575.764359 -153.707534 62.592966
+-546.028413 -149.735946 62.592966
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-172.392494
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+29.295357
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.991198 -0.132386 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-520.000000 -120.000000 44.586742
+-549.443805 -125.749988 44.586742
+-543.693817 -155.193792 60.663600
+-514.250012 -149.443805 60.663600
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-168.949959
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+28.186647
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.981460 -0.191666 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-490.000000 -120.000000 41.540298
+-518.826520 -128.308534 41.540298
+-510.517986 -157.135054 55.438604
+-481.691466 -148.826520 55.438604
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-163.921677
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+24.857199
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.960884 -0.276951 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-460.000000 -120.000000 37.547092
+-487.985575 -130.807756 37.547092
+-477.177819 -158.793331 49.261798
+-449.192244 -147.985575 49.261798
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-158.883926
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+21.330158
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.932853 -0.360259 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-700.000000 -90.000000 29.017611
+-729.998685 -90.280850 29.017611
+-729.717835 -120.279535 40.508012
+-699.719150 -119.998685 40.508012
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-179.463608
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+20.957508
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999956 -0.009362 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-670.000000 -90.000000 29.016403
+-699.988925 -90.815095 29.016403
+-699.173830 -120.804020 40.190701
+-669.184905 -119.988925 40.190701
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-178.443092
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+20.429184
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999631 -0.027170 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-640.000000 -90.000000 29.456520
+-669.963321 -91.483030 29.456520
+-668.480291 -121.446351 40.794679
+-638.516970 -119.963321 40.794679
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-177.166466
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+20.703516
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.998777 -0.049434 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-610.000000 -90.000000 30.127575
+-639.915862 -92.245268 30.127575
+-637.670593 -122.161130 42.353441
+-607.754732 -119.915861 42.353441
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-175.707840
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+22.172314
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.997195 -0.074842 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-580.000000 -90.000000 30.480751
+-609.834770 -93.144280 30.480751
+-606.690490 -122.979050 43.441059
+-576.855720 -119.834770 43.441059
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-173.983818
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+23.364841
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.994492 -0.104809 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-550.000000 -90.000000 30.399370
+-579.712895 -94.140517 30.399370
+-575.572378 -123.853412 43.796451
+-545.859483 -119.712895 43.796451
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-172.066872
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+24.064075
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.990430 -0.138017 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-520.000000 -90.000000 29.480288
+-549.369974 -96.115932 29.480288
+-543.254041 -125.485907 42.052646
+-513.884067 -119.369975 42.052646
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-168.236969
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+22.737514
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.978999 -0.203864 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-490.000000 -90.000000 27.732433
+-518.629835 -98.962841 27.732433
+-509.666994 -127.592677 38.349268
+-481.037159 -118.629836 38.349268
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-162.616776
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+19.488592
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.954328 -0.298761 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-460.000000 -90.000000 25.261515
+-487.701976 -101.515231 25.261515
+-476.186745 -129.217207 34.025407
+-448.484769 -117.701976 34.025407
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-157.428192
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+16.284653
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.923399 -0.383841 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-700.000000 -60.000000 19.507126
+-729.998840 -60.263865 19.507126
+-729.734974 -90.262705 27.515661
+-699.736135 -89.998840 27.515661
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-179.496048
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+14.946634
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999961 -0.008796 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-670.000000 -60.000000 19.342077
+-699.988640 -60.825497 19.342077
+-699.163144 -90.814138 27.382879
+-669.174503 -89.988641 27.382879
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-178.423218
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+15.004145
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999621 -0.027517 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-640.000000 -60.000000 19.536032
+-669.961921 -61.511047 19.536032
+-668.450875 -91.472968 27.933458
+-638.488953 -89.961922 27.933458
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-177.112892
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+15.637687
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.998731 -0.050368 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-610.000000 -60.000000 19.581694
+-639.912516 -62.289411 19.581694
+-637.623104 -92.201927 28.534776
+-607.710589 -89.912516 28.534776
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-175.623291
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+16.617001
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.997084 -0.076314 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-580.000000 -60.000000 19.412647
+-609.823060 -63.253477 19.412647
+-606.569582 -93.076537 28.674105
+-576.746523 -89.823060 28.674105
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-173.774071
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+17.156256
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.994102 -0.108449 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-550.000000 -60.000000 18.987616
+-579.679698 -64.372129 18.987616
+-575.307569 -94.051828 28.223080
+-545.627871 -89.679698 28.223080
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-171.620003
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+17.110920
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.989323 -0.145738 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-520.000000 -60.000000 18.471172
+-549.272536 -66.566477 18.471172
+-542.706059 -95.839013 26.954284
+-513.433523 -89.272536 26.954284
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-167.356590
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+15.789333
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.975751 -0.218883 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-490.000000 -60.000000 17.840662
+-518.390603 -69.694001 17.840662
+-508.696602 -98.084604 24.915695
+-480.305999 -88.390603 24.915695
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-161.147476
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+13.269851
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.946353 -0.323133 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-460.000000 -60.000000 16.320694
+-487.351007 -72.325681 16.320694
+-475.025326 -99.676688 21.909264
+-447.674319 -87.351007 21.909264
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-155.741379
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+10.552427
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.911700 -0.410856 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-700.000000 -30.000000 12.920177
+-729.998848 -30.262902 12.920177
+-729.735946 -60.261751 18.067856
+-699.737098 -59.998848 18.067856
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-179.497887
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+9.736525
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999962 -0.008763 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-670.000000 -30.000000 12.858700
+-699.988564 -30.828273 12.858700
+-699.160291 -60.816836 18.053208
+-669.171727 -59.988564 18.053208
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-178.417915
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+9.823380
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999619 -0.027609 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-640.000000 -30.000000 12.641603
+-669.962342 -31.502688 12.641603
+-668.459654 -61.465030 17.837987
+-638.497312 -59.962342 17.837987
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-177.128876
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+9.826859
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.998745 -0.050090 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-610.000000 -30.000000 12.411312
+-639.909373 -32.330105 12.411312
+-637.579268 -62.239479 17.692403
+-607.669895 -59.909374 17.692403
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-175.545341
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+9.983850
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.996979 -0.077670 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-580.000000 -30.000000 12.179267
+-609.813068 -33.343799 12.179267
+-606.469269 -63.156866 17.307479
+-576.656201 -59.813067 17.307479
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-173.600517
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+9.700404
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.993769 -0.111460 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-550.000000 -30.000000 11.918657
+-579.633412 -34.675566 11.918657
+-574.957845 -64.308978 16.550680
+-545.324434 -59.633412 16.550680
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-171.033775
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+8.777202
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.987780 -0.155852 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-520.000000 -30.000000 11.846792
+-549.152880 -37.078815 11.846792
+-542.074065 -66.231694 15.905480
+-512.921185 -59.152879 15.905480
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-166.351753
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+7.704744
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.971763 -0.235960 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-490.000000 -30.000000 11.893787
+-518.098026 -40.511942 11.893787
+-507.586084 -68.609969 15.275540
+-479.488058 -58.098027 15.275540
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-159.488335
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+6.431522
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.936601 -0.350398 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-460.000000 -30.000000 11.379622
+-486.997685 -43.081476 11.379622
+-473.916209 -70.079161 13.987060
+-446.918524 -56.997685 13.987060
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-154.147926
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+4.967356
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.899923 -0.436049 0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-700.000000 0.000000 9.980414
+-729.998850 -0.262723 9.980414
+-729.736127 -30.261573 12.144329
+-699.737277 -29.998850 12.144329
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-179.498230
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+4.125628
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999962 -0.008757 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-670.000000 0.000000 9.855748
+-699.988414 -0.833699 9.855748
+-699.154714 -30.822113 12.009813
+-669.166301 -29.988414 12.009813
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+-178.407547
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+4.106913
+        </DataArray>
+        <DataArray type="Float32" Name="unit slip" NumberOfComponents="3" format="ascii">
+-0.999614 -0.027790 -0.000000
+        </DataArray>
+      </CellData>
+    </Piece>
+  </PolyData>
+</VTKFile>
