@@ -37,7 +37,7 @@ usage(){
 	echo "         -x do not display map (only create .ps file)"
 	echo "         -C interval plots contours every interval distance"
 	echo "         -E file.ps only plot base map with extra scripts"
-	echo "         -J overwrites the geographic projections"
+	echo "         -J overwrites the geographic projections (for -J o the -b option is relative)"
         echo "         -Y shift the plot vertically on the page"
 	echo ""
 	echo "Creates N maps based on grd files file1.grd ... fileN.grd, or based"
@@ -117,7 +117,7 @@ EOF
 
 	if [ -e "$colors" ]; then
 		#-Q0.20c/1.0c/0.4cn1.0c \
-		psscale -O -K -B$PSSCALE/:$unit: -D2.0i/-0.8i/3.1i/0.2ih \
+		psscale -O -K -B$PSSCALE/:$unit: -D3.5i/-0.8i/7.1i/0.2ih \
 			-C$colors $REVERT \
 			>> $PSFILE 
 		
@@ -134,7 +134,7 @@ gmtset ANOT_FONT_SIZE 12p
 gmtset COLOR_BACKGROUND 0/0/255
 gmtset COLOR_FOREGROUND 255/0/0
 gmtset COLOR_NAN 255/255/255
-gmtset PAPER_MEDIA a5
+gmtset PAPER_MEDIA archA
 
 libdir=$(dirname $0)
 EXTRA=""
@@ -149,7 +149,7 @@ do
 	h) hset=1;;
 	i) iset=1;illumination="-I$OPTARG";;
 	o) oset=1;ODIR=$OPTARG;;
-	p) pset=1;P=$OPTARG;PSSCALE=`echo $OPTARG | awk -F"/" 'function abs(x){return x<0?-x:x}{print abs($2-$1)/4}'`;;
+	p) pset=1;P=$OPTARG;PSSCALE=`echo $OPTARG | awk -F"/" 'function abs(x){return x<0?-x:x}{print abs($2-$1)/6}'`;;
 	r) rset=1;;
 	s) sset=1;ADX=$OPTARG;;
 	t) tset=1;tick=$OPTARG;;
@@ -283,11 +283,11 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 		if [ "$gset" != "-g" ]; then
 			if [ "$Jset" == "" ]; then
 				# Cartesian coordinates
-				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*4)}'`
+				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*7)}'`
 				if [ "$rset" != "1" ]; then
-					PROJ="X4i/"$HEIGHT
+					PROJ="X7i/"$HEIGHT
 				else
-					PROJ="X4i/"-$HEIGHT
+					PROJ="X7i/"-$HEIGHT
 				fi
 			else
 				HEIGHT="-"
@@ -295,7 +295,7 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 			AXIS=-Bf${tickf}a${tick}:"":/f${tickf}a${tick}:""::."$title":WSne
 		else
 			# geographic coordinates
-			HEIGHT=4i
+			HEIGHT=7i
 			PROJ="M$HEIGHT"
 		        AXIS=-B${tick}:"":/${tick}:""::."$title":WSne
 		fi
@@ -323,21 +323,21 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 
 			# tick marks
 			if [ "$tset" != "1" ]; then
-				tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/4}'`
+				tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/7}'`
 			fi
 			tickf=`echo $tick | awk '{print $1/2}'`
 
 			# Cartesian vs geographic coordinates
 			if [ "$gset" != "-g" ]; then
-				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*4)}'`
+				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*7)}'`
 				if [ "$rset" != "1" ]; then
-					PROJ="X4i/"$HEIGHT
+					PROJ="X7i/"$HEIGHT
 				else
-					PROJ="X4i/"-$HEIGHT
+					PROJ="X7i/"-$HEIGHT
 				fi
 			        AXIS=-Ba${tick}:"":/a${tick}:""::."$TITLE":WSne
 			else
-				HEIGHT=4i
+				HEIGHT=7i
 				PROJ="M0/0/$HEIGHT"
 			        AXIS=-B${tick}:"":/${tick}:""::."$TITLE":WSne
 			fi
@@ -360,10 +360,10 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 	
 	if [ "$xset" != "1" ]; then
 		#display -trim $PSFILE &
-		#gv -geometry +0+0 -spartan $PSFILE &
-		ps2pdf -sPAPERSIZE="a4" $PSFILE $PDFFILE
+		#gv -geometry +0+0 -spartan -scale=0.5 $PSFILE &
+		ps2pdf -sPAPERSIZE="archA" -dPDFSETTINGS=/prepress $PSFILE $PDFFILE
 		echo $self": Converted to pdf file "$PDFFILE
-		xpdf -geometry +0+0 -paper "A5" $PDFFILE -z 100 -g 565x655 >& /dev/null &
+		xpdf -geometry +0+0 -paper "archA" $PDFFILE -z 100 -g 565x655 >& /dev/null &
 	fi
 	
 	if [ "$#" != "0" ];then
