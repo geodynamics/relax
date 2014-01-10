@@ -1,11 +1,11 @@
 # -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
-# $Id$
+# $Id: Portfile 109198 2013-08-09 22:09:15Z macsforever2000@macports.org $
 
 PortSystem                1.0
 PortGroup                 active_variants 1.1
 
 name                      relax3d
-version                   1.0.4
+version                   1.0.5
 categories                science gis
 platforms                 darwin
 license                   GPL
@@ -22,12 +22,12 @@ homepage                  http://www.geodynamics.org/cig/software/relax/
 master_sites              http://www.geodynamics.org/cig/software/relax/macports
 use_bzip2                 yes
 
-checksums                 rmd160 ed82d798758783657f54cd6d5cc6f274fa381793 \
-                          sha256 1b5dd4914256a39c6fb64bc2fd29215f8f0d188c57a057c4c5fcc06a4068e0a9
+checksums                 rmd160 7f62d09c95691208c14ff3756d3dd230cd38458b \
+                          sha256 232039a3bc8c9d2eb58292906484a8ee4550e178388f8e42f8bc9abd29d6487b
 
 depends_lib-append        port:fftw-3-single \
                           port:gmt4 \
-                          port:proj47 \
+                          port:proj48 \
                           port:python27
 
 # gmt4 is not universal
@@ -38,7 +38,7 @@ configure.ldflags-append  "-L${prefix}/lib -lfftw3 -lfftw3_threads -lfftw3f -lff
 configure.args            --use-fftw \
                           --fftw-dir=${prefix} \
                           --proj-incdir=${prefix}/include \
-                          --proj-libdir=${prefix}/lib/proj47/lib \
+                          --proj-libdir=${prefix}/lib/proj48/lib \
                           --gmt-dir=${prefix}/lib/gmt4
 configure.cmd             "./waf configure"
 
@@ -71,6 +71,6 @@ variant gcc48 conflicts gcc45 gcc46 gcc47 description {Compile with gcc 4.8} {
     require_active_variants   fftw-3-single gcc48
 }
 
-if {![variant_isset gcc45] && ![variant_isset gcc46] && ![variant_isset gcc48]} {
-    default_variants +gcc47
+if {![variant_isset gcc45] && ![variant_isset gcc46] && ![variant_isset gcc47]} {
+    default_variants +gcc48
 }

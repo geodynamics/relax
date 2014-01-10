@@ -136,7 +136,7 @@ gmtset COLOR_FOREGROUND 255/0/0
 gmtset COLOR_NAN 255/255/255
 gmtset PAPER_MEDIA archA
 
-libdir=$(dirname $0)
+libdir=$(dirname $0)/../share
 EXTRA=""
 
 while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrC:E:J:Y:" flag
@@ -188,9 +188,7 @@ fi
 
 # color scale
 if [ "$cset" != "-c" ]; then
-	#cptfile=hot
-	cptfile=$libdir/my_jet
-	#cptfile=$libdir/my_hot_inv
+	cptfile=$libdir/jet
 else
 	if [ -e "$libdir/$carg" ]; then 
 		cptfile=$libdir/$carg

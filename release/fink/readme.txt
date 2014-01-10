@@ -1,4 +1,7 @@
 
+# check input.f90 for the correct version number
+# update grdmap.sh to look for .cpt files in %p/share/gmt/cpt/
+
 # make fink release source file
 cd release/fink/
 tar -cvzf relax-1.0.4.tar.gz relax-1.0.4

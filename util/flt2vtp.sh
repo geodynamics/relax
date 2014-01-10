@@ -4,7 +4,7 @@ set -e
 self=$(basename $0)
 trap 'echo $self: Some errors occurred. Exiting.; exit' ERR
 
-flt2vtk(){
+flt2vtp(){
 	grep -v "#" $FLTFILE | awk '
 	BEGIN{
 		pi=atan2(1,0)*2;
@@ -113,7 +113,7 @@ fi
 if [ ! -t 0 ]; then
 	FLTFILE=-
 	VTKFILE=/dev/stdout
-	flt2vtk
+	flt2vtp
 else
 	# loop over list of files to convert
 	while [ $# -ne 0 ];do
@@ -125,7 +125,7 @@ else
 			exit 2
 		fi
 		echo $self: converting $1 to $VTKFILE
-		flt2vtk
+		flt2vtp
 		shift
 	done
 fi

@@ -1,4 +1,6 @@
 
+# check out input.f90 for the correct version number
+
 # make macports release source file
 cd release/ports/
 tar -cvjf relax3d-1.0.4.tar.bz2 relax3d-1.0.4
