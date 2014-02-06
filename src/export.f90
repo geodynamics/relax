@@ -1291,9 +1291,6 @@ END SUBROUTINE exportcreep_vtk
     CALL exportspatial(c2(:,:,int(oz/dx3)+1),sx1,sx2,temp2,doflip=.true.)
     CALL exportspatial(c3(:,:,int(oz/dx3)+1),sx1,sx2,temp3,doflip=.true.)
 
-    ! positive up
-    temp3=-temp3
-    
     pos=INDEX(wdir," ")
     WRITE (digit,'(I3.3)') i
     
@@ -1302,14 +1299,26 @@ END SUBROUTINE exportcreep_vtk
        file1=wdir(1:pos-1) // "/" // digit // "-north.grd"
        file2=wdir(1:pos-1) // "/" // digit // "-east.grd"
        file3=wdir(1:pos-1) // "/" // digit // "-up.grd"
+
+       ! positive up
+       temp3=-temp3
+    
     CASE (2) ! postseismic displacement
        file1=wdir(1:pos-1) // "/" // digit // "-relax-north.grd"
        file2=wdir(1:pos-1) // "/" // digit // "-relax-east.grd"
        file3=wdir(1:pos-1) // "/" // digit // "-relax-up.grd"
+
+       ! positive up
+       temp3=-temp3
+    
     CASE (3) ! equivalent body forces
        file1=wdir(1:pos-1) // "/" // digit // "-eqbf-north.grd"
        file2=wdir(1:pos-1) // "/" // digit // "-eqbf-east.grd"
        file3=wdir(1:pos-1) // "/" // digit // "-eqbf-up.grd"
+
+       ! positive up
+       temp3=-temp3
+    
     CASE (4) ! equivalent body forces
        file1=wdir(1:pos-1) // "/" // digit // "-s11.grd"
        file2=wdir(1:pos-1) // "/" // digit // "-s12.grd"
