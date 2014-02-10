@@ -1,4 +1,4 @@
-#!/sw/bin/python
+#!/usr/bin/env python
 
 # computes the norm of the residuals between relax prediction and GPS time series
 

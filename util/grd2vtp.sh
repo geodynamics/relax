@@ -4,7 +4,7 @@ set -e
 self=$(basename $0)
 trap 'echo $self: Some errors occurred. Exiting.; exit' ERR
 
-grd2vtk_header(){
+grd2vtp_header(){
 	SX1=`grdinfo -C $GRDFILE | awk '{print $10}'`
 	SX2=`grdinfo -C $GRDFILE | awk '{print $11}'`
 	N=`echo $SX1 $SX2 | awk '{print $1*$2}'`
@@ -36,7 +36,7 @@ grd2vtk_header(){
 	echo "POINT_DATA $N"
 }
 
-grd2vtk_footer(){
+grd2vtp_footer(){
 	TITLE=`grdinfo -C $GRDFILE | awk '{print $1}'`
 	echo "SCALARS $(basename $TITLE .grd) float"
 	echo "LOOKUP_TABLE default"
@@ -46,7 +46,7 @@ grd2vtk_footer(){
 
 
 usage(){
-	echo "$self converts a list of grd files to a vtk polygon polydata file"
+	echo "$self converts a list of grd files to a vtp polygon polydata file"
 	echo "in ASCII legacy format for visualization in Paraview."
 	echo ""
 	echo "usage: $self file.grd > file.vtp"
@@ -92,8 +92,8 @@ if [ "$dset" != "1" ]; then
 fi
 
 GRDFILE=$1
-grd2vtk_header
-grd2vtk_footer
+grd2vtp_header
+grd2vtp_footer
 shift
 
 # loop over list of files to convert
@@ -103,7 +103,7 @@ while [ $# -ne 0 ];do
 		echo $self: could not find $GRDFILE. exiting. >&2
 		exit 2
 	fi
-	grd2vtk_footer
+	grd2vtp_footer
 	shift
 done
 

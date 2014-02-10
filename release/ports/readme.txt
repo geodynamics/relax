@@ -1,16 +1,16 @@
 
-# check input.f90 for the correct version number
-# update grdmap.sh to look for .cpt files in %p/share/gmt/cpt/
+# check out input.f90 for the correct version number
 
-# make fink release source file
-cd release/fink/
-tar -cvzf relax-1.0.4.tar.gz relax-1.0.4
+# make macports release source file
+cd release/ports/
+tar -cvjf relax3d-1.0.4.tar.bz2 relax3d-1.0.4
 
-# upload relax-1.0.4.tar.gz to 
-http://www.geodynamics.org/cig/software/relax/fink/relax-1.0.4.tar.gz
+# upload relax3d-1.0.4.tar.bz2 to 
+http://www.geodynamics.org/cig/software/relax/macports/relax3d-1.0.4.tar.gz
 
 # checksum the tar ball and copy the number in the package info file
-md5sum relax-1.0.4.tar.gz
+shasum -a 256 relax3d-1.0.4.tar.bz2
+openssl rmd160 relax3d-1.0.4.tar.bz2
 
 # copy the package.info file to fink
 sudo cp relax.info /sw/fink/dists/local/main/finkinfo/
