@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<VTKFile type="PolyData" version="0.1">
+  <PolyData>
+    <Piece NumberOfPoints="4" NumberOfPolys="1">
+      <Points>
+        <DataArray type="Float32" Name="Fault Patch" NumberOfComponents="3" format="ascii">
+-28.132410 -214.419300 5.720000
+-31.658006 -204.518276 5.720000
+-41.099818 -207.880354 14.432464
+-37.574222 -217.781378 14.432464
+        </DataArray>
+      </Points>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="0" RangeMax="-1">
+0 1 2 3
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="4" RangeMax="4">
+          4
+        </DataArray>
+      </Polys>
+      <CellData Scalar="geometry">
+        <DataArray type="Float32" Name="strike" NumberOfComponents="1" format="ascii">
+109.600000
+        </DataArray>
+        <DataArray type="Float32" Name="dip" NumberOfComponents="1" format="ascii">
+41.000000
+        </DataArray>
+        <DataArray type="Float32" Name="slip" NumberOfComponents="3" format="ascii">
+1.796018 0.579326 -1.639725
+        </DataArray>
+      </CellData>
+    </Piece>
+  </PolyData>
+</VTKFile>
