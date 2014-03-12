@@ -120,19 +120,19 @@ CONTAINS
   !!
   !! \author sylvain barbot (08/30/08) - original form
   !-----------------------------------------------------------------
-  SUBROUTINE viscouseigenstress(mu,structure,ductilezones,nz,sig,sx1,sx2,sx3, &
-       dx1,dx2,dx3,moment,beta,maxwelltime,gamma)
-    REAL*8, INTENT(IN) :: mu,dx1,dx2,dx3,beta
-    INTEGER, INTENT(IN) :: nz
+  SUBROUTINE viscouseigenstress(mu,structure,sig,sx1,sx2,sx3, &
+       dx1,dx2,dx3,moment,maxwelltime,dgammadot0,gamma)
+    REAL*8, INTENT(IN) :: mu,dx1,dx2,dx3
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
-    TYPE(WEAK_STRUCT), DIMENSION(nz), INTENT(IN) :: ductilezones
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(TENSOR), INTENT(OUT), DIMENSION(sx1,sx2,sx3) :: moment
     REAL*8, OPTIONAL, INTENT(INOUT) :: maxwelltime
 #ifdef ALIGN_DATA
+    REAL*4, DIMENSION(sx1+2,sx2,sx3), INTENT(IN), OPTIONAL :: dgammadot0
     REAL*4, DIMENSION(sx1+2,sx2,sx3), INTENT(OUT), OPTIONAL :: gamma
 #else
+    REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(IN), OPTIONAL :: dgammadot0
     REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(OUT), OPTIONAL :: gamma
 #endif
 
@@ -141,9 +141,11 @@ CONTAINS
     TYPE(TENSOR), PARAMETER :: zero = tensor(0._4,0._4,0._4,0._4,0._4,0._4)
     REAL*8 :: gammadot,tau,tauc,gammadot0,power,cohesion,x1,x2,x3,dg0,dum
     REAL*4 :: tm
+    LOGICAL :: isdgammadot0
     
     IF (SIZE(structure,1) .NE. sx3) RETURN
 
+    isdgammadot0=PRESENT(dgammadot0)
     IF (PRESENT(maxwelltime)) THEN
        tm=REAL(maxwelltime)
     ELSE
@@ -174,10 +176,7 @@ CONTAINS
              gammadot0=structure(i3)%gammadot0
 
              ! perturbation from isolated viscous zones
-             dg0=dgammadot0(ductilezones,nz,x1,x2,x3,beta)
-
-             ! local fluidity structure
-             gammadot0=gammadot0+dg0
+             IF (isdgammadot0) gammadot0=gammadot0+dgammadot0(i1,i2,i3)
 
              IF (1.0d-20 .GT. gammadot0) CYCLE
 
@@ -212,95 +211,128 @@ CONTAINS
 
     IF (PRESENT(maxwelltime)) maxwelltime=MIN(tm,maxwelltime)
 
+  END SUBROUTINE viscouseigenstress
+
+  !---------------------------------------------------------
+  !> function builddgammadot0
+  !  builds the variations of gammadot0 due to ductile zones
+  !---------------------------------------------------------
+  SUBROUTINE builddgammadot0(sx1,sx2,sx3,dx1,dx2,dx3,beta, &
+                             nz,ductilezones,dgammadot0)
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3,nz
+    REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(OUT) :: dgammadot0
+    TYPE(WEAK_STRUCT), DIMENSION(nz), INTENT(IN) :: ductilezones
+    REAL*8, INTENT(IN) :: dx1,dx2,dx3,beta
+
+    INTEGER :: i1,i2,i3
+    REAL*8 :: x1,x2,x3,dum
+    
+!$omp parallel do private(i1,i2,x1,x2,x3,dum)
+    DO i3=1,sx3
+       x3=DBLE(i3-1)*dx3
+       DO i2=1,sx2
+          DO i1=1,sx1
+             ! local coordinates
+             CALL shiftedcoordinates(i1,i2,i3,sx1,sx2,sx3, &
+                  dx1,dx2,dx3,x1,x2,dum)
+
+             ! perturbation from isolated viscous zones
+             dgammadot0(i1,i2,i3)=fdgammadot0(ductilezones,nz,x1,x2,x3,beta)
+          END DO
+       END DO
+    END DO
+!$omp end parallel do
+
   CONTAINS
 
     !---------------------------------------------------------
-    !> function dgammadot0
+    !> function fdgammadot0
     !! evaluates the change of fluidity at position x1,x2,x3
     !! due to the presence of weak ductile zones. the extent
     !! and magnitude of ductile zones is tapered (beta).
     !!
     !! \author sylvain barbot (3/29/10) - original form
     !---------------------------------------------------------
-    REAL*8 FUNCTION dgammadot0(zones,n,x1,x2,x3,beta)
-       INTEGER, INTENT(IN) :: n
-       TYPE(WEAK_STRUCT), INTENT(IN), DIMENSION(nz) :: zones
-       REAL*8, INTENT(IN) :: x1,x2,x3,beta
-
-       REAL*8 :: dg,x,y,z,L,W,D,strike,dip,LM,r,rho
-       REAL*8 :: cstrike,sstrike,cdip,sdip, &
+    REAL*8 FUNCTION fdgammadot0(zones,n,x1,x2,x3,beta)
+      INTEGER, INTENT(IN) :: n
+      TYPE(WEAK_STRUCT), INTENT(IN), DIMENSION(nz) :: zones
+      REAL*8, INTENT(IN) :: x1,x2,x3,beta
+  
+      REAL*8 :: dg,x,y,z,L,W,D,strike,dip,LM,r,rho
+      REAL*8 :: cstrike,sstrike,cdip,sdip, &
                  xr,yr,zr,x2r,Wp,Lp,Dp,x1s,x2s,x3s
-       INTEGER :: i
+      INTEGER :: i
+  
+      ! default is no change in fluidity
+      fdgammadot0=0._8
+  
+      DO i=1,n
+         ! retrieve weak zone geometry
+         dg=zones(i)%dgammadot0
+  
+         x=zones(i)%x
+         y=zones(i)%y
+         z=zones(i)%z
+         W=zones(i)%length
+         L=zones(i)%width
+         D=zones(i)%thickness
+         strike=zones(i)%strike
+         dip=zones(i)%dip
+  
+         ! effective tapered dimensions
+         Wp=W*(1._8+2._8*beta)/2._8
+         Lp=L*(1._8+2._8*beta)/2._8
+         Dp=D*(1._8+2._8*beta)/2._8
+         LM=MAX(Wp,Lp,Dp)
+  
+         ! check distance from weak zone
+         IF ((ABS(x3-z).GT.LM) .OR. &
+             (ABS(x1-x).GT.LM) .OR. &
+             (ABS(x2-y).GT.LM)) CYCLE
+  
+         ! evaluate contribution from weak zone
+         cstrike=cos(strike)
+         sstrike=sin(strike)
+         cdip=cos(dip)
+         sdip=sin(dip)
+  
+         ! rotate centre coordinates of weak zone
+         x2r= cstrike*x  -sstrike*y
+         xr = cdip   *x2r-sdip   *z
+         yr = sstrike*x  +cstrike*y
+         zr = sdip   *x2r+cdip   *z
+  
+         x2r= cstrike*x1 -sstrike*x2
+         x1s= cdip   *x2r-sdip   *x3
+         x2s= sstrike*x1 +cstrike*x2
+         x3s= sdip   *x2r+cdip   *x3
+  
+         IF (D.GE.0 .AND. W.GE.0 .AND. L.GE.0) THEN
+            fdgammadot0=fdgammadot0+omega((x1s-xr)/D,beta) &
+                                   *omega((x2s-yr)/W,beta) &
+                                   *omega((x3s-zr)/L,beta)*dg
+         ELSE IF (D.LT.0 .AND. W.LT.0 .AND. L.LT.0) THEN
+            ! spherical ductile zone
+            r=SQRT(((x1s-xr)/D)**2+((x2s-yr)/W)**2+((x3s-zr)/L)**2)
+            fdgammadot0=fdgammadot0+omega(r,beta)*dg
+         ELSE IF (D.LT.0 .AND. W.LT.0) THEN
+            ! cylindrical ductile zone
+            rho=SQRT(((x1s-xr)/D)**2+((x2s-yr)/W)**2)
+            fdgammadot0=fdgammadot0+omega(rho,beta)*omega((x3s-zr)/L,beta)*dg
+         ELSE IF (D.LT.0 .AND. L.LT.0) THEN
+            ! cylindrical ductile zone
+            rho=SQRT(((x1s-xr)/D)**2+((x3s-zr)/L)**2)
+            fdgammadot0=fdgammadot0+omega(rho,beta)*omega((x2s-yr)/W,beta)*dg
+         ELSE IF (W.LT.0 .AND. L.LT.0) THEN
+            ! cylindrical ductile zone
+            rho=SQRT(((x2s-yr)/W)**2+((x3s-zr)/L)**2)
+            fdgammadot0=fdgammadot0+omega(rho,beta)*omega((x1s-xr)/D,beta)*dg
+         ENDIF
+      END DO
+  
+    END FUNCTION fdgammadot0
 
-       ! default is no change in fluidity
-       dgammadot0=0._8
+  END SUBROUTINE builddgammadot0
 
-       DO i=1,n
-          ! retrieve weak zone geometry
-          dg=zones(i)%dgammadot0
-
-          x=zones(i)%x
-          y=zones(i)%y
-          z=zones(i)%z
-          W=zones(i)%length
-          L=zones(i)%width
-          D=zones(i)%thickness
-          strike=zones(i)%strike
-          dip=zones(i)%dip
-
-          ! effective tapered dimensions
-          Wp=W*(1._8+2._8*beta)/2._8
-          Lp=L*(1._8+2._8*beta)/2._8
-          Dp=D*(1._8+2._8*beta)/2._8
-          LM=MAX(Wp,Lp,Dp)
-
-          ! check distance from weak zone
-          IF ((ABS(x3-z).GT.LM) .OR. &
-              (ABS(x1-x).GT.LM) .OR. &
-              (ABS(x2-y).GT.LM)) CYCLE
-
-          ! evaluate contribution from weak zone
-          cstrike=cos(strike)
-          sstrike=sin(strike)
-          cdip=cos(dip)
-          sdip=sin(dip)
-
-          ! rotate centre coordinates of weak zone
-          x2r= cstrike*x  -sstrike*y
-          xr = cdip   *x2r-sdip   *z
-          yr = sstrike*x  +cstrike*y
-          zr = sdip   *x2r+cdip   *z
-
-          x2r= cstrike*x1 -sstrike*x2
-          x1s= cdip   *x2r-sdip   *x3
-          x2s= sstrike*x1 +cstrike*x2
-          x3s= sdip   *x2r+cdip   *x3
-
-          IF (D.GE.0 .AND. W.GE.0 .AND. L.GE.0) THEN
-             dgammadot0=dgammadot0+omega((x1s-xr)/D,beta) &
-                                  *omega((x2s-yr)/W,beta) &
-                                  *omega((x3s-zr)/L,beta)*dg
-          ELSE IF (D.LT.0 .AND. W.LT.0 .AND. L.LT.0) THEN
-             ! spherical ductile zone
-             r=SQRT(((x1s-xr)/D)**2+((x2s-yr)/W)**2+((x3s-zr)/L)**2)
-             dgammadot0=dgammadot0+omega(r,beta)*dg
-          ELSE IF (D.LT.0 .AND. W.LT.0) THEN
-             ! cylindrical ductile zone
-             rho=SQRT(((x1s-xr)/D)**2+((x2s-yr)/W)**2)
-             dgammadot0=dgammadot0+omega(rho,beta)*omega((x3s-zr)/L,beta)*dg
-          ELSE IF (D.LT.0 .AND. L.LT.0) THEN
-             ! cylindrical ductile zone
-             rho=SQRT(((x1s-xr)/D)**2+((x3s-zr)/L)**2)
-             dgammadot0=dgammadot0+omega(rho,beta)*omega((x2s-yr)/W,beta)*dg
-          ELSE IF (W.LT.0 .AND. L.LT.0) THEN
-             ! cylindrical ductile zone
-             rho=SQRT(((x2s-yr)/W)**2+((x3s-zr)/L)**2)
-             dgammadot0=dgammadot0+omega(rho,beta)*omega((x1s-xr)/D,beta)*dg
-          ENDIF
-       END DO
-
-    END FUNCTION dgammadot0
-
-  END SUBROUTINE viscouseigenstress
 
 END MODULE viscoelastic3d

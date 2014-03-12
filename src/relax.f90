@@ -225,6 +225,7 @@ PROGRAM relax
   ! arrays
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: v1,v2,v3,u1,u2,u3,gamma
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: u1r,u2r,u3r
+  REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: lineardgammadot0,nonlineardgammadot0
   REAL*4, DIMENSION(:,:), ALLOCATABLE :: t1,t2,t3
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: inter1,inter2,inter3
   TYPE(TENSOR), DIMENSION(:,:,:), ALLOCATABLE :: tau,sig,moment
@@ -297,6 +298,13 @@ PROGRAM relax
   IF (ALLOCATED(in%linearlayer)) THEN
      CALL viscoelasticstructure(in%linearstruc,in%linearlayer,in%dx3)
      DEALLOCATE(in%linearlayer)
+
+     IF (0 .LT. in%nlwz) THEN
+        ALLOCATE(lineardgammadot0(in%sx1,in%sx2,in%sx3),STAT=iostatus)
+        IF (iostatus.GT.0) STOP "could not allocate lineardgammadot0"
+        CALL builddgammadot0(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%beta, &
+                             in%nlwz,in%linearweakzone,lineardgammadot0)
+     END IF
   END IF
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -305,6 +313,13 @@ PROGRAM relax
   IF (ALLOCATED(in%nonlinearlayer)) THEN
      CALL viscoelasticstructure(in%nonlinearstruc,in%nonlinearlayer,in%dx3)
      DEALLOCATE(in%nonlinearlayer)
+
+     IF (0 .LT. in%nnlwz) THEN
+        ALLOCATE(nonlineardgammadot0(in%sx1,in%sx2,in%sx3),STAT=iostatus)
+        IF (iostatus.GT.0) STOP "could not allocate nonlineardgammadot0"
+        CALL builddgammadot0(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%beta, &
+                             in%nnlwz,in%nonlinearweakzone,nonlineardgammadot0)
+     END IF
   END IF
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -511,17 +526,29 @@ PROGRAM relax
      ! and fault creep)
      ! 1- linear viscosity
      IF (ALLOCATED(in%linearstruc)) THEN
-        CALL viscouseigenstress(in%mu,in%linearstruc,in%linearweakzone,in%nlwz, &
-             sig,in%sx1,in%sx2,in%sx3/2, &
-             in%dx1,in%dx2,in%dx3,moment,0.01_8,MAXWELLTIME=maxwell(1))
+        IF (0 .LT. in%nlwz) THEN
+           CALL viscouseigenstress(in%mu,in%linearstruc, &
+                sig,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=lineardgammadot0,MAXWELLTIME=maxwell(1))
+        ELSE
+           CALL viscouseigenstress(in%mu,in%linearstruc, &
+                sig,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,MAXWELLTIME=maxwell(1))
+        END IF
         mech(1)=1
      END IF
      
      ! 2- powerlaw viscosity
      IF (ALLOCATED(in%nonlinearstruc)) THEN
-        CALL viscouseigenstress(in%mu,in%nonlinearstruc,in%nonlinearweakzone,in%nnlwz, &
-             sig,in%sx1,in%sx2,in%sx3/2, &
-             in%dx1,in%dx2,in%dx3,moment,0.01_8,MAXWELLTIME=maxwell(2))
+        IF (0 .LT. in%nnlwz) THEN
+           CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
+                sig,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=nonlineardgammadot0,MAXWELLTIME=maxwell(1))
+        ELSE
+           CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
+                sig,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,MAXWELLTIME=maxwell(1))
+        END IF
         mech(2)=1
      END IF
      
@@ -595,9 +622,15 @@ PROGRAM relax
      IF (ALLOCATED(in%linearstruc)) THEN
         ! linear viscosity
         v1=0
-        CALL viscouseigenstress(in%mu,in%linearstruc,in%linearweakzone,in%nlwz,sig, &
-             in%sx1,in%sx2,in%sx3/2, &
-             in%dx1,in%dx2,in%dx3,moment,0.01_8,GAMMA=v1)
+        IF (0 .LT. in%nlwz) THEN
+           CALL viscouseigenstress(in%mu,in%linearstruc, &
+                sig,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=lineardgammadot0,GAMMA=v1)
+        ELSE
+           CALL viscouseigenstress(in%mu,in%linearstruc, &
+                sig,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,GAMMA=v1)
+        END IF
         
         ! update slip history
         CALL fieldadd(gamma,v1,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
@@ -606,9 +639,15 @@ PROGRAM relax
      IF (ALLOCATED(in%nonlinearstruc)) THEN
         ! powerlaw viscosity
         v1=0
-        CALL viscouseigenstress(in%mu,in%nonlinearstruc,in%nonlinearweakzone,in%nnlwz,sig, &
-             in%sx1,in%sx2,in%sx3/2, &
-             in%dx1,in%dx2,in%dx3,moment,0.01_8,GAMMA=v1)
+        IF (0 .LT. in%nlwz) THEN
+           CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
+                sig,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=lineardgammadot0,GAMMA=v1)
+        ELSE
+           CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
+                sig,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,GAMMA=v1)
+        END IF
         
         ! update slip history
         CALL fieldadd(gamma,v1,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
