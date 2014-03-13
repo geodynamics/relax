@@ -292,44 +292,6 @@ PROGRAM relax
      DEALLOCATE(in%stressstruc)
   END IF
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -     construct linear viscoelastic structure
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  IF (ALLOCATED(in%linearlayer)) THEN
-     CALL viscoelasticstructure(in%linearstruc,in%linearlayer,in%dx3)
-     DEALLOCATE(in%linearlayer)
-
-     IF (0 .LT. in%nlwz) THEN
-        ALLOCATE(lineardgammadot0(in%sx1,in%sx2,in%sx3),STAT=iostatus)
-        IF (iostatus.GT.0) STOP "could not allocate lineardgammadot0"
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%beta, &
-                             in%nlwz,in%linearweakzone,lineardgammadot0)
-     END IF
-  END IF
-
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -   construct nonlinear viscoelastic structure
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  IF (ALLOCATED(in%nonlinearlayer)) THEN
-     CALL viscoelasticstructure(in%nonlinearstruc,in%nonlinearlayer,in%dx3)
-     DEALLOCATE(in%nonlinearlayer)
-
-     IF (0 .LT. in%nnlwz) THEN
-        ALLOCATE(nonlineardgammadot0(in%sx1,in%sx2,in%sx3),STAT=iostatus)
-        IF (iostatus.GT.0) STOP "could not allocate nonlineardgammadot0"
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%beta, &
-                             in%nnlwz,in%nonlinearweakzone,nonlineardgammadot0)
-     END IF
-  END IF
-
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -   construct nonlinear fault creep structure (rate-strenghtening)
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  IF (ALLOCATED(in%faultcreeplayer)) THEN
-     CALL viscoelasticstructure(in%faultcreepstruc,in%faultcreeplayer,in%dx3)
-     DEALLOCATE(in%faultcreeplayer)
-  END IF
-
   ! first event
   e=1
   ! first output
@@ -496,6 +458,44 @@ PROGRAM relax
   END IF
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -     construct linear viscoelastic structure
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  IF (ALLOCATED(in%linearlayer)) THEN
+     CALL viscoelasticstructure(in%linearstruc,in%linearlayer,in%dx3)
+     DEALLOCATE(in%linearlayer)
+
+     IF (0 .LT. in%nlwz) THEN
+        ALLOCATE(lineardgammadot0(in%sx1,in%sx2,in%sx3),STAT=iostatus)
+        IF (iostatus.GT.0) STOP "could not allocate lineardgammadot0"
+        CALL builddgammadot0(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%beta, &
+                             in%nlwz,in%linearweakzone,lineardgammadot0)
+     END IF
+  END IF
+
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -   construct nonlinear viscoelastic structure
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  IF (ALLOCATED(in%nonlinearlayer)) THEN
+     CALL viscoelasticstructure(in%nonlinearstruc,in%nonlinearlayer,in%dx3)
+     DEALLOCATE(in%nonlinearlayer)
+
+     IF (0 .LT. in%nnlwz) THEN
+        ALLOCATE(nonlineardgammadot0(in%sx1,in%sx2,in%sx3),STAT=iostatus)
+        IF (iostatus.GT.0) STOP "could not allocate nonlineardgammadot0"
+        CALL builddgammadot0(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%beta, &
+                             in%nnlwz,in%nonlinearweakzone,nonlineardgammadot0)
+     END IF
+  END IF
+
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -   construct nonlinear fault creep structure (rate-strenghtening)
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  IF (ALLOCATED(in%faultcreeplayer)) THEN
+     CALL viscoelasticstructure(in%faultcreepstruc,in%faultcreeplayer,in%dx3)
+     DEALLOCATE(in%faultcreeplayer)
+  END IF
+
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! -   start the relaxation
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -547,7 +547,7 @@ PROGRAM relax
         ELSE
            CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
                 sig,in%sx1,in%sx2,in%sx3/2, &
-                in%dx1,in%dx2,in%dx3,moment,MAXWELLTIME=maxwell(1))
+                in%dx1,in%dx2,in%dx3,moment,MAXWELLTIME=maxwell(2))
         END IF
         mech(2)=1
      END IF

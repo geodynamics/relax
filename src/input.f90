@@ -133,7 +133,7 @@ CONTAINS
     END DO
 
     IF (in%isversion) THEN
-       PRINT '("relax version 1.0.5, compiled on ",a)', __DATE__
+       PRINT '("relax version 1.0.6, compiled on ",a)', __DATE__
        PRINT '("")'
        RETURN
     END IF
@@ -169,62 +169,62 @@ CONTAINS
        RETURN
     END IF
     PRINT 2000
-    PRINT '(" RELAX: nonlinear postseismic relaxation with Fourier-domain Green''s function")'
+    PRINT '("# RELAX: nonlinear postseismic relaxation with Fourier-domain Green''s function")'
 #ifdef FFTW3
 #ifdef FFTW3_THREADS
-    PRINT '("     * FFTW3 (multi-threaded) implementation of the FFT")'
+    PRINT '("#     * FFTW3 (multi-threaded) implementation of the FFT")'
 #else
-    PRINT '("     * FFTW3 implementation of the FFT")'
+    PRINT '("#     * FFTW3 implementation of the FFT")'
 #endif
 #else
 #ifdef SGI_FFT
-    PRINT '("     * SGI_FFT implementation of the FFT")'
+    PRINT '("#     * SGI_FFT implementation of the FFT")'
 #else
 #ifdef IMKL_FFT
-    PRINT '("     * Intel MKL implementation of the FFT")'
+    PRINT '("#     * Intel MKL implementation of the FFT")'
 #else
-    PRINT '("     * fourt implementation of the FFT")'
+    PRINT '("#     * fourt implementation of the FFT")'
 #endif
 #endif
 #endif
-!$  PRINT '("     * parallel OpenMP implementation with ",I3.3,"/",I3.3," threads")', &
+!$  PRINT '("#     * parallel OpenMP implementation with ",I3.3,"/",I3.3," threads")', &
 !$                  omp_get_max_threads(),omp_get_num_procs()
 #ifdef PROJ
     IF (in%isoutputproj) THEN
-       PRINT '("     * export to longitude/latitude text format")'
+       PRINT '("#     * export to longitude/latitude text format")'
     ELSE
-       PRINT '("     * export to longitude/latitude text format cancelled (--",a,")")', trim(opts(1)%name)
+       PRINT '("#     * export to longitude/latitude text format cancelled (--",a,")")', trim(opts(1)%name)
     END IF
 #endif
 #ifdef TXT
     IF (in%isoutputtxt) THEN
-       PRINT '("     * export to TXT format")'
+       PRINT '("#     * export to TXT format")'
     ELSE
-       PRINT '("     * export to TXT format cancelled                     (--",a,")")', trim(opts(3)%name)
+       PRINT '("#     * export to TXT format cancelled                     (--",a,")")', trim(opts(3)%name)
     END IF
 #ifdef GRD
     IF (in%isoutputgrd) THEN
-       PRINT '("     * export to GRD format")'
+       PRINT '("#     * export to GRD format")'
     ELSE
-       PRINT '("     * export to GRD format cancelled                     (--",a,")")', trim(opts(5)%name)
+       PRINT '("#     * export to GRD format cancelled                     (--",a,")")', trim(opts(5)%name)
     END IF
 #endif
 #ifdef XYZ
     IF (in%isoutputxyz) THEN
-       PRINT '("     * export to XYZ format")'
+       PRINT '("#     * export to XYZ format")'
     ELSE
-       PRINT '("     * export to XYZ format cancelled                     (--",a,")")', trim(opts(6)%name)
+       PRINT '("#     * export to XYZ format cancelled                     (--",a,")")', trim(opts(6)%name)
     END IF
 #endif
 #endif
 #ifdef VTK
     IF (in%isoutputvtk) THEN
-       PRINT '("     * export to VTK format")'
+       PRINT '("#     * export to VTK format")'
     ELSE
-       PRINT '("     * export to VTK format cancelled                     (--",a,")")', trim(opts(4)%name)
+       PRINT '("#     * export to VTK format cancelled                     (--",a,")")', trim(opts(4)%name)
     END IF
     IF (in%isoutputvtkrelax) THEN
-       PRINT '("     * export relaxation component to VTK format   (--",a,")")', trim(opts(10)%name)
+       PRINT '("#     * export relaxation component to VTK format   (--",a,")")', trim(opts(10)%name)
     END IF
 #endif
     PRINT 2000
@@ -238,24 +238,24 @@ CONTAINS
        iunit=5
     END IF
 
-    PRINT '(a)', "grid dimension (sx1,sx2,sx3)"
+    PRINT '("# grid dimension (sx1,sx2,sx3)")'
     CALL getdata(iunit,dataline)
     READ (dataline,*) in%sx1,in%sx2,in%sx3
     PRINT '(3I5)', in%sx1,in%sx2,in%sx3
 
-    PRINT '(a)', "sampling (dx1,dx2,dx3), smoothing (beta, nyquist)"
+    PRINT '("# sampling (dx1,dx2,dx3), smoothing (beta, nyquist)")'
     CALL getdata(iunit,dataline)
     READ  (dataline,*) in%dx1,in%dx2,in%dx3,in%beta,in%nyquist
     PRINT '(5ES9.2E1)', in%dx1,in%dx2,in%dx3,in%beta,in%nyquist
 
-    PRINT '(a)', "origin position (x0,y0) and rotation"
+    PRINT '("# origin position (x0,y0) and rotation")'
     CALL getdata(iunit,dataline)
     READ  (dataline,*) in%x0,in%y0,in%rot
     PRINT '(3ES9.2E1)', in%x0,in%y0,in%rot
 
 #ifdef PROJ
     IF (in%isoutputproj) THEN
-       PRINT '(a)', "geographic origin (longitude, latitude, UTM zone, unit)"
+       PRINT '("# geographic origin (longitude, latitude, UTM zone, unit)")'
        CALL getdata(iunit,dataline)
        READ  (dataline,*) in%lon0,in%lat0,in%zone,in%umult
        PRINT '(2ES9.2E1,I3.2,ES9.2E1)',in%lon0,in%lat0,in%zone,in%umult
@@ -267,12 +267,12 @@ CONTAINS
     END IF
 #endif
 
-    PRINT '(a)', "observation depth (displacement and stress)"
+    PRINT '("# observation depth (displacement and stress)")'
     CALL getdata(iunit,dataline)
     READ  (dataline,*) in%oz,in%ozs
     PRINT '(2ES9.2E1)', in%oz,in%ozs
 
-    PRINT '(a)', "output directory"
+    PRINT '("# output directory")'
     CALL getdata(iunit,dataline)
     READ (dataline,'(a)') in%wdir
 
@@ -300,29 +300,29 @@ CONTAINS
     CALL exportvtk_grid(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,filename)
 #endif
 
-    PRINT '(a)', "lambda, mu, gamma (gamma = (1 - nu) rho g / mu)"
+    PRINT '("# lambda, mu, gamma (gamma = (1 - nu) rho g / mu)")'
     CALL getdata(iunit,dataline)
     READ (dataline,*) in%lambda,in%mu,in%gam
     PRINT '(3ES10.2E2)',in%lambda,in%mu,in%gam
 
-    PRINT '(a)', "time interval, (positive time step) or (negative skip, scaling)"
+    PRINT '("# time interval, (positive time step) or (negative skip, scaling)")'
     CALL getdata(iunit,dataline)
+    PRINT '(2x,a)', trim(dataline)
     READ  (dataline,*) in%interval, in%odt
 
     IF (in%odt .LT. 0.) THEN
        READ  (dataline,*) dum1, dum2, in%tscale
        in%skip=ceiling(-in%odt)
-       PRINT '(ES9.2E1," (output every ",I3.3," steps, dt scaled by ",ES7.2E1,")")', &
-             in%interval,in%skip,in%tscale
+       PRINT '("# output every ",I3.3," steps, dt scaled by ",ES7.2E1)', in%skip,in%tscale
     ELSE
-       PRINT '(ES9.2E1," (output every ",ES9.2E1," time unit)")', in%interval,in%odt
+       PRINT '("# output every ",ES9.2E1," time unit")', in%odt
     END IF
 
     
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     !           O B S E R V A T I O N          P L A N E S 
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    PRINT '(a)', "number of observation planes"
+    PRINT '("# number of observation planes")'
     CALL getdata(iunit,dataline)
     READ  (dataline,*) in%nop
     PRINT '(I5)', in%nop
@@ -359,7 +359,7 @@ CONTAINS
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     !         O B S E R V A T I O N       P O I N T S
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    PRINT '(a)', "number of observation points"
+    PRINT '("# number of observation points")'
     CALL getdata(iunit,dataline)
     READ  (dataline,*) in%npts
     PRINT '(I5)', in%npts
@@ -400,7 +400,7 @@ CONTAINS
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     !   C O U L O M B      O B S E R V A T I O N      S E G M E N T S
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    PRINT '(a)', "number of stress observation segments"
+    PRINT '("# number of stress observation segments")'
     CALL getdata(iunit,dataline)
     READ  (dataline,*) in%nsop
     PRINT '(I5)', in%nsop
@@ -408,7 +408,7 @@ CONTAINS
        ALLOCATE(in%sop(in%nsop),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate the segment list"
        PRINT 2000
-       PRINT '(a)',"no.        xs       ys       zs  length   width strike   dip friction"
+       PRINT '("# n        xs       ys       zs  length   width strike   dip friction")'
        PRINT 2000
        DO k=1,in%nsop
           CALL getdata(iunit,dataline)
@@ -455,7 +455,7 @@ CONTAINS
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     !                     P R E S T R E S S
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    PRINT '(a)', "number of prestress interfaces"
+    PRINT '("# number of prestress interfaces")'
     CALL getdata(iunit,dataline)
     READ  (dataline,*) in%nps
     PRINT '(I5)', in%nps
@@ -465,7 +465,7 @@ CONTAINS
        IF (iostatus>0) STOP "could not allocate the stress layer structure"
        
        PRINT 2000
-       PRINT '(a)', "no.    depth  sigma11  sigma12  sigma13  sigma22  sigma23  sigma33"
+       PRINT '("# n    depth  sigma11  sigma12  sigma13  sigma22  sigma23  sigma33")'
        PRINT 2000
        DO k=1,in%nps
           CALL getdata(iunit,dataline)
@@ -493,7 +493,7 @@ CONTAINS
     ! - - - - - - - - - - - - - - - - - - - - - - - - - -
     !  L I N E A R    V I S C O U S    I N T E R F A C E
     ! - - - - - - - - - - - - - - - - - - - - - - - - - -
-    PRINT '(a)', "number of linear viscous interfaces"
+    PRINT '("# number of linear viscous interfaces")'
     CALL getdata(iunit,dataline)
     READ  (dataline,*) in%nv
     PRINT '(I5)', in%nv
@@ -503,7 +503,7 @@ CONTAINS
        IF (iostatus>0) STOP "could not allocate the layer structure"
        
        PRINT 2000
-       PRINT '(a)', "no.     depth    gamma0  cohesion"
+       PRINT '("# n     depth    gamma0  cohesion")'
        PRINT 2000
        DO k=1,in%nv
           CALL getdata(iunit,dataline)
@@ -543,7 +543,7 @@ CONTAINS
        ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        !                 L I N E A R   W E A K   Z O N E S
        ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       PRINT '(a)', "number of linear weak zones"
+       PRINT '("# number of linear weak zones")'
        CALL getdata(iunit,dataline)
        READ  (dataline,*) in%nlwz
        PRINT '(I5)', in%nlwz
@@ -551,7 +551,7 @@ CONTAINS
           ALLOCATE(in%linearweakzone(in%nlwz),in%linearweakzonec(in%nlwz),STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the linear weak zones"
           PRINT 2000
-          PRINT '(a)', "no. dgammadot0     x1       x2       x3  length   width thickn. strike   dip"
+          PRINT '("# n dgammadot0     x1       x2       x3  length   width thickn. strike   dip")'
           PRINT 2000
           DO k=1,in%nlwz
              CALL getdata(iunit,dataline)
@@ -609,7 +609,7 @@ CONTAINS
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     !  N O N L I N E A R    V I S C O U S    I N T E R F A C E
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    PRINT '(a)', "number of nonlinear viscous interfaces"
+    PRINT '("# number of nonlinear viscous interfaces")'
     CALL getdata(iunit,dataline)
     READ  (dataline,*) in%npl
     PRINT '(I5)', in%npl
@@ -619,7 +619,7 @@ CONTAINS
        IF (iostatus>0) STOP "could not allocate the layer structure"
        
        PRINT 2000
-       PRINT '(a)', "no.     depth    gamma0     power  cohesion"
+       PRINT '("# n     depth    gamma0     power  cohesion")'
        PRINT 2000
        DO k=1,in%npl
           CALL getdata(iunit,dataline)
@@ -662,7 +662,7 @@ CONTAINS
        ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        !           N O N L I N E A R   W E A K   Z O N E S
        ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       PRINT '(a)', "number of nonlinear weak zones"
+       PRINT '("# number of nonlinear weak zones")'
        CALL getdata(iunit,dataline)
        READ  (dataline,*) in%nnlwz
        PRINT '(I5)', in%nnlwz
@@ -670,7 +670,7 @@ CONTAINS
           ALLOCATE(in%nonlinearweakzone(in%nnlwz),in%nonlinearweakzonec(in%nnlwz),STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the nonlinear weak zones"
           PRINT 2000
-          PRINT '(a)', "no. dgammadot0     x1       x2       x3  length   width thickn. strike   dip"
+          PRINT '("# n dgammadot0     x1       x2       x3  length   width thickn. strike   dip")'
           PRINT 2000
           DO k=1,in%nnlwz
              CALL getdata(iunit,dataline)
@@ -738,7 +738,7 @@ CONTAINS
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     !                 F A U L T    C R E E P
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    PRINT '(a)', "number of fault creep interfaces"
+    PRINT '("# number of fault creep interfaces")'
     CALL getdata(iunit,dataline)
     READ  (dataline,*) in%nfc
     PRINT '(I5)', in%nfc
@@ -749,7 +749,7 @@ CONTAINS
        IF (iostatus>0) STOP "could not allocate the layer structure"
 
        PRINT 2000
-       PRINT '(a)', "no.    depth   gamma0 (a-b)sig friction cohesion"
+       PRINT '("# n    depth   gamma0 (a-b)sig friction cohesion")'
        PRINT 2000
        DO k=1,in%nfc
           CALL getdata(iunit,dataline)
@@ -784,7 +784,7 @@ CONTAINS
        ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        !             A F T E R S L I P       P L A N E S
        ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       PRINT '(a)', "number of afterslip planes"
+       PRINT '("# number of afterslip planes")'
        CALL getdata(iunit,dataline)
        READ  (dataline,*) in%np
        PRINT '(I5)', in%np
@@ -860,7 +860,7 @@ CONTAINS
     ! - - - - - - - - - - - - - - - - - - - - - - - - - -
     !        S H E A R     S O U R C E S   R A T E
     ! - - - - - - - - - - - - - - - - - - - - - - - - - -
-    PRINT '(a)', "number of inter-seismic strike-slip segments"
+    PRINT '("# number of inter-seismic strike-slip segments")'
     CALL getdata(iunit,dataline)
     READ  (dataline,*) in%inter%ns
     PRINT '(I5)', in%inter%ns
@@ -868,7 +868,7 @@ CONTAINS
        ALLOCATE(in%inter%s(in%inter%ns),in%inter%sc(in%inter%ns),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate the source list"
        PRINT 2000
-       PRINT '(a)',"no.  slip/time  xs ys zs  length width  strike dip rake"
+       PRINT '("# n  slip/time  xs ys zs  length width  strike dip rake")'
        PRINT 2000
        DO k=1,in%inter%ns
           CALL getdata(iunit,dataline)
@@ -925,7 +925,7 @@ CONTAINS
     ! - - - - - - - - - - - - - - - - - - - - - - - - - -
     !       T E N S I L E   S O U R C E S   R A T E
     ! - - - - - - - - - - - - - - - - - - - - - - - - - -
-    PRINT '(a)', "number of inter-seismic tensile segments"
+    PRINT '("# number of inter-seismic tensile segments")'
     CALL getdata(iunit,dataline)
     READ  (dataline,*) in%inter%nt
     PRINT '(I5)', in%inter%nt
@@ -933,7 +933,7 @@ CONTAINS
        ALLOCATE(in%inter%ts(in%inter%nt),in%inter%tsc(in%inter%nt),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate the tensile source list"
        PRINT 2000
-       PRINT '("no.  opening       xs       ys       ","zs  length   width strike   dip")'
+       PRINT '("n  opening       xs       ys       ","zs  length   width strike   dip")'
        PRINT 2000
        DO k=1,in%inter%nt
           CALL getdata(iunit,dataline)
@@ -988,7 +988,7 @@ CONTAINS
     ! - - - - - - - - - - - - - - - - - - - - - - - - - -
     !       C 0 - S E I S M I C     E V E N T S
     ! - - - - - - - - - - - - - - - - - - - - - - - - - -
-    PRINT '(a)', "number of events"
+    PRINT '("# number of events")'
     CALL getdata(iunit,dataline)
     READ (dataline,*) in%ne
     PRINT '(I5)', in%ne
@@ -997,7 +997,7 @@ CONTAINS
     
     DO e=1,in%ne
        IF (1 .NE. e) THEN
-          PRINT '("time of next event")'
+          PRINT '("# time of next event")'
           CALL getdata(iunit,dataline)
           READ (dataline,*) in%events(e)%time
           
@@ -1023,7 +1023,7 @@ CONTAINS
        ! - - - - - - - - - - - - - - - - - - - - - - - - - -
        !           S H E A R     S O U R C E S
        ! - - - - - - - - - - - - - - - - - - - - - - - - - -
-       PRINT '(a)', "number of coseismic strike-slip segments"
+       PRINT '("# number of coseismic strike-slip segments")'
        CALL getdata(iunit,dataline)
        READ  (dataline,*) in%events(e)%ns
        PRINT '(I5)', in%events(e)%ns
@@ -1032,7 +1032,7 @@ CONTAINS
                STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the source list"
           PRINT 2000
-          PRINT '(a)',"no.     slip       xs       ys       zs  length   width strike   dip   rake"
+          PRINT '("# n     slip       xs       ys       zs  length   width strike   dip   rake")'
           PRINT 2000
           DO k=1,in%events(e)%ns
              CALL getdata(iunit,dataline)
@@ -1126,7 +1126,7 @@ CONTAINS
        ! - - - - - - - - - - - - - - - - - - - - - - - - - -
        !          T E N S I L E      S O U R C E S
        ! - - - - - - - - - - - - - - - - - - - - - - - - - -
-       PRINT '(a)', "number of coseismic tensile segments"
+       PRINT '("# number of coseismic tensile segments")'
        CALL getdata(iunit,dataline)
        READ  (dataline,*) in%events(e)%nt
        PRINT '(I5)', in%events(e)%nt
@@ -1135,7 +1135,7 @@ CONTAINS
                STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the tensile source list"
           PRINT 2000
-          PRINT '("no.  opening       xs       ys       ", "zs  length   width strike   dip")'
+          PRINT '("# n  opening       xs       ys       zs  length   width strike   dip")'
           PRINT 2000
           DO k=1,in%events(e)%nt
 
@@ -1197,7 +1197,7 @@ CONTAINS
        ! - - - - - - - - - - - - - - - - - - - - - - - - - -
        !                M O G I      S O U R C E S
        ! - - - - - - - - - - - - - - - - - - - - - - - - - -
-       PRINT '(a)', "number of coseismic dilatation point sources"
+       PRINT '("# number of coseismic dilatation point sources")'
        CALL getdata(iunit,dataline)
        READ  (dataline,*) in%events(e)%nm
        PRINT '(I5)', in%events(e)%nm
@@ -1206,7 +1206,7 @@ CONTAINS
                STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the tensile source list"
           PRINT 2000
-          PRINT '(a)',"no. strain (positive for extension) xs ys zs"
+          PRINT '("# n strain (positive for extension) xs ys zs")'
           PRINT 2000
           DO k=1,in%events(e)%nm
              CALL getdata(iunit,dataline)
@@ -1233,7 +1233,7 @@ CONTAINS
        ! - - - - - - - - - - - - - - - - - - - - - - - - - -
        !             S U R F A C E   L O A D S
        ! - - - - - - - - - - - - - - - - - - - - - - - - - -
-       PRINT '(a)', "number of surface loads"
+       PRINT '("# number of surface loads")'
        CALL getdata(iunit,dataline)
        READ  (dataline,*) in%events(e)%nl
        PRINT '(I5)', in%events(e)%nl
@@ -1242,9 +1242,9 @@ CONTAINS
                STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the load list"
           PRINT 2000
-          PRINT '(a)',"t3 in units of force/surface, positive down"
-          PRINT '(a)',"T>0 for t3 sin(2pi/T+phi), T<=0 for t3 H(t)"
-          PRINT '(a)',"no.       xs       ys   length    width       t3        T      phi"
+          PRINT '("# t3 in units of force/surface, positive down")'
+          PRINT '("# T>0 for t3 sin(2pi/T+phi), T<=0 for t3 H(t)")'
+          PRINT '("# n       xs       ys   length    width       t3        T      phi")'
           PRINT 2000
           DO k=1,in%events(e)%nl
              CALL getdata(iunit,dataline)
@@ -1315,14 +1315,14 @@ CONTAINS
 
     ! maximum recommended sampling size
     PRINT '(a,2ES8.2E1)', &
-         "max sampling size (hor.,vert.):", minlength/2.5_8,minwidth/2.5_8
+         "# max sampling size (hor.,vert.):", minlength/2.5_8,minwidth/2.5_8
 
     PRINT 2000
 
-2000 FORMAT ("----------------------------------------------------------------------------")
-2100 FORMAT ("no.        x1       x2       x3   length    width strike    dip")
-2300 FORMAT ("no. name       x1       x2       x3 (name is a 4-character string)")
-2500 FORMAT ("no.        x1       x2       x3   length    width strike    dip   rake")
+2000 FORMAT ("# ----------------------------------------------------------------------------")
+2100 FORMAT ("# n        x1       x2       x3   length    width strike    dip")
+2300 FORMAT ("# n name       x1       x2       x3 (name is a 4-character string)")
+2500 FORMAT ("# n        x1       x2       x3   length    width strike    dip   rake")
 
   END SUBROUTINE init
 
