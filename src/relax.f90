@@ -543,7 +543,7 @@ PROGRAM relax
         IF (0 .LT. in%nnlwz) THEN
            CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
                 sig,in%sx1,in%sx2,in%sx3/2, &
-                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=nonlineardgammadot0,MAXWELLTIME=maxwell(1))
+                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=nonlineardgammadot0,MAXWELLTIME=maxwell(2))
         ELSE
            CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
                 sig,in%sx1,in%sx2,in%sx3/2, &
