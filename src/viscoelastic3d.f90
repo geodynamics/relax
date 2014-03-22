@@ -128,11 +128,10 @@ CONTAINS
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(TENSOR), INTENT(OUT), DIMENSION(sx1,sx2,sx3) :: moment
     REAL*8, OPTIONAL, INTENT(INOUT) :: maxwelltime
+    REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(IN), OPTIONAL :: dgammadot0
 #ifdef ALIGN_DATA
-    REAL*4, DIMENSION(sx1+2,sx2,sx3), INTENT(IN), OPTIONAL :: dgammadot0
     REAL*4, DIMENSION(sx1+2,sx2,sx3), INTENT(OUT), OPTIONAL :: gamma
 #else
-    REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(IN), OPTIONAL :: dgammadot0
     REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(OUT), OPTIONAL :: gamma
 #endif
 
