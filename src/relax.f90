@@ -177,16 +177,14 @@
   !! (04-26-11) - include command-line arguments
   !! (11-04-11) - compatible with gfortran                         <br>
   !! (07-25-13) - include cylindrical and spherical ductile zones  <br>
+  !! (01-03-14) - accelerate processing of ductile zones           <br>
   !!
   !! \todo 
   !!   - homogenize VTK output so that geometry of events match event index
   !!   - evaluate Green's function, stress and body forces in GPU
   !!   - write the code for MPI multi-thread
-  !!   - fix the vtk export to grid for anisotropic sampling
   !!   - export position of observation points to long/lat in opts-geo.dat
-  !!   - check the projected output on the south hemisphere
   !!   - check the fully-relaxed afterslip for uniform stress change
-  !!   - include topography of parameter interface
   !!   - export afterslip output in VTK legacy format (binary)
   !!   - export ductile zones for cylindrical and spherical geometries
   !------------------------------------------------------------------------
@@ -465,9 +463,9 @@ PROGRAM relax
      DEALLOCATE(in%linearlayer)
 
      IF (0 .LT. in%nlwz) THEN
-        ALLOCATE(lineardgammadot0(in%sx1,in%sx2,in%sx3),STAT=iostatus)
+        ALLOCATE(lineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
         IF (iostatus.GT.0) STOP "could not allocate lineardgammadot0"
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%beta, &
+        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%beta, &
                              in%nlwz,in%linearweakzone,lineardgammadot0)
      END IF
   END IF
@@ -480,9 +478,9 @@ PROGRAM relax
      DEALLOCATE(in%nonlinearlayer)
 
      IF (0 .LT. in%nnlwz) THEN
-        ALLOCATE(nonlineardgammadot0(in%sx1,in%sx2,in%sx3),STAT=iostatus)
+        ALLOCATE(nonlineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
         IF (iostatus.GT.0) STOP "could not allocate nonlineardgammadot0"
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%beta, &
+        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%beta, &
                              in%nnlwz,in%nonlinearweakzone,nonlineardgammadot0)
      END IF
   END IF
