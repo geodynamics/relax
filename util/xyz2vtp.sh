@@ -38,7 +38,11 @@ cat $XYZFILE | awk -v c=$com '
 		}
 	}
 	else{
-		line=line " " $2" "$1" "$3;
+		if (NF<3){
+			line=line " " $2 " " $1 " 0";
+		}else{
+			line=line " " $2 " " $1 " "$3;
+		}
 		n=n+1;
 	}
 	}
