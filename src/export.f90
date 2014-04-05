@@ -1922,9 +1922,9 @@ END SUBROUTINE exportcreep_vtk
        sdip=sin(dip)
  
        ! surface normal vector components
-       n(1)=-cdip*cstrike
-       n(2)=+cdip*sstrike
-       n(3)=+sdip
+       n(1)=+cdip*cstrike
+       n(2)=-cdip*sstrike
+       n(3)=-sdip
 
        ! strike-slip unit direction
        s(1)=sstrike
@@ -1935,7 +1935,7 @@ END SUBROUTINE exportcreep_vtk
        d(1)=-cstrike*sdip
        d(2)=+sstrike*sdip
        d(3)=-cdip
-
+       
        ! traction vector
        t=lsig .tdot. n
 
@@ -2146,9 +2146,9 @@ END SUBROUTINE exportcreep_vtk
        s(3)=0._8
 
        ! dip-slip unit direction
-       d(1)=+cstrike*sdip
-       d(2)=-sstrike*sdip
-       d(3)=+cdip
+       d(1)=-cstrike*sdip
+       d(2)=+sstrike*sdip
+       d(3)=-cdip
 
        ! traction vector
        t=lsig .tdot. n
