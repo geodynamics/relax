@@ -121,9 +121,17 @@ def main():
 		    try:
 		        with open(fname) as f: pass
 		    except IOError as e:
-                        # skipping station s
-                        print >> sys.stderr, 'obsres.py: could not fine '+fname+', skipping.'
-			continue
+                        fname=ddir+'/'+s.upper()+'.dat'
+                        try:
+                            with open(fname) as f: pass
+                        except IOError as e:
+                            fname=ddir+'/'+s.lower()+'.dat'
+                            try:
+                                with open(fname) as f: pass
+                            except IOError as e:
+                                # skipping station s
+                                print >> sys.stderr, 'obsres.py: could not find '+fname+', skipping.'
+			        continue
                 f=file(fname,'r')
 		try:
                     tr,nr,er,dr,sn,se,sd=np.loadtxt(f,comments='#',unpack=True,usecols=[0,1,2,3,4,5,6])
