@@ -3023,17 +3023,35 @@ CONTAINS
     REAL*4, INTENT(IN), DIMENSION(sx1,sx2,sx3) :: v
     REAL*4, INTENT(IN), OPTIONAL :: c1,c2
 
+    INTEGER :: i3
+
     IF (PRESENT(c1)) THEN
        IF (PRESENT(c2)) THEN
-          u=c1*u+c2*v
+!$omp parallel do
+          DO i3=1,sx3
+             u(:,:,i3)=c1*u(:,:,i3)+c2*v(:,:,i3)
+          END DO
+!$omp end parallel do
        ELSE
-          u=c1*u+v
+!$omp parallel do
+          DO i3=1,sx3
+             u(:,:,i3)=c1*u(:,:,i3)+v(:,:,i3)
+          END DO
+!$omp end parallel do
        END IF
     ELSE
        IF (PRESENT(c2)) THEN
-          u=u+c2*v
+!$omp parallel do
+          DO i3=1,sx3
+             u(:,:,i3)=u(:,:,i3)+c2*v(:,:,i3)
+          END DO
+!$omp end parallel do
        ELSE
-          u=u+v
+!$omp parallel do
+          DO i3=1,sx3
+             u(:,:,i3)=u(:,:,i3)+v(:,:,i3)
+          END DO
+!$omp end parallel do
        END IF
     END IF
 
@@ -3117,34 +3135,70 @@ CONTAINS
        IF (PRESENT(c2)) THEN
           IF (0._4 .eq. c1) THEN
              IF (0._4 .eq. c2) THEN
-                DO 05 i3=1,sx3; DO 05 i2=1,sx2; DO 05 i1=1,sx1
-                   t1(i1,i2,i3)=TENSOR(0._4,0._4,0._4,0._4,0._4,0._4)
-05                 CONTINUE
+!$omp parallel do private(i1,i2)
+                DO i3=1,sx3
+                   DO i2=1,sx2
+                      DO i1=1,sx1
+                         t1(i1,i2,i3)=TENSOR(0._4,0._4,0._4,0._4,0._4,0._4)
+                      END DO 
+                   END DO
+                END DO
+!$omp end parallel do
              ELSE
-                DO 10 i3=1,sx3; DO 10 i2=1,sx2; DO 10 i1=1,sx1
-                   t1(i1,i2,i3)=c2 .times. t2(i1,i2,i3)
-10                 CONTINUE
-                END IF
+!$omp parallel do private(i1,i2)
+                DO i3=1,sx3
+                   DO i2=1,sx2
+                      DO i1=1,sx1
+                         t1(i1,i2,i3)=c2 .times. t2(i1,i2,i3)
+                      END DO
+                   END DO
+                END DO
+!$omp end parallel do
+             END IF
           ELSE
-             DO 20 i3=1,sx3; DO 20 i2=1,sx2; DO 20 i1=1,sx1
-                t1(i1,i2,i3)=(c1 .times. t1(i1,i2,i3)) .plus. &
-                             (c2 .times. t2(i1,i2,i3))
-20           CONTINUE
+!$omp parallel do private(i1,i2)
+             DO i3=1,sx3
+                DO i2=1,sx2
+                   DO i1=1,sx1
+                      t1(i1,i2,i3)=(c1 .times. t1(i1,i2,i3)) .plus. &
+                                   (c2 .times. t2(i1,i2,i3))
+                   END DO
+                END DO
+             END DO
+!$omp end parallel do
           END IF
        ELSE
-          DO 30 i3=1,sx3; DO 30 i2=1,sx2; DO 30 i1=1,sx1
-             t1(i1,i2,i3)=(c1 .times. t1(i1,i2,i3)) .plus. t2(i1,i2,i3)
-30           CONTINUE
+!$omp parallel do private(i1,i2)
+          DO i3=1,sx3
+             DO i2=1,sx2
+                DO i1=1,sx1
+                   t1(i1,i2,i3)=(c1 .times. t1(i1,i2,i3)) .plus. t2(i1,i2,i3)
+                END DO
+             END DO
+          END DO
+!$omp end parallel do
        END IF
     ELSE
        IF (PRESENT(c2)) THEN
-          DO 40 i3=1,sx3; DO 40 i2=1,sx2; DO 40 i1=1,sx1
-             t1(i1,i2,i3)=t1(i1,i2,i3) .plus. (c2 .times. t2(i1,i2,i3))
-40        CONTINUE
+!$omp parallel do private(i1,i2)
+          DO i3=1,sx3
+             DO i2=1,sx2
+                DO i1=1,sx1
+                   t1(i1,i2,i3)=t1(i1,i2,i3) .plus. (c2 .times. t2(i1,i2,i3))
+                END DO
+             END DO
+          END DO
+!$omp end parallel do
        ELSE
-          DO 50 i3=1,sx3; DO 50 i2=1,sx2; DO 50 i1=1,sx1
-             t1(i1,i2,i3)=t2(i1,i2,i3) .plus. t2(i1,i2,i3)
-50        CONTINUE
+!$omp parallel do private(i1,i2)
+          DO i3=1,sx3
+             DO i2=1,sx2
+                DO i1=1,sx1
+                   t1(i1,i2,i3)=t2(i1,i2,i3) .plus. t2(i1,i2,i3)
+                END DO
+             END DO
+          END DO
+!$omp end parallel do
        END IF
     END IF
 
