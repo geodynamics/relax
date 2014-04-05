@@ -22,8 +22,8 @@ if (test $# -lt "1"); then
 	echo "usage: $self -s strike -d dip index"
 	echo ""
 	echo "a fault normal, dip and strike vectors are "
-	echo "n = [+sin(str) * sin(dip), -cos(str) * sin(dip), -cos(dip)]"
-	echo "d = [+sin(str) * cos(dip), -cos(str) * cos(dip), +sin(dip)]"
+	echo "n = [-sin(str) * sin(dip), +cos(str) * sin(dip), -cos(dip)]"
+	echo "d = [+sin(str) * cos(dip), -cos(str) * cos(dip), -sin(dip)]"
 	echo "s = [cos(str), sin(str), 0]"
 	echo
 	echo "the local traction components are"
@@ -36,8 +36,9 @@ if (test $# -lt "1"); then
 	echo "ts = (t1 - tn * n(1)) * s(1) + (t2 - tn * n(2)) * s(2)"
 	echo "td = (t1 - tn * n(1)) * d(1) + (t2 - tn * n(2)) * d(2) + (t3 - tn * n(3)) * d(3)"
 	echo ""
-	echo "by convention, ts is positive for left lateral strike shear."
-	echo "the 1, 2 & 3 directions are north, east and down, respectively."
+	echo "by convention, ts is positive for left lateral strike shear. dip direction"
+	echo "is up dip. the 1, 2 & 3 directions are north, east and down, respectively."
+	echo "vector s, d, and n form a right-handed coordinate system."
 	echo ""
 	exit
 fi
@@ -87,7 +88,7 @@ n2=`echo "" | awk -v d=$dip -v s=$str '{print -cos(s)*sin(d) }'`
 n3=`echo "" | awk -v d=$dip -v s=$str '{print -cos(d) }'`
 d1=`echo "" | awk -v d=$dip -v s=$str '{print +sin(s)*cos(d) }'`
 d2=`echo "" | awk -v d=$dip -v s=$str '{print -cos(s)*cos(d) }'`
-d3=`echo "" | awk -v d=$dip -v s=$str '{print +sin(d) }'`
+d3=`echo "" | awk -v d=$dip -v s=$str '{print -sin(d) }'`
 
 grdmath $GRD11 $n1 MUL $GRD12 $n2 MUL ADD $GRD13 $n3 MUL ADD = $T1
 grdmath $GRD12 $n1 MUL $GRD22 $n2 MUL ADD $GRD23 $n3 MUL ADD = $T2
