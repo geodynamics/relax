@@ -587,10 +587,10 @@ CONTAINS
 
 #ifdef VTK
              ! export the ductile zone in VTK format
-             rffilename=trim(in%wdir)//"/weakzone-"//digit//".vtp"
-             CALL exportvtk_brick(in%linearweakzone(k)%x,in%linearweakzone(k)%y,in%linearweakzone(k)%z, &
-                                  in%linearweakzone(k)%length,in%linearweakzone(k)%width,in%linearweakzone(k)%thickness, &
-                                  in%linearweakzone(k)%strike,in%linearweakzone(k)%dip,rffilename)
+             !rffilename=trim(in%wdir)//"/weakzone-"//digit//".vtp"
+             !CALL exportvtk_brick(in%linearweakzone(k)%x,in%linearweakzone(k)%y,in%linearweakzone(k)%z, &
+             !                     in%linearweakzone(k)%length,in%linearweakzone(k)%width,in%linearweakzone(k)%thickness, &
+             !                     in%linearweakzone(k)%strike,in%linearweakzone(k)%dip,rffilename)
 #endif
              ! export the ductile zone in GMT .xy format
              rffilename=trim(in%wdir)//"/weakzone-"//digit//".xy"
@@ -706,15 +706,15 @@ CONTAINS
 
 #ifdef VTK
                   ! export the ductile zone in VTK format
-                  rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".vtp"
-                  CALL exportvtk_brick(in%nonlinearweakzone(k)%x, &
-                                       in%nonlinearweakzone(k)%y, &
-                                       in%nonlinearweakzone(k)%z, &
-                                       in%nonlinearweakzone(k)%length, &
-                                       in%nonlinearweakzone(k)%width, &
-                                       in%nonlinearweakzone(k)%thickness, &
-                                       in%nonlinearweakzone(k)%strike, &
-                                       in%nonlinearweakzone(k)%dip,rffilename)
+                  !rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".vtp"
+                  !CALL exportvtk_brick(in%nonlinearweakzone(k)%x, &
+                  !                     in%nonlinearweakzone(k)%y, &
+                  !                     in%nonlinearweakzone(k)%z, &
+                  !                     in%nonlinearweakzone(k)%length, &
+                  !                     in%nonlinearweakzone(k)%width, &
+                  !                     in%nonlinearweakzone(k)%thickness, &
+                  !                     in%nonlinearweakzone(k)%strike, &
+                  !                     in%nonlinearweakzone(k)%dip,rffilename)
 #endif
                   ! export the ductile zone in GMT .xy format
                   rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".xy"
