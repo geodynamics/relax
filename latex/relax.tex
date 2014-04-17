@@ -48,8 +48,7 @@
 \normalsize{Earth Observatory of Singapore, Nanyang Technological University}\\
 }
 
-% Include the date command, but leave its argument blank.
-\date{Oct. 11th, 2011, last revision Dec. 23th, 2012}
+\date{Oct. 11th, 2011, last revision April. 17th, 2014}
 
 \begin{document} 
 
@@ -71,7 +70,7 @@
 
 \section{Introduction}
 
-The open-source program RELAX evaluates the displacement and stress in a half space with gravity due to dislocations~\citep[e.g.,][]{okada92}, Mogi sources~\citep{mogi58}, and surface tractions; and the nonlinear time-dependent deformation that follows due to power-law rheology materials in the bulk and/or rate-strengthening friction faults. The numerical method is based on a Fourier-domain elastic Green's function~\citep{barbot+09b,barbot&fialko10a} and an equivalent body-force representation of co-seismic and post-seismic deformation processes~\citep{barbot+09a,barbot&fialko10b}. Application of the method for the 2004 Mw\,6 Parkfield earthquake can be found in the work of~\cite{barbot+09a} and \cite{bruhat+11}. A coupled model of afterslip and laterally-heterogeneous viscoelastic flow following the 1999 Mw\,7.6 Chi-Chi earthquake using relax is described by~\cite{rousset+12}.
+The open-source program Relax evaluates the displacement and stress in a half space with gravity due to dislocations~\citep[e.g.,][]{okada92}, Mogi sources~\citep{mogi58}, and surface tractions; and the nonlinear time-dependent deformation that follows due to power-law rheology materials in the bulk and/or rate-strengthening friction faults. The numerical method is based on a Fourier-domain elastic Green's function~\citep{barbot+09b,barbot&fialko10a} and an equivalent body-force representation of co-seismic and post-seismic deformation processes~\citep{barbot+09a,barbot&fialko10b}. Application of the method for the 2004 Mw\,6 Parkfield earthquake can be found in the work of~\cite{barbot+09a} and \cite{bruhat+11}. A coupled model of afterslip and laterally-heterogeneous viscoelastic flow following the 1999 Mw\,7.6 Chi-Chi earthquake using Relax is described by~\cite{rousset+12}.
 
 The possible applications for the earthquake-cycle modeling include i) co-seismic displacement and Coulomb stress calculation, ii) quasi-static stress transfer between earthquakes due to a postseismic transient, iii) modeling of postseismic transients including nonlinear rheologies and multiple mechanisms, iv) cycle of multiple earthquakes and spin-up models, v) loading cycle of lakes or the monsoon, vi) generation of viscoelastic Green's functions for kinematic inversions of geodetic time series.
 
@@ -93,7 +92,7 @@ We are greatly thankful for the help of Yuri Fialko and Walter Landry, who contr
 \section{Theoretical background}
 
 \subsection{Green's function}
-The approach used in RELAX to evaluate the three-dimensional displacement in a half space is to solve for the displacement field, for static deformation, or the velocity field, for quasi-static problems, using the elastic Green's function. Static deformation caused by earthquakes and time-dependent processes such as viscoelastic flow, poroelastic rebound and fault afterslip can be represented by equivalent body forces and surface tractions so the methods consists, without loss of generality, in finding the displacement and stress caused by an arbitrary distribution of body forces $f_i$ and surface tractions subjected to a mixed boundary condition with buoyancy. Consider the inhomogeneous Navier's equation
+The approach used in Relax to evaluate the three-dimensional displacement in a half space is to solve for the displacement field, for static deformation, or the velocity field, for quasi-static problems, using the elastic Green's function. Static deformation caused by earthquakes and time-dependent processes such as viscoelastic flow, poroelastic rebound and fault afterslip can be represented by equivalent body forces and surface tractions so the methods consists, without loss of generality, in finding the displacement and stress caused by an arbitrary distribution of body forces $f_i$ and surface tractions subjected to a mixed boundary condition with buoyancy. Consider the inhomogeneous Navier's equation
 %
 \begin{equation}\label{eqn:inhomogeneous_navier_equation}
 \mu\left(\frac{\alpha}{1-\alpha}u_{j,ij}+u_{i,jj}\right)+f_i=0
@@ -169,7 +168,7 @@ The formulation (\ref{eqn:fourier_domain_solution}-\ref{eqn:integral2}) is a sol
 
 \subsection{Time integration}
 
-The time stepping in RELAX is done by linearizing the time advance using the Runge-Kutta numerical integration scheme with an adaptive time steps.
+The time stepping in Relax is done by linearizing the time advance using the Runge-Kutta numerical integration scheme with an adaptive time steps.
 For viscoelastic flow and afterslip, the instantaneous strain rate is a function of stress only so that one can write
 \begin{equation}
 \dot{\epsilon} = f(t,\epsilon)
@@ -220,17 +219,17 @@ and the function $\delta$ is the numerical equivalent to the Dirac's delta funct
 \begin{equation}
 \delta_T(x)=\frac{1}{T\sqrt{2\pi}}\exp\!\left(-\frac{x^2}{2T^2}\right)
 \end{equation}
-In RELAX, the fault thickness is chosen to be the sampling size $T=\Delta x$. A similar relation can be found for faults of arbitrary orientation. The generalization simply involves rotations and translations. 
+In Relax, the fault thickness is chosen to be the sampling size $T=\Delta x$. A similar relation can be found for faults of arbitrary orientation. The generalization simply involves rotations and translations. 
 
 \pagebreak
 \section{Setting up the program}
 
 \subsection{Introduction}
-The RELAX code is written in Fortran90 with a few I/O functions written in C. The performance of the code depends greatly on the efficiency of the discrete Fourier transform being used. The program can work with the Cooley-Tukey FFT algorithm, for which the source code is provided. For better performance, it is recommended to use the FFT native to the computer environment. The program can readily use the SGI, the FFTW and the Intel MKL FFTs. While we have found that the Intel MKL FFT provides the most efficient calculation, the package provided by the CIG web site implements FFTW.
+The Relax code is written in Fortran90 with a few I/O functions written in C. The performance of the code depends greatly on the efficiency of the discrete Fourier transform being used. The program can work with the Cooley-Tukey FFT algorithm, for which the source code is provided. For better performance, it is recommended to use the FFT native to the computer environment. The program can readily use the SGI, the FFTW and the Intel MKL FFTs. While we have found that the Intel MKL FFT provides the most efficient calculation, the package provided by the CIG web site implements FFTW.
 
-Both the post-processing and the storage of the simulation are greatly facilitated by writing output files in the cross-platform NetCDF binary format used by the Generic Mapping Tools (GMT). GMT is convenient to rapidly display the simulation results as it is computed, transform the output into other formats or projections (for example, to project the displacement into the Radar line of sight of a satellite to compare with synthetic aperture radar data), make animations and communicate results. Although RELAX can output in ASCII format, it is recommended to link the code to the GMT 4.5 libraries. A suite of GMT-based post-processing scripts are available in the \verb`util` directory and require the GMT binaries to be installed in your system.
+Both the post-processing and the storage of the simulation are greatly facilitated by writing output files in the cross-platform NetCDF binary format used by the Generic Mapping Tools (GMT). GMT is convenient to rapidly display the simulation results as it is computed, transform the output into other formats or projections (for example, to project the displacement into the Radar line of sight of a satellite to compare with synthetic aperture radar data), make animations and communicate results. Although Relax can output in ASCII format, it is recommended to link the code to the GMT 4.5 libraries. A suite of GMT-based post-processing scripts are available in the \verb`util` directory and require the GMT binaries to be installed in your system.
 
-The output of the simulation can be projected on the fly to geographic coordinates, which is convenient to communicate results to others in a global coordinate system. In RELAX, this is performed with the Proj4 library (Proj4.7.1 or higher). It is recommended to install these libraries on your system to facilitate post processing.
+The output of the simulation can be projected on the fly to geographic coordinates, which is convenient to communicate results to others in a global coordinate system. In Relax, this is performed with the Proj4 library (Proj4.7.1 or higher). It is recommended to install these libraries on your system to facilitate post processing.
 
 Examples input files can be found in the \verb'examples' directory for many earthquakes with published slip distribution models. The directory \verb'examples/tutorials' includes simple directions to evaluate models and carry out post processing and mapping. The man page (type \verb'man relax' in a terminal) provides a thorough description of every input item, and provides additional examples.
 
@@ -292,7 +291,7 @@ Many simulations imply the relaxation of the stress perturbation from a coseismi
 \label{fig:geologic_fault}
 \end{figure*}
 %
-Every slip patch is described by a geologic representation, as shown in Figure~\ref{fig:geologic_fault}. A fault segment is modeled by its length in the along-strike direction, its width in the down-dip direction, the position of the top tip ($x_s, y_s$, and $z_s$) and its strike and dip angles. By convention, an observer located at the top fault tip and oriented in the strike direction would face the fault trace and would have the fault dipping to his right for a dip angle between $0^\circ$ and $90^\circ$. This is the same convention used by \cite{okada92}, \cite{wang+03a} and \cite{wang+06a}. In RELAX, to avoid high frequency oscillations near a stress concentration (the so-called Gibbs phenomenon), the slip distribution is smoothed near the fault tip. The amplitude of smoothing is controlled by a roll-off parameter going from $\beta=0$ for no smoothing to $\beta=0.5$ for strong smoothing. A value of $\beta=0.2$ ensures stability of the computation. The seismic moment is conserved for all smoothing values. There is a default value of the smoothing parameter defined at the beginning of the input file
+Every slip patch is described by a geologic representation, as shown in Figure~\ref{fig:geologic_fault}. A fault segment is modeled by its length in the along-strike direction, its width in the down-dip direction, the position of the top tip ($x_s, y_s$, and $z_s$) and its strike and dip angles. By convention, an observer located at the top fault tip and oriented in the strike direction would face the fault trace and would have the fault dipping to his right for a dip angle between $0^\circ$ and $90^\circ$. This is the same convention used by \cite{okada92}, \cite{wang+03a} and \cite{wang+06a}. In Relax, to avoid high frequency oscillations near a stress concentration (the so-called Gibbs phenomenon), the slip distribution is smoothed near the fault tip. The amplitude of smoothing is controlled by a roll-off parameter going from $\beta=0$ for no smoothing to $\beta=0.5$ for strong smoothing. A value of $\beta=0.2$ ensures stability of the computation. The seismic moment is conserved for all smoothing values. There is a default value of the smoothing parameter defined at the beginning of the input file
 \begin{alltt}
 # dx1,dx2,dx3,beta (0-0.5),nq
 0.5 0.5 0.5 {\color{orange}0.2} 2
@@ -314,9 +313,9 @@ but some patches (here, only the second) can be forced to use another value (her
 
 \subsection{Depth-dependent constitutive parameters}
 
-The Fourier method used by RELAX to solve the displacement field and the quasi-static velocity field implies homogeneous elastic moduli in the half space. However, all other inelastic or physical parameters, such as viscosity, friction properties and stress, can vary arbitrarily in the domain. RELAX assumes a background depth dependence for these variables. These properties can be modified locally to simulate slabs, ductile zone, or reproduce the gross features of a geological structure. 
+The Fourier method used by Relax to solve the displacement field and the quasi-static velocity field implies homogeneous elastic moduli in the half space. However, all other inelastic or physical parameters, such as viscosity, friction properties and stress, can vary arbitrarily in the domain. Relax assumes a background depth dependence for these variables. These properties can be modified locally to simulate slabs, ductile zone, or reproduce the gross features of a geological structure. 
 
-Let's look at how to define a viscosity profile for a creme br\^{u}l\'{e}e model, with an elastic plate over a viscoelastic half space. First, note that the RELAX input file requires the reference strain rate $\dot{\gamma}_0=\mu/\eta$, instead of the viscosity $\eta$. This is convenient because first, for a purely elastic material, $\dot{\gamma}_0=0$, and second, $\dot{\gamma}_0$ is just the reciprocal of the Maxwell relaxation time $t_m=1/\dot{\gamma}_0$, so one can easily think in terms of time scales of relaxation, instead of viscosities. The default model is elastic, so it is only necessary to indicate where the lithosphere changes from elastic to viscoelastic
+Let's look at how to define a viscosity profile for a creme br\^{u}l\'{e}e model, with an elastic plate over a viscoelastic half space. First, note that the Relax input file requires the reference strain rate $\dot{\gamma}_0=\mu/\eta$, instead of the viscosity $\eta$. This is convenient because first, for a purely elastic material, $\dot{\gamma}_0=0$, and second, $\dot{\gamma}_0$ is just the reciprocal of the Maxwell relaxation time $t_m=1/\dot{\gamma}_0$, so one can easily think in terms of time scales of relaxation, instead of viscosities. The default model is elastic, so it is only necessary to indicate where the lithosphere changes from elastic to viscoelastic
 \begin{alltt}
 # number of linear viscous interfaces (where viscosity changes)
 {\color{orange}1}
@@ -507,57 +506,57 @@ relax <<EOF --no-proj-output --no-stress-output{\color{orange} | tee $ODIR/in.pa
 \end{alltt}
 \begin{figure}
 \begin{alltt}
-----------------------------------------------------------------------------
-     nonlinear postseismic relaxation with Fourier-domain Green function
-     * Intel MKL implementation of the FFT
-     * parallel OpenMP implementation with 016/016 threads
-     * export to GRD format
-     * export to VTK format
-     {\color{NavyBlue}* export to longitude/latitude text format cancelled (--no-proj-output)}
-----------------------------------------------------------------------------
-grid dimension (sx1,sx2,sx3)
+# ----------------------------------------------------------------------------
+#      nonlinear postseismic relaxation with Fourier-domain Green function
+#      * Intel MKL implementation of the FFT
+#      * parallel OpenMP implementation with 016/016 threads
+#      * export to GRD format
+#      * export to VTK format
+#      {\color{NavyBlue}* export to longitude/latitude text format cancelled (--no-proj-output)}
+# ----------------------------------------------------------------------------
+# grid dimension (sx1,sx2,sx3)
   256  256  256
-sampling (dx1,dx2,dx3), smoothing (beta, nyquist)
+# sampling (dx1,dx2,dx3), smoothing (beta, nyquist)
   5.00E-1  5.00E-1  5.00E-1  2.00E-1  2.00E+0
-origin position (x0,y0) and rotation
+# origin position (x0,y0) and rotation
   0.00E+0  0.00E+0  0.00E+0
-observation depth (displacement and stress)
+# observation depth (displacement and stress)
   0.00E+0  5.00E+0
-output directory
+# output directory
  output_directory (time report: output_directory/time.txt)
-lambda, mu, gamma (gamma = (1 - nu) rho g / mu)
+# lambda, mu, gamma (gamma = (1 - nu) rho g / mu)
   3.00E+04  3.00E+04  8.33E-04
-time interval, (positive time step) or (negative skip, scaling)
+# time interval, (positive time step) or (negative skip, scaling)
   0.00E+0 (output every 001 steps, dt scaled by 1.00E+0)
-number of observation planes
+# number of observation planes
     0
 ...
-number of events
+# number of events
     1
-number of coseismic strike-slip segments
+# number of coseismic strike-slip segments
     1
-----------------------------------------------------------------------------
-no.     slip       xs       ys       zs  length   width strike   dip   rake
-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# no.     slip       xs       ys       zs  length   width strike   dip   rake
+# ----------------------------------------------------------------------------
 001  1.00E+0 -1.00E+1  0.00E+0  0.00E+0 1.00E+1 1.00E+1    0.0  90.0    0.0
-----------------------------------------------------------------------------
-number of coseismic tensile segments
+# ----------------------------------------------------------------------------
+# number of coseismic tensile segments
     0
-number of coseismic dilatation point sources
+# number of coseismic dilatation point sources
     0
-number of surface loads
+# number of surface loads
     0
-{\color{NavyBlue}max sampling size (hor.,vert.): 4.00E+0 4.00E+0}
-----------------------------------------------------------------------------
+# {\color{NavyBlue}max sampling size (hor.,vert.): 4.00E+0 4.00E+0}
+# ----------------------------------------------------------------------------
 coseismic event 001
  I  |   Dt   | tm(ve) | tm(pl) | tm(as) |     t/tmax     | power  |  C:E^i |
 {\color{NavyBlue}000* 0.00E+00 0.00E+00 0.00E+00 0.00E+00 0.00E+00/0.00E+0 0.00E+00 3.08E+06}
 \end{alltt}
-\caption{Output of the RELAX program for the input parameters shown in Figure \ref{input:simple_coseismic}.}
+\caption{Output of the Relax program for the input parameters shown in Figure \ref{input:simple_coseismic}. The Relax output can also serve as an input so it can be useful to save it for documentation purposes and to help reproduce past results.}
 \label{input:out_coseismic}
 \end{figure}
 
-To visualize the coseismic displacement at the surface, it is convenient to use the script \verb'grdmap.sh'. The plotting routine \verb'grdmap.sh' provided with the code and numerous other post-processing scripts can be used to analyze the modeled scenario. The unix script \verb'grdmap.sh', a wrapper around GMT programs, produces map views of any grid but is optimized to work with the three-dimensional output of RELAX.
+To visualize the coseismic displacement at the surface, it is convenient to use the script \verb'grdmap.sh'. The plotting routine \verb'grdmap.sh' provided with the code and numerous other post-processing scripts can be used to analyze the modeled scenario. The unix script \verb'grdmap.sh', a wrapper around GMT programs, produces map views of any grid but is optimized to work with the three-dimensional output of Relax.
 \begin{alltt}
 {\color{NavyBlue}grdmap.sh -b -30/30/-30/30 -p -0.05/0.05/0.001 -v 0.5 \textbackslash
        -u "m" -e erpatch.sh output_directory/000}
@@ -570,7 +569,7 @@ where the \verb'-b' option defines the boundary of the map in the GMT format W/E
 \end{alltt}
 For this command to work, it is assumed that \verb'grdmap.sh' and \verb'erpatch.sh' are both located in a directory listed in the \verb'$PATH' environment variable, such as \verb'/usr/local/bin'.
 
-The coseismic slip distribution of a real earthquake can be a long and detailed description of the source coming from an inversion of geophysical data. To include these models and conform them to the format required by the RELAX program, it is convenient to use other unix tricks, such as \verb'awk', \verb'wc' and the use of variables, for instance, if the source is described in the file \verb'src.dat', but the file missing a line counter and the units in meters, one can alter it as follows
+The coseismic slip distribution of a real earthquake can be a long and detailed description of the source coming from an inversion of geophysical data. To include these models and conform them to the format required by the Relax program, it is convenient to use other unix tricks, such as \verb'awk', \verb'wc' and the use of variables, for instance, if the source is described in the file \verb'src.dat', but the file missing a line counter and the units in meters, one can alter it as follows
 \begin{alltt}
 ...
 # number of coseismic events
@@ -591,8 +590,8 @@ The inclusion of unix commands in the input file allows more complex operations,
 
 \subsection{Simple viscoelastic model}
 
-Let's extend our simple coseismic model to include a viscoelastic relaxation in a substrate below 30\,km. To do so, we need to specify a rheology at depth and indicate how long to simulate the relaxation. RELAX allows two simultaneous viscoelastic relaxation mechanisms, one from a linear rheology
-\begin{equation}
+Let's extend our simple coseismic model to include a viscoelastic relaxation in a substrate below 30\,km. To do so, we need to specify a rheology at depth and indicate how long to simulate the relaxation. Relax allows two simultaneous viscoelastic relaxation mechanisms, one from a linear rheology
+\begin{equation}\label{eqn:viscoelastic}
 \dot{\gamma}^{\text{linear}}=\dot{\gamma}_0\frac{\tau}{\mu}
 \end{equation}
 where $\dot{\gamma}^{\text{linear}}$ is the amplitude of the linear viscoelastic strain and $\dot{\gamma}_0$ is a reference strain rate; and another from a power-law rheology
@@ -714,7 +713,7 @@ which will create files named \verb'G001.txt', \verb'G002.txt' and so forth, for
 
 \subsection{Simple afterslip model}
 
-Let's use RELAX to simulate the deep afterslip that follows a main shock. To do so, we will add a fault below the rupture and assign rate-strengthening properties. We assume that the slip on the fault is governed by a rate-strengthening constitutive law
+Let's use Relax to simulate the deep afterslip that follows a main shock. To do so, we will add a fault below the rupture and assign rate-strengthening properties. We assume that the slip on the fault is governed by a rate-strengthening constitutive law
 \begin{equation}
 V=2\,\dot{\gamma}_0\,\sinh\frac{\Delta\tau}{(a-b)\sigma}
 \end{equation}
@@ -784,6 +783,112 @@ coseismic event 001
 and shows a monotonic decrease of the power and a gradual increase of the time steps.
 
 
+\subsection{Stress change calculations}
+Relax can be used to evaluate the stress change caused by an earthquake or a magmatic intrusion on other faults and structures. There are five ways to look at stress change in Relax: time series at given points, slices, arbitrary cross sections into the domain, three-dimensional visualization in Paraview, and calculation of stress change along an arbitrary number of receiver faults. In addition to providing instantaneous stress change, Relax can provide the time series of stress change due to both the initial source of the deformation and the transient that follows the event. 
+
+By default, Relax exports the displacement and stress as a function of time and space in GMT's .grd format. (Stress export can be cancelled with the \verb'--no-stress-output' command-line option.) In the following example, surface displacements and all stress components at a depth of 5\,km are exported in the .grd format.
+%
+\begin{alltt}
+relax --no-proj-output <<EOF
+# SX1,SX2,SX3 (grid size)
+256 256 256
+# dx1,dx2,dx3 (km),beta (0-0.5),nq (2)
+0.5 0.5 0.5 0.2 2
+# origin position & rotation
+0 0 0
+# observation depths for displacement and for stress
+{\color{orange}0 5}
+...
+\end{alltt}
+Slices of co-seismic stress change at 5\,km depth are in the files \verb'000-s11.grd', \verb'000-s12.grd', \verb'000-s13.grd', \verb'000-s22.grd', \verb'000-s23.grd' and \verb'000-s33.grd'. These files correspond to the $\sigma_{ij}$ components of the stress tensor. Other components $\sigma_{ji}$ can be obtained taking advantage of the symmetry of the stress tensor ($\sigma_{ij}=\sigma_{ji}$). Following earthquakes, it can be interesting to evaluate the pore pressure change as it drives poro-elastic rebound. The pore pressure change is a function of the change in confining pressure $\sigma_{kk}$, which can be computed as follows using GMT's \verb'grdmath'
+\begin{alltt}
+{\color{NavyBlue}index=output/000
+grdmath $\{index\}-s\{11,22\}.grd ADD $\{index\}-s33.grd ADD = $\{index\}-skk.grd}
+\end{alltt}
+To better anticipate the extent of the viscoelastic deformation (where will the rocks flow after an earthquake), we can evaluate the norm of the deviatoric stress $\tau$, as it drives viscoelastic flow (eq.~\ref{eqn:viscoelastic}). The deviatoric stress tensor $\sigma'_{ij}$ contains no isotropic component, so we can simply compute its diagonal components as follows
+\begin{alltt}
+{\color{NavyBlue}grdmath $\{index\}-s11.grd $\{index\}-skk.grd SUB = $\{index\}-s11p.grd
+grdmath $\{index\}-s22.grd $\{index\}-skk.grd SUB = $\{index\}-s22p.grd
+grdmath $\{index\}-s33.grd $\{index\}-skk.grd SUB = $\{index\}-s33p.grd}
+\end{alltt}
+The vigor of viscoelastic flow will be controlled by the norm of the deviatoric stress tensor (eq.~\ref{eqn:viscoelastic}) and the direction of the flow will be controlled by how the amplitude of stress projects in different directions. The norm of the deviatoric stress can be evaluated as follows
+\begin{alltt}
+{\color{NavyBlue}grdmath $\{index\}-s11p.grd 2 POW $\{index\}-s22p.grd 2 POW ADD $\{index\}-s33p.grd \textbackslash 
+        2 POW ADD 2 DIV $\{index\}-s12.grd 2 POW ADD $\{index\}-s13.grd 2 POW ADD \textbackslash 
+        $\{index\}-s23.grd 2 POW ADD = $\{index\}-tau.grd}
+\end{alltt}
+For a more subtle look at the dynamics of stress change, we can look at the log of shear stress change (Fig.~\ref{fig:wharton})
+\begin{alltt}
+{\color{NavyBlue}grdmath $\{index\}-tau.grd LOG10 = $\{index\}-log10-tau.grd}
+\end{alltt}
+%
+\begin{figure*}[p]
+\centering
+\includegraphics[width=\textwidth]{stress_change_wharton.pdf}
+\caption{\small Coseismic stress change at 80\,km depth induced by the 2012 Mw\,8.6 Wharton Basin earthquake from a slip-distribution model by Hill et al. (2014). The map shows the logarithm of the norm of the deviatoric stress change. The Sunda megathrust around Simulue and Banda Aceh, in northern Sumatra, are experiencing significantly more stress change than other regions.}
+\label{fig:wharton}
+\end{figure*}
+%
+
+The files \verb'001-s11.grd', \verb'001-s12.grd', ..., \verb'001-s33.grd' contain the total stress change at time step 1, including both the stress change induced by the original event and the stress change induced by the transient that follows. To look at the stress change due to the relaxation alone, we can isolate it as follows:
+\begin{alltt}
+{\color{NavyBlue}grdmath 001-s12.grd 000-s12.grd SUB = 001-relax-s12.grd}
+\end{alltt}
+
+To look at stress change in three dimensions, we can open \verb'sigma-0000.vtk' in Paraview and look at contours of stress components or compute the deviatoric stress change using the Calculator Filter. Another way is to sample the stress along a cross section using an observation plane:
+\begin{alltt}
+...
+# elastic moduli and gravity parameter
+3e4 3e4 8.33e-4
+# integration time, time step
+20 -1 1
+# number of observation planes
+{\color{orange}1}
+# n     x1     x2 x3 length width  strike dip
+{\color{orange}  1  168.5 -438.7  0   1600   160 112.992  90}
+...
+\end{alltt}
+The stress components are then exported in GMT's .grd files \verb'000.op001-s11.grd', \verb'000.op001-s12.grd', ..., \verb'000.op001-s33.grd', where the first index \verb'000' is for the time step and \verb'op001' is for observation plane 1. All the calculations described above are applicable: just define the new index to \verb'index=output/000.op001' before running \verb'grdmath'. An example application of map view and cross sections of stress change calculations can be found in~\cite{rousset+12}.
+
+Cross sections and maps provide a general view of the extent and amplitude of stress change. But it is sometimes useful to look at stress change on receiver faults. This offers the advantage to be able to decompose the stress components in directions relevant to faults: the strike, dip and fault normal directions. Also, receiver faults can have a non planar overall shape, so using receiver faults allows us to follow a complex fault geometry. Receiver faults are defined by their position, dimension, orientation and static coefficient of friction, for example
+\begin{alltt}
+...
+# number of stress observation segments
+{\color{orange}1}
+# n  x1 x2 x3 length width strike dip friction
+{\color{orange}  1 -10  0  0     20    10      0  90      0.6}
+...
+\end{alltt}
+The stress change is calculated at the center of the fault (here that would be 0,0,5). A time series of stress change at the center of the fault can be found in '\verb'cfaults-sigma-0001.txt'. In the case of multiple fault segments, each file will contain all components of the stress tensor, the shear and normal components of the traction vector, the strike- and dip-direction components of the traction vector, the fault-normal component of the traction vector and the Coulomb stress change:
+\begin{alltt}
+#         t        s11        s12        s13        s22        s23        s33
+{\color{NavyBlue}  0.000E+00  2.392E-03  1.583E-03  4.540E-04  4.810E-04  2.366E-04  2.169E-04}
+\end{alltt}
+and
+\begin{alltt}
+#       taus       taud        tau       taun    Coulomb
+{\color{NavyBlue}-7.224E-04 -7.665E-04  1.053E-03  4.578E-04  4.707E-02}
+\end{alltt}
+on a single line per time step. The files \verb'rfaults-dsigma-0000.vtp' and \verb'rfaults-dsigma-0000.xy' contain the postseismic stress change on all receiver faults for a given time step for visualization in Paraview and GMT, respectively. The files \verb'rfaults-sigma-0000.vtp' and \verb'rfaults-sigma-0000.xy' contain the cumulative stress change due to both coseismic and postseismic deformation. Together, these files allow us to look at the time series of stress change for a single fault receiver, or look at all the receivers for a given time step. Let's look at an example where we use the same fault as source and receiver:
+\begin{alltt}
+...
+# number of stress observation segments
+{\color{orange}`grep -v "#" slip_model.flt | wc`}
+# n x1 x2 x3 length width strike dip rake friction
+{\color{orange}`grep -v "#" slip_model.flt | awk '\{\$2="";\$9=0.6;print \$0\}'`}
+# number of prestress interfaces
+...
+# number of coseismic events
+1
+# number of shear dislocations (strike-slip and dip-slip faults)
+{\color{orange}`grep -v "#" slip_model.flt | wc`}
+# index slip x1 x2 x3 length width strike dip rake
+{\color{orange}`grep -v "#" slip_model.flt`}
+\end{alltt}
+To define the stress observation plane, we just removed the slip information and added the static friction coefficient to the slip distribution model \verb'slip_model.flt' using \verb'awk'. A convenient way to check the geometry of the stress observation segments is to run Relax using the \verb'--dry-run' option. This will output the postseismic stress change on the receiver faults in the file \verb'rfaults-dsigma-0000.vtp' (as this is zero by definition for the 0 time step, this is outputted without actual calculations). 
+
+
+
 \subsection{Published slip distribution models}
 
 The directory \verb'examples' contains a comprehensive list of input files with published slip distributions of recent earthquakes. The database includes the case of the 1999 M$_w$ 7.6 Chi-Chi~\citep{johnson+01}, the 1964 M$_w$ 9.2 Alaska~\citep{johnson+96}, the 1992 M$_w$ 7.3 Landers~\citep{fi04c}, 1999 M$_w$ 7.1 Hector Mine~\citep{si+02a}, the 2012 Canterbury (New Zealand)~\citep{elliott+12}, the 2004 M$_w$ 6.0 Parkfield~\citep{bruhat+11}, the 2001 M$_w$ 7.8 Kokoxili (Tibet)~\citep{lasserre+05,ryder+11}, the 2010 M$_w$ 6.8 Yushu (Tibet)~\citep{li+11}, the 2008 M$_w$ 7.1 Yutian (Tibet)~\citep{elliott+10} earthquakes, organized by geography. New slip distributions will continue to be included and placed in this repository.
@@ -842,6 +947,7 @@ Some other files only contain geometrical information, such as geometry of fault
 \verb'opts.dat' & list of observation points (coordinates and names)\\
 \verb'rfaults-001.xy' & GMT file containing the slip distribution of event 1\\
 \verb'rfaults-001.vtp' & Paraview file containing the slip distribution of event 1\\
+\verb'rfaults-dsigma-0014.vtp' & Paraview file containing the postseismic Coulomb stress for time step 14\\
 \verb'rfaults-sigma-0014.vtp' & Paraview file containing the Coulomb stress for time step 14\\
 \verb'aplane-0001.vtp' & Paraview file for the afterslip plane number 1\\
 \verb'linearlayer-001.vtp' & Paraview file for depth of the first linear viscosity change\\
@@ -862,14 +968,14 @@ The time series of stress and displacement for observation points are in files \
 \pagebreak
 \section{Benchmarks}
 
-The numerical solution produced by RELAX has been compared to many other analytical and numerical solutions. Here, we show two examples for static and time-dependent deformation. In general, it is a good practice to setup simulations using the most resource possible (the largest meshes, the smallest sampling).
+The numerical solution produced by Relax has been compared to many other analytical and numerical solutions. Here, we show two examples for static and time-dependent deformation. In general, it is a good practice to setup simulations using the most resource possible (the largest meshes, the smallest sampling).
 
 \subsection{Coseismic deformation}
 %
 \begin{figure*}[h]
 \centering
 \includegraphics[width=\textwidth]{bm_landers.pdf}
-\caption{\small Simulation of the 1992 Mw 7.3 Landers, CA earthquake. Comparison between the RELAX numerical solution and the solution obtained with the \cite{okada92} Green's function at the surface (A), and at 5\,km (B), 10\,km (C) and 15\,km depth (D). For each depth the RELAX solution is shown (left) and the residuals with \cite{okada92}. The arrows indicate horizontal displacement and the color represent vertical displacement (positive up). }
+\caption{\small Simulation of the 1992 Mw 7.3 Landers, CA earthquake. Comparison between the Relax numerical solution and the solution obtained with the \cite{okada92} Green's function at the surface (A), and at 5\,km (B), 10\,km (C) and 15\,km depth (D). For each depth the Relax solution is shown (left) and the residuals with \cite{okada92}. The arrows indicate horizontal displacement and the color represent vertical displacement (positive up). }
 \label{fig:bm_landers}
 \end{figure*}
 %
@@ -886,11 +992,11 @@ Let's consider the coseismic deformation caused by the 1992 Mw 7.3 Landers, CA e
 5 1.3331 9.1346 -39.987 6.5269 3.74 3.53 132.7 91.0 172.8}
 ...
 \end{alltt}
-The corresponding input file can be found in the \verb'examples' directory in the file \verb'landers.sh'. Figure~\ref{fig:bm_landers} shows the comparison between the calculation with RELAX on a $512^3$ grid with a sampling of $\Delta x=0.6\,$km and the analytic solution obtained with the~\cite{okada92} Green's function at various depths. The residuals maps reveals some numerical errors in the near field of the rupture caused by the equivalent body-force representation. Some long wavelength error appear at depth (\ref{fig:bm_landers}c,d) caused by the periodicity of the numerical solution due to the Fourier transform method. Overall the residuals are very small, demonstrating the possibility to model accurately geometrically complex earthquake ruptures.
+The corresponding input file can be found in the \verb'examples' directory in the file \verb'landers.sh'. Figure~\ref{fig:bm_landers} shows the comparison between the calculation with Relax on a $512^3$ grid with a sampling of $\Delta x=0.6\,$km and the analytic solution obtained with the~\cite{okada92} Green's function at various depths. The residuals maps reveals some numerical errors in the near field of the rupture caused by the equivalent body-force representation. Some long wavelength error appear at depth (\ref{fig:bm_landers}c,d) caused by the periodicity of the numerical solution due to the Fourier transform method. Overall the residuals are very small, demonstrating the possibility to model accurately geometrically complex earthquake ruptures.
 
 
 \subsection{Non-linear viscoelastic relaxation}
-Let's look at the postseismic relaxation due to the stress perturbation caused by dip-slip faulting, assuming uniform and isotropic elastic properties for a Poisson's solid (the Lam{\'e} parameters are such that $\lambda=G$ and Poisson's ratio is $\nu=1/4$). The fault slips 1\,m uniformly from the surface to a depth of 10\,km and is 40\,km long. We consider the case of a nonlinear viscoelastic upper mantle governed by the power-law rheology with $n=2$. We perform the computation with RELAX in a $512^3$ grid with a uniform sampling of $\Delta x=0.8\,$km. A snapshot of the surface displacement early in the postseismic transient is shown in Figure~\ref{fig:bm_dslip_nonlin_2}a. The vertical postseismic displacement has the same polarity as the coseismic displacement. Horizontal postseismic displacements, however, are directed opposite to the coseismic ones. We performed the same simulation using the finite-element software Abaqus and the residuals are shown in the right panel of Figure~\ref{fig:bm_dslip_nonlin_2}a. The time series of surface postseismic displacements at points numbered from 1 to 8 in the maps are shown in Figure~\ref{fig:bm_dslip_nonlin_2}b. There is an excellent agreement between the semi-analytic and the finite-element results. The time series are characterized by two striking features. First, initial postseismic velocities are much higher than at later times, as most visible for points 1 and 2. Second, a change in polarity occurs at far-field locations. The change of postseismic displacement orientation is most flagrant for point 6 in the East-West direction. A mild change of polarity can be misleadingly interpreted as a delayed postseismic transient, as for the vertical displacement of point 8, for example.
+Let's look at the postseismic relaxation due to the stress perturbation caused by dip-slip faulting, assuming uniform and isotropic elastic properties for a Poisson's solid (the Lam{\'e} parameters are such that $\lambda=G$ and Poisson's ratio is $\nu=1/4$). The fault slips 1\,m uniformly from the surface to a depth of 10\,km and is 40\,km long. We consider the case of a nonlinear viscoelastic upper mantle governed by the power-law rheology with $n=2$. We perform the computation with Relax in a $512^3$ grid with a uniform sampling of $\Delta x=0.8\,$km. A snapshot of the surface displacement early in the postseismic transient is shown in Figure~\ref{fig:bm_dslip_nonlin_2}a. The vertical postseismic displacement has the same polarity as the coseismic displacement. Horizontal postseismic displacements, however, are directed opposite to the coseismic ones. We performed the same simulation using the finite-element software Abaqus and the residuals are shown in the right panel of Figure~\ref{fig:bm_dslip_nonlin_2}a. The time series of surface postseismic displacements at points numbered from 1 to 8 in the maps are shown in Figure~\ref{fig:bm_dslip_nonlin_2}b. There is an excellent agreement between the semi-analytic and the finite-element results. The time series are characterized by two striking features. First, initial postseismic velocities are much higher than at later times, as most visible for points 1 and 2. Second, a change in polarity occurs at far-field locations. The change of postseismic displacement orientation is most flagrant for point 6 in the East-West direction. A mild change of polarity can be misleadingly interpreted as a delayed postseismic transient, as for the vertical displacement of point 8, for example.
 %
 \begin{figure*}
 \begin{center}
