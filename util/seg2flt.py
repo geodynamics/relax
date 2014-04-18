@@ -1,51 +1,42 @@
 #!/usr/bin/env python
 
 """
-Created on Mon Jul  2 06:15:53 2012
+Usage:
+    seg2flt.py [--with-slip] ( [-] | <file.seg>)
 
- seg2flt subsamples a fault patch into smaller segments
- of length and width starting from lo and wo, respectively
- increasing geometrically with down-dip distance with increment 
- alphal and alphaw (alphal>1 for increase).
+Option:
+    --with-slip interpolates a slip distribution
 
- input segment file is a list of:
-   xo     origin position vector [x1 (north);x2 (east);x3 (down)]
-   L      total length
-   W      total width
-   strike strike angle in degrees
-   dip    dip angle in degrees
-   rake   rake angle of slip
-   lo     approximative initial length of output segments
-   wo     approximative initial width of output segments
-   alpha1 geometric factor for length increase
-   alphaw geometric factor for width increase
+Description:
+    seg2flt.py converts a segment definition to finely sampled fault file
+		
+    seg2flt subsamples a fault patch into smaller segments
+    of length and width starting from lo and wo, respectively
+    increasing geometrically with down-dip distance with increment 
+    alphal and alphaw (alphal>1 for increase).
 
- output list of output segments in the format
-   i,x1,x2,x3,length,width,strike,dip,rake
+    input segment file is a list of:
+      xo     origin position vector [x1 (north);x2 (east);x3 (down)]
+      L      total length
+      W      total width
+      strike strike angle in degrees
+      dip    dip angle in degrees
+      rake   rake angle of slip
+      lo     approximative initial length of output segments
+      wo     approximative initial width of output segments
+      alpha1 geometric factor for length increase
+      alphaw geometric factor for width increase
+
+    output list of output segments in the format
+    i,x1,x2,x3,length,width,strike,dip,rake
 
 @author: sbarbot
 """
 
-import getopt
+from docopt import docopt
 from numpy import append,array,pi,cos,sin,ceil,savetxt
 from sys import argv,exit,stdin,stdout
 
-def usage():
-    print 'seg2flt.py converts a segment definition to finely sampled fault file'
-    print ''
-    print 'usage: seg2flt.py [--with-slip] file.seg'
-    print ''
-    print 'or from the standard input:'
-    print ''
-    print '       cat file.seg | seg2flt.py'
-    print ''
-    print 'write the list of patches to the standard output'
-    print ''
-    print 'options:'
-    print '  -with-slip interpolates a slip distribution'
-    print ''
-    exit()
-    
 def seg2flt(index,x1o,x2o,x3o,L,W,strike,dip,rake,lo,wo,alphal,alphaw,slip=None):
     
     d2r=pi/180
@@ -89,62 +80,44 @@ def seg2flt(index,x1o,x2o,x3o,L,W,strike,dip,rake,lo,wo,alphal,alphaw,slip=None)
 
     return index
     
-def main():
-
-    try:
-        opts, args = getopt.getopt(argv[1:], "h", ["help","with-slip"])
-    except getopt.GetoptError, err:
-        # print help information and exit:
-        print str(err) # will print something like "option -a not recognized"
-        usage()
-        exit(2)
-
-    # default parameters
-    isWithSlip=False
-
-    offset=0
-    for o, a in opts:
-        if o in ("-h","--help"):
-            usage()
-            exit()
-	elif o == "--with-slip":
-            isWithSlip=True
-            offset=offset+1
-        else:
-            assert False, "unhandled option"
-    
-    if 1+offset==len(argv):
-        fid=stdin
-    else:
-        fname=argv[1+offset]
-        #print fname, len(argv)
-        #if not path.isfile(fname):
-        #    raise ValueError("invalid file name: " + fname)
-        fid=open(fname, 'r')
-       
-    if isWithSlip:
-        print '# nb       slip       x1       x2       x3   length    width   strike   dip  rake'
-    else:
-        print '# nb       x1       x2       x3   length    width   strike   dip  rake'
+def main(): 
+	arguments = docopt(__doc__, version='1.0')
+	offset=0
+	isWithSlip=arguments['--with-slip']
+	if isWithSlip: 
+		offset+=1
+	
+	if 1+offset==len(argv):
+		fid=stdin
+	else:
+		fname=argv[1+offset]
+		#print fname, len(argv)
+		#if not path.isfile(fname):
+		#    raise ValueError("invalid file name: " + fname)
+		fid=open(fname, 'r')
+ 
+	if isWithSlip:
+		print '# nb       slip       x1       x2       x3   length    width   strike   dip  rake'
+	else:
+		print '# nb       x1       x2       x3   length    width   strike   dip  rake'
         
-    k=0
-    for line in iter(fid.readlines()):
-        if '#'==line[0]:
-		continue
-        numbers=map(float, line.split())
-        s=None
-        if 13==len(numbers):
-            i,x1,x2,x3,length,width,strike,dip,rake,Lo,Wo,al,aw=numbers
-        elif 14==len(numbers):
-            if isWithSlip:
-                i,s,x1,x2,x3,length,width,strike,dip,rake,Lo,Wo,al,aw=numbers
-            else:
-                i,x1,x2,x3,length,width,strike,dip,rake,drake,Lo,Wo,al,aw=numbers
-        else:
-            ValueError("invalid number of column in input file "+fname)
-            
-        k=seg2flt(k,x1,x2,x3,length,width,strike,dip,rake,Lo,Wo,al,aw,slip=s)
+	k=0
+	for line in iter(fid.readlines()):
+		if '#'==line[0]:
+			continue
+		numbers=map(float, line.split())
+		s=None
+		if 13==len(numbers):
+			i,x1,x2,x3,length,width,strike,dip,rake,Lo,Wo,al,aw=numbers
+		elif 14==len(numbers):
+			if isWithSlip:
+				i,s,x1,x2,x3,length,width,strike,dip,rake,Lo,Wo,al,aw=numbers
+			else:
+				i,x1,x2,x3,length,width,strike,dip,rake,drake,Lo,Wo,al,aw=numbers
+		else:
+			ValueError("invalid number of column in input file "+fname)
+
+		k=seg2flt(k,x1,x2,x3,length,width,strike,dip,rake,Lo,Wo,al,aw,slip=s)
 
 if __name__ == "__main__":
-    main()
-
+	main()
