@@ -1692,6 +1692,116 @@ END SUBROUTINE exportcreep_vtk
   END SUBROUTINE export_rfaults_stress_init
 
   !------------------------------------------------------------------
+  !> subroutine ExportGMT_RFaults_Traction
+  !! creates a .dat file containing fault center coordinates and
+  !! horizontal traction components.
+  !!
+  !! \author sylvain barbot 04/23/14 - original form
+  !------------------------------------------------------------------
+  SUBROUTINE exportgmt_rfaults_traction(sx1,sx2,sx3,dx1,dx2,dx3, &
+                          nsop,sop,rffilename,convention,sig)
+    USE elastic3d
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3,nsop
+    REAL*8, INTENT(IN) :: dx1,dx2,dx3
+    TYPE(SEGMENT_STRUCT), INTENT(INOUT), DIMENSION(nsop) :: sop
+    CHARACTER(256), INTENT(IN) :: rffilename
+    INTEGER, INTENT(IN), OPTIONAL :: convention
+    TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3), OPTIONAL :: sig
+
+    INTEGER :: iostatus,k,i1,i2,i3,conv
+    CHARACTER :: q
+    REAL*8 :: strike,dip,x1,x2,x3,cstrike,sstrike,cdip,sdip,taun
+    ! segment normal vector, strike direction, dip direction
+    REAL*8, DIMENSION(3) :: n,s,d
+    ! local value of stress
+    TYPE(TENSOR) :: lsig
+    ! traction components
+    REAL*8, DIMENSION(3) :: t,ts
+
+    IF (0.GE.nsop) RETURN
+
+    ! double-quote character
+    q=char(34)
+
+    IF (PRESENT(convention)) THEN
+       conv=convention
+    ELSE
+       conv=0
+    END IF
+
+    OPEN (UNIT=15,FILE=rffilename,IOSTAT=iostatus,FORM="FORMATTED")
+    IF (iostatus>0) THEN
+       WRITE_DEBUG_INFO
+       PRINT '(a)', rffilename
+       STOP "could not open file for export"
+    END IF
+
+    DO k=1,nsop
+
+       ! fault orientation
+       strike=sop(k)%strike
+       dip=sop(k)%dip
+
+       ! fault center position
+       x1=sop(k)%x
+       x2=sop(k)%y
+       x3=sop(k)%z
+
+       IF (PRESENT(sig)) THEN
+
+          CALL shiftedindex(x1,x2,x3,sx1,sx2,sx3,dx1,dx2,dx3,i1,i2,i3)
+          lsig=sig(i1,i2,i3)
+
+          IF (1.EQ.conv) THEN
+             lsig%s11=lsig%s11-sop(k)%sig0%s11
+             lsig%s12=lsig%s12-sop(k)%sig0%s12
+             lsig%s13=lsig%s13-sop(k)%sig0%s13
+             lsig%s22=lsig%s22-sop(k)%sig0%s22
+             lsig%s23=lsig%s23-sop(k)%sig0%s23
+             lsig%s33=lsig%s33-sop(k)%sig0%s33
+          END IF
+       ELSE
+          lsig=TENSOR(0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
+       END IF
+
+       cstrike=cos(strike)
+       sstrike=sin(strike)
+       cdip=cos(dip)
+       sdip=sin(dip)
+ 
+       ! surface normal vector components
+       n(1)=-cdip*cstrike
+       n(2)=+cdip*sstrike
+       n(3)=+sdip
+
+       ! strike-slip unit direction
+       s(1)=sstrike
+       s(2)=cstrike
+       s(3)=0._8
+
+       ! dip-slip unit direction
+       d(1)=-cstrike*sdip
+       d(2)=+sstrike*sdip
+       d(3)=-cdip
+
+       ! traction vector
+       t=lsig .tdot. n
+
+       ! signed normal component
+       taun=SUM(t*n)
+
+       ! shear traction
+       ts=t-taun*n
+
+       WRITE (15,'(5ES11.2)') x2,x1,ts(2),ts(1)
+
+    END DO
+
+    CLOSE(15)
+
+  END SUBROUTINE exportgmt_rfaults_traction
+
+  !------------------------------------------------------------------
   !> subroutine ExportGMT_RFaults_Stress
   !! creates a .vtp file (in the VTK PolyData XML format) containing
   !! the rectangular faults. The faults are characterized with a set

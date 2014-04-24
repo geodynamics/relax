@@ -441,6 +441,9 @@ PROGRAM relax
   filename=trim(in%wdir)//"/rfaults-sigma-"//digit4//".xy"
   CALL exportgmt_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
                                 in%nsop,in%sop,filename,sig=sig)
+  filename=trim(in%wdir)//"/rfaults-traction-"//digit4//".dat"
+  CALL exportgmt_rfaults_traction(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
+                                in%nsop,in%sop,filename,sig=sig)
   ! postseismic stress change on predefined planes for gmt (zero by definition)
   filename=trim(in%wdir)//"/rfaults-dsigma-"//digit4//".xy"
   CALL exportgmt_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
