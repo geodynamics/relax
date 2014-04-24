@@ -1999,6 +1999,20 @@ END SUBROUTINE exportcreep_vtk
        WRITE (15,'("        </DataArray>")')
 
        WRITE (15,'("        <DataArray type=",a,"Float32",a, &
+                               & " Name=",a,"traction vector",a, &
+                               & " NumberOfComponents=",a,"3",a, &
+                               & " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+       WRITE (15,'(3ES11.2)'), t(1),t(2),t(3)
+       WRITE (15,'("        </DataArray>")')
+
+       WRITE (15,'("        <DataArray type=",a,"Float32",a, &
+                               & " Name=",a,"shear traction vector",a, &
+                               & " NumberOfComponents=",a,"3",a, &
+                               & " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
+       WRITE (15,'(ES11.2)'), ts(1),ts(2),ts(3)
+       WRITE (15,'("        </DataArray>")')
+
+       WRITE (15,'("        <DataArray type=",a,"Float32",a, &
                                & " Name=",a,"shear stress",a, &
                                & " NumberOfComponents=",a,"1",a, &
                                & " format=",a,"ascii",a,">")'), q,q,q,q,q,q,q,q
