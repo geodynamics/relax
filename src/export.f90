@@ -1793,7 +1793,7 @@ END SUBROUTINE exportcreep_vtk
        ! shear traction
        ts=t-taun*n
 
-       WRITE (15,'(5ES11.2)') x2,x1,ts(2),ts(1)
+       WRITE (15,'(6ES11.2)') x2,x1,-x3,ts(2),ts(1),-ts(3)
 
     END DO
 
