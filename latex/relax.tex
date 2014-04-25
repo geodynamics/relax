@@ -807,9 +807,9 @@ grdmath $\{index\}-s\{11,22\}.grd ADD $\{index\}-s33.grd ADD = $\{index\}-skk.gr
 \end{alltt}
 To better anticipate the extent of the viscoelastic deformation (where will the rocks flow after an earthquake), we can evaluate the norm of the deviatoric stress $\tau$, as it drives viscoelastic flow (eq.~\ref{eqn:viscoelastic}). The deviatoric stress tensor $\sigma'_{ij}$ contains no isotropic component, so we can simply compute its diagonal components as follows
 \begin{alltt}
-{\color{NavyBlue}grdmath $\{index\}-s11.grd $\{index\}-skk.grd SUB = $\{index\}-s11p.grd
-grdmath $\{index\}-s22.grd $\{index\}-skk.grd SUB = $\{index\}-s22p.grd
-grdmath $\{index\}-s33.grd $\{index\}-skk.grd SUB = $\{index\}-s33p.grd}
+{\color{NavyBlue}grdmath $\{index\}-s11.grd $\{index\}-skk.grd 3 DIV SUB = $\{index\}-s11p.grd
+grdmath $\{index\}-s22.grd $\{index\}-skk.grd 3 DIV SUB = $\{index\}-s22p.grd
+grdmath $\{index\}-s33.grd $\{index\}-skk.grd 3 DIV SUB = $\{index\}-s33p.grd}
 \end{alltt}
 The vigor of viscoelastic flow will be controlled by the norm of the deviatoric stress tensor (eq.~\ref{eqn:viscoelastic}) and the direction of the flow will be controlled by how the amplitude of stress projects in different directions. The norm of the deviatoric stress can be evaluated as follows
 \begin{alltt}
