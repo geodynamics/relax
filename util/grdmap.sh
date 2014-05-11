@@ -91,9 +91,10 @@ my_gmt(){
 		# arrowwidth/headlength/headwidth
 		# grdvector crashes with wrong sampling
 		#	-Q0.51c/0.8c/0.7cn1.0c \
+	        #	-Q0.3c/0.5c/0.4cn1.0c \
 		grdvector $U1 $U2 -K -J${PROJ} -O -R$bds -I$ADX/$ADX \
-			-Q0.3c/0.5c/0.4cn1.0c \
-			-S$VECTOR -W0.1p/0/0/0 \
+			-Q0.05/0.2/0.08n0.3c \
+			-S$VECTOR -W0.5p/0/0/0 \
 			-G255/255/255 \
 			 >> $PSFILE
 	fi
@@ -108,7 +109,7 @@ $UL 14 0 4 LM $SIZE $unit
 EOF
 		psxy -O -K -J${PROJ} -R$bds -N \
 			-W0.5p/0/0/0 -Xr0.9i \
-			-Sv0.2c/1.0c/0.4cn1.0c \
+			-Sv0.05/0.2/0.08n0.3c \
 			<<EOF >> $PSFILE
 $UL 0 1
 EOF
@@ -118,7 +119,7 @@ EOF
 	if [ -e "$colors" ]; then
 		#-Q0.20c/1.0c/0.4cn1.0c \
 		psscale -O -K -B$PSSCALE/:$unit: -D3.5i/-0.8i/7.1i/0.2ih \
-			-C$colors $REVERT \
+			$TRIANGLES -C$colors $REVERT \
 			>> $PSFILE 
 		
 		rm -f $colors
@@ -345,6 +346,8 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 	# color bounds
 	if [ "$pset" == "1" ]; then
 		makecpt -C$cptfile -T$P -D > $colors;
+		m=`echo $P | awk -F"/" 'function max(x,y){return (x>y)?x:y};function abs(x){return (0<x)?x:-x}{print max(abs($1),$2)}'`
+		TRIANGLES=`grdinfo -C $U3 | awk -v m=$m 'function max(x,y){return (x>y)?x:y};function abs(x){return (0<x)?x:-x}{if (m<max(abs($6),abs($7))){print "-E"}}'`
 	fi
 
 	my_gmt $INDEX
