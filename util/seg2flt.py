@@ -65,7 +65,7 @@ def seg2flt(index,x1o,x2o,x3o,L,W,strike,dip,rake,lo,wo,alphal,alphaw,slip=None)
         lt=lo*alphal**j
         Nl=int(ceil(L/lt))
 
-        lt=L/Nl
+        lt=float(L)/float(Nl)
         
         # loop in strike direction
         for i in range(Nl):
@@ -74,7 +74,7 @@ def seg2flt(index,x1o,x2o,x3o,L,W,strike,dip,rake,lo,wo,alphal,alphaw,slip=None)
             x3=x3o+i*lt*Sv[2]+sum(w.take(range(j+1)))*Dv[2]
             index=index+1
             if slip is None:
-                savetxt(stdout,[[index,x1,x2,x3,lt,w[j+1],strike,dip,rake]],delimiter=" ",fmt="%4i %8.4f %8.4f %8.4f %8.3f %8.3f %8.2f %5.2f %4.1f")
+                savetxt(stdout,[[index,x1,x2,x3,lt,w[j+1],strike,dip,rake]],delimiter=" ",fmt="%4i %9.4f %9.4f %9.4f %9.4f %9.4f %8.2f %5.2f %4.1f")
             else:
                 savetxt(stdout,[[index,slip,x1,x2,x3,lt,w[j+1],strike,dip,rake]],delimiter=" ",fmt="%4i %+10.3e %8.4f %8.4f %8.4f %8.3f %8.3f %8.2f %5.2f %4.1f")
 
@@ -97,9 +97,9 @@ def main():
 		fid=open(fname, 'r')
  
 	if isWithSlip:
-		print '# nb       slip       x1       x2       x3   length    width   strike   dip  rake'
+		print '#  n       slip        x1        x2        x3    length     width   strike   dip  rake'
 	else:
-		print '# nb       x1       x2       x3   length    width   strike   dip  rake'
+		print '#  n        x1        x2        x3    length     width   strike   dip  rake'
         
 	k=0
 	for line in iter(fid.readlines()):
