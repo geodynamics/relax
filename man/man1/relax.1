@@ -127,26 +127,26 @@ Integration time (T) refers to the duration of the calculation in physical units
 .B number of observation planes (nop)
 Observation planes are planar surface of arbitrary orientation where displacement and stress are exported in ASCII and GMT .grd format for visualization. Integer nop indicates the number of such planes. If nop > 0 then relax asks for the geometry of each planes, with one line per plane, as follows:
 
-# nb x1 x2 x3 length width strike dip
+# n x1 x2 x3 length width strike dip
 
-where nb is an index running from 1 to nop, x1, x2 and x3 are the reference coordinates, length and width, and strike and dip are the dimension and the orientation of the observation plane. These parameters are defined in Section 
+where n is an index running from 1 to nop, x1, x2 and x3 are the reference coordinates, length and width, and strike and dip are the dimension and the orientation of the observation plane. These parameters are defined in Section 
 .B FAULT GEOMETRY.
 
 .TP
 .B number of observation points (np)
 Observation points are locations where displacement and stress are exported as time series in ASCII. Integer no indicates the number of such points. If np > 0 then relax asks for the name and location of each point, with one line per point, as follows:
 
-# nb NAME x1 x2 x3
+# n NAME x1 x2 x3
 
-where nb is an index running from 1 to np, NAME is a four-character name used to identify the output file, x1, x2 and x3 are the point coordinates. Time series of displacement and stress at these points are written to file NAME.txt, where NAME is the user-provided name.
+where n is an index running from 1 to np, NAME is a four-character name used to identify the output file, x1, x2 and x3 are the point coordinates. Time series of displacement and stress at these points are written to file NAME.txt, where NAME is the user-provided name.
 
 .TP
 .B number of stress observation segments (nsp)
 Stress observation segments are fault patches where stress (shear, normal, dip-shear, strike-shear, Coulomb stress) evaluated and exported in GMT and VTK formats. This is how Coulomb and other time-dependent stress calculations are carried out in relax. Integer nsp indicates the number of such patches. If nsp > 0 then relax asks for the definition of each fault patch, with one line per patch, as follows:
 
-# nb x1 x2 x3 length width strike dip friction
+# n x1 x2 x3 length width strike dip friction
 
-where nb is an index running from 1 to nsp, x1, x2, x3, length, width, strike and dip are the position, dimension and orientation of the fault patches and friction is the friction coefficient (usually chosen at 0.6) used to compute Coulomb stress. The geometry parameters are defined in section 
+where n is an index running from 1 to nsp, x1, x2, x3, length, width, strike and dip are the position, dimension and orientation of the fault patches and friction is the friction coefficient (usually chosen at 0.6) used to compute Coulomb stress. The geometry parameters are defined in section 
 .B FAULT GEOMETRY.
 
 All receiver faults for Coulomb stress calculations are exported in 
@@ -157,22 +157,22 @@ for visualization in Paraview.
 .B number of pre-stress interface (npsi)
 Pre-stress interfaces specify at what depth and how pre stress changes. If npsi > 0, then relax requires the depths and stress values at each interface, one line per interface, as follows:
 
-# nb depth sigma11 sigma12 sigma13 sigma22 sigma23 sigma33
+# n depth sigma11 sigma12 sigma13 sigma22 sigma23 sigma33
 
-where nb is an index running from 1 to npsi, depth is the depth where pre-stress changes, and sigma11, 12, 13, 22, 23, and 33 and the components of the symmatric stress tensor.
+where n is an index running from 1 to npsi, depth is the depth where pre-stress changes, and sigma11, 12, 13, 22, 23, and 33 and the components of the symmatric stress tensor.
 
 .TP
 .B number of linear viscous interfaces (nlvi)
 Viscous interfaces specify at what depth and how the viscosity changes in the Earth, and define the background 1-D viscosity model that can be subsequently modified using ductile zones. If nlvi > 0, then relax requires the depths and viscosity and cohesion values at each interface, one line per interface, as follows:
 
-# nb depth gammadot0 cohesion
+# n depth gammadot0 cohesion
 
-where nb is an index running from 1 to nlvi, depth is the depth where cohesion and gammadot0 change, gammadot0 is the fluidity (defined as gammadot0 = mu / eta, where eta is the viscosity), the reciprocal of the Maxwell relaxation time, and cohesion is the minimum value of stress to drive viscoelastic flow. The definition of the 1-D model is explained in Section 
+where n is an index running from 1 to nlvi, depth is the depth where cohesion and gammadot0 change, gammadot0 is the fluidity (defined as gammadot0 = mu / eta, where eta is the viscosity), the reciprocal of the Maxwell relaxation time, and cohesion is the minimum value of stress to drive viscoelastic flow. The definition of the 1-D model is explained in Section 
 .B DEPTH-DEPENDENT STRUCTURE.
 
 All viscous interface are exported to 
 .I wdir/linearlayer-nb.vtp
-, where nb is the interface index, for visualization in Paraview.
+, where n is the interface index, for visualization in Paraview.
 
 The definition of the 1-D depth-dependent model is followed by:
 
@@ -180,9 +180,9 @@ The definition of the 1-D depth-dependent model is followed by:
 
 Ductile zones are volumes where the background viscosity is ammended. If nldz > 0, then relax requires the list of ductile zones, defined as 
 
-# nb dgammadot0 x1 x2 x3 length width thickness strike dip
+# n dgammadot0 x1 x2 x3 length width thickness strike dip
 
-where nb is an index running from 1 to nldz, dgammadot0 is the modifier to the background fluidity, x1, x2, x3, length, width, thickness, strike and dip are the position, dimension and orientation of the rectangular volume. The fluidity used to drive viscoelastic flow is gammadot0+dgammadot0. If gammadot0+dgammadot0<=0, no flow occurs. Therefore, setting large negative values of dgammadot0 makes the region elastic. The geometric parameters are defined in Section 
+where n is an index running from 1 to nldz, dgammadot0 is the modifier to the background fluidity, x1, x2, x3, length, width, thickness, strike and dip are the position, dimension and orientation of the rectangular volume. The fluidity used to drive viscoelastic flow is gammadot0+dgammadot0. If gammadot0+dgammadot0<=0, no flow occurs. Therefore, setting large negative values of dgammadot0 makes the region elastic. The geometric parameters are defined in Section 
 .B LATERAL VARIATIONS OF VISCOUS PROPERTIES.
 
 All ductile zones are exported to
@@ -193,9 +193,9 @@ for visualization in Paraview, including when computation is aborted with the --
 .B number of nonlinear viscous interfaces (nnlvi)
 Nonlinear viscous interfaces specify at what depth and how the power-law rheology parameters change in the Earth, and define the background 1-D viscosity model that can be subsequently modified using ductile zones. Viscoelastic relaxation in relax can have ontributions from both linear and nonlinear rheologies. If nnlvi > 0, then relax requires the depths, viscosity, power and cohesion at each interface, one line per interface, as follows:
 
-# nb depth gammadot0 power cohesion
+# n depth gammadot0 power cohesion
 
-where nb is an index running from 1 to nnlvi, depth is the depth where cohesion and gammadot0 change, gammadot0 is the reference fluidity, power is the power-law rheology power exponent (strain rate = gammadot0 ( tau / mu ) ^ power, where tau is the coseismic stress change plus the prestress), and cohesion is the minimum value of stress to drive viscoelastic flow.
+where n is an index running from 1 to nnlvi, depth is the depth where cohesion and gammadot0 change, gammadot0 is the reference fluidity, power is the power-law rheology power exponent (strain rate = gammadot0 ( tau / mu ) ^ power, where tau is the coseismic stress change plus the prestress), and cohesion is the minimum value of stress to drive viscoelastic flow.
 
 The definition of the 1-D depth-dependent power-law model is followed by:
 
@@ -203,9 +203,9 @@ The definition of the 1-D depth-dependent power-law model is followed by:
 
 Nonlinear ductile zones are volumes where the background nonlinear viscosity is ammended. If nnldz > 0, then relax requires the list of nonlinear ductile zones, defined as 
 
-# nb dgammadot0 x1 x2 x3 length width thickness strike dip
+# n dgammadot0 x1 x2 x3 length width thickness strike dip
 
-where nb is an index running from 1 to nnldz, dgammadot0 is the modifier to the background fluidity, x1, x2, x3, length, width, thickness, strike and dip are the position, dimension and orientation of the rectangular volume. The power exponent of the ductile zone is the same as in the background model.
+where n is an index running from 1 to nnldz, dgammadot0 is the modifier to the background fluidity, x1, x2, x3, length, width, thickness, strike and dip are the position, dimension and orientation of the rectangular volume. The power exponent of the ductile zone is the same as in the background model.
 
 All ductile zones are exported to 
 .I wdir/weakzones-nonlinear.vtp 
@@ -215,22 +215,22 @@ for visualization in Paraview, including when computation is aborted with the --
 .B number of friction interfaces (nfi)
 Friction interfaces define the variations of fault friction properties with depth, using the framework of rate-strengthening friction. If nfi < 0, relax requires the depth, reference velocity, strengthening parameter and cohesion at each depth, one line per interface, as follows:
 
-# nb depth gamma0 (a-b)sigma friction cohesion
+# n depth gamma0 (a-b)sigma friction cohesion
 
-where nb is an index running from 1 to nfi, depth is the depth where friction properties change, (a-b)sigma is the reference stress (typically of the order of 1 MPa), friction is the friction coefficient (usually 0.6) and cohesion is the stress enveloppe. If nfi > 0 the list of interface is followed by a definition of faults where stress-driven slip occurs:
+where n is an index running from 1 to nfi, depth is the depth where friction properties change, (a-b)sigma is the reference stress (typically of the order of 1 MPa), friction is the friction coefficient (usually 0.6) and cohesion is the stress enveloppe. If nfi > 0 the list of interface is followed by a definition of faults where stress-driven slip occurs:
 
 .B "number of afterslip planes (nap)"
 
 Afterslip planes are rectangular surfaces where stress-driven slip occurs. If nap > 0, relax requires the list of afterslip planes, as follows:
 
-# nb x1 x2 x3 length width strike dip rake
+# n x1 x2 x3 length width strike dip rake
 
-where nb is a index running from 1 to nap, x1, x2, x3, length, width, strike and dip are the position, dimension and orientation of the fault plane and rake is a +-90 constrain on the rake of afterslip. If |rake| > 360, the constraint is ignored. Some of these parameters are defined in Section
+where n is a index running from 1 to nap, x1, x2, x3, length, width, strike and dip are the position, dimension and orientation of the fault plane and rake is a +-90 constrain on the rake of afterslip. If |rake| > 360, the constraint is ignored. Some of these parameters are defined in Section
 .B FAULT GEOMETRY.
 
 All afterslip planes are exported in 
 .I wdir/aplane-nb.vtp
-, where nb in the patch index, for visualization in Paraview.
+, where n in the patch index, for visualization in Paraview.
 
 .TP
 .B number of interseismic loading shear faults (nisf)
@@ -248,9 +248,9 @@ Events are moments in time when new internal or external forces act of the syste
 .B number of shear dislocations (strike-slip and dip-slip faults) (nsd)
 Shear dislocations are rectangular slip patches. If nsd > 0, relax expects a list of such slip patches, as follows
 
-# nb slip x1 x2 x3 length width strike dip rake
+# n slip x1 x2 x3 length width strike dip rake
 
-where nb is an index running from 1 to nsd, x1, x2, x3, length, width, strike dip are the position, dimension and orientation of the slip patch; slip and rake are the slip amplitude and rake. For positive slip, rake = 0 indicates left-lateral slip, and for positive slip and shallow dip (dip <= 90), rake = 90 indicate thrust motion. These parameters are defined in Section 
+where n is an index running from 1 to nsd, x1, x2, x3, length, width, strike dip are the position, dimension and orientation of the slip patch; slip and rake are the slip amplitude and rake. For positive slip, rake = 0 indicates left-lateral slip, and for positive slip and shallow dip (dip <= 90), rake = 90 indicate thrust motion. These parameters are defined in Section 
 .B "FAULT GEOMETRY."
 
 All faults are exported to 
@@ -263,17 +263,29 @@ allows visualization with GMT.
 .B number of tensile cracks (nts)
 Tensile cracks are dykes with opening or closure of the elastic walls. If nts > 0, relax expects a list of cracks:
 
-# nb opening x1 x2 x3 length width strike dip
+# n opening x1 x2 x3 length width strike dip
 
-where nb is an index running from 1 to nts, opening is the normal motion of the walls, and the other parameters define the position, orientation and dimension of the cracks.
+where n is an index running from 1 to nts, opening is the normal motion of the walls, and the other parameters define the position, orientation and dimension of the cracks.
+
+.TP
+.B number of dilatation sources (nm)
+Dilatation sources are nuclei of strain. If nm > 0, relax expects a list of dilatation sources:
+
+# n strain (positive for extension) xs ys zs
+
+The analytic solution for a unit dilatation source is
+
+    1 + nu   zs
+ -  ------  ----
+     3 pi    r^3
 
 .TP
 .B number of surface loads (nsl)
 Surface loads are surface tractions in the vertical direction coming from the loading and unloading of lakes, dams or the freezing or melting of ice. If nsl > 0, relax expects a list of surface loads, defined with their geometry and weight, as follows:
 
-# nb x1 x2 length width t3 T phi
+# n x1 x2 length width t3 T phi
 
-where nb is an index running from 1 to nsl, x1, x2, length and width define the position and dimension of the load, t3 is in units of stress (force/surface), positive down, and T can be a period (T != 0 implies stress=t3*sin(2 pi/T + phi) or not (T = 0 implies stress = t3 H(t), with H(t) the Heaviside function).
+where n is an index running from 1 to nsl, x1, x2, length and width define the position and dimension of the load, t3 is in units of stress (force/surface), positive down, and T can be a period (T != 0 implies stress=t3*sin(2 pi/T + phi) or not (T = 0 implies stress = t3 H(t), with H(t) the Heaviside function).
 
 .TP
 .B time of next event (te)
@@ -379,7 +391,7 @@ viscoelastic
 0
 # number of linear viscous interfaces
 1
-# nb depth gammadot0 cohesion
+# n depth gammadot0 cohesion
    1    20         1        0
 # number of linear ductile zones
 0
@@ -432,7 +444,7 @@ Slip distributions are defined as a list of slip on individual patches, for exam
 .nf
 # number of shear dislocations
 4
-# nb slip x1 x2 x3 length width strike dip rake
+#  n slip x1 x2 x3 length width strike dip rake
    1  0.4  0  0  0    1.3   2.3     18  57    0
    2  1.1  0  1  0    1.3   2.3     18  57    0
    3  2.7  0  0  2    1.3   2.3     18  57    0
@@ -468,7 +480,7 @@ is specified as follows:
 .nf
 # number of interfaces
 6
-# nb depth value
+#  n depth value
    1     0     0
    2    z1    v1
    3    z2    v2
@@ -509,7 +521,7 @@ The input is defined as follows:
 .nf
 # number of ductile zones
 1
-# nb dgammadot0 x1 x2 x3 length width thickness strike dip
+#  n dgammadot0 x1 x2 x3 length width thickness strike dip
    1         -1  0  0  0      1     1         1      0  90
 .fi
 
