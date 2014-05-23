@@ -150,8 +150,10 @@ where n is an index running from 1 to nsp, x1, x2, x3, length, width, strike and
 .B FAULT GEOMETRY.
 
 All receiver faults for Coulomb stress calculations are exported in 
+.I wdir/rfaults-sigma-0000.vtp 
+and
 .I wdir/rfaults-dsigma-0000.vtp 
-for visualization in Paraview.
+for visualization in Paraview. While the former contains the total stress change including both the coseismic and postseismic effects, the latter contains only the stress change caused by the postseismic effects (and this stress is zero by definition at the first time step).
 
 .TP
 .B number of pre-stress interface (npsi)
