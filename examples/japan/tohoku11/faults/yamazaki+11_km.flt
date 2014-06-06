@@ -1,4 +1,4 @@
-#  Yamazaki, Y., T. Lay, K. F. Cheung, H. Yue, and H. Kanamori (2011). Modeling near‐field tsunami observations to improve finite‐fault slip models for the 11 March 2011 Tohoku earthquake, Geophys. Res. Lett., 38, L00G15, doi:10.1029/2011GL049130.
+#  Yamazaki, Y., T. Lay, K. F. Cheung, H. Yue, and H. Kanamori (2011). Modeling near‐field tsunami observations to improve finite‐fault slip models for the 11 March 2011 Tohoku earthquake, Geophys. Res. Lett., 38, L00G15, doi:10.1029/2011GL049130. 
 #  n   slip       x1       x2       x3 length width strike  dip  rake
 0001 13.387  144.541  187.518   -0.000   20.0  20.0  192.0 12.0  97.6
 0002 16.060  124.830  184.182   -0.000   20.0  20.0  192.0 12.0 107.7
