@@ -1,3 +1,4 @@
+#  Zeng, Y., and J. Anderson. 2000. Evaluation of numerical procedures for simulating near-fault long-period ground motions using Zeng method. Report 2000/01 to the PEER Utilities Program, available at http://peer.berkeley.edu
 #  n   slip       x1       x2       x3 length width strike  dip  rake
 0001  0.000   12.694   20.458    0.010    0.5   0.5  323.0 90.0  90.0
 0002  0.000   13.077   20.151    0.010    0.5   0.5  323.0 90.0  90.0
