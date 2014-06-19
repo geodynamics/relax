@@ -36,7 +36,7 @@ usage(){
 	echo "         -T title header"
 	echo "         -x do not display map (only create .ps file)"
 	echo "         -C interval plots contours every interval distance"
-	echo "         -E file.ps only plot base map with extra scripts"
+	echo "         -O file.ps only plot base map with extra scripts"
 	echo "         -J overwrites the geographic projections (for -J o the -b option is relative)"
         echo "         -Y shift the plot vertically on the page"
 	echo ""
@@ -140,7 +140,7 @@ gmtset PAPER_MEDIA archA
 libdir=$(dirname $0)/../share
 EXTRA=""
 
-while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrC:E:J:Y:" flag
+while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrC:O:J:Y:" flag
 do
 	case "$flag" in
 	b) bset=1;bds=$OPTARG;;
@@ -159,12 +159,12 @@ do
 	v) vset=1;SIZE=$OPTARG;VECTOR=$OPTARG"c";;
 	x) xset=1;;
 	C) Cset="-C";contour=$OPTARG;;
-	E) Eset=1;PSFILE=$(dirname $OPTARG)/$(basename $OPTARG .ps).ps;;
+	O) Oset=1;PSFILE=$(dirname $OPTARG)/$(basename $OPTARG .ps).ps;;
 	J) Jset=1;PROJ=$OPTARG;;
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
 done
-for item in $bset $cset $iset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Eset $Jset $EXTRA;do
+for item in $bset $cset $iset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Oset $Jset $EXTRA;do
 	shift;shift
 done
 for item in $gset $hset $xset $rset;do
@@ -199,7 +199,7 @@ else
 fi
 
 # usage
-if [ $# -lt "1" -a "$Eset" != "1" ] || [ "$hset" == "1" ] ; then
+if [ $# -lt "1" -a "$Oset" != "1" ] || [ "$hset" == "1" ] ; then
 	usage
 else
 	echo $self: using colorfile $cptfile
@@ -207,7 +207,7 @@ fi
 
 
 # loop over grd files
-while [ "$#" != "0" -o "$Eset" == "1" ];do
+while [ "$#" != "0" -o "$Oset" == "1" ];do
 
 	if [ "$1" != "" ]; then
 		WDIR=`dirname $1`
@@ -375,5 +375,5 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 	fi
 
 	# prevent more empty plots (cancel -E option)
-	Eset=""
+	Oset=""
 done
