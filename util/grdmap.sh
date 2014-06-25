@@ -21,7 +21,7 @@ usage(){
 	echo ""
         echo "options:"
         echo "         -b bds sets the map bound to bds"
-	echo "         -c palette_name [default my_jet]"
+	echo "         -c palette_name [default jet]"
         echo "         -e file.sh runs file.sh to add content to map"
         echo "         -g switch to geographic projection (longitude/latitude)"
         echo "         -h display this error message and exit"
@@ -119,7 +119,7 @@ EOF
 	if [ -e "$colors" ]; then
 		#-Q0.20c/1.0c/0.4cn1.0c \
 		psscale -O -K -B$PSSCALE/:$unit: -D3.5i/-0.8i/7.1i/0.2ih \
-			$TRIANGLES -C$colors $REVERT \
+			$TRIANGLES -C$colors $REVERT $illuminationopt \
 			>> $PSFILE 
 		
 		rm -f $colors
@@ -148,7 +148,7 @@ do
 	e) eset=1;EXTRA="$EXTRA $OPTARG";;
 	g) gset="-g";;
 	h) hset=1;;
-	i) iset=1;illumination="-I$OPTARG";;
+	i) iset=1;illumination="-I$OPTARG";illuminationopt="-I";;
 	o) oset=1;ODIR=$OPTARG;;
 	p) pset=1;P=$OPTARG;PSSCALE=`echo $OPTARG | awk -F"/" 'function abs(x){return x<0?-x:x}{print abs($2-$1)/6}'`;;
 	r) rset=1;;
