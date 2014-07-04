@@ -62,7 +62,7 @@ if [ $# -lt "1" -o "$hset" == "1" ]; then
   index-tc.grd (Coulomb stress)
 
 [1mdescription:[0m
-  using the coordinate system
+  Using the coordinate system
 
              (x1, north)
             /
@@ -84,9 +84,11 @@ if [ $# -lt "1" -o "$hset" == "1" ]; then
      s = [cos(str), sin(str), 0]
      d = [+sin(str) cos(dip), -cos(str) cos(dip), -sin(dip)]
 
-  and form a right-handed coordinate system.
+  and form a right-handed coordinate system. The rake-direction vector is
 
-  the local traction components are:
+     b = [ cos(r) s(1) + sin(r) d(1), cos(r) s(2) + sin(r) d(2), sin(r) d(3) ]
+
+  The local traction components are:
 
      t1 = S11 n(1) + S12 n(2) + S13 n(3)
      t2 = S12 n(1) + S22 n(2) + S23 n(3)
@@ -98,13 +100,14 @@ if [ $# -lt "1" -o "$hset" == "1" ]; then
      ts = t(1) s(1) + t(2) s(2)
      td = t(1) d(1) + t(2) d(2) + t(3) d(3)
 
-  the Coulomb stress is
+  The Coulomb stress is
 
      tc = t(1) b(1) + t(2) b(2) + t(3) b(3) + mu * tn
 
   by convention, ts is positive for left lateral strike shear. dip direction
   is up dip. the 1, 2 and 3 directions are north, east and down, respectively.
-  the vector s, d, and n form a right-handed coordinate system.
+  The vector s, d, and n form a right-handed coordinate system.
+
 EOF
 
 	exit
