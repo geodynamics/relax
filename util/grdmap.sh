@@ -73,11 +73,11 @@ my_gmt(){
 		fi
 		if [ -e "$selfdir/$subprog" ]; then
 			#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
-			eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $PSFILE"
+			eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PSFILE"
 		else
 			if [ -e "$subprog" ]; then
 				#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
-				eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $PSFILE"
+				eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PSFILE"
 			fi
 		fi
 	done
@@ -160,7 +160,7 @@ do
 	x) xset=1;;
 	C) Cset="-C";contour=$OPTARG;;
 	O) Oset=1;PSFILE=$(dirname $OPTARG)/$(basename $OPTARG .ps).ps;;
-	J) Jset=1;PROJ=$OPTARG;;
+	J) Jset="-J";PROJ=$OPTARG;;
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
 done
@@ -328,11 +328,15 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 
 			# Cartesian vs geographic coordinates
 			if [ "$gset" != "-g" ]; then
-				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*7)}'`
-				if [ "$rset" != "1" ]; then
-					PROJ="X7i/"$HEIGHT
+				if [ "$Jset" == "" ]; then
+					HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*7)}'`
+					if [ "$rset" != "1" ]; then
+						PROJ="X7i/"$HEIGHT
+					else
+						PROJ="X7i/"-$HEIGHT
+					fi
 				else
-					PROJ="X7i/"-$HEIGHT
+					HEIGHT="-"
 				fi
 			        AXIS=-Ba${tick}:"":/a${tick}:""::."$TITLE":WSne
 			else
