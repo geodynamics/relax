@@ -3,6 +3,7 @@
 \usepackage{times}
 \usepackage{natbib}
 \usepackage{alltt}
+\usepackage{textpos}
 \usepackage[usenames,dvipsnames]{color}
 \definecolor{orange}{rgb}{1,0.5,0}
 
@@ -54,10 +55,103 @@
 
 
 \thispagestyle{empty}
-\begin{figure}[!h]
-\centering\includegraphics[width=15.092cm]{cover.pdf}
-\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% START OF CIG MANUAL COVER TEMPLATE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This should be pasted at the start of manuals and appropriate strings entered at locations indicated with FILL.
+% Be sure the TeX file includes the following packages.
+% \usepackage{graphicx}
+% \usepackage{times}
+
+\definecolor{dark_grey}{gray}{0.3}
+\definecolor{dark_green}{RGB}{37,105,40}
+
+%LINE 1%
+{
+\renewcommand{\familydefault}{\sfdefault}
+
+\pagenumbering{gobble}
+\begin{center}
+\resizebox{\textwidth}{!}{\textcolor{dark_grey}{\fontfamily{\sfdefault}\selectfont
+COMPUTATIONAL INFRASTRUCTURE FOR GEODYNAMICS (CIG)}}
+
+\hrule
+
+%LINE 2%
+\color{dark_grey}
+\rule{\textwidth}{2pt}
+
+%LINE 3%
+%\color{dark_grey}
+% FILL: additional organizations
+% e.g.: {\Large Organization 1\\Organization 2}
+%{\Large }
+\end{center}
+
+%COLOR AND CODENAME BLOCK%
+\begin{center}
+\resizebox{\textwidth}{!}{\colorbox
+% FILL: color of code name text box
+% e.g. blue
+{dark_green}{\fontfamily{\rmdefault}\selectfont \textcolor{white} {
+% FILL: name of the code
+% You may want to add \hspace to both sides of the codename to better center it, such as:
+% \newcommand{\codename}{\hspace{0.1in}CodeName\hspace{0.1in}}
+\hspace{0.14in}Relax\hspace{0.1in}
+}}}
+\end{center}
+
+%MAIN PICTURE%
+\begin{textblock*}{0in}(0.5in,-1.4in)
+% FILL: image height
+% e.g. height=6.5in
+\begin{center}
+\vspace{.5in}
+\includegraphics[height=7.0in]
+% FILL: image file name
+% e.g. cover_image.png
+{cover_image}
+\end{center}
+\end{textblock*}
+
+%USER MANUAL%
+\color{dark_grey}
+\hfill{\Huge \fontfamily{\sfdefault}\selectfont User Manual \\
+% FILL: manual version
+% e.g. 1.0
+\raggedleft \huge \fontfamily{\sfdefault}\selectfont Version {1.0.6}\\}
+
+%AUTHOR(S) & WEBSITE%
+\null
+\vfill
+\color{dark_grey}
+\Large \hfill {\raggedleft \fontfamily{\sfdefault}\selectfont
+% FILL: author list
+% e.g. Author One\\Author Two\\Author Three\\
+% be sure to have a newline (\\) after the final author
+Sylvain Barbot\\
+}
+{\fontfamily{\sfdefault}\selectfont www.geodynamics.org
+
+%\rule{\textwidth}{1pt}
+\color{dark_grey}
+\rule{\textwidth}{2pt}
+}
+}
+
 \pagebreak
+\pagenumbering{arabic}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%   END OF CIG MANUAL COVER TEMPLATE    %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%\begin{figure}[!h]
+%\centering\includegraphics[width=15.092cm]{cover.pdf}
+%\end{figure}
+%\pagebreak
 
 \maketitle 
 
