@@ -1,4 +1,4 @@
-\begin{thebibliography}{30}
+\begin{thebibliography}{38}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -8,6 +8,11 @@
 \bibitem[{\textit{Aki and Richards}(1980)}]{aki&richards80a}
 Aki, K., and P.~G. Richards, \textit{Quantitative Seismology}, vol.~I, W. H.
   Freeman and company, New York, 1980.
+
+\bibitem[{\textit{Atzori et~al.}(2009)}]{atzori+09}
+Atzori, S., et~al., {Finite fault inversion of DInSAR coseismic displacement of
+  the 2009 L'Aquila earthquake (central Italy)}, \textit{Geophys. J. Int.},
+  \textit{36}(15), 2009.
 
 \bibitem[{\textit{Avouac et~al.}(2006)\textit{Avouac, Ayoub, Leprince, Konca,
   and Helmberger}}]{avouac+06}
@@ -48,6 +53,17 @@ Barbot, S., Y.~Fialko, and D.~Sandwell, {Three-Dimensional Models of
   Elasto-Static Deformation in Heterogeneous Media, with Applications to the
   Eastern California Shear Zone}, \textit{Geophys. J. Int.}, \textit{179}(1),
   500--520, 2009{\natexlab{b}}.
+
+\bibitem[{\textit{B\'{e}jar-Pizarro et~al.}(2010)}]{beja-pizzarro+10}
+B\'{e}jar-Pizarro, M., et~al., {Asperities and barriers on the seismogenic zone
+  in North Chile: state-of-the-art after the 2007 Mw 7.7 Tocopilla earthquake
+  inferred by GPS and InSAR data}, \textit{Geophys. J. Int.}, \textit{181}(1),
+  390--406, 2010.
+
+\bibitem[{\textit{Beroza}(1991)}]{beroza91}
+Beroza, G.~C., {Near-source modeling of the Loma Prieta earthquake: Evidence
+  for heterogeneous slip and implications for earthquake hazard}, \textit{Bull.
+  Seism. Soc. Am.}, \textit{81}, 1603--1621, 1991.
 
 \bibitem[{\textit{Bruhat et~al.}(2011)\textit{Bruhat, Barbot, and
   Avouac}}]{bruhat+11}
@@ -118,6 +134,20 @@ Li, Z., J.~R. Elliott, W.~Feng, J.~A. Jackson, B.~E. Parsons, and R.~J.
   provided by InSAR and body wave seismology}, \textit{J. Geophys. Res.},
   \textit{116}(B10302), 16, 2011.
 
+\bibitem[{\textit{Lorito et~al.}(2011)\textit{Lorito, Romano, Atzori, Tong,
+  Avallone, McCloskey, Cocco, Boschi, and Piatanesi}}]{lorito+11}
+Lorito, S., F.~Romano, S.~Atzori, X.~Tong, A.~Avallone, J.~McCloskey, M.~Cocco,
+  E.~Boschi, and A.~Piatanesi, {Limited overlap between the seismic gap and
+  coseismic slip of the great 2010 Chile earthquake}, \textit{Nature
+  Geoscience}, \textit{4}, 173?177, 2011.
+
+\bibitem[{\textit{Luttrell et~al.}(2011)\textit{Luttrell, Tong, Sandwell,
+  Brooks, and Bevis}}]{luttrell+11}
+Luttrell, K.~M., X.~Tong, D.~T. Sandwell, B.~A. Brooks, and M.~G. Bevis,
+  {Estimates of stress drop and crustal tectonic stress from the 27 February
+  2010 Maule, Chile, earthquake: Implications for fault strength}, \textit{J.
+  Geophys. Res.}, \textit{116}(B11), 2011.
+
 \bibitem[{\textit{Mogi}(1958)}]{mogi58}
 Mogi, K., Relations between the eruptions of various volcanoes and the
   deformations of the ground surfaces around them, \textit{Bull. Earthquake
@@ -145,11 +175,23 @@ Simons, M., Y.~Fialko, and L.~Rivera, {Coseismic deformation from the 1999
   $M_w7.1$ Hector Mine, California, earthquake, as inferred from InSAR and GPS
   observations}, \textit{Bull. Seism. Soc. Am.}, \textit{92}, 1390--1402, 2002.
 
+\bibitem[{\textit{Song et~al.}(2008)\textit{Song, Beroza, and
+  Segall}}]{song+08}
+Song, S.~G., G.~C. Beroza, and P.~Segall, {A unified source model for the 1906
+  San Francisco earthquake}, \textit{Bull. Seism. Soc. Am.}, \textit{98},
+  823--831, 2008.
+
 \bibitem[{\textit{Steblov et~al.}(2010)\textit{Steblov, Vasilenko, Prytkov,
   Frolov, and Grekova}}]{steblov+10}
 Steblov, G.~M., N.~F. Vasilenko, A.~S. Prytkov, D.~I. Frolov, and T.~A.
   Grekova, {Dynamics of the Kuril-Kamchatka subduction zone from GPS data},
   \textit{Izvestiya, Phys. Solid Earth}, \textit{46}(5), 440--445, 2010.
+
+\bibitem[{\textit{Thomas et~al.}(2014)\textit{Thomas, Avouac, Champenois, Lee,
+  and Kuo}}]{thomas+14}
+Thomas, M.~Y., J.-P. Avouac, J.~Champenois, J.-C. Lee, and L.-C. Kuo,
+  {Spatiotemporal evolution of seismic and aseismic slip on the Longitudinal
+  Valley Fault, Taiwan}, \textit{J. Geophys. Res.}, 2014.
 
 \bibitem[{\textit{Tong et~al.}(2011)\textit{Tong, Sandwell, and
   Fialko}}]{tong+11}
@@ -186,5 +228,12 @@ Wei, S., D.~Helmberger, and J.-P. Avouac, {Modeling the 2012 Wharton basin
 Wei, S., et~al., {Superficial simplicity of the 2010 El Mayor-Cucapah
   earthquake of Baja California in Mexico}, \textit{Nature Geosci.}, pp.
   615--618, 2011.
+
+\bibitem[{\textit{Yamazaki et~al.}(2011)\textit{Yamazaki, Lay, Cheung, Yue, and
+  Kanamori}}]{yamazaki+11}
+Yamazaki, Y., T.~Lay, K.~F. Cheung, H.~Yue, and H.~Kanamori, {Modeling
+  near-field tsunami observations to improve finite-fault slip models for the
+  11 March 2011 Tohoku earthquake}, \textit{Geophys. Res. Lett.},
+  \textit{38}(7), 2011.
 
 \end{thebibliography}

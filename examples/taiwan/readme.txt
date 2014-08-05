@@ -3,6 +3,10 @@ Deformation associated with the Mw 7.6 September 20th, 1999 Chi Chi earthquake. 
 Y. Hsu, J.-P. Avouac, S.-B. Yu, C.-H. Chang, Y.-M. Wu, and J. Woessner, "Spatio-temporal slip, and stress level on the faults within the Western Foothills of Taiwan: Implications for fault frictional properties", Pure Appl. Geophys., 166 (2009)
 http://mh-gps-p1.caltech.edu/~avouac/publications/Hus_GJI2009.pdf
 
+# reference point
+echo 120.982 23.772 | proj +proj=utm +zone=51
+294358.16       2630444.34
+
 To compute the coseismic displacement, run 
 
   ./coseismic.sh

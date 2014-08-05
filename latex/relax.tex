@@ -3,6 +3,7 @@
 \usepackage{times}
 \usepackage{natbib}
 \usepackage{alltt}
+\usepackage{textpos}
 \usepackage[usenames,dvipsnames]{color}
 \definecolor{orange}{rgb}{1,0.5,0}
 
@@ -48,16 +49,109 @@
 \normalsize{Earth Observatory of Singapore, Nanyang Technological University}\\
 }
 
-\date{Oct. 11th, 2011, last revision April. 18th, 2014}
+\date{Oct. 11th, 2011, last revision July. 3rd, 2014}
 
 \begin{document} 
 
 
 \thispagestyle{empty}
-\begin{figure}[!h]
-\centering\includegraphics[width=15.092cm]{cover.pdf}
-\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% START OF CIG MANUAL COVER TEMPLATE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This should be pasted at the start of manuals and appropriate strings entered at locations indicated with FILL.
+% Be sure the TeX file includes the following packages.
+% \usepackage{graphicx}
+% \usepackage{times}
+
+\definecolor{dark_grey}{gray}{0.3}
+\definecolor{dark_green}{RGB}{37,105,40}
+
+%LINE 1%
+{
+\renewcommand{\familydefault}{\sfdefault}
+
+\pagenumbering{gobble}
+\begin{center}
+\resizebox{\textwidth}{!}{\textcolor{dark_grey}{\fontfamily{\sfdefault}\selectfont
+COMPUTATIONAL INFRASTRUCTURE FOR GEODYNAMICS (CIG)}}
+
+\hrule
+
+%LINE 2%
+\color{dark_grey}
+\rule{\textwidth}{2pt}
+
+%LINE 3%
+%\color{dark_grey}
+% FILL: additional organizations
+% e.g.: {\Large Organization 1\\Organization 2}
+%{\Large }
+\end{center}
+
+%COLOR AND CODENAME BLOCK%
+\begin{center}
+\resizebox{\textwidth}{!}{\colorbox
+% FILL: color of code name text box
+% e.g. blue
+{dark_green}{\fontfamily{\rmdefault}\selectfont \textcolor{white} {
+% FILL: name of the code
+% You may want to add \hspace to both sides of the codename to better center it, such as:
+% \newcommand{\codename}{\hspace{0.1in}CodeName\hspace{0.1in}}
+\hspace{0.14in}Relax\hspace{0.1in}
+}}}
+\end{center}
+
+%MAIN PICTURE%
+\begin{textblock*}{0in}(0.5in,-1.4in)
+% FILL: image height
+% e.g. height=6.5in
+\begin{center}
+\vspace{.5in}
+\includegraphics[height=7.0in]
+% FILL: image file name
+% e.g. cover_image.png
+{cover_image}
+\end{center}
+\end{textblock*}
+
+%USER MANUAL%
+\color{dark_grey}
+\hfill{\Huge \fontfamily{\sfdefault}\selectfont User Manual \\
+% FILL: manual version
+% e.g. 1.0
+\raggedleft \huge \fontfamily{\sfdefault}\selectfont Version {1.0.6}\\}
+
+%AUTHOR(S) & WEBSITE%
+\null
+\vfill
+\color{dark_grey}
+\Large \hfill {\raggedleft \fontfamily{\sfdefault}\selectfont
+% FILL: author list
+% e.g. Author One\\Author Two\\Author Three\\
+% be sure to have a newline (\\) after the final author
+Sylvain Barbot\\
+}
+{\fontfamily{\sfdefault}\selectfont www.geodynamics.org
+
+%\rule{\textwidth}{1pt}
+\color{dark_grey}
+\rule{\textwidth}{2pt}
+}
+}
+
 \pagebreak
+\pagenumbering{arabic}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%   END OF CIG MANUAL COVER TEMPLATE    %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%\begin{figure}[!h]
+%\centering\includegraphics[width=15.092cm]{cover.pdf}
+%\end{figure}
+%\pagebreak
 
 \maketitle 
 
@@ -815,7 +909,7 @@ The vigor of viscoelastic flow will be controlled by the norm of the deviatoric 
 \begin{alltt}
 {\color{NavyBlue}grdmath $\{index\}-s11p.grd 2 POW $\{index\}-s22p.grd 2 POW ADD $\{index\}-s33p.grd \textbackslash 
         2 POW ADD 2 DIV $\{index\}-s12.grd 2 POW ADD $\{index\}-s13.grd 2 POW ADD \textbackslash 
-        $\{index\}-s23.grd 2 POW ADD = $\{index\}-tau.grd}
+        $\{index\}-s23.grd 2 POW ADD SQRT = $\{index\}-tau.grd}
 \end{alltt}
 For a more subtle look at the dynamics of stress change, we can look at the log of shear stress change (Fig.~\ref{fig:wharton})
 \begin{alltt}
@@ -887,43 +981,84 @@ on a single line per time step. The files \verb'rfaults-dsigma-0000.vtp' and \ve
 \end{alltt}
 To define the stress observation plane, we just removed the slip information and added the static friction coefficient to the slip distribution model \verb'slip_model.flt' using \verb'awk'. A convenient way to check the geometry of the stress observation segments is to run Relax using the \verb'--dry-run' option. This will output the postseismic stress change on the receiver faults in the file \verb'rfaults-dsigma-0000.vtp' (as this is zero by definition for the 0 time step, this is outputted without actual calculations). 
 
+\pagebreak
 
+\section{Catalogue of published slip distribution models}
 
-\subsection{Published slip distribution models}
-
-The directory \verb'examples' contains a large list of input files with published slip distributions of recent earthquakes (Table~\ref{tbl:input}). The database comprises slip distribution for transform boundaries and subduction zones, including all of thrust, strike-slip and normal earthquakes, as illustrated in 21 examples. New slip distributions will continue to be included and placed in this repository.
+The directory \verb'examples' contains a large list of input files with published slip distributions of recent earthquakes (Table~\ref{tbl:input}). The database comprises slip distribution for transform boundaries and subduction zones, including all of thrust, strike-slip and normal earthquakes, as illustrated in about 50 examples. New slip distributions will continue to be included and placed in this repository. Authors are encouraged to submit their slip distribution models as they publish their results.
 \begin{table}[h]
-\renewcommand{\arraystretch}{1.3}
+\renewcommand{\arraystretch}{1.1}
 \begin{tabular}{l|l}
 \parbox{8.0cm}{earthquakes} & \parbox{7cm}{studies} \\
 \hline
+1906 M\,7.9 San Francisco & \cite{song+08}\\
 1964 M\,9.2 Alaska & \cite{johnson+96}\\
+%1984 M\,6.2 Morgan Hill & \cite{beroza&spudich88}\\
+1989 M\,6.9 Loma Prieta & \cite{beroza91}\\
 1992 Mw\,7.3 Landers (California) & \cite{fialko04c}\\
 1994 Mw\,6.3 Northridge (California) & \cite{hudnut+96}\\
 1999 Mw\,7.1 Hector Mine (California) & \cite{simons+02a}\\
 1999 Mw\,7.6 Chi-Chi (Taiwan) & \cite{johnson+01}\\
 2001 Mw\,7.8 Kokoxili (Tibet) & \cite{lasserre+05,ryder+11}\\
 2003 Mw\,7.8 Altai & \cite{barbot+08a}\\
+2003 Mw\,6.8 Chengkong & \cite{thomas+14}\\
 2004 Mw\,6.0 Parkfield & \cite{bruhat+11}\\
 2004 Mw\,9.1 Sumatra (Indonesia) & \cite{chlieh+07}\\
 2005 Mw\,7.6 Kashmir (Pakistan) & \cite{avouac+06}\\
 2005 Mw\,8.6 Nias (Indonesia) & \textit{G. Shao \& Chen Ji, UCSB}; \cite{konca+07}\\
 2006 Mw\,8.3 Kuril & \cite{steblov+10}\\
+2007 Mw\,7.7 Tocopilla & \cite{beja-pizzarro+10}\\
 2008 Mw\,7.1 Yutian (Tibet) & \cite{elliott+10}\\
+2009 Mw\,6.3 L'Aquila (Italy) & \cite{atzori+09}\\
 2010 Mw\,6.8 Yushu (Tibet) & \cite{li+11}\\
 2010 Mw\,7.9 Wenchuan (China) & \cite{tong+11}\\
 2010 Mw\,7.2 El Mayor-Cucapah (Mexico) & \cite{swei+11}\\
 2010 Mw 7.1 Darfield (New Zealand) & \cite{elliott+12}\\
+2010 Mw 8.8 Maule & \cite{lorito+11,luttrell+11}\\
 2011 Mw 6.3 Christchurch (New Zealand) & \cite{elliott+12}\\
-2011 Mw\,9.1 Tohoku (Japan) & \cite{swei+12}\\
+2011 Mw\,9.1 Tohoku (Japan) & \cite{swei+12,yamazaki+11}\\
 2011 Mw\,6.9 Tarlay (Myanmar) & \textit{Wang, pers. comm.} [2013]\\
-2013 Mw\,8.6 Wharton Basin & \citep{swei+13}\\
+2012 Mw\,8.6 Wharton Basin & \cite{swei+13}\\
 \hline
 \end{tabular}
-\caption{Table of earthquake slip distribution with validated Relax input files. Slip distribution, Relax input for coseismic deformation and postseismic relaxation simulations, along with geographical information can be found in the \texttt{example} directory.}\label{tbl:input}
+\caption{Table of earthquake slip distribution with validated Relax input files. More slip distributions, Relax input for coseismic deformation and postseismic relaxation simulations, along with geographical information can be found in the \texttt{examples} directory.}\label{tbl:input}
 \end{table}
 
-The utility \verb'util/flt2vtp.sh' transforms the slip distribution in the Paraview format for visualization in three dimensions, for example the 1964 M$_w$ 9.2 Alaska slip model in Fig.~\ref{fig:alaska}.
+\clearpage
+
+\section{post-processing scripts}
+
+\subsection{extrude.sh}
+
+The script \verb'extrude.sh' computes the coordinates $\textbf{y}$ of the end points of a fault or fault zone located at $\textbf{x}_0$. Given the length $L$, the width $W$ and the half thickness $T$ of the fault zone (faults have zero thickness), the end point is at
+\begin{equation}
+\textbf{y}=\textbf{x}_0+L\,\hat{\textbf{s}}+W\,\hat{\textbf{d}}+T\,\hat{\textbf{n}}
+\end{equation}
+The script is useful to create new faults or geometric elements. The script \verb'extrude.sh' reads from the standard input, as follows
+\begin{alltt}
+extrude.sh
+#  n   x1   x2   x3 length width thickness strike dip
+{\color{orange}   1    0    0    0      1     1         0      0  90}
+{\color{blue}+1.000000e+00 -6.123234e-17 -1.000000e+00}
+\end{alltt}
+
+\subsection{flt2vtp.sh}
+The utility \verb'util/flt2vtp.sh' transforms the slip distribution in the Paraview format for visualization in three dimensions, for example the 1964 M$_w$ 9.2 Alaska slip model in Fig.~\ref{fig:alaska}. You can convert single \verb'.flt' files
+\begin{alltt}
+{\color{NavyBlue}flt2vtp.sh thomas+14_km.flt}
+\end{alltt}
+or a list of files
+\begin{alltt}
+{\color{NavyBlue}flt2vtp.sh konca+07_km.flt thomas+14_km.flt}
+\end{alltt}
+to create the Paraview files \verb'thomas+14_km.vtp' and \verb'konca+07_km.vtp'. The \verb'.vtp' files contain information to visualize the slip vector, the dip and strike angles. The utility \verb'util/flt2vtp.sh' also works with the standard input, 
+\begin{alltt}
+{\color{NavyBlue}cat konca+07_km.flt | flt2vtp.sh > konca+07_km.vtp}
+\end{alltt}
+This is convenient when you want to merge various input files into one \verb'.flt' file, for example:
+\begin{alltt}
+{\color{NavyBlue}cat konca+07_km.flt thomas+14_km.flt | flt2vtp.sh > all_faults.vtp}
+\end{alltt}
 
 %
 \begin{figure*}[h]
@@ -934,10 +1069,99 @@ The utility \verb'util/flt2vtp.sh' transforms the slip distribution in the Parav
 \end{figure*}
 %
 
+\subsection{grdmap.sh}
 
+To visualize the coseismic displacement at the surface, it is convenient to use the script \verb'grdmap.sh'. The plotting routine \verb'grdmap.sh' provided with the code and numerous other post-processing scripts can be used to analyze the modeled scenario. The unix script \verb'grdmap.sh', a wrapper around GMT programs, produces map views of any grid but is optimized to work with the three-dimensional output of Relax.
+\begin{alltt}
+{\color{NavyBlue}grdmap.sh -b -30/30/-30/30 -p -0.05/0.05/0.001 -v 0.5 \textbackslash
+       -u "m" -e erpatch.sh output_directory/000}
+\end{alltt}
+where the \verb'-b' option defines the boundary of the map in the GMT format W/E/S/N, the \verb'-p' option defines the range of the color scale for the vertical displacements, the \verb'-v' option defines the length of the vectors for the horizontal displacement, the "-u" option defines the unit of the color scale, and the "-e" option call the additional script \verb'erpatch.sh' to plot the spatial extent of the fault on the map. The last argument \verb'output_directory/000' refers to the prefix of all GMT binary files associated with the index \verb'000'. Any file prefix followed by \verb'-north.grd', \verb'-east.grd' and \verb'-up.grd' can be used in this manner. To look at an individual file, for example the stress component $\sigma_{12}$ at 5\,km depth, simply use
+\begin{alltt}
 
+{\color{NavyBlue}grdmap.sh -b -30/30/-30/30 -p -500/500/1 \textbackslash
+       -u "kPa" -e erpatch.sh output_directory/000-s12.grd}
+\end{alltt}
+For this command to work, it is assumed that \verb'grdmap.sh' and \verb'erpatch.sh' are both located in a directory listed in the \verb'$PATH' environment variable, such as \verb'/usr/local/bin'.
 
-\pagebreak
+\subsection{grdcoulomb.sh}
+
+The post-processing script \verb'grdcoulomb.sh' projects the stress tensor map produced by Relax into surface tractions and Coulomb stress along a hypothetic fault plane defined by strike and dip orientation and rake angle. For example, to compute the Coulombs stress with a static friction coefficient of $\mu=0.6$ due to an earthquake on a right-lateral vertical strike-slip fault striking 10$^\circ$ north, use the command
+\begin{alltt}
+{\color{NavyBlue}grdcoulomb.sh -s 10 -d 90 -r 180 -f 0.6 earthquake/000}
+\end{alltt}
+The calculation assumes that the following files exist: \verb'earthquake/000-s11.grd', \verb'earthquake/000-s12.grd', \verb'earthquake/000-s13.grd', \verb'earthquake/000-s22.grd' and \verb'earthquake/000-s33.grd'. The three components of the traction vectors are expressed in the x1, x2, x3 coordinate system and in a fault-centric coordinate system. It provides the strike, dip and normal components of the traction vector. The normal vector of the receiver fault is 
+\begin{equation}
+\hat{\textbf{n}}=\left(\begin{matrix}
+-\sin\theta\sin\phi\\
++\cos\theta\sin\phi\\
+-\cos\phi\end{matrix}\right)
+\end{equation}
+The unit strike vector is
+\begin{equation}
+\hat{\textbf{s}}=\left(\begin{matrix}
+\cos\theta\\
+\sin\theta\\
+0\end{matrix}\right)
+\end{equation}
+and the unit dip-direction vector is
+\begin{equation}
+\hat{\textbf{d}}=\left(\begin{matrix}
++\sin\theta\cos\phi\\
+-\cos\theta\cos\phi\\
+-\sin\phi\end{matrix}\right)
+\end{equation}
+The unit slip, or Burger's, vector, is $\hat{\textbf{b}}=\cos r\,\hat{\textbf{s}}+\sin r\,\hat{\textbf{d}}$. The traction vector in the x1, x2, x3 coordinate system is
+\begin{equation}
+\hat{\textbf{t}}=\left(\begin{aligned}
+S_{11} \hat{n}_1 + S_{12} \hat{n}_2 + S_{13} \hat{n}_3\\
+S_{12} \hat{n}_1 + S_{22} \hat{n}_2 + S_{23} \hat{n}_3\\
+S_{13} \hat{n}_1 + S_{23} \hat{n}_2 + S_{33} \hat{n}_3\\
+\end{aligned}\right)
+\end{equation}
+and the traction vectors in the fault-centric coordinate system are $\textbf{t}_n=\textbf{t}\cdot\hat{\textbf{n}}$, $\textbf{t}_s=\textbf{t}\cdot\hat{\textbf{s}}$, $\textbf{t}_d=\textbf{t}\cdot\hat{\textbf{d}}$. The coulomb stress is $t_c=\textbf{t}\cdot\textbf{b}+\mu\,||\textbf{t}_n||$. After running \verb'grdcoulomb.sh', the traction vectors and the Coulomb stress can be visualized using \verb'grdmap.sh', for example
+\begin{alltt}
+{\color{orange}grdmap.sh earthquake/000-tc.grd}
+\end{alltt}
+
+\subsection{seg2flt.py}
+
+The Python script \verb'seg2flt.py' converts a segment definition to finely sampled fault file. The script expect a list of index, x1, x2, x3, length, width, strike dip, rake, delta length, delta width, algebraic factor for length, algebraic factor for width. The segment will be cut in small patches of dimension delta length $\times$ delta width. The algebraic factors correspond to a geometric increase of the patches length and width with depth. Use algebraic factors of 1 for a uniform length and width. For example, to create four uniform patches out a segment definition, use
+\begin{alltt}
+{\color{orange}echo 1 0 0 0 10 10 45 90 0 5 5 1 1 | seg2flt.py}
+{\color{blue}#  n        x1        x2        x3    length     width   strike   dip  rake
+   1    0.0000    0.0000    0.0000    5.0000    5.0000    45.00 90.00  0.0
+   2    3.5355    3.5355    0.0000    5.0000    5.0000    45.00 90.00  0.0
+   3   -0.0000    0.0000    5.0000    5.0000    5.0000    45.00 90.00  0.0
+   4    3.5355    3.5355    5.0000    5.0000    5.0000    45.00 90.00  0.0}
+\end{alltt}
+or to create two shallow patches and a long deep patch, use
+\begin{alltt}
+{\color{orange}echo 1 0 0 0 10 10 45 90 0 5 5 2 2 | seg2flt.py}
+{\color{blue}#  n        x1        x2        x3    length     width   strike   dip  rake
+   1    0.0000    0.0000    0.0000    5.0000    5.0000    45.00 90.00  0.0
+   2    3.5355    3.5355    0.0000    5.0000    5.0000    45.00 90.00  0.0
+   3   -0.0000    0.0000    5.0000   10.0000    5.0000    45.00 90.00  0.0}
+\end{alltt}
+This is useful to create observation planes on the fly, from a simple large-scale definition of the fault segment. 
+
+The script can also be used to resample slip distributions, for example
+\begin{alltt}
+{\color{orange}echo 1 1 0 0 0 10 10 45 90 0 5 5 1 1 | seg2flt.py --with-slip}
+{\color{blue}#  n    slip       x1       x2       x3   length   width  strike   dip rake
+   1 +1.0e+0   0.0000   0.0000   0.0000    5.000   5.000   45.00 90.00  0.0
+   2 +1.0e+0   3.5355   3.5355   0.0000    5.000   5.000   45.00 90.00  0.0
+   3 +1.0e+0  -0.0000   0.0000   5.0000    5.000   5.000   45.00 90.00  0.0
+   4 +1.0e+0   3.5355   3.5355   5.0000    5.000   5.000   45.00 90.00  0.0}
+\end{alltt}
+Combined with \verb'flt2vtp.sh', this can be used to test the geometry of slip distribution models, for example
+\begin{alltt}
+{\color{orange}echo 1 1 0 0 0 10 10 45 90 0 5 5 1 1 | \textbackslash
+             seg2flt.py --with-slip | flt2vtp.sh > test.vtp}
+\end{alltt}
+
+Used in combination with \verb'extrude.sh', the script \verb'seg2flt.py' can be used to rapidly create slip distribution and observation planes for geometrically complex fault systems.
+
 \section{Outputs}
 
 All GMT output files related to a specific time step are prefixed by the index number, for instance \verb'000-east.grd' is the map view of the east component of deformation for index $0$. For each time step, for example index $14$, one can find\\
@@ -1157,7 +1381,11 @@ The first option, \verb`--with-vtk-output`, enforces the output in \verb`vtk` fo
 %\bibliography{../../../latex/reference}
 \bibliographystyle{agu}
 
-\begin{thebibliography}{30}
+
+
+\pagebreak
+
+\begin{thebibliography}{38}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -1167,6 +1395,11 @@ The first option, \verb`--with-vtk-output`, enforces the output in \verb`vtk` fo
 \bibitem[{\textit{Aki and Richards}(1980)}]{aki&richards80a}
 Aki, K., and P.~G. Richards, \textit{Quantitative Seismology}, vol.~I, W. H.
   Freeman and company, New York, 1980.
+
+\bibitem[{\textit{Atzori et~al.}(2009)}]{atzori+09}
+Atzori, S., et~al., {Finite fault inversion of DInSAR coseismic displacement of
+  the 2009 L'Aquila earthquake (central Italy)}, \textit{Geophys. J. Int.},
+  \textit{36}(15), 2009.
 
 \bibitem[{\textit{Avouac et~al.}(2006)\textit{Avouac, Ayoub, Leprince, Konca,
   and Helmberger}}]{avouac+06}
@@ -1207,6 +1440,17 @@ Barbot, S., Y.~Fialko, and D.~Sandwell, {Three-Dimensional Models of
   Elasto-Static Deformation in Heterogeneous Media, with Applications to the
   Eastern California Shear Zone}, \textit{Geophys. J. Int.}, \textit{179}(1),
   500--520, 2009{\natexlab{b}}.
+
+\bibitem[{\textit{B\'{e}jar-Pizarro et~al.}(2010)}]{beja-pizzarro+10}
+B\'{e}jar-Pizarro, M., et~al., {Asperities and barriers on the seismogenic zone
+  in North Chile: state-of-the-art after the 2007 Mw 7.7 Tocopilla earthquake
+  inferred by GPS and InSAR data}, \textit{Geophys. J. Int.}, \textit{181}(1),
+  390--406, 2010.
+
+\bibitem[{\textit{Beroza}(1991)}]{beroza91}
+Beroza, G.~C., {Near-source modeling of the Loma Prieta earthquake: Evidence
+  for heterogeneous slip and implications for earthquake hazard}, \textit{Bull.
+  Seism. Soc. Am.}, \textit{81}, 1603--1621, 1991.
 
 \bibitem[{\textit{Bruhat et~al.}(2011)\textit{Bruhat, Barbot, and
   Avouac}}]{bruhat+11}
@@ -1277,6 +1521,20 @@ Li, Z., J.~R. Elliott, W.~Feng, J.~A. Jackson, B.~E. Parsons, and R.~J.
   provided by InSAR and body wave seismology}, \textit{J. Geophys. Res.},
   \textit{116}(B10302), 16, 2011.
 
+\bibitem[{\textit{Lorito et~al.}(2011)\textit{Lorito, Romano, Atzori, Tong,
+  Avallone, McCloskey, Cocco, Boschi, and Piatanesi}}]{lorito+11}
+Lorito, S., F.~Romano, S.~Atzori, X.~Tong, A.~Avallone, J.~McCloskey, M.~Cocco,
+  E.~Boschi, and A.~Piatanesi, {Limited overlap between the seismic gap and
+  coseismic slip of the great 2010 Chile earthquake}, \textit{Nature
+  Geoscience}, \textit{4}, 173?177, 2011.
+
+\bibitem[{\textit{Luttrell et~al.}(2011)\textit{Luttrell, Tong, Sandwell,
+  Brooks, and Bevis}}]{luttrell+11}
+Luttrell, K.~M., X.~Tong, D.~T. Sandwell, B.~A. Brooks, and M.~G. Bevis,
+  {Estimates of stress drop and crustal tectonic stress from the 27 February
+  2010 Maule, Chile, earthquake: Implications for fault strength}, \textit{J.
+  Geophys. Res.}, \textit{116}(B11), 2011.
+
 \bibitem[{\textit{Mogi}(1958)}]{mogi58}
 Mogi, K., Relations between the eruptions of various volcanoes and the
   deformations of the ground surfaces around them, \textit{Bull. Earthquake
@@ -1304,11 +1562,23 @@ Simons, M., Y.~Fialko, and L.~Rivera, {Coseismic deformation from the 1999
   $M_w7.1$ Hector Mine, California, earthquake, as inferred from InSAR and GPS
   observations}, \textit{Bull. Seism. Soc. Am.}, \textit{92}, 1390--1402, 2002.
 
+\bibitem[{\textit{Song et~al.}(2008)\textit{Song, Beroza, and
+  Segall}}]{song+08}
+Song, S.~G., G.~C. Beroza, and P.~Segall, {A unified source model for the 1906
+  San Francisco earthquake}, \textit{Bull. Seism. Soc. Am.}, \textit{98},
+  823--831, 2008.
+
 \bibitem[{\textit{Steblov et~al.}(2010)\textit{Steblov, Vasilenko, Prytkov,
   Frolov, and Grekova}}]{steblov+10}
 Steblov, G.~M., N.~F. Vasilenko, A.~S. Prytkov, D.~I. Frolov, and T.~A.
   Grekova, {Dynamics of the Kuril-Kamchatka subduction zone from GPS data},
   \textit{Izvestiya, Phys. Solid Earth}, \textit{46}(5), 440--445, 2010.
+
+\bibitem[{\textit{Thomas et~al.}(2014)\textit{Thomas, Avouac, Champenois, Lee,
+  and Kuo}}]{thomas+14}
+Thomas, M.~Y., J.-P. Avouac, J.~Champenois, J.-C. Lee, and L.-C. Kuo,
+  {Spatiotemporal evolution of seismic and aseismic slip on the Longitudinal
+  Valley Fault, Taiwan}, \textit{J. Geophys. Res.}, 2014.
 
 \bibitem[{\textit{Tong et~al.}(2011)\textit{Tong, Sandwell, and
   Fialko}}]{tong+11}
@@ -1346,11 +1616,17 @@ Wei, S., et~al., {Superficial simplicity of the 2010 El Mayor-Cucapah
   earthquake of Baja California in Mexico}, \textit{Nature Geosci.}, pp.
   615--618, 2011.
 
+\bibitem[{\textit{Yamazaki et~al.}(2011)\textit{Yamazaki, Lay, Cheung, Yue, and
+  Kanamori}}]{yamazaki+11}
+Yamazaki, Y., T.~Lay, K.~F. Cheung, H.~Yue, and H.~Kanamori, {Modeling
+  near-field tsunami observations to improve finite-fault slip models for the
+  11 March 2011 Tohoku earthquake}, \textit{Geophys. Res. Lett.},
+  \textit{38}(7), 2011.
+
 \end{thebibliography}
 
 
-
-\clearpage
-
-
 \end{document}
+
+
+

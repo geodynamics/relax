@@ -21,7 +21,7 @@ usage(){
 	echo ""
         echo "options:"
         echo "         -b bds sets the map bound to bds"
-	echo "         -c palette_name [default my_jet]"
+	echo "         -c palette_name [default jet]"
         echo "         -e file.sh runs file.sh to add content to map"
         echo "         -g switch to geographic projection (longitude/latitude)"
         echo "         -h display this error message and exit"
@@ -36,7 +36,7 @@ usage(){
 	echo "         -T title header"
 	echo "         -x do not display map (only create .ps file)"
 	echo "         -C interval plots contours every interval distance"
-	echo "         -E file.ps only plot base map with extra scripts"
+	echo "         -O file.ps only plot base map with extra scripts"
 	echo "         -J overwrites the geographic projections (for -J o the -b option is relative)"
         echo "         -Y shift the plot vertically on the page"
 	echo ""
@@ -73,11 +73,11 @@ my_gmt(){
 		fi
 		if [ -e "$selfdir/$subprog" ]; then
 			#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
-			eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $PSFILE"
+			eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PSFILE"
 		else
 			if [ -e "$subprog" ]; then
 				#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
-				eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $PSFILE"
+				eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PSFILE"
 			fi
 		fi
 	done
@@ -119,7 +119,7 @@ EOF
 	if [ -e "$colors" ]; then
 		#-Q0.20c/1.0c/0.4cn1.0c \
 		psscale -O -K -B$PSSCALE/:$unit: -D3.5i/-0.8i/7.1i/0.2ih \
-			$TRIANGLES -C$colors $REVERT \
+			$TRIANGLES -C$colors $REVERT $illuminationopt \
 			>> $PSFILE 
 		
 		rm -f $colors
@@ -140,7 +140,7 @@ gmtset PAPER_MEDIA archA
 libdir=$(dirname $0)/../share
 EXTRA=""
 
-while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrC:E:J:Y:" flag
+while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrC:O:J:Y:" flag
 do
 	case "$flag" in
 	b) bset=1;bds=$OPTARG;;
@@ -148,7 +148,7 @@ do
 	e) eset=1;EXTRA="$EXTRA $OPTARG";;
 	g) gset="-g";;
 	h) hset=1;;
-	i) iset=1;illumination="-I$OPTARG";;
+	i) iset=1;illumination="-I$OPTARG";illuminationopt="-I";;
 	o) oset=1;ODIR=$OPTARG;;
 	p) pset=1;P=$OPTARG;PSSCALE=`echo $OPTARG | awk -F"/" 'function abs(x){return x<0?-x:x}{print abs($2-$1)/6}'`;;
 	r) rset=1;;
@@ -159,12 +159,12 @@ do
 	v) vset=1;SIZE=$OPTARG;VECTOR=$OPTARG"c";;
 	x) xset=1;;
 	C) Cset="-C";contour=$OPTARG;;
-	E) Eset=1;PSFILE=$(dirname $OPTARG)/$(basename $OPTARG .ps).ps;;
-	J) Jset=1;PROJ=$OPTARG;;
+	O) Oset=1;PSFILE=$(dirname $OPTARG)/$(basename $OPTARG .ps).ps;;
+	J) Jset="-J";PROJ=$OPTARG;;
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
 done
-for item in $bset $cset $iset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Eset $Jset $EXTRA;do
+for item in $bset $cset $iset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Oset $Jset $EXTRA;do
 	shift;shift
 done
 for item in $gset $hset $xset $rset;do
@@ -199,7 +199,7 @@ else
 fi
 
 # usage
-if [ $# -lt "1" -a "$Eset" != "1" ] || [ "$hset" == "1" ] ; then
+if [ $# -lt "1" -a "$Oset" != "1" ] || [ "$hset" == "1" ] ; then
 	usage
 else
 	echo $self: using colorfile $cptfile
@@ -207,7 +207,7 @@ fi
 
 
 # loop over grd files
-while [ "$#" != "0" -o "$Eset" == "1" ];do
+while [ "$#" != "0" -o "$Oset" == "1" ];do
 
 	if [ "$1" != "" ]; then
 		WDIR=`dirname $1`
@@ -328,11 +328,15 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 
 			# Cartesian vs geographic coordinates
 			if [ "$gset" != "-g" ]; then
-				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*7)}'`
-				if [ "$rset" != "1" ]; then
-					PROJ="X7i/"$HEIGHT
+				if [ "$Jset" == "" ]; then
+					HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*7)}'`
+					if [ "$rset" != "1" ]; then
+						PROJ="X7i/"$HEIGHT
+					else
+						PROJ="X7i/"-$HEIGHT
+					fi
 				else
-					PROJ="X7i/"-$HEIGHT
+					HEIGHT="-"
 				fi
 			        AXIS=-Ba${tick}:"":/a${tick}:""::."$TITLE":WSne
 			else
@@ -375,5 +379,5 @@ while [ "$#" != "0" -o "$Eset" == "1" ];do
 	fi
 
 	# prevent more empty plots (cancel -E option)
-	Eset=""
+	Oset=""
 done

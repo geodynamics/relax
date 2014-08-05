@@ -55,7 +55,7 @@ if (test "$hset" == "1"); then
 	exit
 fi
 
-echo "# nb   x1   x2   x3 length width thickness strike dip"
+echo "#  n   x1   x2   x3 length width thickness strike dip"
 while read line
 do
 	if [ "$line" == "" ]; then

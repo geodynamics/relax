@@ -71,6 +71,12 @@ flt2vtp(){
 		printf("        <DataArray type=\"Float32\" Name=\"dip\" NumberOfComponents=\"1\" format=\"ascii\">\n");
 		printf("%f\n",$ndip);
 		printf("        </DataArray>\n");
+		printf("        <DataArray type=\"Float32\" Name=\"strike slip\" NumberOfComponents=\"1\" format=\"ascii\">\n");
+		printf("%f\n",slip*cos(rake));
+		printf("        </DataArray>\n");
+		printf("        <DataArray type=\"Float32\" Name=\"dip slip\" NumberOfComponents=\"1\" format=\"ascii\">\n");
+		printf("%f\n",slip*sin(rake));
+		printf("        </DataArray>\n");
 		if (10==NF){
 		printf("        <DataArray type=\"Float32\" Name=\"slip\" NumberOfComponents=\"3\" format=\"ascii\">\n");
 		printf("%f %f %f\n",slip*b[0],slip*b[1],slip*b[2]);
