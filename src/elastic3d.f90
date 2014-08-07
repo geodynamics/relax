@@ -1620,6 +1620,13 @@ CONTAINS
     REAL(8), DIMENSION(3) :: n,b
     TYPE(TENSOR) :: m
 
+#ifdef USING_CUDA
+
+    CALL cusource (%VAL(mu), %VAL(s), %VAL(x), %VAL(y), %VAL(z), %VAL(L), %VAL(W), %VAL(strike), &
+                   %VAL(dip), %VAL(rake), %VAL(beta), %VAL(sx1), %VAL(sx2), %VAL(sx3), %VAL(dx1), &
+                   %VAL(dx2), %VAL(dx3), f1, f2, f3, t1, t2, t3)
+#else
+
     cstrike=cos(strike)
     sstrike=sin(strike)
     cdip=cos(dip)
@@ -1779,7 +1786,7 @@ CONTAINS
        END DO
     END DO
 !$omp end parallel do
-
+#endif
   END SUBROUTINE source
 
   !---------------------------------------------------------------------

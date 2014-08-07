@@ -487,12 +487,14 @@ CONTAINS
        x3=opts(k)%v3
 
        CALL shiftedindex(x1,x2,x3,sx1,sx2,sx3,dx1,dx2,dx3,i1,i2,i3)
-
+#ifdef USING_CUDA
+       CALL cuexportpoints (u1, u2, u3, lsig, %VAL(i1-1), %VAL(i2-1), %VAL(i3-1))
+#else
        u1=c1(i1,i2,i3)
        u2=c2(i1,i2,i3)
        u3=c3(i1,i2,i3)
        lsig=sig(i1,i2,i3)
-
+#endif
        ! change from computational reference frame to user reference system
        y1=x1;v1=u1
        y2=x2;v2=u2
@@ -1272,6 +1274,9 @@ END SUBROUTINE exportcreep_vtk
     INTEGER, INTENT(IN), OPTIONAL :: convention
 
     REAL*4, DIMENSION(:,:), ALLOCATABLE :: temp1,temp2,temp3
+#ifdef USING_CUDA
+    REAL*4, DIMENSION(:,:), ALLOCATABLE :: cutemp1,cutemp2,cutemp3
+#endif
     REAL*8 :: rland=9998.,rdum=9999.
     INTEGER :: iostatus,k,pos,conv
     REAL*8 :: xmin,ymin
@@ -1287,9 +1292,21 @@ END SUBROUTINE exportcreep_vtk
     ALLOCATE(temp1(sx2,sx1),temp2(sx2,sx1),temp3(sx2,sx1),STAT=iostatus)
     IF (iostatus>0) STOP "could not allocate memory for grid export"
 
+#ifdef USING_CUDA
+    ALLOCATE(cutemp1(sx1+2,sx2),cutemp2(sx1+2,sx2),cutemp3(sx1+2,sx2),STAT=iostatus)
+    IF (iostatus>0) STOP "could not allocate memory for grid export"
+
+    ! mem copy of (sx1+2)*sx2 points at index k=int(oz/dx3)
+    CALL cuexportspatial (cutemp1, cutemp2, cutemp3, %VAL(int(oz/dx3)))
+ 
+    CALL exportspatial(cutemp1,sx1,sx2,temp1,doflip=.true.)
+    CALL exportspatial(cutemp2,sx1,sx2,temp2,doflip=.true.)
+    CALL exportspatial(cutemp3,sx1,sx2,temp3,doflip=.true.)
+#else
     CALL exportspatial(c1(:,:,int(oz/dx3)+1),sx1,sx2,temp1,doflip=.true.)
     CALL exportspatial(c2(:,:,int(oz/dx3)+1),sx1,sx2,temp2,doflip=.true.)
     CALL exportspatial(c3(:,:,int(oz/dx3)+1),sx1,sx2,temp3,doflip=.true.)
+#endif
 
     pos=INDEX(wdir," ")
     WRITE (digit,'(I3.3)') i

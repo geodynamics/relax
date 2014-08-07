@@ -517,6 +517,101 @@ CONTAINS
       END SUBROUTINE cerrutisolution
   END SUBROUTINE cerruti3d
 
+  SUBROUTINE cerrutimodified(p1,p2,p3,lambda,mu,gamma,u1,u2,u3,dx1,dx2,dx3)
+    REAL*4, DIMENSION(:,:), INTENT(IN) :: p1,p2,p3
+    REAL*4, DIMENSION(:,:,:), INTENT(INOUT) :: u1,u2,u3
+    REAL*8, INTENT(IN) :: lambda,mu,gamma,dx1,dx2,dx3
+
+    INTEGER :: i,i1,i2,i3,ib,sx1,sx2,sx3,iostatus,buffersize
+    REAL*8 :: k1,k2,k3,alpha
+    COMPLEX(KIND=4) :: t1,t2,t3
+    COMPLEX(KIND=4) :: b1,b2,b3
+    REAL*8 :: taper
+
+    sx1=SIZE(u1,1)-2
+    sx2=SIZE(u1,2)
+    sx3=SIZE(u1,3)
+
+    alpha=(lambda+mu)/(lambda+2*mu)
+  
+!$omp parallel do private(i1,i3,k1,k2,k3,t1,t2,t3,b1,b2,b3) 
+    DO i2=1,sx2
+       DO i1=1,sx1/2+1
+          DO i3=1, sx3
+
+             CALL wavenumbers(i1,i2,i3,sx1,sx2,sx3,dx1,dx2,dx3,k1,k2,k3)
+
+             t1=CMPLX(p1(2*(i1)-1,i2),p1(2*(i1),i2),4)
+             t2=CMPLX(p2(2*(i1)-1,i2),p2(2*(i1),i2),4)
+             t3=CMPLX(p3(2*(i1)-1,i2),p3(2*(i1),i2),4)
+
+             CALL cerrutisolmodified(mu,t1,t2,t3,alpha,gamma, &
+                  b1,b2,b3,k1,k2,k3,DBLE(sx3/2)*dx3)
+
+             !taper=cos((pi*i3/(sx3))**(2))
+
+             !b1=(b1*taper) 
+             !b2=(b2*taper) 
+             !b3=(b3*taper) 
+             
+             u1(2*(i1)-1,i2,i3)=u1(2*(i1)-1,i2,i3)+REAL( REAL(b1))
+             u1(2*(i1)  ,i2,i3)=u1(2*(i1)  ,i2,i3)+REAL(AIMAG(b1))
+             u2(2*(i1)-1,i2,i3)=u2(2*(i1)-1,i2,i3)+REAL( REAL(b2))
+             u2(2*(i1)  ,i2,i3)=u2(2*(i1)  ,i2,i3)+REAL(AIMAG(b2))
+             u3(2*(i1)-1,i2,i3)=u3(2*(i1)-1,i2,i3)+REAL( REAL(b3))
+             u3(2*(i1)  ,i2,i3)=u3(2*(i1)  ,i2,i3)+REAL(AIMAG(b3))
+
+          END DO
+       END DO
+    END DO
+!$omp end parallel do
+
+    CONTAINS 
+
+    SUBROUTINE cerrutisolmodified(mu,p1,p2,p3,alpha,gamma,u1,u2,u3,k1,k2,k3,L)
+        COMPLEX(KIND=4), INTENT(INOUT) :: u1,u2,u3
+        REAL*8, INTENT(IN) :: mu,alpha,gamma,k1,k2,k3,L
+        COMPLEX(KIND=4), INTENT(IN) :: p1,p2,p3
+
+        REAL*8 :: beta, fi, h
+        COMPLEX(KIND=8), PARAMETER :: i=CMPLX(0._8,1._8)
+        REAL*8  :: temp
+        COMPLEX(KIND=8) :: b1,b2,b3,tmp,v1,v2,v3
+
+        beta=pi2*sqrt(k1**2+k2**2)
+        fi = (2*beta)/((pi2**2)*(k3**2)+beta**2)
+        h=gamma/beta
+
+        IF (0==k1 .AND. 0==k2) THEN
+           ! Check these 
+           !u1=CMPLX(REAL(+p1/mu*(k3-L)),0._4)
+           !u2=CMPLX(REAL(+p2/mu*(k3-L)),0._4)
+           !u3=CMPLX(REAL(+p3/mu*(k3-L)*(1.d0-alpha)/(1.d0+2.d0*L*alpha*gamma*(1.d0-alpha))),0._4)
+           u1=CMPLX(0._4,0._4)
+           u2=CMPLX(0._4,0._4)
+           u3=CMPLX(0._4,0._4)
+        ELSE
+           temp=(1._8/(2._8*mu*beta**3))*fi
+           b1=temp*p1
+           b2=temp*p2
+           b3=(beta*p3-i*(1._8-alpha)*(pi2*k1*p1+pi2*k2*p2))/(2._8*alpha*mu*beta**4*(1+h))
+
+           tmp=alpha*i*beta*pi2*b3*(1._8-1._8/alpha-i*pi2*k3*fi)
+           v1=tmp*k1*fi
+           v2=tmp*k2*fi
+           v3=-alpha*beta**2*b3*(1._8/alpha-i*fi*pi2*k3)
+
+           u1=CMPLX(v1+(-(2._8*beta**2*b1)+(alpha*(pi2**2)*k1*(b1*k1+b2*k2)*(1._8-(i*pi2*k3*fi)))))
+           u2=CMPLX(v2+(-(2._8*beta**2*b2)+(alpha*(pi2**2)*k2*(b1*k1+b2*k2)*(1._8-(i*pi2*k3*fi)))))
+           u3=CMPLX(v3*fi+alpha*beta*pi2*(k1*b1+k2*b2)*pi2*k3*fi)
+        
+        END IF
+
+      END SUBROUTINE cerrutisolmodified
+
+  END SUBROUTINE cerrutimodified
+
+
   !---------------------------------------------------------------------
   !> subroutine CerrutiCowling
   !! computes the deformation field in the 3-dimensional grid
@@ -917,13 +1012,20 @@ CONTAINS
     REAL*8, INTENT(IN) :: dx1,dx2,dx3
     REAL*8, INTENT(IN) :: lambda,mu,gamma
   
-    INTEGER :: sx1,sx2,sx3,status
+    INTEGER :: sx1,sx2,sx3,status,cuStatus
+    INTEGER :: direction 
 
     REAL*4, DIMENSION(:,:), ALLOCATABLE :: p1,p2,p3
+
+#ifdef PAPI_PROF
+    CHARACTER (LEN=16) cTimerName
+    cTimerName = 'FFT'
+#endif
 
     sx1=SIZE(c1,1)-2
     sx2=SIZE(c1,2)
     sx3=SIZE(c1,3)
+    cuStatus = 0
 
     ALLOCATE(p1(sx1+2,sx2),p2(sx1+2,sx2),p3(sx1+2,sx2),STAT=status)
     IF (status > 0) THEN
@@ -934,32 +1036,93 @@ CONTAINS
        p1=0;p2=0;p3=0;
     END IF
 
+
     ! forward Fourier transform equivalent body-force
+#ifdef USING_CUDA 
+    
+    direction = FFT_FORWARD
+    CALL calfftnelasic (c1, c2, c3, t1, t2, t3, %VAL(sx1),%VAL(sx2),%VAL(sx3), &
+                         %VAL(dx1),%VAL(dx2),%VAL(dx3),%VAL(lambda),%VAL(mu),%VAL(gamma), p1, p2, p3, cuStatus)
+    IF (cuStatus > 0) THEN 
+       WRITE_DEBUG_INFO
+       WRITE(0,'("Check the logs for the reason")')
+       STOP 1
+    END IF
+#else
+     
+#ifdef PAPI_PROF
+    CALL papistartprofiling(cTimerName) 
+#endif
     CALL fft3(c1,sx1,sx2,sx3,dx1,dx2,dx3,FFT_FORWARD)
     CALL fft3(c2,sx1,sx2,sx3,dx1,dx2,dx3,FFT_FORWARD)
     CALL fft3(c3,sx1,sx2,sx3,dx1,dx2,dx3,FFT_FORWARD)
     CALL fft2(t1,sx1,sx2,dx1,dx2,FFT_FORWARD)
     CALL fft2(t2,sx1,sx2,dx1,dx2,FFT_FORWARD)
     CALL fft2(t3,sx1,sx2,dx1,dx2,FFT_FORWARD)
-   
+
+#ifdef PAPI_PROF  
+    CALL papiendprofiling(cTimerName)
+    cTimerName = 'Elastic'
+    CALL papistartprofiling(cTimerName)
+#endif
+
+
     ! solve for displacement field
     CALL elasticresponse(lambda,mu,c1,c2,c3,dx1,dx2,dx3)
 
-    CALL surfacetractioncowling(lambda,mu,gamma, &
+#ifdef PAPI_PROF  
+    CALL papiendprofiling(cTimerName)
+    cTimerName = 'Surface'
+    CALL papistartprofiling(cTimerName)
+#endif
+ 
+   CALL surfacetractioncowling(lambda,mu,gamma, &
          c1,c2,c3,dx1,dx2,dx3,p1,p2,p3)
+    
     p1=t1-p1
     p2=t2-p2
     p3=t3-p3
+#ifdef PAPI_PROF  
+    CALL papiendprofiling(cTimerName)
+    cTimerName = 'cerruti'
+    CALL papistartprofiling(cTimerName)
+#endif
+
+#ifdef CERRUTI_FFT
     CALL cerruticowling(p1,p2,p3,lambda,mu,gamma, &
          c1,c2,c3,dx1,dx2,dx3)
+#else
     
-    ! inverse Fourier transform solution displacement components
-    CALL fft3(c1,sx1,sx2,sx3,dx1,dx2,dx3,FFT_INVERSE)
+    CALL cerrutimodified(p1,p2,p3,lambda,mu,gamma, &
+         c1,c2,c3,dx1,dx2,dx3)
+#endif
+
+#ifdef PAPI_PROF  
+    CALL papiendprofiling(cTimerName)
+#endif
+
+#endif   
+#ifndef USING_CUDA
+
+#ifdef PAPI_PROF  
+    cTimerName = 'inversefft'
+    CALL papistartprofiling(cTimerName)
+#endif
+
+    CALL fft3(c1,sx1,sx2,sx3,dx1,dx2,dx3,FFT_INVERSE)   
     CALL fft3(c2,sx1,sx2,sx3,dx1,dx2,dx3,FFT_INVERSE)
     CALL fft3(c3,sx1,sx2,sx3,dx1,dx2,dx3,FFT_INVERSE)
     CALL fft2(t1,sx1,sx2,dx1,dx2,FFT_INVERSE)
     CALL fft2(t2,sx1,sx2,dx1,dx2,FFT_INVERSE)
     CALL fft2(t3,sx1,sx2,dx1,dx2,FFT_INVERSE)
+
+#ifdef PAPI_PROF  
+    CALL papiendprofiling(cTimerName)
+#endif
+
+
+#endif
+ 
 
     DEALLOCATE(p1,p2,p3)
     

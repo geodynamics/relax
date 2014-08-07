@@ -1,5 +1,7 @@
+import os
 def options(opt):
     opt.load('compiler_c compiler_fc')
+    opt.load('compiler_cxx')
 
     mkl=opt.add_option_group('MKL Options')
     mkl.add_option('--mkl-dir',
@@ -21,6 +23,26 @@ def options(opt):
                     help='Directory where fftw include files are installed')
     fftw.add_option('--fftw-libdir',
                     help='Directory where fftw library files are installed')
+
+    cuda=opt.add_option_group('CUDA Options')
+    cuda.add_option('--use-cuda', action='store_true', default=False,
+                    help='Uses GPU for computation')
+    cuda.add_option('--cuda-dir',
+                    help='Base Directory where the cuda is installed')
+    cuda.add_option('--cuda-incdir',
+                    help='Directory where cuda include files are installed.')
+    cuda.add_option('--cuda-libdir',
+                    help='Directory where cuda library files are installed')
+
+    papi=opt.add_option_group('PAPI Options')
+    papi.add_option('--use-papi', action='store_true', default=False,
+                    help='Use PAPI for profiling')
+    papi.add_option('--papi-dir',
+                    help='Base directory where papi is installed')
+    papi.add_option('--papi-incdir',
+                    help='Directory where papi include files are installed')
+    papi.add_option('--papi-libdir',
+                    help='Directory where papi library files are installed')
 
     proj=opt.add_option_group('Proj Options')
     proj.add_option('--proj-dir',
@@ -50,8 +72,9 @@ def options(opt):
 
 def configure(cnf):
     cnf.load('compiler_c compiler_fc')
-    
-    # We set the flags here 
+    cnf.load('compiler_cxx')
+
+ # We set the flags here 
     if not cnf.env.CFLAGS:
         cnf.env.CFLAGS=['-O3']
     if not cnf.env.FCFLAGS:
@@ -97,6 +120,70 @@ def configure(cnf):
     if not found_gmt:
         cnf.fatal('Could not find gmt')
 
+    #Find Cuda
+    if cnf.options.use_cuda:
+        cnf.env.CUDA=cnf.options.use_cuda
+        cnf.load('cuda',tooldir='.')   
+	if not cnf.env.CUDAFLAGS:
+            cnf.env.CUDAFLAGS = ['-gencode','arch=compute_35,code=sm_35']
+#           cnf.env.CUDAFLAGS += ['-Xptxas', '-dlcm=cg']
+#            cnf.env.CUDAFLAGS += ['--maxrregcount=32']
+#            cnf.env.CUDAFLAGS = ['-gencode','arch=compute_30,code=sm_30']
+#            cnf.env.CUDAFLAGS = ['-gencode','arch=compute_20,code=sm_20']
+            cnf.env.CXXFLAGS=['-m64']
+        if cnf.options.cuda_dir:
+            if not cnf.options.cuda_incdir:
+                cnf.options.cuda_incdir=cnf.options.cuda_dir + "/include"
+            if not cnf.options.cuda_libdir:
+                cnf.options.cuda_libdir=cnf.options.cuda_dir + "/lib64"
+        if cnf.options.cuda_incdir:
+            includedirs=[cnf.options.cuda_incdir]
+        else:
+            includedirs=['','/usr/local/cuda/include']
+        found_cuda=False
+        for inc in includedirs:
+            try:
+                cnf.check_cc(msg="Checking for cuda.h", 
+                         header_name='cuda.h', includes=inc,
+                         libpath=[cnf.options.cuda_libdir], 
+                         rpath=[cnf.options.cuda_libdir], 
+                         lib=['cudart', 'cufft','stdc++'], uselib_store='cuda',
+                         define_name="USING_CUDA") 
+            except cnf.errors.ConfigurationError:
+                pass
+            else:
+                found_cuda=True
+                break
+        if not found_cuda:
+            cnf.fatal('Could not find cuda')
+
+    # Find PAPI
+    if cnf.options.use_papi:
+        if cnf.options.papi_dir:
+            if not cnf.options.papi_incdir:
+                cnf.options.papi_incdir=cnf.options.papi_dir + "/include"
+            if not cnf.options.papi_libdir:
+                cnf.options.papi_libdir=cnf.options.papi_dir + "/lib"
+        if cnf.options.papi_incdir:
+            includedirs=[cnf.options.papi_incdir]
+        else:
+            includedirs=['','/usr/include/papi']
+        found_papi=False
+        for inc in includedirs:
+            try:
+                cnf.check_cc(msg="Checking for papi.h in '" + inc + "'",
+                             header_name='papi.h', includes=inc,
+                             libpath=[cnf.options.papi_libdir],
+                             rpath=[cnf.options.papi_libdir],
+                             lib=['papi'], uselib_store='papi',define_name="PAPI_PROF")
+            except cnf.errors.ConfigurationError:
+                pass
+            else:
+                found_papi=True
+                break
+        if not found_papi:
+            cnf.fatal('Could not find papi')
+
     # Find OpenMP
     openmp_msg="Checking for openmp flag "
     openmp_fragment="program main\n  call omp_get_num_threads()\nend program main"
@@ -117,6 +204,7 @@ def configure(cnf):
         cnf.fatal('Could not find OpenMP')
 
     # Find FFTW
+    #if not cnf.options.use_cuda:
     if cnf.options.use_fftw:
         if cnf.options.fftw_dir:
             if not cnf.options.fftw_incdir:
@@ -193,7 +281,36 @@ def configure(cnf):
     cnf.write_config_header('config.h')
 
 def build(bld):
-    bld.program(features='c fc fcprogram',
+    if bld.env.CUDA:	
+        bld.program(features='c fc fcprogram cxx',
+                source=['src/curelax.f90',
+                        'src/types.f90',
+                        'src/ctfft.f',
+                        'src/fourier.f90',
+                        'src/green.f90',
+                        'src/okada/green_space.f90',
+                        'src/okada/dc3d.f',
+                        'src/elastic3d.f90',
+                        'src/friction3d.f90',
+                        'src/viscoelastic3d.f90',
+                        'src/writevtk.c',
+                        'src/writegrd4.2.c',
+                        'src/proj.c',
+                        'src/export.f90',
+                        'src/getdata.f',
+                        'src/getopt_m.f90',
+                        'src/input.f90',
+                        'src/mkl_dfti.f90',
+			'src/papi_prof.c',
+                        'src/cu_fft.cu',
+                        'src/cu_elastic.cu'],
+                install_path='${PREFIX}/bin',
+                includes=['build'],
+                use=['gmt','proj','openmp','fftw','imkl','cpp','length','cuda','papi','stdc++'],
+                target='relax'
+                )
+    else:
+        bld.program(features='c fc fcprogram',
                 source=['src/relax.f90',
                         'src/types.f90',
                         'src/ctfft.f',
@@ -211,9 +328,10 @@ def build(bld):
                         'src/getdata.f',
                         'src/getopt_m.f90',
                         'src/input.f90',
-                        'src/mkl_dfti.f90'],
+                        'src/mkl_dfti.f90',
+                        'src/papi_prof.c'],
                 install_path='${PREFIX}/bin',
                 includes=['build'],
-                use=['gmt','proj','openmp','fftw','imkl','cpp','length'],
+                use=['gmt','proj','openmp','fftw','imkl','cpp','length','papi','stdc++'],
                 target='relax'
                 )

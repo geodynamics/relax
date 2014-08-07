@@ -104,9 +104,16 @@ CONTAINS
 
     IF (PRESENT(maxwelltime)) THEN
        tm=REAL(maxwelltime)
+       i1=1
     ELSE
        tm=1e30
+       i1=0
     END IF
+#ifdef USING_CUDA
+    CALL cufrictioneigenstress (%VAL(x), %VAL(y), %VAL(z), %VAL(L), %VAL(W),%VAL(strike), &
+         %VAL(dip), %VAL(rake), %VAL(beta), %VAL(mu), structure, %VAL(sx1),%VAL(sx2), &
+         %VAL(sx3), %VAL(dx1), %VAL(dx2), %VAL(dx3), %VAL(i1), tm, moment, sig)
+#else
     
     ! delta function scaling
     scaling=sqrt(pi2)*dx1
@@ -225,6 +232,7 @@ CONTAINS
           END DO
        END DO
     END DO
+#endif
 
     IF (PRESENT(maxwelltime)) maxwelltime=MIN(tm,maxwelltime)
 

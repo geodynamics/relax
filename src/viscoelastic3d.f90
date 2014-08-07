@@ -120,15 +120,24 @@ CONTAINS
   !!
   !! \author sylvain barbot (08/30/08) - original form
   !-----------------------------------------------------------------
+#ifdef USING_CUDA
+  SUBROUTINE viscouseigenstress(mu,structure,ductilezones,nz,sig,sx1,sx2,sx3, &
+       dx1,dx2,dx3,moment,beta,maxwelltime,gamma)
+    TYPE(WEAK_STRUCT), DIMENSION(nz), INTENT(IN) :: ductilezones
+    INTEGER, INTENT(IN) :: nz
+    REAL*8, INTENT(IN) :: beta      
+#else       
   SUBROUTINE viscouseigenstress(mu,structure,sig,sx1,sx2,sx3, &
        dx1,dx2,dx3,moment,maxwelltime,dgammadot0,gamma)
+    REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(IN), OPTIONAL :: dgammadot0
+#endif
     REAL*8, INTENT(IN) :: mu,dx1,dx2,dx3
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(TENSOR), INTENT(OUT), DIMENSION(sx1,sx2,sx3) :: moment
     REAL*8, OPTIONAL, INTENT(INOUT) :: maxwelltime
-    REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(IN), OPTIONAL :: dgammadot0
+   
 #ifdef ALIGN_DATA
     REAL*4, DIMENSION(sx1+2,sx2,sx3), INTENT(OUT), OPTIONAL :: gamma
 #else
@@ -139,11 +148,49 @@ CONTAINS
     TYPE(TENSOR) :: s,R
     TYPE(TENSOR), PARAMETER :: zero = tensor(0._4,0._4,0._4,0._4,0._4,0._4)
     REAL*8 :: gammadot,tau,tauc,gammadot0,power,cohesion,x1,x2,x3,dg0,dum
+#ifdef USING_CUDA
+    REAL*8 :: tm
+    INTEGER :: iPresent, iGammaPresent
+    INTEGER :: dGamma=0
+#else
     REAL*4 :: tm
+
     LOGICAL :: isdgammadot0
-    
+#endif    
     IF (SIZE(structure,1) .NE. sx3) RETURN
 
+    
+#ifdef USING_CUDA 
+ IF (PRESENT(gamma)) THEN
+       iGammaPresent=1
+    ELSE
+       iGammaPresent=0
+    ENDIF
+
+    IF (PRESENT(maxwelltime)) THEN
+       tm=REAL(maxwelltime)
+       iPresent = 1
+    ELSE
+       iPresent = 0
+       tm=1e30
+    END IF
+    
+    IF (PRESENT(gamma)) THEN
+        CALL cuviscouseigen (structure, ductilezones, sig, moment, %VAL(mu), &
+                          %VAL(nz), %VAL(sx1), &
+                          %VAL(sx2), %VAL(sx3), %VAL(dx1), %VAL(dx2), %VAL(dx3), %VAL(beta), &
+                          tm, gamma, %VAL(iPresent), %VAL(iGammaPresent))
+     ELSE
+        CALL cuviscouseigen (structure, ductilezones, sig, moment, %VAL(mu), &
+                          %VAL(nz), %VAL(sx1), &
+                          %VAL(sx2), %VAL(sx3), %VAL(dx1), %VAL(dx2), %VAL(dx3), %VAL(beta), &
+                          tm, %VAL(dGamma), %VAL(iPresent), %VAL(iGammaPresent))
+     END IF
+     IF (PRESENT(maxwelltime)) THEN
+         maxwelltime=MIN(tm,maxwelltime)
+     END IF
+
+#else
     isdgammadot0=PRESENT(dgammadot0)
     IF (PRESENT(maxwelltime)) THEN
        tm=REAL(maxwelltime)
@@ -209,7 +256,7 @@ CONTAINS
 !$omp end parallel do
 
     IF (PRESENT(maxwelltime)) maxwelltime=MIN(tm,maxwelltime)
-
+#endif
   END SUBROUTINE viscouseigenstress
 
   !---------------------------------------------------------
