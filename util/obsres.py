@@ -4,23 +4,23 @@
 
 """
 Usage:
-    obsres.py [options] <wdir> 
+    obsres.py [options] <wdir>...
     
 Options:
-    -b --bounds=<min/max>         time interval to consider
-    -n --network=<opts.dat>       file containing list of stations names
-    -r --range=<mag1/mag2/dmag>   power exponents of the interval of time scales
-    --relax                       use time series of postseismic deformation
-    --vscale                      automatically scales the amplitude of model deformation
-    -w --weight=<wn/we/wd>        relative weight of north, east and down components
-    --ddir=<data/path>            data directory 
+    -b --bounds=<min/max>         time interval to consider.
+    -n --network=<opts.dat>       file containing list of stations names.
+    -r --range=<mag1/mag2/dmag>   power exponents of the interval of time scales [default: 0/0/1].
+    --relax                       use time series of postseismic deformation.
+    --vscale                      automatically scales the amplitude of model deformation.
+    -w --weight=<wn/we/wd>        relative weight of north, east and down components [default: 1/1/1].
+    --ddir=<data/path>            data directory.
  
 Description:
     obsres.py computes residuals between Relax and GPS data time series
     
-Example:
-    1) ./obsres.py --ddir=../gps/GPS_Nepal_Tibet --weight=0/0/1 G64_H{20,30,40}_g{0.1,1,10}
-    2) ./obsres.py --bounds=0/7.1 --ddir=./data --range=0/0/1 --network=opts.dat --weight=0/0/1 wdir
+Examples:
+    1) obsres.py --ddir=../gps/GPS_Nepal_Tibet --weight=0/0/1 G64_H{20,30,40}_g{0.1,1,10}
+    2) obsres.py --bounds=0/7.1 --ddir=./data --range=0/0/1 --network=opts.dat --weight=0/0/1 wdir
  
 """
 
@@ -52,7 +52,7 @@ def main():
 	if str1 and str2:
 		t1=float(str1)
     	t2=float(str2)
-	ddir = arguments['ddir']
+	ddir = arguments['--ddir']
 	str1,str2,str3 = arguments['--range'].split('/')	 
 	if str1 and str2 and str3:
 		exp1=float(str1)
@@ -66,6 +66,7 @@ def main():
 		we=float(str2)
 		wd=float(str3)
 	network = arguments['--network']
+        args = arguments['<wdir>']
 	
 	exprange=1+int((exp2-exp1)/exp3+0.5)
 
@@ -93,112 +94,112 @@ def main():
 			norm=0
 			index=0
 			for s in name:
-				# load data (test upper and lower case)
-				fname=ddir+'/'+s.upper()+'.txt'
+                            # load data (test upper and lower case)
+                            fname=ddir+'/'+s.upper()+'.txt'
 			
-				try:
-					with open(fname) as f: pass
-				except IOError as e:
-					fname=ddir+'/'+s.lower()+'.txt'
-					try:
-						with open(fname) as f: pass
-					except IOError as e:
-						fname=ddir+'/'+s.upper()+'.dat'
-                        try:
-                            with open(fname) as f: pass
-                        except IOError as e:
-                            fname=ddir+'/'+s.lower()+'.dat'
                             try:
                                 with open(fname) as f: pass
                             except IOError as e:
-                            # skipping station s
-                                print >> sys.stderr, 'obsres.py: could not fine '+fname+', skipping.'
+                                fname=ddir+'/'+s.lower()+'.txt'
+                            try:
+                                with open(fname) as f: pass
+                            except IOError as e:
+                                fname=ddir+'/'+s.upper()+'.dat'
+                            try:
+                                with open(fname) as f: pass
+                            except IOError as e:
+                                fname=ddir+'/'+s.lower()+'.dat'
+                            try:
+                                with open(fname) as f: pass
+                            except IOError as e:
+                                # skipping station s
+                                print >> sys.stderr, 'obsres.py: could not find '+fname+', skipping.'
                                 continue
 			
-				f=file(fname,'r')
-				try:
-					tr,nr,er,dr,sn,se,sd=np.loadtxt(f,comments='#',unpack=True,usecols=[0,1,2,3,4,5,6])
-					tr=np.atleast_1d(tr)
-					nr=np.atleast_1d(nr)
-					er=np.atleast_1d(er)
-					dr=np.atleast_1d(dr)
-					sn=np.atleast_1d(sn)
-					se=np.atleast_1d(se)
-					sd=np.atleast_1d(sd)
-				except:
-					print >> sys.stderr, 'obsres.py: error loading file '+s+'. skipping.'
-					coverage[index]=1
-					index+=1
-					continue
-			
-				pos=np.logical_and(np.logical_and(np.isfinite(nr+er+dr),tr>=t1),tr<=t2)
-				tr=tr[pos]
-				nr=nr[pos]
-				er=er[pos]
-				dr=dr[pos]
-				sn=sn[pos]
-				se=se[pos]
-				sd=sd[pos]
-				pos=[]
+                            f=file(fname,'r')
+                            try:
+                                tr,nr,er,dr,sn,se,sd=np.loadtxt(f,comments='#',unpack=True,usecols=[0,1,2,3,4,5,6])
+                                tr=np.atleast_1d(tr)
+                                nr=np.atleast_1d(nr)
+                                er=np.atleast_1d(er)
+                                dr=np.atleast_1d(dr)
+                                sn=np.atleast_1d(sn)
+                                se=np.atleast_1d(se)
+                                sd=np.atleast_1d(sd)
+                            except:
+                                print >> sys.stderr, 'obsres.py: error loading file '+s+'. skipping.'
+                                coverage[index]=1
+                                index+=1
+                                continue
 
-				if 0==len(tr):
-					print >> sys.stderr, 'obsres.py: skipping station '+s+' because of insufficient data coverage.'
-					continue
+                            pos=np.logical_and(np.logical_and(np.isfinite(nr+er+dr),tr>=t1),tr<=t2)
+                            tr=tr[pos]
+                            nr=nr[pos]
+                            er=er[pos]
+                            dr=dr[pos]
+                            sn=sn[pos]
+                            se=se[pos]
+                            sd=sd[pos]
+                            pos=[]
 
-				# load model
-				fname=wdir+'/'+s+'.txt'
-				f=file(fname,'r')
-				tm,nm,em,dm=np.loadtxt(f,comments='#',unpack=True,usecols=[0,1,2,3])
-				tm=np.atleast_1d(tm)
-				nm=np.atleast_1d(nm)
-				em=np.atleast_1d(em)
-				dm=np.atleast_1d(dm)
-				tm=tm/tscale
+                            if 0==len(tr):
+                                print >> sys.stderr, 'obsres.py: skipping station '+s+' because of insufficient data coverage.'
+                                continue
 
-				# time interval
-				tmax=min([max(tm),max(tr)])
-				pos=tr<=tmax
-				coverage[index]=float(sum(pos))/float(len(pos))
-				index+=1
-				tr=tr[pos]
-				nr=nr[pos]
-				er=er[pos]
-				dr=dr[pos]
-				sn=sn[pos]
-				se=se[pos]
-				sd=sd[pos]
-				pos=[]
+                            # load model
+                            fname=wdir+'/'+s+'.txt'
+                            f=file(fname,'r')
+                            tm,nm,em,dm=np.loadtxt(f,comments='#',unpack=True,usecols=[0,1,2,3])
+                            tm=np.atleast_1d(tm)
+                            nm=np.atleast_1d(nm)
+                            em=np.atleast_1d(em)
+                            dm=np.atleast_1d(dm)
+                            tm=tm/tscale
 
-				if 0==len(tr):
-					print >> sys.stderr, 'obsres.py: skipping station '+s+' because of insufficient model coverage. Try reducing scaling.'
-					continue
+                            # time interval
+                            tmax=min([max(tm),max(tr)])
+                            pos=tr<=tmax
+                            coverage[index]=float(sum(pos))/float(len(pos))
+                            index+=1
+                            tr=tr[pos]
+                            nr=nr[pos]
+                            er=er[pos]
+                            dr=dr[pos]
+                            sn=sn[pos]
+                            se=se[pos]
+                            sd=sd[pos]
+                            pos=[]
 
-				if isrelax:
-					nm-=nm[0]
-					em-=em[0]
-					dm-=dm[0]
+                            if 0==len(tr):
+                                print >> sys.stderr, 'obsres.py: skipping station '+s+' because of insufficient model coverage. Try reducing scaling.'
+                                continue
 
-				#print [tr,tm]
-				nm=np.interp(tr,tm,nm)
-				em=np.interp(tr,tm,em)
-				dm=np.interp(tr,tm,dm)
+                            if isrelax:
+                                nm-=nm[0]
+                                em-=em[0]
+                                dm-=dm[0]
+
+                            #print [tr,tm]
+                            nm=np.interp(tr,tm,nm)
+                            em=np.interp(tr,tm,em)
+                            dm=np.interp(tr,tm,dm)
 		
-				if isvscale:
-					if 0<len(tr):
-						scale=(np.std(nm)/np.std(nr)*wn+np.std(em)/np.std(er)*we+np.std(dm)/np.std(dr)*wd)/(wn+we+wd)
-						nm/=scale
-						em/=scale
-						dm/=scale
+                            if isvscale:
+                                if 0<len(tr):
+                                    scale=(np.std(nm)/np.std(nr)*wn+np.std(em)/np.std(er)*we+np.std(dm)/np.std(dr)*wd)/(wn+we+wd)
+                                    nm/=scale
+                                    em/=scale
+                                    dm/=scale
 
-				dnorm=sum(pow(nr-nm,2)/sn*wn+pow(er-em,2)/se*we+pow(dr-dm,2)/sd*wd)
-				norm+=dnorm
-				#print '{0:8.2e}'.format(dnorm)
+                            dnorm=sum(pow(nr-nm,2)/sn*wn+pow(er-em,2)/se*we+pow(dr-dm,2)/sd*wd)
+                            norm+=dnorm
+                            #print '{0:8.2e}'.format(dnorm)
 
-			if 1==exprange:
-				print '{0}    {1:8.2e}'.format(wdir.ljust(max(map(len,args))+1),norm)
-			else:
-				print '{0}    {1:8.2e}  {2:9.2e} {3:8.2e}'.format(wdir.ljust(max(map(len,args))+1),norm,tscale,sum(coverage)/float(len(coverage)))
-			sys.stdout.flush()
+                        if 1==exprange:
+                            print '{0}    {1:8.2e}'.format(wdir.ljust(max(map(len,args))+1),norm)
+                        else:
+                            print '{0}    {1:8.2e}  {2:9.2e} {3:8.2e}'.format(wdir.ljust(max(map(len,args))+1),norm,tscale,sum(coverage)/float(len(coverage)))
+                        sys.stdout.flush()
 
 if __name__ == "__main__":
     main()
