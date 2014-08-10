@@ -202,6 +202,11 @@ CONTAINS
     ELSE
        PRINT '("#     * export to TXT format cancelled                     (--",a,")")', trim(opts(3)%name)
     END IF
+    IF (in%isoutputstress) THEN
+       PRINT '("#     * export stress")'
+    ELSE
+       PRINT '("#     * stress export cancelled                            (--",a,")")', trim(opts(7)%name)
+    END IF
 #ifdef GRD
     IF (in%isoutputgrd) THEN
        PRINT '("#     * export to GRD format")'
