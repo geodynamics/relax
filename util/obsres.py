@@ -16,7 +16,12 @@ Options:
     --ddir=<data/path>            data directory.
  
 Description:
-    obsres.py computes residuals between Relax and GPS data time series
+    obsres.py computes residuals between Relax and GPS data time series. 
+
+    The --range option is for testing overall scaling of the model predictions in the time domain.
+    For --range=-1/1/1, the program evaluates the residuals with the modified time t/tm, with tm 
+    taking values of 10^(-1), 10^0 and 10^1. If a lower residual is found, the Relax model can be
+    changed with all the values of gammadot0 modified to tm*gammadot0.
     
 Examples:
     1) obsres.py --ddir=../gps/GPS_Nepal_Tibet --weight=0/0/1 G64_H{20,30,40}_g{0.1,1,10}
