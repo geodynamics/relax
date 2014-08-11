@@ -45,16 +45,6 @@ configured Relax with the command
 
   CPPFLAGS="-I/usr/include/netcdf-4" LDFLAGS="-L/usr/lib64" ./waf configure  --proj-dir=/home/walter/src/relax/relax-bin --gmt-dir=/home/walter/src/relax/relax-bin/ --mkl-incdir=/opt/intel/composerxe-2011.1.107/mkl/include/ --mkl-libdir=/opt/intel/composerxe-2011.1.107/mkl/lib/intel64/ --check-c-compiler=icc --check-fortran-compiler=ifort
 
-To build Relax for NVIDIA GPUs on Linux, we need to provide certain command-line options
-
-  ./waf configure --cuda-dir=/usr/local/cuda --use-fftw
-  ./waf
-
-If you get an error 'CUDA Runtime API error 38: no CUDA-capable device is detected', you might need to explicitly enable the GPUs with the following command
-  
-  sudo nvidia-xconfig --enable-all-gpus 
-
-
 Depending on how your libraries were built, you may have to set
 LD_LIBRARY_PATH (Linux) or DYLD_LIBRARY_PATH (Mac) so that Relax can
 find them.  For example, on Mac OS X using Fink, you may have to run the command
@@ -69,6 +59,18 @@ module load gmt
 CPPFLAGS="-I/opt/GMT-4.5.7/netcdf/include" LDFLAGS="-L/usr/lib64 -lgdal" ./waf configure --gmt-dir=/opt/GMT-4.5.7 --mkl-incdir=/opt/intel/composer_xe_2011_sp1.6.233/mkl/include/ --mkl-libdir=/opt/intel/composer_xe_2011_sp1.6.233/mkl/lib/intel64/ --check-c-compiler=icc --check-fortran-compiler=ifort
 
 ./waf build
+
+---------
+GPU
+---------
+To build Relax for NVIDIA GPUs on Linux, we need to provide certain command-line options
+
+  ./waf configure --use-cuda --cuda-dir=/usr/local/cuda
+  ./waf
+
+If you get an error 'CUDA Runtime API error 38: no CUDA-capable device is detected', you might need to explicitly enable the GPUs with the following command
+
+  sudo nvidia-xconfig --enable-all-gpus
 
 -------
 Doxygen

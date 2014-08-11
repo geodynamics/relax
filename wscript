@@ -124,13 +124,13 @@ def configure(cnf):
     if cnf.options.use_cuda:
         cnf.env.CUDA=cnf.options.use_cuda
         cnf.load('cuda',tooldir='.')   
-	if not cnf.env.CUDAFLAGS:
-            cnf.env.CUDAFLAGS = ['-gencode','arch=compute_35,code=sm_35']
-#           cnf.env.CUDAFLAGS += ['-Xptxas', '-dlcm=cg']
-#            cnf.env.CUDAFLAGS += ['--maxrregcount=32']
-#            cnf.env.CUDAFLAGS = ['-gencode','arch=compute_30,code=sm_30']
-#            cnf.env.CUDAFLAGS = ['-gencode','arch=compute_20,code=sm_20']
-            cnf.env.CXXFLAGS=['-m64']
+    if not cnf.env.CUDAFLAGS:
+        cnf.env.CUDAFLAGS = ['-gencode','arch=compute_35,code=sm_35']
+#       cnf.env.CUDAFLAGS += ['-Xptxas', '-dlcm=cg']
+#       cnf.env.CUDAFLAGS += ['--maxrregcount=32']
+#       cnf.env.CUDAFLAGS = ['-gencode','arch=compute_30,code=sm_30']
+#       cnf.env.CUDAFLAGS = ['-gencode','arch=compute_20,code=sm_20']
+        cnf.env.CXXFLAGS=['-m64']
         if cnf.options.cuda_dir:
             if not cnf.options.cuda_incdir:
                 cnf.options.cuda_incdir=cnf.options.cuda_dir + "/include"
