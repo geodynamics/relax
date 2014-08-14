@@ -465,6 +465,9 @@ __host__ __device__ void cuMulSub (double       dTaun,
 
 __host__ __device__ double mycuSinh (double dX) ;
 
+int checkMemRequirement(int iSx1,
+                        int iSx2,
+                        int iSx3) ;
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -818,6 +821,15 @@ extern "C" void cuinit_ (int    iSx1,
         ihSx1 = iSx1 ;
         ihSx2 = iSx2 ;
         ihSx3 = iSx3 ;
+	
+	if (-1 == checkMemRequirement(iSx1,iSx2,iSx3))
+	{
+		printf ("********************** ERROR ******************\n") ;
+		printf ("Memory required to run on GPU is insufficient\n");
+		printf ("Either try reducing the grid size or run on CPU only\n") ;
+		printf ("********************** ERROR ******************\n\n") ;
+		return ;
+	}
 
         iSize = sizeof (float) * (iSx1 + 2) * iSx2 * iSx3 ;
 
@@ -906,8 +918,7 @@ extern "C" void cuinit_ (int    iSx1,
                 printf ("cuinit : Failed to allocate memory 11\n") ;
                 goto CUINIT_FAILURE ;
         }
-        iSize = sizeof (ST_TENSOR) * iSx1 * iSx2 * (iSx3/2) ;
-        cuError = cudaMalloc ((void **)&pstMoment, iSize) ;
+        cuError = cudaMalloc ((void **)&pstMoment, iSize2) ;
         if (cudaSuccess != cuError)
         {
                 printf ("cuinit : Failed to allocate memory 12\n") ;
@@ -943,7 +954,8 @@ extern "C" void cuinit_ (int    iSx1,
 
 #ifdef PRINT_DEBUG_INFO
         cudaMemGetInfo(&iFreeMem, &iTotalMem);
-        printf ("cuinit: Memory available after allocation is : %lu\n", iFreeMem);
+        printf ("cuinit: Memory available after allocation is : %lu MB\n", iFreeMem/(1024*1024));
+	printf ("cuinit: Total memory available is : %lu MB\n",iTotalMem/(1024*1024));
         printf ("cuinit: exited with no errors\n") ;
 #endif
 
@@ -1000,6 +1012,10 @@ extern "C" void custressupdatewrapper_ (E_TYPE 	 	eType,
                                          pstHostSig, fData1, fData2, fData3, gpV1, gpV2, gpV3) ;
                 }
                 break ;
+                case E_INVALID_TYPE:
+                {
+                        printf ("custressupdatewrapper_: Invalid input\n") ;
+                }
         }
 
 }
@@ -1598,6 +1614,11 @@ extern "C" void cutensormemset_ (E_TENSOR_TYPE eType)
                         cuError = cudaMemset (pstTau, 0, sizeof (ST_TENSOR) * ihSx1 * ihSx2 * ihSx3/2) ;
                 }
                 break ;
+				case E_INVALID_TENSOR_TYPE:
+				{	
+						printf ("Invalid input\n") ;
+				}
+				break ;
         }
         if (cudaSuccess != cuError)
         {
@@ -1999,6 +2020,47 @@ void cuFreeCudaMemory()
         CUDA_FREE_MEM (pfDevTract3) ;
 
 }
+
+int checkMemRequirement(int iSx1,
+			int iSx2,
+			int iSx3)
+{
+	int 		liReq = 0 ;
+	long int 	iTemp = 0 ;
+	size_t 		iTotalMem = 0 ;
+	size_t 		iFreeMem = 0 ;
+
+	/* Ui's, Vi's and fft's */
+	iTemp=((iSx1+2)*iSx2*iSx3*sizeof(float)*8)/(1024*1024) ;
+	liReq+=iTemp ;
+
+	/* sig, moment and tau */
+	iTemp=((iSx1*iSx2*iSx3/2)*sizeof(ST_TENSOR)*3)/(1024*1024) ;
+	liReq+=iTemp ;	
+
+	/* Ti's */
+	iTemp=((iSx1+2)*iSx2*sizeof(float)*3)/(1024*1024) ;
+	liReq+=iTemp ;
+	
+	iTemp=(iSx3/2)*sizeof(ST_LAYER)/(1024*1024) ;
+	liReq+=iTemp ;
+
+	/* dMinArray */	
+	iTemp=((iSx1+2)*iSx2*iSx3*sizeof(float))/(1024*1024) ;
+
+        cudaMemGetInfo(&iFreeMem, &iTotalMem);
+	iTotalMem/=(1024*1024) ;	
+	
+	if ((liReq+iTemp) > iTotalMem)
+	{
+		printf ("\nTotal memory required is : %d MB\n", (int)(liReq+iTemp)) ;
+		printf ("Total available is is : %lu MB \n", iTotalMem) ;
+		return -1 ;
+	}
+	
+	return 0;	 
+}
+
 
 /* ------------------------------------------- utility end -------------------------------------- */
 

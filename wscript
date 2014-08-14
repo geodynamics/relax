@@ -124,12 +124,12 @@ def configure(cnf):
     if cnf.options.use_cuda:
         cnf.env.CUDA=cnf.options.use_cuda
         cnf.load('cuda',tooldir='.')   
-	if not cnf.env.CUDAFLAGS:
+        if not cnf.env.CUDAFLAGS:
             cnf.env.CUDAFLAGS = ['-gencode','arch=compute_35,code=sm_35']
-#           cnf.env.CUDAFLAGS += ['-Xptxas', '-dlcm=cg']
-#            cnf.env.CUDAFLAGS += ['--maxrregcount=32']
-#            cnf.env.CUDAFLAGS = ['-gencode','arch=compute_30,code=sm_30']
-#            cnf.env.CUDAFLAGS = ['-gencode','arch=compute_20,code=sm_20']
+    #       cnf.env.CUDAFLAGS += ['-Xptxas', '-dlcm=cg']
+    #       cnf.env.CUDAFLAGS += ['--maxrregcount=32']
+    #       cnf.env.CUDAFLAGS = ['-gencode','arch=compute_30,code=sm_30']
+    #       cnf.env.CUDAFLAGS = ['-gencode','arch=compute_20,code=sm_20']
             cnf.env.CXXFLAGS=['-m64']
         if cnf.options.cuda_dir:
             if not cnf.options.cuda_incdir:
@@ -144,11 +144,11 @@ def configure(cnf):
         for inc in includedirs:
             try:
                 cnf.check_cc(msg="Checking for cuda.h", 
-                         header_name='cuda.h', includes=inc,
-                         libpath=[cnf.options.cuda_libdir], 
-                         rpath=[cnf.options.cuda_libdir], 
-                         lib=['cudart', 'cufft','stdc++'], uselib_store='cuda',
-                         define_name="USING_CUDA") 
+                             header_name='cuda.h', includes=inc,
+                             libpath=[cnf.options.cuda_libdir], 
+                             rpath=[cnf.options.cuda_libdir], 
+                             lib=['cudart', 'cufft','stdc++'], uselib_store='cuda',
+                             define_name="USING_CUDA") 
             except cnf.errors.ConfigurationError:
                 pass
             else:
@@ -281,7 +281,7 @@ def configure(cnf):
     cnf.write_config_header('config.h')
 
 def build(bld):
-    if bld.env.CUDA:	
+    if bld.env.CUDA:    
         bld.program(features='c fc fcprogram cxx',
                 source=['src/curelax.f90',
                         'src/types.f90',
@@ -301,7 +301,7 @@ def build(bld):
                         'src/getopt_m.f90',
                         'src/input.f90',
                         'src/mkl_dfti.f90',
-			'src/papi_prof.c',
+            'src/papi_prof.c',
                         'src/cu_fft.cu',
                         'src/cu_elastic.cu'],
                 install_path='${PREFIX}/bin',
