@@ -272,7 +272,7 @@ CONTAINS
 
     INTEGER :: i1,i2,i3
     REAL*8 :: x1,x2,x3,dum
-    
+
 !$omp parallel do private(i1,i2,x1,x2,x3,dum)
     DO i3=1,sx3
        x3=DBLE(i3-1)*dx3

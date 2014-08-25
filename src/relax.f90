@@ -640,10 +640,10 @@ PROGRAM relax
      IF (ALLOCATED(in%nonlinearstruc)) THEN
         ! powerlaw viscosity
         v1=0
-        IF (0 .LT. in%nlwz) THEN
+        IF (0 .LT. in%nnlwz) THEN
            CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
                 sig,in%sx1,in%sx2,in%sx3/2, &
-                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=lineardgammadot0,GAMMA=v1)
+                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=nonlineardgammadot0,GAMMA=v1)
         ELSE
            CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
                 sig,in%sx1,in%sx2,in%sx3/2, &
