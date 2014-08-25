@@ -133,7 +133,7 @@ CONTAINS
     END DO
 
     IF (in%isversion) THEN
-       PRINT '("relax version 1.0.6, compiled on ",a)', __DATE__
+       PRINT '("relax version 1.0.7, compiled on ",a)', __DATE__
        PRINT '("")'
        RETURN
     END IF
