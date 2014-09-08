@@ -123,17 +123,18 @@ CONTAINS
 #ifdef USING_CUDA
   SUBROUTINE viscouseigenstress(mu,structure,ductilezones,nz,sig,sx1,sx2,sx3, &
        dx1,dx2,dx3,moment,beta,maxwelltime,gamma)
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3
     TYPE(WEAK_STRUCT), DIMENSION(nz), INTENT(IN) :: ductilezones
     INTEGER, INTENT(IN) :: nz
     REAL*8, INTENT(IN) :: beta      
 #else       
   SUBROUTINE viscouseigenstress(mu,structure,sig,sx1,sx2,sx3, &
        dx1,dx2,dx3,moment,maxwelltime,dgammadot0,gamma)
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3
     REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(IN), OPTIONAL :: dgammadot0
 #endif
     REAL*8, INTENT(IN) :: mu,dx1,dx2,dx3
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
-    INTEGER, INTENT(IN) :: sx1,sx2,sx3
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(TENSOR), INTENT(OUT), DIMENSION(sx1,sx2,sx3) :: moment
     REAL*8, OPTIONAL, INTENT(INOUT) :: maxwelltime
@@ -272,7 +273,7 @@ CONTAINS
 
     INTEGER :: i1,i2,i3
     REAL*8 :: x1,x2,x3,dum
-    
+
 !$omp parallel do private(i1,i2,x1,x2,x3,dum)
     DO i3=1,sx3
        x3=DBLE(i3-1)*dx3

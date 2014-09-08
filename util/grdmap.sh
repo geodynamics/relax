@@ -36,6 +36,7 @@ usage(){
 	echo "         -T title header"
 	echo "         -x do not display map (only create .ps file)"
 	echo "         -C interval plots contours every interval distance"
+	echo "         -L draws a distance scale at coordinates lon/lat"
 	echo "         -O file.ps only plot base map with extra scripts"
 	echo "         -J overwrites the geographic projections (for -J o the -b option is relative)"
         echo "         -Y shift the plot vertically on the page"
@@ -116,6 +117,10 @@ EOF
 		REVERT="-Xr-0.9i -Yr-0.3i"
 	fi
 
+	if [ "$Lset" != "" ]; then
+		psbasemap -O -K -J$PROJ -R$bds $Lset >> $PSFILE
+	fi
+
 	if [ -e "$colors" ]; then
 		#-Q0.20c/1.0c/0.4cn1.0c \
 		psscale -O -K -B$PSSCALE/:$unit: -D3.5i/-0.8i/7.1i/0.2ih \
@@ -132,15 +137,15 @@ EOF
 gmtset LABEL_FONT_SIZE 12p
 gmtset HEADER_FONT_SIZE 12p
 gmtset ANOT_FONT_SIZE 12p 
-gmtset COLOR_BACKGROUND 0/0/255
-gmtset COLOR_FOREGROUND 255/0/0
+gmtset COLOR_BACKGROUND 0/0/0
+gmtset COLOR_FOREGROUND 255/255/255
 gmtset COLOR_NAN 255/255/255
 gmtset PAPER_MEDIA archA
 
 libdir=$(dirname $0)/../share
 EXTRA=""
 
-while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrC:O:J:Y:" flag
+while getopts "b:c:e:ghi:o:p:v:s:t:u:xrC:J:L:O:T:Y:" flag
 do
 	case "$flag" in
 	b) bset=1;bds=$OPTARG;;
@@ -159,12 +164,13 @@ do
 	v) vset=1;SIZE=$OPTARG;VECTOR=$OPTARG"c";;
 	x) xset=1;;
 	C) Cset="-C";contour=$OPTARG;;
+	L) Lset="-L$OPTARG";;
 	O) Oset=1;PSFILE=$(dirname $OPTARG)/$(basename $OPTARG .ps).ps;;
 	J) Jset="-J";PROJ=$OPTARG;;
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
 done
-for item in $bset $cset $iset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Oset $Jset $EXTRA;do
+for item in $bset $cset $iset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Lset $Oset $Jset $EXTRA;do
 	shift;shift
 done
 for item in $gset $hset $xset $rset;do
@@ -351,7 +357,9 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 	if [ "$pset" == "1" ]; then
 		makecpt -C$cptfile -T$P -D > $colors;
 		m=`echo $P | awk -F"/" 'function max(x,y){return (x>y)?x:y};function abs(x){return (0<x)?x:-x}{print max(abs($1),$2)}'`
-		TRIANGLES=`grdinfo -C $U3 | awk -v m=$m 'function max(x,y){return (x>y)?x:y};function abs(x){return (0<x)?x:-x}{if (m<max(abs($6),abs($7))){print "-E"}}'`
+		if [ "$U3" != "" ]; then
+			TRIANGLES=`grdinfo -C $U3 | awk -v m=$m 'function max(x,y){return (x>y)?x:y};function abs(x){return (0<x)?x:-x}{if (m<max(abs($6),abs($7))){print "-E"}}'`
+		fi
 	fi
 
 	my_gmt $INDEX

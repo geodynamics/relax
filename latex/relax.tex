@@ -327,7 +327,7 @@ The output of the simulation can be projected on the fly to geographic coordinat
 
 Examples input files can be found in the \verb'examples' directory for many earthquakes with published slip distribution models. The directory \verb'examples/tutorials' includes simple directions to evaluate models and carry out post processing and mapping. The man page (type \verb'man relax' in a terminal) provides a thorough description of every input item, and provides additional examples.
 
-\subsection{Running}
+\subsection{Running on personal computer}
 
 
 The binary packages provided on the CIG website contain everything needed to run simulations.  After unpacking the packages, open a terminal (or, in Windows, a Command Prompt) and run the setup script
@@ -360,6 +360,58 @@ Some examples of simple calculations are provided in the \verb'examples/tutorial
 {\color{orange}./run1.bat} # for Windows
 \end{alltt}
 Alternately, on Windows, you can double-click on \verb'run1.bat' from the file browser.
+
+\subsection{Running on a cluster}
+
+Relax is programmed to harvest all the cores of a single computer using the \verb'OpenMP' technology. However, it is not capable of exploiting resources distributed over multiple machines, unlike with \verb'MPI'. To run the code on a cluster using a queue system, you should allocate only one node at a time, preferably using all the resources. Using \verb'PBS', this is accomplished with
+\begin{alltt} 
+{\color{orange}qsub -l nodes=1:ppn=12 script.sh}
+\end{alltt}
+for machines with 12 cores, where \verb'script.sh' is your Relax script; or by using embedded directives in your script, as follows
+\begin{alltt}
+#!/bin/bash
+
+#PBS -N output_directory
+#PBS -q dque
+{\color{orange}#PBS -l nodes=1:ppn=12}
+#PBS -l walltime=12:00:00
+#PBS -V
+
+{\color{orange}if [ "$PBS_O_WORKDIR" != "" ]; then
+        echo Working directory is $PBS_O_WORKDIR
+        cd $PBS_O_WORKDIR
+        echo Running on host `hostname`
+        echo Time is `date`
+        NPROCS=`wc -l < $PBS_NODEFILE`
+        NNODES=`cat $PBS_NODEFILE | uniq | wc -l`
+        echo Using $NPROCS cores on $NNODES nodes on machines:
+        echo `cat $PBS_NODEFILE`
+else
+        NPROCS=12
+fi}
+
+WDIR=./output_directory
+if [ ! -e $WDIR ]; then
+        echo adding directory $WDIR
+        mkdir $WDIR
+fi
+
+{\color{orange}OMP_NUM_THREADS=$NPROCS} relax <<EOF | tee $WDIR/in.param
+...
+# output directory
+$WDIR
+...
+EOF
+\end{alltt}
+This script can be executed with the 
+\begin{alltt}
+{\color{orange}qsub ./script.sh}
+\end{alltt}
+command for queuing, or directly from the terminal with 
+\begin{alltt}
+{\color{orange}./script.sh}
+\end{alltt}
+for immediate execution, making it versatile for the personal or cluster environments.
 
 \section{Modeling a deformation scenario}
 

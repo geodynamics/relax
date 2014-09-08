@@ -16,7 +16,13 @@ Options:
     --ddir=<data/path>            data directory.
  
 Description:
-    obsres.py computes residuals between Relax and GPS data time series
+    obsres.py computes the weighted sum of the squares of residuals between Relax and GPS data time 
+    series. 
+
+    The --range option is for testing overall scaling of the model predictions in the time domain.
+    For --range=-1/1/1, the program evaluates the residuals with the modified time t/tm, with tm 
+    taking values of 10^(-1), 10^0 and 10^1. If a lower residual is found, the Relax model can be
+    changed with all the values of gammadot0 modified to tm*gammadot0.
     
 Examples:
     1) obsres.py --ddir=../gps/GPS_Nepal_Tibet --weight=0/0/1 G64_H{20,30,40}_g{0.1,1,10}
@@ -81,7 +87,12 @@ def main():
 	for i in xrange(len(args)):
 		wdir=args[i]
 		fname=wdir+'/'+network
-		f=file(fname,'r')
+                try:
+		    f=file(fname,'r')
+                except IOError as e:
+                    print >> sys.stderr, '# obsres.py: could not find '+fname+', skipping.'
+                    continue
+
 		name=np.loadtxt(f,comments='#',unpack=True,dtype='S4',usecols=[3])
 		coverage=np.zeros(len(name))
 		#print name
@@ -92,6 +103,8 @@ def main():
 
 			# initialize norm of residuals
 			norm=0
+			norm0=0
+                        count=0
 			index=0
 			for s in name:
                             # load data (test upper and lower case)
@@ -113,7 +126,7 @@ def main():
                                 with open(fname) as f: pass
                             except IOError as e:
                                 # skipping station s
-                                print >> sys.stderr, 'obsres.py: could not find '+fname+', skipping.'
+                                print >> sys.stderr, '# obsres.py: could not find '+fname+', skipping.'
                                 continue
 			
                             f=file(fname,'r')
@@ -127,11 +140,12 @@ def main():
                                 se=np.atleast_1d(se)
                                 sd=np.atleast_1d(sd)
                             except:
-                                print >> sys.stderr, 'obsres.py: error loading file '+s+'. skipping.'
+                                print >> sys.stderr, '# obsres.py: error loading file '+s+'. skipping.'
                                 coverage[index]=1
                                 index+=1
                                 continue
 
+                            pos=[]
                             pos=np.logical_and(np.logical_and(np.isfinite(nr+er+dr),tr>=t1),tr<=t2)
                             tr=tr[pos]
                             nr=nr[pos]
@@ -140,10 +154,9 @@ def main():
                             sn=sn[pos]
                             se=se[pos]
                             sd=sd[pos]
-                            pos=[]
 
                             if 0==len(tr):
-                                print >> sys.stderr, 'obsres.py: skipping station '+s+' because of insufficient data coverage.'
+                                print >> sys.stderr, '# obsres.py: skipping station '+s+' because of insufficient data coverage.'
                                 continue
 
                             # load model
@@ -158,6 +171,7 @@ def main():
 
                             # time interval
                             tmax=min([max(tm),max(tr)])
+                            pos=[]
                             pos=tr<=tmax
                             coverage[index]=float(sum(pos))/float(len(pos))
                             index+=1
@@ -168,10 +182,9 @@ def main():
                             sn=sn[pos]
                             se=se[pos]
                             sd=sd[pos]
-                            pos=[]
 
                             if 0==len(tr):
-                                print >> sys.stderr, 'obsres.py: skipping station '+s+' because of insufficient model coverage. Try reducing scaling.'
+                                print >> sys.stderr, '# obsres.py: skipping station '+s+' because of insufficient model coverage. Try reducing scaling.'
                                 continue
 
                             if isrelax:
@@ -191,14 +204,18 @@ def main():
                                     em/=scale
                                     dm/=scale
 
-                            dnorm=sum(pow(nr-nm,2)/sn*wn+pow(er-em,2)/se*we+pow(dr-dm,2)/sd*wd)
+                            dnorm0=sum(pow(nr/sn,2)*wn+pow(er/se,2)*we+pow(dr/sd,2)*wd)
+                            dnorm=sum(pow((nr-nm)/sn,2)*wn+pow((er-em)/se,2)*we+pow((dr-dm)/sd,2)*wd)
+                            count+=wn*float(len(nm))+we*float(len(em))+wd*float(len(em))
                             norm+=dnorm
+                            norm0+=dnorm0
                             #print '{0:8.2e}'.format(dnorm)
 
                         if 1==exprange:
-                            print '{0}    {1:8.2e}'.format(wdir.ljust(max(map(len,args))+1),norm)
+                            print '{0}    {1:8.2e}'.format(wdir.ljust(max(map(len,args))+1),norm/count)
                         else:
-                            print '{0}    {1:8.2e}  {2:9.2e} {3:8.2e}'.format(wdir.ljust(max(map(len,args))+1),norm,tscale,sum(coverage)/float(len(coverage)))
+                            print '{0}    {1:8.2e}  {2:9.2e} {3:8.2e}'.format(wdir.ljust(max(map(len,args))+1),norm/count,tscale,sum(coverage)/float(len(coverage)))
+                            #print 1. - norm/norm0
                         sys.stdout.flush()
 
 if __name__ == "__main__":
