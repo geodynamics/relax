@@ -49,7 +49,7 @@
 \normalsize{Earth Observatory of Singapore, Nanyang Technological University}\\
 }
 
-\date{Oct. 11th, 2011, last revision July. 3rd, 2014}
+\date{Oct. 11th, 2011, last revision Oct. 3rd, 2014}
 
 \begin{document} 
 
@@ -165,26 +165,56 @@ Sylvain Barbot\\
 \pagestyle{fancy}
 \cfoot{\thepage}
 
+\pagebreak
+
+\tableofcontents
+
+\pagebreak
+
+
+\section{Preface}
+
+\subsection{About this document}
+
+This document presents the background information to operate the Relax software and its associated post-processing tools and mapping functions. The document presents a succinct theoretical background, then describes how to produce simulations, including how to set up the runtime environment and the input parameters. Errors and bug fixes in this manual should be directed to the CIG Short Term Crustal Dynamics Mailing List (cig-short@geodynamics.org). Please specify which code and version you are using when reporting a problem.
+
+\subsection{Who will use this document}
+
+The document is intended to end users who are interested in modelling geophysical data without modifying the source code. Users interested in improving the code for their own application can inspect the code using the documentation generated with Doxygen. The intention of this document is to describe the possible applications of the code and how to set up the input parameters. The Relax code can be ran on various computing environments, including Unix and Windows systems, on personal computers or high-performance clusters. The documentation makes extensive use of Unix scripting, which greatly facilitates the generation of complex input files.
+
+\subsection{Citation}
+
+The Relax software is distributed publicly in the hope to facilitate the modeling of geophysical data and enhance research in tectonophysics related to earthquakes and postseismic deformation. The code has been developed to offer a wide range of possible applications with a simple, robust interface. Studies published in peer-reviewed papers that used Relax should acknowledge this work and cite the following articles
+\begin{itemize}
+\item Barbot S. and Y. Fialko (2010) Fourier-domain Green's function for an elastic semi-infinite solid under gravity, with applications to earthquake and volcano deformation, Vol. 182, Issue 2, pp. 568-582.
+\item Barbot S. and Y. Fialko (2010) A unified continuum representation of post-seismic relaxation mechanisms: semi-analytic models of afterslip, poroelastic rebound and viscoelastic flow, Vol. 182, Issue 3, pp. 1124-1140.
+\end{itemize}
+The developers also request that in your oral presentations and in your paper acknowledgements that you indicate your use of this code, the authors of the code, and CIG (geodynamics.org).
+
+\subsection{Acknowledgments}
+
+We are thankful for the support of Yuri Fialko during the early development of the methodology at the Institute of Geophysics and Planetary Physics, Scripps Institution of Oceanography. We acknowledge the contribution of Walter Landry, who ensured the portability of the code and streamlined its installation process. We appreciate the efforts of Lucile Bruhat, Yaru Hsu, Mikhail Kogan, Zhen Liu and Baptiste Rousset for testing an earlier version of the code. We are grateful to the work of Sagar Masuti, at the Earth Observatory of Singapore, who ported the code to CUDA. The support of the Computational Infrastructure for Geodynamics is greatly appreciated, in particular the help of Eric Heien, Rajesh Kommu, and Lorraine Hwang. Feedback from many users around the world contributed to improving the quality of the software and documentation. The Relax distribution includes the finite-slip distribution for a large number of earthquakes. We thank the contributions of the many colleagues who made their modeling results available in digital form.
+
 \section{Introduction}
 
-The open-source program Relax evaluates the displacement and stress in a half space with gravity due to dislocations~\citep[e.g.,][]{okada92}, Mogi sources~\citep{mogi58}, and surface tractions; and the nonlinear time-dependent deformation that follows due to power-law rheology materials in the bulk and/or rate-strengthening friction faults. The numerical method is based on a Fourier-domain elastic Green's function~\citep{barbot+09b,barbot&fialko10a} and an equivalent body-force representation of co-seismic and post-seismic deformation processes~\citep{barbot+09a,barbot&fialko10b}. Application of the method for the 2004 Mw\,6.0 Parkfield earthquake can be found in the work of~\cite{barbot+09a} and \cite{bruhat+11}. A coupled model of afterslip and laterally-heterogeneous viscoelastic flow following the 1999 Mw\,7.6 Chi-Chi earthquake using Relax is described by~\cite{rousset+12}.
+The open-source program Relax evaluates the displacement and stress in a half space with gravity due to dislocations~\citep[e.g.,][]{okada92}, Mogi sources~\citep{mogi58}, and surface tractions; and the nonlinear time-dependent deformation that follows due to power-law rheology materials in the bulk and/or rate-strengthening friction faults. The numerical method is based on a Fourier-domain elastic Green's function~\citep{barbot+09b,barbot&fialko10a} and an equivalent body-force representation of co-seismic and post-seismic deformation processes~\citep{barbot+09a,barbot&fialko10b}. Application of the method for the 2004 Mw\,6.0 Parkfield earthquake can be found in the work of~\cite{barbot+09a} and \cite{bruhat+11}. A coupled model of afterslip and laterally-heterogeneous viscoelastic flow following the 1999 Mw\,7.6 Chi-Chi earthquake using Relax is described by~\cite{rousset+12}. 
 
-The range of applications for the earthquake-cycle modeling include i) co-seismic displacement and Coulomb stress calculation, ii) quasi-static stress transfer between earthquakes due to a postseismic transient, iii) modeling of postseismic transients including nonlinear rheologies and multiple mechanisms, iv) cycle of multiple earthquakes and spin-up models, v) loading cycle of lakes or the monsoon, vi) generation of viscoelastic Green's functions for kinematic inversions of geodetic time series.
-
-\section{Acknowledgments}
-We are thankful for the support of Yuri Fialko during the early development of the methodology at the Institute of Geophysics and Planetary Physics, Scripps Institution of Oceanography. We acknowledge the contribution of Walter Landry, who ensured the portability of the code and streamlined its installation process. We appreciate the efforts of Lucile Bruhat, Yaru Hsu, Mikhail Kogan, Zhen Liu and Baptiste Rousset for testing an earlier version of the code. We are grateful to the work of Sagar Masuti, at the Earth Observatory of Singapore, who ported the code to CUDA. The support of the Computational Infrastructure for Geodynamics is greatly appreciated. Feedback from many users around the world contributed to improving the quality of the software and documentation.
+The range of applications for the earthquake-cycle modeling include
+\begin{itemize}
+\item co-seismic displacement and Coulomb stress calculation, 
+\item quasi-static stress transfer between earthquakes due to a postseismic transient, 
+\item modeling of postseismic transients including nonlinear rheologies and multiple mechanisms, 
+\item cycle of multiple earthquakes and spin-up models, 
+\item loading cycle of lakes or the monsoon, 
+\item generation of viscoelastic Green's functions for kinematic inversions of geodetic time series.
+\end{itemize}
+The Relax software distribution is accompanied by the finite-slip distribution of a large number of earthquakes in convergent, transform and extension tectonic settings. 
 
 
 \vspace{2.5cm}
 %\footnote{sdfl}
 \let\thefootnote\relax\footnotetext{The cover image is a Paraview visualization of the displacement field produced by the 1992 Mw 7.3 Landers earthquake from the coseismic slip model of~\cite{fialko04c}. The coseismic shear stress on the Hector Mine faults is shown on the far right. The streamlines and the vectors indicate the direction of motion. The shadowed neighboring faults are from UCERF 2 and the prisms indicate continuous GPS stations. The model and the visualization can be reproduced using the material provided in the examples.}
 
-
-\pagebreak
-
-\tableofcontents
-
-\pagebreak
 
 \section{Theoretical background}
 
