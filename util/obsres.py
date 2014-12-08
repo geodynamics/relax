@@ -215,7 +215,7 @@ def main():
                             print '{0}    {1:8.2e}'.format(wdir.ljust(max(map(len,args))+1),norm/count)
                         else:
                             print '{0}    {1:8.2e}  {2:9.2e} {3:8.2e}'.format(wdir.ljust(max(map(len,args))+1),norm/count,tscale,sum(coverage)/float(len(coverage)))
-                            #print 1. - norm/norm0
+                        #print 1. - norm/norm0
                         sys.stdout.flush()
 
 if __name__ == "__main__":
