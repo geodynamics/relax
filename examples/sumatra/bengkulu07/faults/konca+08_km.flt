@@ -1,4 +1,11 @@
-# n   slip      x1      x2      x3   length  width strike dip   rake
+# Nature 456, 631-635 (4 December 2008) | doi:10.1038/nature07572; Received 30 May 2008; Accepted 17 October 2008
+# Partial rupture of a locked patch of the Sumatra megathrust during the 2007 earthquake sequence
+# A. Ozgun Konca, Jean-Philippe Avouac, Anthony Sladen, Aron J. Meltzner, Kerry Sieh, Peng Fang, Zhenhong Li, 
+# John Galetzka, Jeff Genrich, Mohamed Chlieh, Danny H. Natawidjaja, Yehuda Bock, Eric J. Fielding, Chen Ji & Don V. Helmberger
+#
+# reference point: 99.592845 -2.029353 
+#
+# n   slip      x1      x2      x3   length  width strike  dip  rake
   1  84.00 -330.66  111.70    2.49    16.00  16.00    324   15 120.0
   2 164.00 -317.76  102.31    2.49    16.00  16.00    324   15  80.0
   3 120.00 -304.86   92.92    2.49    16.00  16.00    324   15 104.0
