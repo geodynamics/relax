@@ -3,7 +3,7 @@
 # Natawidjaja DH, Bock Y, Fielding EJ, Ji C, Helmberger DV. 
 # Nature. 2008 Dec 4;456(7222):631-5. doi: 10.1038/nature07572.
 #
-# nb  slip      x1      x2      x3   length  width strike dip  rake
+# n   slip      x1      x2      x3   length  width strike dip   rake
   1  84.00 -776.89  734.37    2.49    16.00  16.00    324   15 120.0
   2 164.00 -763.99  724.99    2.49    16.00  16.00    324   15  80.0
   3 120.00 -751.09  715.60    2.49    16.00  16.00    324   15 104.0
