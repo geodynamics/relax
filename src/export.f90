@@ -3024,4 +3024,52 @@ END SUBROUTINE exportcreep_vtk
   END SUBROUTINE exportvtk_vectors_slice
 #endif
 
+  !------------------------------------------------------------------
+  !> subroutine pts2series
+  !! sample a vector field at a series of points for export.
+  !! each location is attributed a file in which the time evolution
+  !! of the vector value is listed in the format:
+  !!
+  !!                t_0 u(t_0) v(t_0) w(t_0)
+  !!                t_1 u(t_1) v(t_1) w(t_1)
+  !!                ...
+  !!
+  !! \author sylvain barbot (11/10/07) - original form
+  !------------------------------------------------------------------
+  SUBROUTINE pts2series(c1,c2,c3,sx1,sx2,sx3,dx1,dx2,dx3, &
+       opts,time,index,gps)
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3
+#ifdef ALIGN_DATA
+    REAL*4, INTENT(IN), DIMENSION(sx1+2,sx2,sx3) :: c1,c2,c3
+#else
+    REAL*4, INTENT(IN), DIMENSION(sx1,sx2,sx3) :: c1,c2,c3
+#endif
+    TYPE(VECTOR_STRUCT), INTENT(IN), DIMENSION(:) :: opts
+    REAL*8, INTENT(IN) :: dx1,dx2,dx3,time
+    INTEGER, INTENT(IN) :: index
+    TYPE(MANIFOLD_STRUCT), INTENT(INOUT), DIMENSION(:) :: gps
+
+    INTEGER :: i1,i2,i3,k
+    REAL*8 :: u1,u2,u3,x1,x2,x3
+
+    DO k=1,SIZE(opts)
+       x1=opts(k)%v1
+       x2=opts(k)%v2
+       x3=opts(k)%v3
+
+       CALL shiftedindex(x1,x2,x3,sx1,sx2,sx3,dx1,dx2,dx3,i1,i2,i3)
+
+       u1=c1(i1,i2,i3)
+       u2=c2(i1,i2,i3)
+       u3=c3(i1,i2,i3)
+
+       gps(k)%nepochs=index
+       gps(k)%t(index)=time
+       gps(k)%u1(index)=u1
+       gps(k)%u2(index)=u2
+       gps(k)%u3(index)=u3
+    END DO
+  
+  END SUBROUTINE pts2series
+
 END MODULE export
