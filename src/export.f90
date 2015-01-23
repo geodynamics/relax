@@ -471,11 +471,11 @@ CONTAINS
     n=SIZE(ptsname)
 
     DO k=1,n
-       file1=wdir(1:i-1) // "/" // ptsname(k) // ".txt"
+       file1=wdir(1:i-1) // "/" // ptsname(k) // ".ned"
        IF (isnew) THEN
           OPEN (UNIT=15,FILE=file1,IOSTAT=iostatus,FORM="FORMATTED")
-          WRITE (15,'("#         t         u1         u2         u3        ", &
-                    & "s11        s12        s13        s22        s23        s33")')
+          WRITE (15,'("#          t          u1          u2          u3         ", &
+                    & "s11         s12         s13         s22         s23         s33")')
        ELSE
           OPEN (UNIT=15,FILE=file1,POSITION="APPEND",&
                IOSTAT=iostatus,FORM="FORMATTED")
@@ -508,7 +508,7 @@ CONTAINS
        x1=x1+x0
        x2=x2+y0
 
-       WRITE (15,'(13ES11.3E2)') time,v1,v2,v3, &
+       WRITE (15,'(14ES11.4E2)') time,v1,v2,v3, &
                                  lsig%s11,lsig%s12,lsig%s13, &
                                  lsig%s22,lsig%s23,lsig%s33
        CLOSE(15)
