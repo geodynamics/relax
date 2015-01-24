@@ -31,7 +31,7 @@ stripoffset(){
 			}{ \
 			for (t in time){ \
 				if (time[t]<=$1){ \
-					print NR; \
+					printf "%d ",NR; \
 					delete time[t]; \
 				}; \
 			}; \
@@ -50,7 +50,7 @@ stripoffset(){
 		fi
 
 		grep -v "#" $IFILE |
-			awk -v e="$EVENTS" -v value="$time" \
+			awk -v e="$EVENTS" \
 				'BEGIN{ \
 					print "#         t         u1         u2         u3        s11        s12        s13        s22        s23        s33"; \
 					split(e,events," "); \

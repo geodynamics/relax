@@ -87,6 +87,16 @@ MODULE types
      TYPE(SOURCE_STRUCT), DIMENSION(:), ALLOCATABLE :: s,sc,ts,tsc,m,mc,l,lc
   END TYPE EVENT_STRUC
   
+  TYPE MANIFOLD_STRUCT
+     INTEGER :: nepochs
+     ! time axis
+     REAL*8, DIMENSION(:), ALLOCATABLE :: t
+     ! displacement time series
+     REAL*8, DIMENSION(:), ALLOCATABLE :: u1,u2,u3
+     ! uncertainties
+     REAL*8, DIMENSION(:), ALLOCATABLE :: s1,s2,s3
+  END TYPE MANIFOLD_STRUCT
+
   TYPE, PUBLIC :: SIMULATION_STRUC
      ! grid dimension
      INTEGER :: sx1,sx2,sx3
@@ -212,6 +222,8 @@ MODULE types
      LOGICAL :: isdryrun=.FALSE.
      LOGICAL :: ishelp=.FALSE.
      LOGICAL :: isversion=.FALSE.
+
+     TYPE(MANIFOLD_STRUCT), DIMENSION(:), ALLOCATABLE :: gps,sim
 
   END TYPE SIMULATION_STRUC
 
