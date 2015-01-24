@@ -2093,6 +2093,9 @@ CONTAINS
        Lp=L*(1._8+2._8*beta)/2._8
        Wp=W*(1._8+2._8*beta)/2._8
 
+       IF (0 .EQ. Lp) CYCLE
+       IF (0 .EQ. Wp) CYCLE
+
        i3=1
        DO i2=1,sx2
           DO i1=1,sx1
@@ -3088,7 +3091,7 @@ CONTAINS
   END SUBROUTINE fieldrep
 
   !-----------------------------------------------------------------
-  ! subroutine SliveAdd
+  ! subroutine SliceAdd
   ! computes in place the sum of two scalar fields
   !
   !   u = c1 * u + c2 * v
