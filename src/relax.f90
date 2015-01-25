@@ -468,7 +468,7 @@ PROGRAM relax
      IF (0 .LT. in%nlwz) THEN
         ALLOCATE(lineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
         IF (iostatus.GT.0) STOP "could not allocate lineardgammadot0"
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%beta, &
+        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
                              in%nlwz,in%linearweakzone,lineardgammadot0)
      END IF
   END IF
@@ -483,7 +483,7 @@ PROGRAM relax
      IF (0 .LT. in%nnlwz) THEN
         ALLOCATE(nonlineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
         IF (iostatus.GT.0) STOP "could not allocate nonlineardgammadot0"
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%beta, &
+        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
                              in%nnlwz,in%nonlinearweakzone,nonlineardgammadot0)
      END IF
   END IF
