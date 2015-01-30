@@ -1,11 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
 """
-Usage:
-    seg2flt.py [--with-slip] ( [-] | <file.seg>)
+Usage: 
+    seg2flt.py [--with-slip] ( [-] | <file.seg> )
 
-Option:
-    --with-slip interpolates a slip distribution
+Options:
+    --with-slip    interpolates a slip distribution
 
 Description:
     seg2flt.py converts a segment definition to finely sampled fault file

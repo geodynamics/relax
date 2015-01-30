@@ -1,5 +1,5 @@
 Package: relax
-Version: 1.0.7
+Version: 1.0.5
 Revision: 1
 Source: http://www.geodynamics.org/cig/software/relax/fink/%n-%v.tar.gz
 Maintainer: Sylvain Barbot <sbarbot@ntu.edu.sg>
@@ -9,17 +9,16 @@ Description: Semi-analytic solver for earthquake modeling
 Source-MD5: 59747b5f9d1cac7ddfd71fad3707d662
 Depends: <<
 	fftw3-shlibs,
-	gcc49-shlibs,
+	gcc48-shlibs,
 	gmt-shlibs, 
 	gv,
 	netcdf-c7-shlibs,
 	proj-shlibs,
 	python27
-	docopt-py27
 <<
 BuildDepends: <<
 	fftw3, 
-	gcc49-compiler,
+	gcc48,
 	gmt, 
 	gmt-dev, 
 	netcdf-c7,
@@ -28,7 +27,7 @@ BuildDepends: <<
 DocFiles: COPYING INSTALL
 CompileScript: <<
 #! /bin/sh -ev
-./waf configure --use-fftw --fftw-dir=%p --proj-dir=%p --gmt-dir=%p FC=gfortran-fsf-4.9
+./waf configure --use-fftw --fftw-dir=%p --proj-dir=%p --gmt-dir=%p
 ./waf build
 <<
 InstallScript: <<
@@ -36,28 +35,15 @@ InstallScript: <<
 /usr/bin/install -d -m 755 %i/bin
 /usr/bin/install -m 755 ./build/relax        %i/bin/relax
 /usr/bin/install -m 755 ./util/erpatch.sh    %i/bin/erpatch.sh
-/usr/bin/install -m 755 ./util/extrude.sh    %i/bin/extrude.sh
 /usr/bin/install -m 755 ./util/flt2vtp.sh    %i/bin/flt2vtp.sh
 /usr/bin/install -m 755 ./util/grdmap.sh     %i/bin/grdmap.sh
-/usr/bin/install -m 755 ./util/grdview.sh    %i/bin/grdview.sh
-/usr/bin/install -m 755 ./util/grdcoulomb.sh %i/bin/grdcoulomb.sh
 /usr/bin/install -m 755 ./util/grd2vtp.sh    %i/bin/grd2vtp.sh
 /usr/bin/install -m 755 ./util/obsrelax.sh   %i/bin/obsrelax.sh
 /usr/bin/install -m 755 ./util/obsres.py     %i/bin/obsres.py
-/usr/bin/install -m 755 ./util/psmap.sh      %i/bin/psmap.sh
 /usr/bin/install -m 755 ./util/seg2flt.py    %i/bin/seg2flt.py
-/usr/bin/install -m 755 ./util/xyz2vtp.sh    %i/bin/xyz2vtp.sh
 /usr/bin/install -d -m 755 %i/share/man/man1
 /usr/bin/install -m 644 ./man/man1/relax.1   %i/share/man/man1/relax.1
 /usr/bin/install -d -m 755 %i/share/gmt/cpt
 /usr/bin/install -m 644 ./share/jet.cpt      %i/share/gmt/cpt/RELAX_jet.cpt
 /usr/bin/install -m 644 ./share/anatolia.cpt %i/share/gmt/cpt/RELAX_anatolia.cpt
-/usr/bin/install -m 644 ./share/ViBlGrWhYeOrRe.cpt %i/share/gmt/cpt/RELAX_ViBlGrWhYeOrRe.cpt
-/usr/bin/install -m 644 ./share/creep.cpt %i/share/gmt/cpt/RELAX_creep.cpt
-/usr/bin/install -m 644 ./share/etopo01.cpt %i/share/gmt/cpt/RELAX_etopo1.cpt
-/usr/bin/install -m 644 ./share/haxby.cpt %i/share/gmt/cpt/RELAX_haxby.cpt
-/usr/bin/install -m 644 ./share/hot.cp %i/share/gmt/cpt/RELAX_hot.cpt
-/usr/bin/install -m 644 ./share/hot_inv.cpt %i/share/gmt/cpt/RELAX_hot_inv.cpt
-/usr/bin/install -m 644 ./share/phase.cpt %i/share/gmt/cpt/RELAX_phase.cpt
-/usr/bin/install -m 644 ./share/seis_inv.cpt %i/share/gmt/cpt/RELAX_seis_inv.cpt
 <<
