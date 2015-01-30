@@ -6,7 +6,7 @@ Maintainer: Sylvain Barbot <sbarbot@ntu.edu.sg>
 HomePage: http://www.geodynamics.org/cig/software/relax/
 License: GPL
 Description: Semi-analytic solver for earthquake modeling
-Source-MD5: 59747b5f9d1cac7ddfd71fad3707d662
+Source-MD5: 7b1686ee6177ea30089455bab6adb5d8
 Depends: <<
 	fftw3-shlibs,
 	gcc49-shlibs,
@@ -14,7 +14,7 @@ Depends: <<
 	gv,
 	netcdf-c7-shlibs,
 	proj-shlibs,
-	python27
+	python27,
 	docopt-py27
 <<
 BuildDepends: <<
