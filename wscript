@@ -76,7 +76,7 @@ def configure(cnf):
 
  # We set the flags here 
     if not cnf.env.CFLAGS:
-        cnf.env.CFLAGS=['-O3']
+        cnf.env.CFLAGS=['-O3', '-fPIC']
     if not cnf.env.FCFLAGS:
         cnf.env.FCFLAGS=['-O3']
 
@@ -243,7 +243,7 @@ def configure(cnf):
 
     # Check for C preprocessor option
     frag="program main\n  INTEGER :: foo\n" + "end program main\n"
-    cpp_flags=['-cpp','-Mpreprocess']
+    cpp_flags=['-cpp','-Mpreprocess','-fpic']
     if cnf.options.cpp_flag:
         cpp_flags=[cnf.options.cpp_flag]
     found_cpp=False
