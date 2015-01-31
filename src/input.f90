@@ -43,7 +43,7 @@ CONTAINS
     USE export
     USE getopt_m
 
-    TYPE(SIMULATION_STRUC), INTENT(OUT) :: in
+    TYPE(SIMULATION_STRUCT), INTENT(OUT) :: in
 
     CHARACTER :: ch
     CHARACTER(256) :: dataline

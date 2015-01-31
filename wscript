@@ -135,7 +135,7 @@ def configure(cnf):
             if not cnf.options.cuda_incdir:
                 cnf.options.cuda_incdir=cnf.options.cuda_dir + "/include"
             if not cnf.options.cuda_libdir:
-                cnf.options.cuda_libdir=cnf.options.cuda_dir + "/lib64"
+                cnf.options.cuda_libdir=cnf.options.cuda_dir + "/lib"
         if cnf.options.cuda_incdir:
             includedirs=[cnf.options.cuda_incdir]
         else:
@@ -280,6 +280,40 @@ def configure(cnf):
 
     cnf.write_config_header('config.h')
 
+
+def relaxlite(ctx) :
+        ctx.shlib(features='c fc fcprogram',
+                source=['src/relaxlite.f90',
+                        'src/types.f90',
+                        'src/ctfft.f',
+                        'src/fourier.f90',
+                        'src/green.f90',
+                        'src/okada/green_space.f90',
+                        'src/okada/dc3d.f',
+                        'src/elastic3d.f90',
+                        'src/friction3d.f90',
+                        'src/viscoelastic3d.f90',
+                        'src/writevtk.c',
+                        'src/writegrd4.2.c',
+                        'src/proj.c',
+                        'src/export.f90',
+                        'src/getdata.f',
+                        'src/getopt_m.f90',
+                        'src/input.f90',
+                        'src/mkl_dfti.f90',
+                        'src/papi_prof.c'],
+                install_path='${PREFIX}/bin',
+                includes=['build'],
+                use=['gmt','proj','openmp','fftw','imkl','cpp','length','papi','stdc++'],
+                target='relaxlite.so'
+                )
+
+from waflib.Build import BuildContext
+
+class miracle(BuildContext):
+    cmd = 'relaxlite'
+    fun = 'relaxlite'
+
 def build(bld):
     if bld.env.CUDA:    
         bld.program(features='c fc fcprogram cxx',
@@ -301,9 +335,9 @@ def build(bld):
                         'src/getopt_m.f90',
                         'src/input.f90',
                         'src/mkl_dfti.f90',
-            'src/papi_prof.c',
-                        'src/cu_fft.cu',
-                        'src/cu_elastic.cu'],
+                        'src/papi_prof.c',
+                        'src/cugreen.cu',
+                        'src/cuelastic.cu'],
                 install_path='${PREFIX}/bin',
                 includes=['build'],
                 use=['gmt','proj','openmp','fftw','imkl','cpp','length','cuda','papi','stdc++'],

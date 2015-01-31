@@ -20,6 +20,7 @@
 #include "include.f90"
 
 MODULE types
+  USE ISO_C_BINDING
 
   TYPE SOURCE_STRUCT
      SEQUENCE
@@ -33,7 +34,7 @@ MODULE types
 
   TYPE WEAK_STRUCT
      SEQUENCE
-     REAL*8 :: dgammadot0,x,y,z,width,length,thickness,strike,dip
+     REAL*8 :: dgammadot0,x,y,z,width,length,thickness,strike,dip,age
   END TYPE WEAK_STRUCT
 
   TYPE VECTOR_STRUCT
@@ -97,7 +98,7 @@ MODULE types
      REAL*8, DIMENSION(:), ALLOCATABLE :: s1,s2,s3
   END TYPE MANIFOLD_STRUCT
 
-  TYPE, PUBLIC :: SIMULATION_STRUC
+  TYPE, PUBLIC :: SIMULATION_STRUCT
      ! grid dimension
      INTEGER :: sx1,sx2,sx3
 
@@ -225,6 +226,6 @@ MODULE types
 
      TYPE(MANIFOLD_STRUCT), DIMENSION(:), ALLOCATABLE :: gps,sim
 
-  END TYPE SIMULATION_STRUC
+  END TYPE SIMULATION_STRUCT
 
 END MODULE types
