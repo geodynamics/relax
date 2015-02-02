@@ -76,7 +76,7 @@ def configure(cnf):
 
  # We set the flags here 
     if not cnf.env.CFLAGS:
-        cnf.env.CFLAGS=['-O3', '-fPIC']
+        cnf.env.CFLAGS=['-O3']
     if not cnf.env.FCFLAGS:
         cnf.env.FCFLAGS=['-O3']
 
@@ -243,7 +243,7 @@ def configure(cnf):
 
     # Check for C preprocessor option
     frag="program main\n  INTEGER :: foo\n" + "end program main\n"
-    cpp_flags=['-cpp','-Mpreprocess','-fpic']
+    cpp_flags=['-cpp','-Mpreprocess']
     if cnf.options.cpp_flag:
         cpp_flags=[cnf.options.cpp_flag]
     found_cpp=False
@@ -281,7 +281,7 @@ def configure(cnf):
     cnf.write_config_header('config.h')
 
 
-def relaxlite(ctx) :
+def lite(ctx) :
         ctx.shlib(features='c fc fcprogram',
                 source=['src/relaxlite.f90',
                         'src/types.f90',
@@ -305,14 +305,14 @@ def relaxlite(ctx) :
                 install_path='${PREFIX}/bin',
                 includes=['build'],
                 use=['gmt','proj','openmp','fftw','imkl','cpp','length','papi','stdc++'],
-                target='relaxlite.so'
+                target='librelax.so'
                 )
 
 from waflib.Build import BuildContext
 
 class miracle(BuildContext):
-    cmd = 'relaxlite'
-    fun = 'relaxlite'
+    cmd = 'lite'
+    fun = 'lite'
 
 def build(bld):
     if bld.env.CUDA:    
