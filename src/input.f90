@@ -39,9 +39,9 @@ CONTAINS
   !! @param in
   !---------------------------------------------------------------------
   SUBROUTINE init(in)
-    USE types
     USE export
     USE getopt_m
+    USE elastic3d
 
     TYPE(SIMULATION_STRUCT), INTENT(OUT) :: in
 

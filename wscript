@@ -284,7 +284,6 @@ def configure(cnf):
 def lite(ctx) :
         ctx.shlib(features='c fc fcprogram',
                 source=['src/relaxlite.f90',
-                        'src/types.f90',
                         'src/ctfft.f',
                         'src/fourier.f90',
                         'src/green.f90',
@@ -318,7 +317,6 @@ def build(bld):
     if bld.env.CUDA:    
         bld.program(features='c fc fcprogram cxx',
                 source=['src/curelax.f90',
-                        'src/types.f90',
                         'src/ctfft.f',
                         'src/fourier.f90',
                         'src/green.f90',
@@ -346,7 +344,6 @@ def build(bld):
     else:
         bld.program(features='c fc fcprogram',
                 source=['src/relax.f90',
-                        'src/types.f90',
                         'src/ctfft.f',
                         'src/fourier.f90',
                         'src/green.f90',

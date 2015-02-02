@@ -17,10 +17,6 @@
 ! along with RELAX.  If not, see <http://www.gnu.org/licenses/>.
 !-----------------------------------------------------------------------
 
-#include "include.f90"
-
-MODULE types
-  USE ISO_C_BINDING
 
   TYPE SOURCE_STRUCT
      SEQUENCE
@@ -98,7 +94,7 @@ MODULE types
      REAL*8, DIMENSION(:), ALLOCATABLE :: s1,s2,s3
   END TYPE MANIFOLD_STRUCT
 
-  TYPE, PUBLIC :: SIMULATION_STRUCT
+  TYPE :: SIMULATION_STRUCT
      ! grid dimension
      INTEGER :: sx1,sx2,sx3
 
@@ -228,4 +224,3 @@ MODULE types
 
   END TYPE SIMULATION_STRUCT
 
-END MODULE types

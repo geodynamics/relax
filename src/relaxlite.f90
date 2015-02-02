@@ -192,8 +192,6 @@
   !!   - export ductile zones for cylindrical and spherical geometries
   !------------------------------------------------------------------------
 SUBROUTINE relaxlite(in,gps,isverbose)
-  USE types
-!  USE input
   USE green
   USE green_space
   USE elastic3d
@@ -204,6 +202,7 @@ SUBROUTINE relaxlite(in,gps,isverbose)
 #include "include.f90"
   
   IMPLICIT NONE
+
   TYPE(SIMULATION_STRUCT), INTENT(INOUT) :: in
   TYPE(MANIFOLD_STRUCT), INTENT(OUT) :: gps(in%npts)
   LOGICAL, INTENT(IN) :: isverbose

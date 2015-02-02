@@ -190,7 +190,6 @@
   !------------------------------------------------------------------------
 PROGRAM relax
 
-  USE types
   USE input
   USE green
   USE green_space
@@ -202,7 +201,7 @@ PROGRAM relax
 #include "include.f90"
   
   IMPLICIT NONE
-  
+
   INTEGER, PARAMETER :: ITERATION_MAX = 99999
   REAL*8, PARAMETER :: STEP_MAX = 1e7
 
