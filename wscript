@@ -76,7 +76,7 @@ def configure(cnf):
 
  # We set the flags here 
     if not cnf.env.CFLAGS:
-        cnf.env.CFLAGS=['-O3']
+        cnf.env.CFLAGS=['-O3','-fPIC']
     if not cnf.env.FCFLAGS:
         cnf.env.FCFLAGS=['-O3']
 
@@ -135,7 +135,7 @@ def configure(cnf):
             if not cnf.options.cuda_incdir:
                 cnf.options.cuda_incdir=cnf.options.cuda_dir + "/include"
             if not cnf.options.cuda_libdir:
-                cnf.options.cuda_libdir=cnf.options.cuda_dir + "/lib64"
+                cnf.options.cuda_libdir=cnf.options.cuda_dir + "/lib"
         if cnf.options.cuda_incdir:
             includedirs=[cnf.options.cuda_incdir]
         else:
@@ -243,7 +243,7 @@ def configure(cnf):
 
     # Check for C preprocessor option
     frag="program main\n  INTEGER :: foo\n" + "end program main\n"
-    cpp_flags=['-cpp','-Mpreprocess']
+    cpp_flags=['-cpp','-Mpreprocess','-fpic']
     if cnf.options.cpp_flag:
         cpp_flags=[cnf.options.cpp_flag]
     found_cpp=False
@@ -280,11 +280,10 @@ def configure(cnf):
 
     cnf.write_config_header('config.h')
 
-def build(bld):
-    if bld.env.CUDA:    
-        bld.program(features='c fc fcprogram cxx',
-                source=['src/curelax.f90',
-                        'src/types.f90',
+
+def lite(ctx) :
+        ctx.shlib(features='c fc fcprogram',
+                source=['src/relaxlite.f90',
                         'src/ctfft.f',
                         'src/fourier.f90',
                         'src/green.f90',
@@ -301,9 +300,42 @@ def build(bld):
                         'src/getopt_m.f90',
                         'src/input.f90',
                         'src/mkl_dfti.f90',
-            'src/papi_prof.c',
-                        'src/cu_fft.cu',
-                        'src/cu_elastic.cu'],
+                        'src/papi_prof.c'],
+                install_path='${PREFIX}/bin',
+                includes=['build'],
+                use=['gmt','proj','openmp','fftw','imkl','cpp','length','papi','stdc++'],
+                target='librelax.so'
+                )
+
+from waflib.Build import BuildContext
+
+class miracle(BuildContext):
+    cmd = 'lite'
+    fun = 'lite'
+
+def build(bld):
+    if bld.env.CUDA:    
+        bld.program(features='c fc fcprogram cxx',
+                source=['src/curelax.f90',
+                        'src/ctfft.f',
+                        'src/fourier.f90',
+                        'src/green.f90',
+                        'src/okada/green_space.f90',
+                        'src/okada/dc3d.f',
+                        'src/elastic3d.f90',
+                        'src/friction3d.f90',
+                        'src/viscoelastic3d.f90',
+                        'src/writevtk.c',
+                        'src/writegrd4.2.c',
+                        'src/proj.c',
+                        'src/export.f90',
+                        'src/getdata.f',
+                        'src/getopt_m.f90',
+                        'src/input.f90',
+                        'src/mkl_dfti.f90',
+                        'src/papi_prof.c',
+                        'src/cugreen.cu',
+                        'src/cuelastic.cu'],
                 install_path='${PREFIX}/bin',
                 includes=['build'],
                 use=['gmt','proj','openmp','fftw','imkl','cpp','length','cuda','papi','stdc++'],
@@ -312,7 +344,6 @@ def build(bld):
     else:
         bld.program(features='c fc fcprogram',
                 source=['src/relax.f90',
-                        'src/types.f90',
                         'src/ctfft.f',
                         'src/fourier.f90',
                         'src/green.f90',

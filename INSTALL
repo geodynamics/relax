@@ -61,6 +61,13 @@ CPPFLAGS="-I/opt/GMT-4.5.7/netcdf/include" LDFLAGS="-L/usr/lib64 -lgdal" ./waf c
 ./waf build
 
 ---------
+relax library
+---------
+To configure the relax shared library 
+CFLAGS=-fPIC FCFLAGS=-fPIC ./waf configure --gmt-dir=/usr/local/GMT4.5.8/intel
+CFLAGS=-fPIC FCFLAGS=-fPIC ./waf lite
+
+---------
 GPU
 ---------
 To build Relax for NVIDIA GPUs on Linux, we need to provide certain command-line options

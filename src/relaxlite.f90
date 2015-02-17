@@ -183,14 +183,15 @@
   !!   - homogenize VTK output so that geometry of events match event index
   !!   - evaluate Green's function, stress and body forces in GPU
   !!   - write the code for MPI multi-thread
+  !!   - fix the vtk export to grid for anisotropic sampling
   !!   - export position of observation points to long/lat in opts-geo.dat
+  !!   - check the projected output on the south hemisphere
   !!   - check the fully-relaxed afterslip for uniform stress change
+  !!   - include topography of parameter interface
   !!   - export afterslip output in VTK legacy format (binary)
   !!   - export ductile zones for cylindrical and spherical geometries
   !------------------------------------------------------------------------
-PROGRAM relax
-
-  USE input
+SUBROUTINE relaxlite(in,gps,isverbose)
   USE green
   USE green_space
   USE elastic3d
@@ -202,7 +203,11 @@ PROGRAM relax
   
   IMPLICIT NONE
 
-  INTEGER, PARAMETER :: ITERATION_MAX = 99999
+  TYPE(SIMULATION_STRUCT), INTENT(INOUT) :: in
+  TYPE(MANIFOLD_STRUCT), INTENT(OUT) :: gps(in%npts)
+  LOGICAL, INTENT(IN) :: isverbose
+  
+  INTEGER, PARAMETER :: ITERATION_MAX = 9999
   REAL*8, PARAMETER :: STEP_MAX = 1e7
 
   INTEGER :: i,k,e,oi,iostatus,mech(3)
@@ -211,20 +216,15 @@ PROGRAM relax
 !$  INTEGER :: omp_get_max_threads
 #endif
   REAL*8 :: maxwell(3)
-  TYPE(SIMULATION_STRUCT) :: in
-#ifdef VTK
   CHARACTER(256) :: filename,title,name
-  CHARACTER(3) :: digit
-#endif
+
   CHARACTER(4) :: digit4
   REAL*8 :: t,Dt,tm
   
   ! arrays
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: v1,v2,v3,u1,u2,u3,gamma
-  REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: u1r,u2r,u3r
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: lineardgammadot0,nonlineardgammadot0
   REAL*4, DIMENSION(:,:), ALLOCATABLE :: t1,t2,t3
-  REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: inter1,inter2,inter3
   TYPE(TENSOR), DIMENSION(:,:,:), ALLOCATABLE :: tau,sig,moment
 
 #ifdef FFTW3_THREADS
@@ -236,18 +236,15 @@ PROGRAM relax
 #endif
 #endif
 
-  ! read input parameters
-  CALL init(in)
-
-  ! abort calculation after help message
-  ! or for dry runs
-  IF (in%isdryrun) THEN
-     PRINT '("dry run: abort calculation")'
-  END IF
-  IF (in%isdryrun .OR. in%ishelp .OR. in%isversion) THEN
-     ! exit program
-     GOTO 100
-  END IF
+  ! allocate space for time series simulations
+  DO k=1,in%npts
+     gps(k)%nepochs=0
+     ALLOCATE(gps(k)%t(1+ITERATION_MAX), &
+              gps(k)%u1(1+ITERATION_MAX), &
+              gps(k)%u2(1+ITERATION_MAX), &
+              gps(k)%u3(1+ITERATION_MAX), STAT=iostatus)
+     IF (iostatus>0) STOP "could not allocate prediction array"
+  END DO
 
   ! allocate memory
   ALLOCATE (v1(in%sx1+2,in%sx2,in%sx3),v2(in%sx1+2,in%sx2,in%sx3),v3(in%sx1+2,in%sx2,in%sx3), &
@@ -256,24 +253,9 @@ PROGRAM relax
             t1(in%sx1+2,in%sx2),t2(in%sx1+2,in%sx2),t3(in%sx1+2,in%sx2), &
             STAT=iostatus)
   IF (iostatus>0) STOP "could not allocate memory"
-#ifdef VTK
-  IF (in%isoutputvtkrelax) THEN
-     ALLOCATE(u1r(in%sx1+2,in%sx2,in%sx3/2),u2r(in%sx1+2,in%sx2,in%sx3/2), &
-              u3r(in%sx1+2,in%sx2,in%sx3/2),STAT=iostatus)
-     IF (iostatus>0) STOP "could not allocate memory for VTK relax output"
-     u1r=0
-     u2r=0
-     u3r=0
-  END IF
-#endif
-
-  IF (in%isoutputrelax) THEN
-     ALLOCATE(inter1(in%sx1+2,in%sx2,2),inter2(in%sx1+2,in%sx2,2),inter3(in%sx1+2,in%sx2,2),STAT=iostatus)
-     IF (iostatus>0) STOP "could not allocate memory for postseismic displacement"
-     inter1=0;inter2=0;inter3=0;
-  END IF
 
   v1=0;v2=0;v3=0;u1=0;u2=0;u3=0;gamma=0;t1=0;t2=0;t3=0
+  i=0
   CALL tensorfieldadd(tau,tau,in%sx1,in%sx2,in%sx3/2,c1=0._4,c2=0._4)
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -281,12 +263,10 @@ PROGRAM relax
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%stresslayer)) THEN
      CALL tensorstructure(in%stressstruc,in%stresslayer,in%dx3)
-     DEALLOCATE(in%stresslayer)
      
      DO k=1,in%sx3/2
         tau(:,:,k)=(-1._4) .times. in%stressstruc(k)%t
      END DO
-     DEALLOCATE(in%stressstruc)
   END IF
 
   ! first event
@@ -301,21 +281,9 @@ PROGRAM relax
                     in%dx1,in%dx2,in%dx3,v1,v2,v3,t1,t2,t3,tau)
   CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,0.d0,t3)
   
-  PRINT '("coseismic event ",I3.3)', e
-  PRINT 0990
-
-  ! export the amplitude of eigenstrain
-  CALL exporteigenstrain(gamma,in%nop,in%op,in%x0,in%y0, &
-                         in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,0)
-  
-  ! export equivalent body forces
-  IF (isoutput(in%skip,t,0,in%odt,oi,in%events(e)%time)) THEN
-#ifdef GRD_EQBF
-     IF (in%isoutputgrd) THEN
-        CALL exportgrd(v1,v2,v3,in%sx1,in%sx2,in%sx3/2, &
-                       in%dx1,in%dx2,in%dx3,0.7_8,in%x0,in%y0,in%wdir,0,convention=3)
-     END IF
-#endif
+  IF (isverbose) THEN
+     PRINT '("coseismic event ",I3.3)', e
+     PRINT 0990
   END IF
 
   ! test the presence of dislocations for coseismic calculation
@@ -345,114 +313,21 @@ PROGRAM relax
   CALL stressupdate(u1,u2,u3,in%lambda,in%mu, &
                     in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,sig)
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -   export observation points, map view of displacement,
-  ! -   map view of stress components, Coulomb stress on observation
-  ! -   patches, and full displacement and stress field.
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! export the initial displacements
+  CALL pts2series(u1,u2,u3,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%opts,0._8,1,gps)
 
-  ! export displacements
-#ifdef TXT
-  IF (in%isoutputtxt) THEN
-     CALL exporttxt(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%oz,in%dx3,0,0._8,in%wdir,in%reportfilename)
-  END IF
-#endif
-#ifdef XYZ
-  IF (in%isoutputxyz) THEN
-     CALL exportxyz(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%oz,in%dx1,in%dx2,in%dx3,0,in%wdir)
-  END IF
-#endif
-#ifdef GRD
-  IF (in%isoutputgrd) THEN
-     CALL exportgrd(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0,in%wdir,0)
-     IF (in%isoutputrelax) THEN
-        CALL exportgrd(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2, &
-                       in%dx1,in%dx2,in%dx3,0._8,in%x0,in%y0,in%wdir,0,convention=2)
+  IF (isverbose) THEN
+     IF (ALLOCATED(in%ptsname)) THEN
+        CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
+             in%opts,in%ptsname,0._8,in%wdir,.true.,in%x0,in%y0,in%rot)
      END IF
   END IF
-#endif
-#ifdef PROJ
-  IF (in%isoutputproj) THEN
-     CALL exportproj(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz, &
-                     in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,0)
-  END IF
-#endif
-#ifdef VTK
-  IF (in%isoutputvtk) THEN
-     !filename=trim(in%wdir)//"/disp-000.vtr"
-     !CALL exportvtk_vectors(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,filename)
-     filename=trim(in%wdir)//"/disp-000.vtk"//char(0)
-     title="coseismic displacement vector field"//char(0)
-     name="displacement"//char(0)
-     CALL exportvtk_vectors_legacy(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                   4,4,8,filename,title,name)
-     !CALL exportvtk_vectors_slice(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,filename)
-  END IF
-  IF (in%isoutputvtkrelax) THEN
-     filename=trim(in%wdir)//"/disp-relax-0000.vtk"//char(0)
-     title="postseismic displacement vector field"//char(0)
-     name="displacement"//char(0)
-     CALL exportvtk_vectors_legacy(u1r,u2r,u3r,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                   4,4,8,filename,title,name)
-  END IF
-#endif
-  IF (ALLOCATED(in%ptsname)) THEN
-     CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-          in%opts,in%ptsname,0._8,in%wdir,.true.,in%x0,in%y0,in%rot)
-  END IF
 
-  ! export initial stress
-#ifdef GRD
-  CALL exportplanestress(sig,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi-1)
-  IF (in%isoutputgrd .AND. in%isoutputstress) THEN
-     CALL exportstressgrd(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                          in%ozs,in%x0,in%y0,in%wdir,0)
-  END IF
-#endif
-#ifdef PROJ
-  IF (in%isoutputproj .AND. in%isoutputstress) THEN
-      CALL exportstressproj(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%ozs, &
-                            in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,0)
-  END IF
-#endif
-  ! initialize stress conditions
-  CALL export_rfaults_stress_init(sig,in%sx1,in%sx2,in%sx3, &
-                                     in%dx1,in%dx2,in%dx3,in%nsop,in%sop)
   WRITE (digit4,'(I4.4)') 0
-#ifdef VTK
-  IF (in%isoutputvtk .AND. in%isoutputstress) THEN
-     filename=trim(in%wdir)//"/sigma-"//digit4//".vtk"//char(0)
-     title="stress tensor field"//char(0)
-     name="stress"//char(0)
-     CALL exportvtk_tensors_legacy(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                   4,4,8,filename,title,name)
-  END IF
-  ! coseismic stress change on predefined planes for 3-D visualization w/ Paraview
-  filename=trim(in%wdir)//"/rfaults-sigma-"//digit4//".vtp"
-  CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                in%nsop,in%sop,filename,sig=sig)
-  ! postseismic stress change on predefined planes (zero by definition)
-  filename=trim(in%wdir)//"/rfaults-dsigma-"//digit4//".vtp"
-  CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                in%nsop,in%sop,filename)
-#endif
-  ! coseismic stress change on predefined planes for gmt
-  filename=trim(in%wdir)//"/rfaults-sigma-"//digit4//".xy"
-  CALL exportgmt_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                in%nsop,in%sop,filename,sig=sig)
-  filename=trim(in%wdir)//"/rfaults-traction-"//digit4//".dat"
-  CALL exportgmt_rfaults_traction(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                in%nsop,in%sop,filename,sig=sig)
-  ! postseismic stress change on predefined planes for gmt (zero by definition)
-  filename=trim(in%wdir)//"/rfaults-dsigma-"//digit4//".xy"
-  CALL exportgmt_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                in%nsop,in%sop,filename)
-  ! time series of stress in ASCII format
-  CALL exportcoulombstress(sig,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                    in%nsop,in%sop,0._8,in%wdir,.TRUE.)
-  CALL reporttime(0,0._8,in%reporttimefilename)
 
-  PRINT 1101,0,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+  IF (isverbose) THEN
+     PRINT 1101,0,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+  END IF
   IF (in%interval .LE. 0) THEN
      GOTO 100 ! no time integration
   END IF
@@ -502,7 +377,6 @@ PROGRAM relax
   ALLOCATE(moment(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
   IF (iostatus>0) STOP "could not allocate the mechanical structure"
 
-  !CALL tensorfieldadd(sig,sig,in%sx1,in%sx2,in%sx3/2,c1=0._4,c2=0._4)
   CALL tensorfieldadd(moment,moment,in%sx1,in%sx2,in%sx3/2,c1=0._4,c2=0._4)  
 
   DO i=1,ITERATION_MAX
@@ -564,17 +438,6 @@ PROGRAM relax
         END DO
         mech(3)=1
      END IF
-
-#ifdef VTK
-     IF (in%isoutputvtk .AND. in%isoutputstress) THEN
-        WRITE (digit,'(I3.3)') oi-1
-        filename=trim(in%wdir)//"/power-"//digit//".vtk"//char(0)
-        title="stress rate tensor field"//char(0)
-        name="power"//char(0)
-        CALL exportvtk_tensors_legacy(moment,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                      4,4,8,filename,title,name)
-     END IF
-#endif
 
      ! identify the required time step
      tm=1._8/(REAL(mech(1))/maxwell(1)+ &
@@ -689,28 +552,6 @@ PROGRAM relax
      ! add time-dependent surface loads
      CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,Dt,t3,rate=.TRUE.)
 
-     ! export equivalent body forces
-     IF (isoutput(in%skip,t,i,in%odt,oi,in%events(e)%time)) THEN
-#ifdef VTK_EQBF
-        IF (in%isoutputvtk) THEN
-           WRITE (digit,'(I3.3)') oi
-           !filename=trim(in%wdir)//"/eqbf-"//digit//".vtr"
-           !CALL exportvtk_vectors(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,filename)
-           filename=trim(in%wdir)//"/eqbf-"//digit//".vtk"//char(0)
-           title="instantaneous equivalent body-force rate vector field"//char(0)
-           name="body-force-rate"//char(0)
-           CALL exportvtk_vectors_legacy(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
-                                         4,4,8,filename,title,name)
-        END IF
-#endif
-#ifdef GRD_EQBF
-        IF (in%isoutputgrd) THEN
-           CALL exportgrd(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                          in%oz,in%x0,in%y0,in%wdir,oi,convention=3)
-        END IF
-#endif
-     END IF
-
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3,in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
 
      ! update deformation field
@@ -720,21 +561,6 @@ PROGRAM relax
      CALL tensorfieldadd(tau,moment,in%sx1,in%sx2,in%sx3/2,c2=REAL(Dt))
      CALL frictionadd(in%np,in%n,Dt)
      
-     ! keep track of the viscoelastic contribution alone
-     IF (in%isoutputrelax) THEN
-        CALL sliceadd(inter1(:,:,1),v1,in%sx1+2,in%sx2,in%sx3,int(in%oz/in%dx3)+1,c2=REAL(Dt))
-        CALL sliceadd(inter2(:,:,1),v2,in%sx1+2,in%sx2,in%sx3,int(in%oz/in%dx3)+1,c2=REAL(Dt))
-        CALL sliceadd(inter3(:,:,1),v3,in%sx1+2,in%sx2,in%sx3,int(in%oz/in%dx3)+1,c2=REAL(Dt))
-     END IF
-
-#ifdef VTK
-     IF (in%isoutputvtkrelax) THEN
-        u1r=REAL(u1r+Dt*v1)
-        u2r=REAL(u2r+Dt*v2)
-        u3r=REAL(u3r+Dt*v3) 
-     END IF
-#endif
-
      ! time increment
      t=t+Dt
     
@@ -744,8 +570,10 @@ PROGRAM relax
            e=e+1
            in%events(e)%i=i
 
-           PRINT '("coseismic event ",I3.3)', e
-           PRINT 0990
+           IF (isverbose) THEN
+              PRINT '("coseismic event ",I3.3)', e
+              PRINT 0990
+           END IF
 
            v1=0;v2=0;v3=0;t1=0;t2=0;t3=0;
            CALL dislocations(in%events(e),in%lambda,in%mu, &
@@ -769,10 +597,14 @@ PROGRAM relax
      CALL stressupdate(u1,u2,u3,in%lambda,in%mu, &
                        in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,sig)
 
-     ! points are exported at all time steps
-     IF (ALLOCATED(in%ptsname)) THEN
-        CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-             in%opts,in%ptsname,t,in%wdir,.FALSE.,in%x0,in%y0,in%rot)
+     ! export displacements
+     CALL pts2series(u1,u2,u3,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%opts,t,1+i,gps)
+
+     IF (isverbose) THEN
+        IF (ALLOCATED(in%ptsname)) THEN
+           CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
+                             in%opts,in%ptsname,t,in%wdir,.FALSE.,in%x0,in%y0,in%rot)
+        END IF
      END IF
 
      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -782,184 +614,40 @@ PROGRAM relax
      ! output only at discrete intervals (skip=0, odt>0),
      ! or every "skip" computational steps (skip>0, odt<0),
      ! or anytime a coseismic event occurs
-     IF (isoutput(in%skip,t,i,in%odt,oi,in%events(e)%time)) THEN
+     IF (isverbose) THEN
+        IF (isoutput(in%skip,t,i,in%odt,oi,in%events(e)%time)) THEN
         
-        CALL reporttime(1,t,in%reporttimefilename)
-
-        ! export strike and dip afterslip, afterslip velocity and fault stress
-        IF (in%isoutputtxt) THEN
-           CALL exportcreep_asc(in%np,in%n,in%beta,sig,in%faultcreepstruc, &
-                            in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%x0,in%y0,in%wdir,oi)
-        END IF
-        IF (in%isoutputgrd) THEN
-           CALL exportcreep_grd(in%np,in%n,in%beta,sig,in%faultcreepstruc, &
-                            in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%x0,in%y0,in%wdir,oi)
-        END IF
-        IF (in%isoutputvtk) THEN
-           CALL exportcreep_vtk(in%np,in%n,in%beta,sig,in%faultcreepstruc, &
-                            in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%x0,in%y0,in%wdir,oi)
-        END IF
-
-        ! export
-#ifdef TXT
-        IF (in%isoutputtxt) THEN
-           CALL exporttxt(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%oz,in%dx3,oi,t,in%wdir,in%reportfilename)
-        END IF
-#endif  
-#ifdef XYZ
-        IF (in%isoutputxyz) THEN
-           CALL exportxyz(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%oz,in%dx1,in%dx2,in%dx3,i,in%wdir)
-           IF (in%isoutputrelax) THEN
-              !CALL exportxyz(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2,0.0_8,in%dx1,in%dx2,in%dx3,i,in%wdir)
-           END IF
-        END IF
-#endif
-        CALL exporteigenstrain(gamma,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
-#ifdef GRD
-        IF (in%isoutputgrd) THEN
-           IF (in%isoutputrelax) THEN
-              CALL exportgrd(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2, &
-                             in%dx1,in%dx2,in%dx3,0._8,in%x0,in%y0,in%wdir,oi,convention=2)
-           END IF
-           CALL exportgrd(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0,in%wdir,oi)
-        END IF
-#endif
-#ifdef PROJ
-        IF (in%isoutputproj) THEN
-           IF (in%isoutputrelax) THEN
-              CALL exportproj(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2, &
-                              in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0, &
-                              in%lon0,in%lat0,in%zone,in%umult,in%wdir,oi,convention=2)
-           END IF
-           CALL exportproj(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0, &
-                           in%lon0,in%lat0,in%zone,in%umult,in%wdir,oi)
-        END IF
-#endif
-#ifdef VTK
-        IF (in%isoutputvtk) THEN
-           WRITE (digit,'(I3.3)') oi
-           ! export total displacement in VTK XML format
-           !filename=trim(in%wdir)//"/disp-"//digit//".vtr"
-           !CALL exportvtk_vectors(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,filename)
-           filename=trim(in%wdir)//"/disp-"//digit//".vtk"//char(0)
-           title="cumulative displacement vector field"//char(0)
-           name="displacement"//char(0)
-           CALL exportvtk_vectors_legacy(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
-                                         4,4,8,filename,title,name)
-           !CALL exportvtk_vectors_slice(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,filename)
-
-           ! export instantaneous velocity in VTK XML format
-           !filename=trim(in%wdir)//"/vel-"//digit//".vtr"
-           !CALL exportvtk_vectors(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,filename)
-           filename=trim(in%wdir)//"/vel-"//digit//".vtk"//char(0)
-           title="instantaneous velocity vector field"//char(0)
-           name="velocity"//char(0)
-           CALL exportvtk_vectors_legacy(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                         8,8,16,filename,title,name)
-           !CALL exportvtk_vectors_slice(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,filename)
-        END IF
-        IF (in%isoutputvtkrelax) THEN
            WRITE (digit4,'(I4.4)') oi
-           filename=trim(in%wdir)//"/disp-relax-"//digit4//".vtk"//char(0)
-           title="postseismic displacement vector field"//char(0)
-           name="displacement"//char(0)
-           CALL exportvtk_vectors_legacy(u1r,u2r,u3r,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
-                                         4,4,8,filename,title,name)
-        END IF
-#endif
+           PRINT 1101,i,Dt,maxwell,t,in%interval, &
+                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
+                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
 
-        ! export stress
-#ifdef GRD
-        CALL exportplanestress(sig,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
-        IF (in%isoutputgrd .AND. in%isoutputstress) THEN
-           CALL exportstressgrd(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                in%ozs,in%x0,in%y0,in%wdir,oi)
+           ! update output counter
+           oi=oi+1
+        ELSE
+           PRINT 1100,i,Dt,maxwell,t,in%interval, &
+                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
+                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
         END IF
-#endif
-#ifdef PROJ
-        IF (in%isoutputproj .AND. in%isoutputstress) THEN
-           CALL exportstressproj(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%ozs, &
-                                 in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,oi)
-        END IF
-#endif
-        WRITE (digit4,'(I4.4)') oi
-#ifdef VTK
-        IF (in%isoutputvtk .AND. in%isoutputstress) THEN
-           filename=trim(in%wdir)//"/sigma-"//digit4//".vtk"//char(0)
-           title="stress tensor field"//char(0)
-           name="stress"//char(0)
-           CALL exportvtk_tensors_legacy(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                         4,4,8,filename,title,name)
-        END IF
-        filename=trim(in%wdir)//"/rfaults-sigma-"//digit4//".vtp"
-        CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                      in%nsop,in%sop,filename,sig=sig)
-        filename=trim(in%wdir)//"/rfaults-dsigma-"//digit4//".vtp"
-        CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                      in%nsop,in%sop,filename,convention=1,sig=sig)
-#endif
-        ! total stress on predefined planes for gmt
-        filename=trim(in%wdir)//"/rfaults-sigma-"//digit4//".xy"
-        CALL exportgmt_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                      in%nsop,in%sop,filename,sig=sig)
-        ! postseismic stress change on predefined planes for gm
-        filename=trim(in%wdir)//"/rfaults-dsigma-"//digit4//".xy"
-        CALL exportgmt_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                      in%nsop,in%sop,filename,convention=1,sig=sig)
-        ! time series of stress in ASCII format
-        CALL exportcoulombstress(sig,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                          in%nsop,in%sop,t,in%wdir,.FALSE.)
-
-        PRINT 1101,i,Dt,maxwell,t,in%interval, &
-             tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
-             tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
-
-        ! update output counter
-        oi=oi+1
-     ELSE
-        PRINT 1100,i,Dt,maxwell,t,in%interval, &
-             tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
-             tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
      END IF
 
   END DO
 
 100 CONTINUE
 
-  DO i=1,in%ne
-     IF (ALLOCATED(in%events(i)%s))  DEALLOCATE(in%events(i)%s,in%events(i)%sc)
-     IF (ALLOCATED(in%events(i)%ts)) DEALLOCATE(in%events(i)%ts,in%events(i)%tsc)
-  END DO
-  IF (ALLOCATED(in%events)) DEALLOCATE(in%events)
+!  DO i=1,in%ne
+!     IF (ALLOCATED(in%events(i)%s))  DEALLOCATE(in%events(i)%s,in%events(i)%sc)
+!     IF (ALLOCATED(in%events(i)%ts)) DEALLOCATE(in%events(i)%ts,in%events(i)%tsc)
+!  END DO
+!  IF (ALLOCATED(in%events)) DEALLOCATE(in%events)
 
   ! free memory
   IF (ALLOCATED(gamma)) DEALLOCATE(gamma)
-  IF (ALLOCATED(in%opts)) DEALLOCATE(in%opts)
-  IF (ALLOCATED(in%ptsname)) DEALLOCATE(in%ptsname)
-  IF (ALLOCATED(in%op)) DEALLOCATE(in%op)
-  IF (ALLOCATED(in%sop)) DEALLOCATE(in%sop)
-  IF (ALLOCATED(in%n)) DEALLOCATE(in%n)
-  IF (ALLOCATED(in%stressstruc)) DEALLOCATE(in%stressstruc)
-  IF (ALLOCATED(in%stresslayer)) DEALLOCATE(in%stresslayer)
-  IF (ALLOCATED(in%linearstruc)) DEALLOCATE(in%linearstruc)
-  IF (ALLOCATED(in%linearlayer)) DEALLOCATE(in%linearlayer)
-  IF (ALLOCATED(in%linearweakzone)) DEALLOCATE(in%linearweakzone)
-  IF (ALLOCATED(in%nonlinearstruc)) DEALLOCATE(in%nonlinearstruc)
-  IF (ALLOCATED(in%nonlinearlayer)) DEALLOCATE(in%nonlinearlayer)
-  IF (ALLOCATED(in%nonlinearweakzone)) DEALLOCATE(in%nonlinearweakzone)
-  IF (ALLOCATED(in%faultcreepstruc)) DEALLOCATE(in%faultcreepstruc)
-  IF (ALLOCATED(in%faultcreeplayer)) DEALLOCATE(in%faultcreeplayer)
   IF (ALLOCATED(sig)) DEALLOCATE(sig)
   IF (ALLOCATED(tau)) DEALLOCATE(tau)
   IF (ALLOCATED(moment)) DEALLOCATE(moment)
-  IF (ALLOCATED(in%stresslayer)) DEALLOCATE(in%stresslayer)
-  IF (ALLOCATED(in%linearlayer)) DEALLOCATE(in%linearlayer)
-  IF (ALLOCATED(in%nonlinearlayer)) DEALLOCATE(in%nonlinearlayer)
-  IF (ALLOCATED(in%faultcreeplayer)) DEALLOCATE(in%faultcreeplayer)
   IF (ALLOCATED(v1)) DEALLOCATE(v1,v2,v3,t1,t2,t3)
   IF (ALLOCATED(u1)) DEALLOCATE(u1,u2,u3)
-  IF (ALLOCATED(inter1)) DEALLOCATE(inter1,inter2,inter3)
-
 
 #ifdef FFTW3_THREADS
   CALL sfftw_cleanup_threads()
@@ -1262,4 +950,4 @@ CONTAINS
 
   END SUBROUTINE integrationstep
 
-END PROGRAM relax
+END SUBROUTINE relaxlite 

@@ -39,11 +39,11 @@ CONTAINS
   !! @param in
   !---------------------------------------------------------------------
   SUBROUTINE init(in)
-    USE types
     USE export
     USE getopt_m
+    USE elastic3d
 
-    TYPE(SIMULATION_STRUC), INTENT(OUT) :: in
+    TYPE(SIMULATION_STRUCT), INTENT(OUT) :: in
 
     CHARACTER :: ch
     CHARACTER(256) :: dataline
