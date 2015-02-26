@@ -17,14 +17,14 @@
 ! along with RELAX.  If not, see <http://www.gnu.org/licenses/>.
 !-----------------------------------------------------------------------
 
+#include "include.f90"
+
 MODULE elastic3d
 
+  USE types
   USE fourier
 
   IMPLICIT NONE
-
-#include "include.f90"
-#include "types.f90"
 
   REAL*8, PRIVATE, PARAMETER :: pi   = 3.141592653589793115997963468544185161_8
   REAL*8, PRIVATE, PARAMETER :: pi2  = 6.28318530717958623199592693708837032318_8

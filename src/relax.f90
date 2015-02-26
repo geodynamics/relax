@@ -181,7 +181,6 @@
   !!
   !! \todo 
   !!   - homogenize VTK output so that geometry of events match event index
-  !!   - evaluate Green's function, stress and body forces in GPU
   !!   - write the code for MPI multi-thread
   !!   - export position of observation points to long/lat in opts-geo.dat
   !!   - check the fully-relaxed afterslip for uniform stress change
@@ -190,6 +189,7 @@
   !------------------------------------------------------------------------
 PROGRAM relax
 
+  USE types
   USE input
   USE green
   USE green_space
@@ -198,9 +198,9 @@ PROGRAM relax
   USE friction3d
   USE export
 
-#include "include.f90"
-  
   IMPLICIT NONE
+
+#include "include.f90"
 
   INTEGER, PARAMETER :: ITERATION_MAX = 99999
   REAL*8, PARAMETER :: STEP_MAX = 1e7
