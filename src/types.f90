@@ -17,6 +17,11 @@
 ! along with RELAX.  If not, see <http://www.gnu.org/licenses/>.
 !-----------------------------------------------------------------------
 
+#include "include.f90"
+
+MODULE types
+
+  IMPLICIT NONE
 
   TYPE SOURCE_STRUCT
      SEQUENCE
@@ -223,4 +228,6 @@
      TYPE(MANIFOLD_STRUCT), DIMENSION(:), ALLOCATABLE :: gps,sim
 
   END TYPE SIMULATION_STRUCT
+
+END MODULE types
 

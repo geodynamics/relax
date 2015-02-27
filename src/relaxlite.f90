@@ -181,7 +181,6 @@
   !!
   !! \todo 
   !!   - homogenize VTK output so that geometry of events match event index
-  !!   - evaluate Green's function, stress and body forces in GPU
   !!   - write the code for MPI multi-thread
   !!   - fix the vtk export to grid for anisotropic sampling
   !!   - export position of observation points to long/lat in opts-geo.dat
@@ -191,7 +190,12 @@
   !!   - export afterslip output in VTK legacy format (binary)
   !!   - export ductile zones for cylindrical and spherical geometries
   !------------------------------------------------------------------------
+
+#include "include.f90"
+  
 SUBROUTINE relaxlite(in,gps,isverbose)
+
+  USE types
   USE green
   USE green_space
   USE elastic3d
@@ -199,8 +203,6 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   USE friction3d
   USE export
 
-#include "include.f90"
-  
   IMPLICIT NONE
 
   TYPE(SIMULATION_STRUCT), INTENT(INOUT) :: in

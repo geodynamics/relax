@@ -21,6 +21,7 @@
 
 MODULE export
 
+  USE types
   USE elastic3d
   USE viscoelastic3d
   USE friction3d
@@ -1717,7 +1718,6 @@ END SUBROUTINE exportcreep_vtk
   !------------------------------------------------------------------
   SUBROUTINE exportgmt_rfaults_traction(sx1,sx2,sx3,dx1,dx2,dx3, &
                           nsop,sop,rffilename,convention,sig)
-    USE elastic3d
     INTEGER, INTENT(IN) :: sx1,sx2,sx3,nsop
     REAL*8, INTENT(IN) :: dx1,dx2,dx3
     TYPE(SEGMENT_STRUCT), INTENT(INOUT), DIMENSION(nsop) :: sop
@@ -1828,7 +1828,6 @@ END SUBROUTINE exportcreep_vtk
   !------------------------------------------------------------------
   SUBROUTINE exportgmt_rfaults_stress(sx1,sx2,sx3,dx1,dx2,dx3, &
                           nsop,sop,rffilename,convention,sig)
-    USE elastic3d
     INTEGER, INTENT(IN) :: sx1,sx2,sx3,nsop
     REAL*8, INTENT(IN) :: dx1,dx2,dx3
     TYPE(SEGMENT_STRUCT), INTENT(INOUT), DIMENSION(nsop) :: sop
@@ -1965,7 +1964,6 @@ END SUBROUTINE exportcreep_vtk
   !------------------------------------------------------------------
   SUBROUTINE exportvtk_rfaults_stress(sx1,sx2,sx3,dx1,dx2,dx3, &
                           nsop,sop,rffilename,convention,sig)
-    USE elastic3d
     INTEGER, INTENT(IN) :: sx1,sx2,sx3,nsop
     REAL*8, INTENT(IN) :: dx1,dx2,dx3
     TYPE(SEGMENT_STRUCT), INTENT(INOUT), DIMENSION(nsop) :: sop

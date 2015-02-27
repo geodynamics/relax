@@ -188,8 +188,12 @@
   !!   - include topography of parameter interface
   !!   - export afterslip output in VTK legacy format (binary)
   !------------------------------------------------------------------------
+
+#include "include.f90"
+  
 PROGRAM relax
 
+  USE types
   USE input
   USE green
   USE green_space
@@ -198,8 +202,6 @@ PROGRAM relax
   USE friction3d
   USE export
 
-#include "include.f90"
-  
   IMPLICIT NONE
 
   INTEGER, PARAMETER :: ITERATION_MAX = 99999 

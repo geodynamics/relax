@@ -92,7 +92,7 @@ def configure(cnf):
                  includes=[cnf.options.proj_incdir],
                  libpath=[cnf.options.proj_libdir],
                  rpath=[cnf.options.proj_libdir],
-                 lib='proj')
+                 lib='proj',define_name="PROJ")
 
     # Find GMT
     if cnf.options.gmt_dir:
@@ -285,6 +285,7 @@ def lite(ctx) :
         ctx.shlib(features='c fc fcprogram',
                 source=['src/relaxlite.f90',
                         'src/ctfft.f',
+                        'src/types.f90',
                         'src/fourier.f90',
                         'src/green.f90',
                         'src/okada/green_space.f90',
@@ -318,6 +319,7 @@ def build(bld):
         bld.program(features='c fc fcprogram cxx',
                 source=['src/curelax.f90',
                         'src/ctfft.f',
+                        'src/types.f90',
                         'src/fourier.f90',
                         'src/green.f90',
                         'src/okada/green_space.f90',
@@ -345,6 +347,7 @@ def build(bld):
         bld.program(features='c fc fcprogram',
                 source=['src/relax.f90',
                         'src/ctfft.f',
+						'src/types.f90',
                         'src/fourier.f90',
                         'src/green.f90',
                         'src/okada/green_space.f90',
