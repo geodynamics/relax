@@ -318,11 +318,9 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   ! export the initial displacements
   CALL pts2series(u1,u2,u3,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%opts,0._8,1,gps)
 
-  IF (isverbose) THEN
-     IF (ALLOCATED(in%ptsname)) THEN
-        CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-             in%opts,in%ptsname,0._8,in%wdir,.true.,in%x0,in%y0,in%rot)
-     END IF
+  IF (ALLOCATED(in%ptsname)) THEN
+     CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
+                      in%opts,in%ptsname,0._8,in%wdir,.true.,in%x0,in%y0,in%rot)
   END IF
 
   WRITE (digit4,'(I4.4)') 0
@@ -339,7 +337,8 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%linearlayer)) THEN
      CALL viscoelasticstructure(in%linearstruc,in%linearlayer,in%dx3)
-     DEALLOCATE(in%linearlayer)
+     !The caller has to take care of this memory release
+     !DEALLOCATE(in%linearlayer)
 
      IF (0 .LT. in%nlwz) THEN
         ALLOCATE(lineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
@@ -354,7 +353,8 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%nonlinearlayer)) THEN
      CALL viscoelasticstructure(in%nonlinearstruc,in%nonlinearlayer,in%dx3)
-     DEALLOCATE(in%nonlinearlayer)
+     !The caller has to take care of this memory release
+     !DEALLOCATE(in%nonlinearlayer)
 
      IF (0 .LT. in%nnlwz) THEN
         ALLOCATE(nonlineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
@@ -602,11 +602,9 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      ! export displacements
      CALL pts2series(u1,u2,u3,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%opts,t,1+i,gps)
 
-     IF (isverbose) THEN
-        IF (ALLOCATED(in%ptsname)) THEN
-           CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                             in%opts,in%ptsname,t,in%wdir,.FALSE.,in%x0,in%y0,in%rot)
-        END IF
+     IF (ALLOCATED(in%ptsname)) THEN
+        CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
+                          in%opts,in%ptsname,t,in%wdir,.FALSE.,in%x0,in%y0,in%rot)
      END IF
 
      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
