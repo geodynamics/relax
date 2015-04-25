@@ -286,7 +286,6 @@ PROGRAM relax
      DO k=1,in%sx3/2
         tau(:,:,k)=(-1._4) .times. in%stressstruc(k)%t
      END DO
-     DEALLOCATE(in%stressstruc)
   END IF
 
   ! first event
@@ -959,6 +958,7 @@ PROGRAM relax
   IF (ALLOCATED(v1)) DEALLOCATE(v1,v2,v3,t1,t2,t3)
   IF (ALLOCATED(u1)) DEALLOCATE(u1,u2,u3)
   IF (ALLOCATED(inter1)) DEALLOCATE(inter1,inter2,inter3)
+  IF (ALLOCATED(in%stressstruc) DEALLOCATE(in%stressstruc)
 
 
 #ifdef FFTW3_THREADS
