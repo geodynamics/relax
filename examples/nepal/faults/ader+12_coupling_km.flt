@@ -2,7 +2,7 @@
 # Ader et al., "Convergence rate across the Nepal Himalaya and interseismic coupling on the Main
 # Himalayan Thrust: Implications for seismic hazard", Volume 117, Issue B4, 2012.
 #
-#  n coupling              x1             x2            x3       length        width   strike dip rake
+#  n coupling           x1          x2         x3    length     width   strike dip rake
 0001    1.000  -149.144810  855.691628  -0.000000 19.585242 14.705882  268.572  10   90
 0002    0.987  -134.443492  855.325262   2.553650 19.515083 14.705882  268.572  10   90
 0003    1.000  -119.742174  854.958895   5.107299 19.444924 14.705882  268.572  10   90

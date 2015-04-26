@@ -122,20 +122,21 @@ CONTAINS
   !! \author sylvain barbot (08/30/08) - original form
   !-----------------------------------------------------------------
 #ifdef USING_CUDA
-  SUBROUTINE viscouseigenstress(mu,structure,ductilezones,nz,sig,sx1,sx2,sx3, &
-       dx1,dx2,dx3,moment,beta,maxwelltime,gamma)
+  SUBROUTINE viscouseigenstress(mu,structure,ductilezones,nz,sig,prestress, &
+       sx1,sx2,sx3,dx1,dx2,dx3,moment,beta,maxwelltime,gamma)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
     TYPE(WEAK_STRUCT), DIMENSION(nz), INTENT(IN) :: ductilezones
     INTEGER, INTENT(IN) :: nz
     REAL*8, INTENT(IN) :: beta      
 #else       
-  SUBROUTINE viscouseigenstress(mu,structure,sig,sx1,sx2,sx3, &
+  SUBROUTINE viscouseigenstress(mu,structure,sig,prestress,sx1,sx2,sx3, &
        dx1,dx2,dx3,moment,maxwelltime,dgammadot0,gamma)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
     REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(IN), OPTIONAL :: dgammadot0
 #endif
     REAL*8, INTENT(IN) :: mu,dx1,dx2,dx3
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
+    TYPE(TENSOR_LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: prestress
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(TENSOR), INTENT(OUT), DIMENSION(sx1,sx2,sx3) :: moment
     REAL*8, OPTIONAL, INTENT(INOUT) :: maxwelltime
@@ -147,9 +148,9 @@ CONTAINS
 #endif
 
     INTEGER :: i1,i2,i3
-    TYPE(TENSOR) :: s,R
+    TYPE(TENSOR) :: s,R,sp,Rp
     TYPE(TENSOR), PARAMETER :: zero = tensor(0._4,0._4,0._4,0._4,0._4,0._4)
-    REAL*8 :: gammadot,tau,tauc,gammadot0,power,cohesion,x1,x2,x3,dg0,dum
+    REAL*8 :: gammadot,gammadotp,tau,taup,tauc,gammadot0,power,cohesion,x1,x2,x3,dg0,dum
 #ifdef USING_CUDA
     REAL*8 :: tm
     INTEGER :: iPresent, iGammaPresent
@@ -160,6 +161,7 @@ CONTAINS
     LOGICAL :: isdgammadot0
 #endif    
     IF (SIZE(structure,1) .NE. sx3) RETURN
+    IF (SIZE(prestress,1) .NE. sx3) RETURN
 
     
 #ifdef USING_CUDA 
@@ -200,13 +202,18 @@ CONTAINS
        tm=1e30
     END IF
 
-!$omp parallel do private(i1,i2,gammadot0,power,cohesion,s,tau,R,tauc,gammadot,dg0,x1,x2,x3,dum), &
+!$omp parallel do private(i1,i2,gammadot0,power,cohesion,s,tau,R,Rp,tauc,gammadot,gammadotp,dg0,x1,x2,x3,dum), &
 !$omp reduction(MIN:tm)
     DO i3=1,sx3
        power=structure(i3)%stressexponent
        cohesion=structure(i3)%cohesion
        x3=DBLE(i3-1)*dx3
 
+       ! prestress
+       sp=tensordeviatoric(prestress(i3)%t)
+       ! sp = taup * Rp
+       CALL tensordecomposition(sp,taup,Rp)
+             
        IF (power .LT. 0.999999_8) THEN 
           WRITE_DEBUG_INFO
           WRITE (0,'("power=",ES9.2E1)') power
@@ -232,20 +239,24 @@ CONTAINS
              s=tensordeviatoric(sig(i1,i2,i3))
              
              ! s = tau * R
-             CALL tensordecomposition(s,tau,R)
+             CALL tensordecomposition(s .plus. sp,tau,R)
 
              ! effective stress
-             tauc=tau-cohesion
+             tauc=MAX(0.d0,tau-cohesion)
 
              ! cohesion test
              IF (tauc .LE. 1.0d-20) CYCLE
 
              ! powerlaw viscosity
-             gammadot=gammadot0*(tauc/mu)**power
+             gammadot =gammadot0*(tauc/mu)**power
+
+             ! powerlaw viscosity
+             gammadotp=gammadot0*(taup/mu)**power
 
              ! update moment density forcing
              moment(i1,i2,i3)=moment(i1,i2,i3) .plus. &
-                  (REAL(2._8*mu*gammadot) .times. R)
+                  ((REAL(2._8*mu*gammadot ) .times. R ) .minus. &
+                   (REAL(2._8*mu*gammadotp) .times. Rp))
 
              tm=MIN(tm,REAL(tauc/mu/gammadot))
 

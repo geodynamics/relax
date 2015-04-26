@@ -80,10 +80,11 @@ CONTAINS
   !!                                     of afterslip
   !-----------------------------------------------------------------
   SUBROUTINE frictioneigenstress(x,y,z,L,W,strike,dip,rake,beta, &
-       sig,mu,structure,sx1,sx2,sx3,dx1,dx2,dx3,moment,maxwelltime,vel)
+       sig,prestress,mu,structure,sx1,sx2,sx3,dx1,dx2,dx3,moment,maxwelltime,vel)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
     REAL*8, INTENT(IN) :: mu,dx1,dx2,dx3,x,y,z,L,W,strike,dip,rake,beta
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
+    TYPE(TENSOR_LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: prestress
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(TENSOR), INTENT(INOUT), DIMENSION(sx1,sx2,sx3) :: moment
     REAL*8, OPTIONAL, INTENT(INOUT) :: maxwelltime
@@ -260,12 +261,13 @@ CONTAINS
   !! \author sylvain barbot (10-16-07) - original form
   !---------------------------------------------------------------------
   SUBROUTINE monitorfriction(x,y,z,L,W,strike,dip,rake,beta, &
-       sx1,sx2,sx3,dx1,dx2,dx3,sig,structure,patch)
+       sx1,sx2,sx3,dx1,dx2,dx3,sig,prestress,structure,patch)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
     REAL*8, INTENT(IN) :: x,y,z,L,W,strike,rake,dip,beta,dx1,dx2,dx3
     TYPE(TENSOR), DIMENSION(sx1,sx2,sx3), INTENT(IN) :: sig
     TYPE(SLIPPATCH_STRUCT), ALLOCATABLE, DIMENSION(:,:), INTENT(INOUT) :: patch
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
+    TYPE(TENSOR_LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: prestress
 
     INTEGER :: i1,i2,i3,px2,px3,j2,j3
     REAL*8 :: cstrike,sstrike,cdip,sdip,cr,sr

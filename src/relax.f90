@@ -253,7 +253,7 @@ PROGRAM relax
   ALLOCATE (v1(in%sx1+2,in%sx2,in%sx3),v2(in%sx1+2,in%sx2,in%sx3),v3(in%sx1+2,in%sx2,in%sx3), &
             u1(in%sx1+2,in%sx2,in%sx3/2),u2(in%sx1+2,in%sx2,in%sx3/2),u3(in%sx1+2,in%sx2,in%sx3/2), &
             tau(in%sx1,in%sx2,in%sx3/2),sig(in%sx1,in%sx2,in%sx3/2),gamma(in%sx1+2,in%sx2,in%sx3/2), &
-            t1(in%sx1+2,in%sx2),t2(in%sx1+2,in%sx2),t3(in%sx1+2,in%sx2), &
+            t1(in%sx1+2,in%sx2),t2(in%sx1+2,in%sx2),t3(in%sx1+2,in%sx2),in%stressstruc(in%sx3/2), &
             STAT=iostatus)
   IF (iostatus>0) STOP "could not allocate memory"
 #ifdef VTK
@@ -277,18 +277,28 @@ PROGRAM relax
   CALL tensorfieldadd(tau,tau,in%sx1,in%sx2,in%sx3/2,c1=0._4,c2=0._4)
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -
   ! -     construct pre-stress structure
+  ! -
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%stresslayer)) THEN
+     ! depth-dependent background stress
      CALL tensorstructure(in%stressstruc,in%stresslayer,in%dx3)
      DEALLOCATE(in%stresslayer)
-     
-     DO k=1,in%sx3/2
-        tau(:,:,k)=(-1._4) .times. in%stressstruc(k)%t
-     END DO
+  ELSE
+     ! background stress is zero
+     in%stressstruc(:)%t=tensor(0._4,0._4,0._4,0._4,0._4,0._4)
   END IF
+  DO k=1,in%sx3/2
+     tau(:,:,k)=(-1._4) .times. in%stressstruc(k)%t
+  END DO
 
-  ! first event
+
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -
+  ! -     first event
+  ! -
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   e=1
   ! first output
   oi=1;
@@ -300,7 +310,7 @@ PROGRAM relax
                     in%dx1,in%dx2,in%dx3,v1,v2,v3,t1,t2,t3,tau)
   CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,0.d0,t3)
   
-  PRINT '("coseismic event ",I3.3)', e
+  PRINT '("# event ",I3.3)', e
   PRINT 0990
 
   ! export the amplitude of eigenstrain
@@ -527,11 +537,11 @@ PROGRAM relax
      IF (ALLOCATED(in%linearstruc)) THEN
         IF (0 .LT. in%nlwz) THEN
            CALL viscouseigenstress(in%mu,in%linearstruc, &
-                sig,in%sx1,in%sx2,in%sx3/2, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=lineardgammadot0,MAXWELLTIME=maxwell(1))
         ELSE
            CALL viscouseigenstress(in%mu,in%linearstruc, &
-                sig,in%sx1,in%sx2,in%sx3/2, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment,MAXWELLTIME=maxwell(1))
         END IF
         mech(1)=1
@@ -541,11 +551,11 @@ PROGRAM relax
      IF (ALLOCATED(in%nonlinearstruc)) THEN
         IF (0 .LT. in%nnlwz) THEN
            CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
-                sig,in%sx1,in%sx2,in%sx3/2, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=nonlineardgammadot0,MAXWELLTIME=maxwell(2))
         ELSE
            CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
-                sig,in%sx1,in%sx2,in%sx3/2, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment,MAXWELLTIME=maxwell(2))
         END IF
         mech(2)=1
@@ -557,7 +567,7 @@ PROGRAM relax
            CALL frictioneigenstress(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
                 in%n(k)%width,in%n(k)%length, &
                 in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
-                sig,in%mu,in%faultcreepstruc, &
+                sig,in%stressstruc,in%mu,in%faultcreepstruc, &
                 in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
                 moment,maxwelltime=maxwell(3))
         END DO
@@ -623,11 +633,11 @@ PROGRAM relax
         v1=0
         IF (0 .LT. in%nlwz) THEN
            CALL viscouseigenstress(in%mu,in%linearstruc, &
-                sig,in%sx1,in%sx2,in%sx3/2, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=lineardgammadot0,GAMMA=v1)
         ELSE
            CALL viscouseigenstress(in%mu,in%linearstruc, &
-                sig,in%sx1,in%sx2,in%sx3/2, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment,GAMMA=v1)
         END IF
         
@@ -640,11 +650,11 @@ PROGRAM relax
         v1=0
         IF (0 .LT. in%nnlwz) THEN
            CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
-                sig,in%sx1,in%sx2,in%sx3/2, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=nonlineardgammadot0,GAMMA=v1)
         ELSE
            CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
-                sig,in%sx1,in%sx2,in%sx3/2, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment,GAMMA=v1)
         END IF
         
@@ -662,7 +672,7 @@ PROGRAM relax
            CALL frictioneigenstress(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
                 in%n(k)%width,in%n(k)%length, &
                 in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
-                sig,in%mu,in%faultcreepstruc,in%sx1,in%sx2,in%sx3/2, &
+                sig,in%stressstruc,in%mu,in%faultcreepstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment)
 
            ! keep track if afterslip instantaneous velocity
@@ -670,7 +680,7 @@ PROGRAM relax
                 in%n(k)%width,in%n(k)%length, &
                 in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
                 in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                sig,in%faultcreepstruc,in%n(k)%patch)
+                sig,in%stressstruc,in%faultcreepstruc,in%n(k)%patch)
         END DO
 
      END IF
@@ -775,7 +785,9 @@ PROGRAM relax
      END IF
 
      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     ! -
      ! -   export displacement and stress
+     ! -
      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
      ! output only at discrete intervals (skip=0, odt>0),
@@ -958,7 +970,6 @@ PROGRAM relax
   IF (ALLOCATED(v1)) DEALLOCATE(v1,v2,v3,t1,t2,t3)
   IF (ALLOCATED(u1)) DEALLOCATE(u1,u2,u3)
   IF (ALLOCATED(inter1)) DEALLOCATE(inter1,inter2,inter3)
-  IF (ALLOCATED(in%stressstruc) DEALLOCATE(in%stressstruc)
 
 
 #ifdef FFTW3_THREADS
