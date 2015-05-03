@@ -19,11 +19,11 @@ flt2kml(){
 		{
 		printf "\t<Style id=\"flt2kml_%05.5d\">\n",NR;
 		print "\t\t<LineStyle>";
-		print "\t\t\t<color>ff000000</color>";
+		printf "\t\t\t<color>bb%02x%02x%02x</color>\n",$3,$2,$1;
 		print "\t\t</LineStyle>";
 		print "\t\t<PolyStyle>";
 		# aabbggrr
-		printf "\t\t\t<color>ff%02x%02x%02x</color>\n",$3,$2,$1;
+		printf "\t\t\t<color>cc%02x%02x%02x</color>\n",$3,$2,$1;
 		print "\t\t</PolyStyle>";
 		print "\t</Style>";
 		}' > $KMLFILE
