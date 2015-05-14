@@ -9,6 +9,10 @@
 # location of some local GPS stations is in the folder ./gps
 #
 
+# reference point
+echo 96.5 36 | proj +proj=utm +zone=47
+274658.66       3986839.18
+
 
 # The coseismic deformation can be modeled with the script
 ./kokoxili_co.sh
