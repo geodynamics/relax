@@ -202,7 +202,7 @@ CONTAINS
        tm=1e30
     END IF
 
-!$omp parallel do private(i1,i2,gammadot0,power,cohesion,s,tau,R,Rp,tauc,gammadot,gammadotp,dg0,x1,x2,x3,dum), &
+!$omp parallel do private(i1,i2,gammadot0,power,cohesion,s,sp,tau,taup,R,Rp,tauc,gammadot,gammadotp,dg0,x1,x2,x3,dum), &
 !$omp reduction(MIN:tm)
     DO i3=1,sx3
        power=structure(i3)%stressexponent

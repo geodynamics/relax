@@ -299,12 +299,21 @@ CONTAINS
     
     gamma=tensornorm(t)
 
-    R%s11=REAL(t%s11/gamma)
-    R%s12=REAL(t%s12/gamma)
-    R%s13=REAL(t%s13/gamma)
-    R%s22=REAL(t%s22/gamma)
-    R%s23=REAL(t%s23/gamma)
-    R%s33=REAL(t%s33/gamma)
+    IF (0._8 .NE. gamma) THEN
+       R%s11=REAL(t%s11/gamma)
+       R%s12=REAL(t%s12/gamma)
+       R%s13=REAL(t%s13/gamma)
+       R%s22=REAL(t%s22/gamma)
+       R%s23=REAL(t%s23/gamma)
+       R%s33=REAL(t%s33/gamma)
+    ELSE
+       R%s11=0._4
+       R%s12=0._4
+       R%s13=0._4
+       R%s22=0._4
+       R%s23=0._4
+       R%s33=0._4
+    END IF
 
   END SUBROUTINE tensordecomposition
 
