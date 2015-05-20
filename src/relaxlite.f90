@@ -378,7 +378,8 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%faultcreeplayer)) THEN
      CALL viscoelasticstructure(in%faultcreepstruc,in%faultcreeplayer,in%dx3)
-     DEALLOCATE(in%faultcreeplayer)
+     !The caller has to take care of this memory release
+     !DEALLOCATE(in%faultcreeplayer)
   END IF
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
