@@ -1,4 +1,8 @@
 
+# reference point
+echo -116.270000 34.594993 | proj +proj=utm +zone=11
+566940.91	3828372.96
+
 # find center of fault patch
 echo -118.52930 34.36385 | proj +proj=utm +zone=11 | awk '{print ($2-3828373)/1e3,($1-566940.91)/1e3}'
 
