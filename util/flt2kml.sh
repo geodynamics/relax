@@ -15,12 +15,14 @@ flt2kml(){
 			print "<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\" xmlns:kml=\"http://www.opengis.net/kml/2.2\" xmlns:atom=\"http://www.w3.org/2005/Atom\">";
 			print "<Document>";
 			printf "\t<name>%s</name>\n",name;
+			print "\t<Style>";
+			print "\t\t<ListStyle>";
+			print "\t\t\t<listItemType>checkHideChildren</listItemType>";
+	        	print "\t\t</ListStyle>";
+			print "\t</Style>";
 		}
 		{
 		printf "\t<Style id=\"flt2kml_%05.5d\">\n",NR;
-		print "\t\t<ListStyle>";
-		print "\t\t\t<listItemType>checkHideChildren</listItemType>";
-	        print "\t\t</ListStyle>";
 		print "\t\t<LineStyle>";
 		printf "\t\t\t<color>bb%02x%02x%02x</color>\n",$3,$2,$1;
 		print "\t\t</LineStyle>";
@@ -126,7 +128,7 @@ do
 	case "$flag" in
 	C) Cset=1;CPT="-C $OPTARG";;
 	h) hset=1;;
-	s) sset=1;scale=$OPTARG;;
+	s) sset=1;SCALE=$OPTARG;;
 	x) xset=1;x=$OPTARG;;
 	y) yset=1;y=$OPTARG;;
 	z) zset=1;UTMZONE=$OPTARG;;
