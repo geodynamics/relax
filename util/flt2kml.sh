@@ -18,6 +18,9 @@ flt2kml(){
 		}
 		{
 		printf "\t<Style id=\"flt2kml_%05.5d\">\n",NR;
+		print "\t\t<ListStyle>";
+		print "\t\t\t<listItemType>checkHideChildren</listItemType>";
+	        print "\t\t</ListStyle>";
 		print "\t\t<LineStyle>";
 		printf "\t\t\t<color>bb%02x%02x%02x</color>\n",$3,$2,$1;
 		print "\t\t</LineStyle>";
