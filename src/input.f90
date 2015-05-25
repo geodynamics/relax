@@ -468,7 +468,7 @@ CONTAINS
     PRINT '(I5)', in%nps
 
     IF (in%nps .GT. 0) THEN
-       ALLOCATE(in%stresslayer(in%nps),STAT=iostatus)
+       ALLOCATE(in%stresslayer(in%nps),in%stressstruc(in%sx3/2),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate the stress layer structure"
        
        PRINT 2000
