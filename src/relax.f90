@@ -253,8 +253,7 @@ PROGRAM relax
   ALLOCATE (v1(in%sx1+2,in%sx2,in%sx3),v2(in%sx1+2,in%sx2,in%sx3),v3(in%sx1+2,in%sx2,in%sx3), &
             u1(in%sx1+2,in%sx2,in%sx3/2),u2(in%sx1+2,in%sx2,in%sx3/2),u3(in%sx1+2,in%sx2,in%sx3/2), &
             tau(in%sx1,in%sx2,in%sx3/2),sig(in%sx1,in%sx2,in%sx3/2),gamma(in%sx1+2,in%sx2,in%sx3/2), &
-            t1(in%sx1+2,in%sx2),t2(in%sx1+2,in%sx2),t3(in%sx1+2,in%sx2),in%stressstruc(in%sx3/2), &
-            STAT=iostatus)
+            t1(in%sx1+2,in%sx2),t2(in%sx1+2,in%sx2),t3(in%sx1+2,in%sx2),STAT=iostatus)
   IF (iostatus>0) STOP "could not allocate memory"
 #ifdef VTK
   IF (in%isoutputvtkrelax) THEN
