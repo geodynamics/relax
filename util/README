@@ -14,7 +14,7 @@ list of post-processing scripts:
 - wang2xyz.sh      convert results from Wang's program edcmp to index-{north,east,up}.xyz format
 - xyz2grd.sh       convert index-{north,east,up}.xyz into index-{north,east,up}.grd
 - xyz2vtk.sh       convert foo.xy or foo.xyz into vtp format foo.vtp for visualization in Paraview
-- fkt2vtk.sh       convert fault model foo.flt into vtp format foo.vtp for visualization in Paraview
+- flt2vtk.sh       convert fault model foo.flt into vtp format foo.vtp for visualization in Paraview
  
 extra scripts for grdmap.sh (for example: grdmap.sh -e script.sh wdir/file.grd)
 - erpatch.sh       add the contour of the slip patches to the current map
