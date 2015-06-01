@@ -9,7 +9,7 @@ flt2kml(){
 	IN=`cat $FLTFILE`
 	
 	# first convert slip to color using cpt2rgb.sh
-	echo "$IN" | grep -v "#" | awk '{if (10==NF){print $2}else{print 1}}' | cpt2rgb.sh $CPT | awk -v name=$KMLFILE '
+	echo "$IN" | grep -v "#" | awk '{if (10==NF){print $2}else{print 1}}' | cpt2rgb.sh -C $CPTFILE | awk -v name=$KMLFILE '
 		BEGIN{
 			print "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 			print "<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\" xmlns:kml=\"http://www.opengis.net/kml/2.2\" xmlns:atom=\"http://www.w3.org/2005/Atom\">";
@@ -126,7 +126,7 @@ fi
 while getopts "C:hs:x:y:z:" flag
 do
 	case "$flag" in
-	C) Cset=1;CPT="-C $OPTARG";;
+	C) Cset=1;CPT="$OPTARG";;
 	h) hset=1;;
 	s) sset=1;SCALE=$OPTARG;;
 	x) xset=1;x=$OPTARG;;
@@ -145,9 +145,15 @@ if [ "1" != "$sset" ]; then
 	SCALE=1
 fi
 
+if [ "1" != "$Cset" ]; then
+	CPT=$selfdir/../share/jet.cpt
+fi
+echo $self: using color palette $(basename $CPT)
+
 if [ ! -t 0 ]; then
 	FLTFILE=-
 	KMLFILE=/dev/stdout
+	CPTFILE=./palette.cpt
 	flt2kml
 else
 	# loop over list of files to convert
@@ -155,10 +161,16 @@ else
 		# define output file name (file.flt is converted to file.kml, file.ext to file.ext.kml)
 		KMLFILE=$(dirname $1)/$(basename $1 .flt).kml
 		FLTFILE=$1
+		CPTFILE=$(dirname $1)/palette.cpt
 		if [ ! -e $FLTFILE ]; then
 			echo $self: could not find $FLTFILE. exiting.
 			exit 2
 		fi
+
+		# create color palette $CPTFILE
+		T=`minmax -C $FLTFILE | awk '{print $3"/"$4"/"(($4-$3)/30)}'`
+		makecpt -C$CPT -T$T -Z -N > $CPTFILE
+
 		echo $self: converting $1 to $KMLFILE
 		flt2kml
 		shift
