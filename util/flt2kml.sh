@@ -174,6 +174,7 @@ else
 
 		echo $self: converting $1 to $KMLFILE
 		flt2kml
+		rm -f $CPTFILE
 		shift
 	done
 fi
