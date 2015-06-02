@@ -2,7 +2,7 @@
 
 set -e
 self=$(basename $0)
-selfdir=$(basename $0)
+selfdir=$(dirname $0)
 trap 'echo $self: Some errors occurred. Exiting.; exit' ERR
 
 flt2kml(){
