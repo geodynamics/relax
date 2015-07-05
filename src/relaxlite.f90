@@ -657,7 +657,6 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   IF (ALLOCATED(moment)) DEALLOCATE(moment)
   IF (ALLOCATED(v1)) DEALLOCATE(v1,v2,v3,t1,t2,t3)
   IF (ALLOCATED(u1)) DEALLOCATE(u1,u2,u3)
-  IF (ALLOCATED(in%stressstruc)) DEALLOCATE(in%stressstruc)
 
 #ifdef FFTW3_THREADS
   CALL sfftw_cleanup_threads()

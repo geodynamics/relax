@@ -466,9 +466,11 @@ CONTAINS
     CALL getdata(iunit,dataline)
     READ  (dataline,*) in%nps
     PRINT '(I5)', in%nps
+    ALLOCATE(in%stressstruc(in%sx3/2),STAT=iostatus)
+    IF (iostatus>0) STOP "could not allocate the background stress"
 
     IF (in%nps .GT. 0) THEN
-       ALLOCATE(in%stresslayer(in%nps),in%stressstruc(in%sx3/2),STAT=iostatus)
+       ALLOCATE(in%stresslayer(in%nps),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate the stress layer structure"
        
        PRINT 2000
