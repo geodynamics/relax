@@ -19,10 +19,15 @@ EOF
 			printf("\t<Piece NumberOfPoints=\"3\" NumberOfPolys=\"1\">\n");
 			printf("\t\t<Points>\n");
 			printf("\t\t\t<DataArray type=\"Float32\" Name=\"Fault Patch\" NumberOfComponents=\"3\" format=\"ascii\">\n");
-			print a[1,0+$3],a[2,0+$3],a[3,0+$3];
-			print a[1,0+$4],a[2,0+$4],a[3,0+$4];
-			print a[1,0+$5],a[2,0+$5],a[3,0+$5];
-		}
+			if (NF==6){
+				print a[1,0+$3],a[2,0+$3],a[3,0+$3];
+				print a[1,0+$4],a[2,0+$4],a[3,0+$4];
+				print a[1,0+$5],a[2,0+$5],a[3,0+$5];
+			} else {
+				print a[1,0+$2],a[2,0+$2],a[3,0+$2];
+				print a[1,0+$3],a[2,0+$3],a[3,0+$3];
+				print a[1,0+$4],a[2,0+$4],a[3,0+$4];
+			}
 			printf("\t\t\t</DataArray>\n");
 			printf("\t\t</Points>\n");
 			printf("\t\t<Polys>\n");
@@ -42,6 +47,7 @@ EOF
 			printf("\t\t\t</DataArray>\n");
 			printf("\t\t</CellData>\n");
 			printf("\t</Piece>\n");
+		}
 	} END {
 		printf("</PolyData>\n");
 		printf("</VTKFile>\n");
@@ -64,32 +70,15 @@ if [ $# -eq 0 ]; then
 	usage
 fi
 
-while getopts "C:hs:x:y:z:" flag
+while getopts "h" flag
 do
 	case "$flag" in
-	C) Cset=1;CPT="$OPTARG";;
 	h) hset=1;;
-	s) sset=1;SCALE=$OPTARG;;
-	x) xset=1;x=$OPTARG;;
-	y) yset=1;y=$OPTARG;;
-	z) zset=1;UTMZONE=$OPTARG;;
 	esac
-done
-for item in $Cset $sset $xset $yset $zset; do
-	shift;shift
 done
 for item in $hset; do
 	shift;
 done
-
-if [ "1" != "$sset" ]; then
-	SCALE=1
-fi
-
-if [ "1" != "$Cset" ]; then
-	CPT=$selfdir/../share/jet.cpt
-fi
-echo $self: using color palette $(basename $CPT)
 
 # loop over list of files to convert
 while [ $# -ne 0 ]; do
