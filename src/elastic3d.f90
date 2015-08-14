@@ -1586,6 +1586,218 @@ CONTAINS
   END SUBROUTINE sourcespectrumhalfspace
 
   !---------------------------------------------------------------------
+  !> function EigenstrainSource computes the equivalent body-forces
+  !! in the space domain for a distributed source of eigenstrain
+  !! with width W, length L, thickness W, in a rigidity mu.
+  !!
+  !! Fault strain is represented with equivalent body forces.
+  !!
+  !! \author sylvain barbot (08-08-15) - original form
+  !---------------------------------------------------------------------
+  SUBROUTINE eigenstrainsource(lambda,mu,e,x,y,z,L,W,T,strike,dip, &
+       beta,sx1,sx2,sx3,dx1,dx2,dx3,f1,f2,f3,t1,t2,t3)
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3
+    REAL*8, INTENT(IN) :: lambda,mu
+    REAL*8, INTENT(IN) :: x,y,z,L,W,T,strike,dip,beta,dx1,dx2,dx3
+    TYPE(TENSOR), INTENT(IN) :: e
+#ifdef ALIGN_DATA
+    REAL*4, DIMENSION(sx1+2,sx2,sx3), INTENT(INOUT) :: f1,f2,f3
+    REAL*4, DIMENSION(sx1+2,sx2), INTENT(INOUT) :: t1,t2,t3
+#else
+    REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(INOUT) :: f1,f2,f3
+    REAL*4, DIMENSION(sx1,sx2), INTENT(INOUT) :: t1,t2,t3
+#endif
+
+    INTEGER :: i1,i2,i3
+    REAL*8 :: x1,x2,x3,x1s,x2s,x3s,x1i,x3i, &
+         cstrike,sstrike,cdip,sdip,x2r, &
+         sourc,image,temp1,temp2,temp3, &
+         dblcp,cplei,dipcs,dipci,xr,yr,zr,Wp,Lp,Tp,ekk
+    REAL(8), DIMENSION(3) :: n,b
+    TYPE(TENSOR) :: m
+
+    ! isotropic strain
+    ekk=e%s11+e%s22+e%s33
+
+    cstrike=cos(strike)
+    sstrike=sin(strike)
+    cdip=cos(dip)
+    sdip=sin(dip)
+
+    ! effective tapered dimensions
+    Wp=W*(1._8+2._8*beta)/2._8
+    Lp=L*(1._8+2._8*beta)/2._8
+    Tp=T*(1._8+2._8*beta)/2._8
+
+    ! rotate centre coordinates of source and images
+    x2r= cstrike*x  -sstrike*y
+    xr = cdip   *x2r-sdip   *z
+    yr = sstrike*x  +cstrike*y
+    zr = sdip   *x2r+cdip   *z
+    
+    ! equivalent surface traction
+    i3=1
+    DO i2=1,sx2
+       DO i1=1,sx1
+          CALL shiftedcoordinates(i1,i2,i3,sx1,sx2,sx3, &
+                                  dx1,dx2,dx3,x1,x2,x3)
+
+          IF ((ABS(x1-x).GT.MAX(Lp,Wp,Tp)) .OR. &
+              (ABS(x2-y).GT.MAX(Lp,Wp,Tp)) .OR. &
+              (ABS(x3-z).GT.MAX(Lp,Wp,Tp))) CYCLE
+
+          x2r= cstrike*x1-sstrike*x2
+          x1s= cdip*x2r-sdip*x3
+          x1i= cdip*x2r+sdip*x3
+          x2s= sstrike*x1+cstrike*x2
+          x3s= sdip*x2r+cdip*x3
+          x3i=-sdip*x2r+cdip*x3
+
+          ! integrate at depth and along strike with raised cosine taper
+          ! and shift sources to x,y,z coordinate
+          temp1=omega((x1s-xr)/T,beta)
+          temp2=omega((x2s-yr)/W,beta)
+          temp3=omega((x3s-zr)/L,beta)
+          sourc=temp1*temp2*temp3
+
+          ! add image
+          temp1=omega((x1i-xr)/T,beta)
+          temp3=omega((x3i+zr)/L,beta)
+          sourc=sourc+temp1*temp2*temp3
+
+          ! surface normal vector components
+          n(1)=+cdip*cstrike*sourc
+          n(2)=-cdip*sstrike*sourc
+          n(3)=-sdip*sourc
+
+          ! burger vector (strike-slip)
+          b(1)=sstrike!*cr
+          b(2)=cstrike!*cr
+
+          ! burger vector (dip-slip)
+          b(1)=b(1)+cstrike*sdip!*sr
+          b(2)=b(2)-sstrike*sdip!*sr
+          b(3)=    +cdip!*sr
+
+          ! principal stress (symmetric deviatoric second-order tensor)
+          m=n .sdyad. (mu*b)
+
+          ! surface tractions
+          !t1(i1,i2)=t1(i1,i2)+m%s13
+          !t2(i1,i2)=t2(i1,i2)+m%s23
+          !t3(i1,i2)=t3(i1,i2)+m%s33
+             
+       END DO
+    END DO
+
+    ! equivalent body-force density
+!$omp parallel do private(i1,i2,x1,x2,x3,x2r,x1s,x1i,x2s,x3s,x3i,temp1,temp2,temp3), &
+!$omp private(sourc,dblcp,dipcs,image,cplei,dipci)
+    DO i3=1,sx3/2
+       CALL shiftedcoordinates(1,1,i3,sx1,sx2,sx3,dx1,dx2,dx3,x1,x2,x3)
+       IF ((abs(x3-z).gt.Lp) .and. (abs(x3+z).gt.Lp)) CYCLE
+
+       DO i2=1,sx2
+          DO i1=1,sx1
+             CALL shiftedcoordinates(i1,i2,i3,sx1,sx2,sx3,dx1,dx2,dx3,x1,x2,x3)
+             IF ((ABS(x1-x) .GT. SQRT(2.)*MAX(Wp,Lp,Tp)) .OR. &
+                 (ABS(x2-y) .GT. SQRT(2.)*MAX(Wp,Lp,Tp)) .OR. &
+                 (ABS(x3-z) .GT. SQRT(2.)*MAX(Wp,Lp,Tp))) CYCLE
+
+             x2r= cstrike*x1-sstrike*x2
+             x1s= cdip*x2r-sdip*x3
+             x1i= cdip*x2r+sdip*x3
+             x2s= sstrike*x1+cstrike*x2
+             x3s= sdip*x2r+cdip*x3
+             x3i=-sdip*x2r+cdip*x3
+             
+             !integrate at depth and along strike with raised cosine taper
+             !and shift sources to x,y,z coordinate
+             temp1=omega((x1s-xr)/T,beta)
+             temp2=omega((x2s-yr)/W,beta)
+             temp3=omega((x3s-zr)/L,beta)
+             sourc=2._8/T*omegap((x1s-xr)/T,beta) &
+                         *temp2 &
+                         *temp3
+             dblcp=2._8/W*temp1 &
+                         *omegap((x2s-yr)/W,beta) &
+                         *temp3
+             dipcs=2._8/L*temp1 &
+                         *temp2 &
+                         *omegap((x3s-zr)/L,beta)
+
+             temp1=omega((x1i-xr)/T,beta)
+             temp3=omega((x3i+zr)/L,beta)
+             image=2._8/T*omegap(x1i-xr,dx1) &
+                         *temp2 &
+                         *temp3
+             cplei=2._8/W*temp1 &
+                         *omegap((x2s-yr)/W,beta) &
+                         *temp3
+             dipci=2._8/L*temp1 &
+                         *temp2 &
+                         *omegap((x3i+zr)/L,beta)
+
+             ! horizontal shear components
+
+             IF (2.01_8*DEG2RAD .GT. dip) THEN
+                ! use method of images for subvertical faults
+                f1(i1,i2,i3)=REAL(f1(i1,i2,i3) &
+                     +2._8*mu*e%s12*sstrike*(sourc+image) &
+                     +2._8*mu*e%s12*cdip*cstrike*(dblcp+cplei) &
+                     -(lambda*ekk+2._8*mu*e%s11)*cdip*sstrike*(dblcp+cplei) &
+                     -(lambda*ekk+2._8*mu*e%s22)*cdip*cstrike*(sourc+image))
+                f2(i1,i2,i3)=REAL(f2(i1,i2,i3) &
+                     +2._8*mu*e%s12*cstrike*(sourc+image) &
+                     -2._8*mu*e%s12*cdip*sstrike*(dblcp+cplei) &
+                     -(lambda*ekk+2._8*mu*e%s11)*cdip*cstrike*(dblcp+cplei) &
+                     +(lambda*ekk+2._8*mu*e%s22)*cdip*sstrike*(sourc+image))
+                f3(i1,i2,i3)=REAL(f3(i1,i2,i3) &
+                     -(lambda*ekk+2._8*mu*e%s11)*sdip*(dblcp-cplei) &
+                     -2._8*mu*e%s12*sdip*(dblcp-cplei) &
+                     +(lambda*ekk+2._8*mu*e%s22)*sdip*(sourc-image))
+             ELSE
+                ! dipping faults do not use method of image
+                f1(i1,i2,i3)=REAL(f1(i1,i2,i3) &
+                     +2._8*mu*e%s12*sstrike*sourc &
+                     +2._8*mu*e%s12*cdip*cstrike*dblcp &
+                     -(lambda*ekk+2._8*mu*e%s11)*cdip*sstrike*dblcp &
+                     -(lambda*ekk+2._8*mu*e%s22)*cdip*cstrike*sourc)
+                f2(i1,i2,i3)=REAL(f2(i1,i2,i3) &
+                     +2._8*mu*e%s12*cstrike*sourc &
+                     -2._8*mu*e%s12*cdip*sstrike*dblcp &
+                     -(lambda*ekk+2._8*mu*e%s11)*cdip*cstrike*dblcp &
+                     +(lambda*ekk+2._8*mu*e%s22)*cdip*sstrike*sourc)
+                f3(i1,i2,i3)=REAL(f3(i1,i2,i3) &
+                     -2._8*mu*e%s12*sdip*dblcp &
+                     +(lambda*ekk+2._8*mu*e%s22)*cdip*sourc)
+             END IF
+
+             ! vertical shear components
+
+             f1(i1,i2,i3)=REAL(f1(i1,i2,i3) &
+                  +2._8*mu*e%s13*cdip*sstrike*dipcs &
+                  +2._8*mu*e%s13*sdip*cstrike*dblcp &
+                  -2._8*mu*e%s23*cdip*cstrike*dipcs &
+                  -2._8*mu*e%s23*sdip*cstrike*sourc)
+             f2(i1,i2,i3)=REAL(f2(i1,i2,i3) &
+                  +2._8*mu*e%s13*cdip*cstrike*dipcs &
+                  -2._8*mu*e%s13*sdip*sstrike*dblcp &
+                  +2._8*mu*e%s23*cdip*sstrike*dipcs &
+                  +2._8*mu*e%s23*sdip*sstrike*sourc)
+             f3(i1,i2,i3)=REAL(f3(i1,i2,i3) &
+                  +2._8*mu*e%s13*cdip*dblcp &
+                  -2._8*mu*e%s23*cdip*sourc &
+                  -(lambda*ekk+2._8*mu*e%s33)*cdip*dipcs)
+
+          END DO
+       END DO
+    END DO
+!$omp end parallel do
+
+  END SUBROUTINE eigenstrainsource
+
+  !---------------------------------------------------------------------
   !> function Source computes the equivalent body-forces
   !! in the space domain for a buried dislocation with strike-slip
   !! and dip-slip components, slip s, width W, length L in a rigidity mu

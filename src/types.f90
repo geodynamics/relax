@@ -33,11 +33,6 @@ MODULE types
      REAL*8 :: z,gammadot0,stressexponent,cohesion,friction
   END TYPE LAYER_STRUCT
 
-  TYPE WEAK_STRUCT
-     SEQUENCE
-     REAL*8 :: dgammadot0,x,y,z,width,length,thickness,strike,dip,age
-  END TYPE WEAK_STRUCT
-
   TYPE VECTOR_STRUCT
      SEQUENCE
      REAL*8 :: v1,v2,v3
@@ -47,6 +42,12 @@ MODULE types
      SEQUENCE
      REAL*4 :: s11,s12,s13,s22,s23,s33
   END TYPE TENSOR
+
+  TYPE WEAK_STRUCT
+     SEQUENCE
+     REAL*8 :: dgammadot0,x,y,z,width,length,thickness,strike,dip
+     TYPE(TENSOR) :: e
+  END TYPE WEAK_STRUCT
 
   TYPE TENSOR_LAYER_STRUCT
      SEQUENCE
@@ -85,8 +86,9 @@ MODULE types
 
   TYPE EVENT_STRUC
      REAL*8 :: time
-     INTEGER*4 :: i,ns,nt,nm,nl
+     INTEGER*4 :: i,ns,nt,nm,nl,neigenstrain
      TYPE(SOURCE_STRUCT), DIMENSION(:), ALLOCATABLE :: s,sc,ts,tsc,m,mc,l,lc
+     TYPE(WEAK_STRUCT), DIMENSION(:), ALLOCATABLE :: eigenstrain,eigenstrainc
   END TYPE EVENT_STRUC
   
   TYPE MANIFOLD_STRUCT
@@ -211,6 +213,7 @@ MODULE types
      TYPE(EVENT_STRUC), DIMENSION(:), ALLOCATABLE :: events
 
      ! overrides output to formats
+     LOGICAL :: iseigenstrain=.FALSE.
      LOGICAL :: isoutputgrd=.TRUE.
      LOGICAL :: isoutputproj=.TRUE.
      LOGICAL :: isoutputrelax=.TRUE.

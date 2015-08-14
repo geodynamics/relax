@@ -58,7 +58,7 @@ CONTAINS
 !$  INTEGER :: omp_get_num_procs,omp_get_max_threads
     REAL*8 :: dummy,dum1,dum2
     REAL*8 :: minlength,minwidth
-    TYPE(OPTION_S) :: opts(13)
+    TYPE(OPTION_S) :: opts(14)
 
     INTEGER :: k,iostatus,i,e
 
@@ -71,11 +71,12 @@ CONTAINS
     opts( 6)=OPTION_S("no-xyz-output",.FALSE.,CHAR(25))
     opts( 7)=OPTION_S("no-stress-output",.FALSE.,CHAR(26))
     opts( 8)=OPTION_S("version",.FALSE.,CHAR(27))
-    opts( 9)=OPTION_S("with-stress-output",.FALSE.,CHAR(28))
-    opts(10)=OPTION_S("with-vtk-output",.FALSE.,CHAR(29))
-    opts(11)=OPTION_S("with-vtk-relax-output",.FALSE.,CHAR(30))
-    opts(12)=OPTION_S("dry-run",.FALSE.,CHAR(31))
-    opts(13)=OPTION_S("help",.FALSE.,'h')
+    opts( 9)=OPTION_S("with-eigenstrain",.FALSE.,CHAR(28))
+    opts(10)=OPTION_S("with-stress-output",.FALSE.,CHAR(29))
+    opts(11)=OPTION_S("with-vtk-output",.FALSE.,CHAR(30))
+    opts(12)=OPTION_S("with-vtk-relax-output",.FALSE.,CHAR(31))
+    opts(13)=OPTION_S("dry-run",.FALSE.,CHAR(32))
+    opts(14)=OPTION_S("help",.FALSE.,'h')
 
     noptions=0;
     DO
@@ -108,15 +109,18 @@ CONTAINS
           ! option version
           in%isversion=.TRUE.
        CASE(CHAR(28))
+          ! option with-eigenstrain
+          in%iseigenstrain=.TRUE.
+       CASE(CHAR(29))
           ! option with-stress-output
           in%isoutputstress=.TRUE.
-       CASE(CHAR(29))
+       CASE(CHAR(30))
           ! option with-vtk-output
           in%isoutputvtk=.TRUE.
-       CASE(CHAR(30))
+       CASE(CHAR(31))
           ! option with-vtk-relax-output
           in%isoutputvtkrelax=.TRUE.
-       CASE(CHAR(31))
+       CASE(CHAR(32))
           ! option dry-run
           in%isdryrun=.TRUE.
        CASE('h')
@@ -141,9 +145,11 @@ CONTAINS
     END IF
     IF (in%ishelp) THEN
        PRINT '("usage:")'
+       PRINT '("")'
        PRINT '("relax [-h] [--dry-run] [--help] [--no-grd-output] [--no-proj-output]")' 
        PRINT '("      [--no-relax-output] [--no-stress-output] [--no-txt-output]")'
-       PRINT '("      [--no-vtk-output] [--no-xyz-output]")'
+       PRINT '("      [--no-vtk-output] [--no-xyz-output] [--with-eigenstrain]")'
+       PRINT '("      [--with-vtk-output] [--with-vtk-relax-output]")'
        PRINT '("")'
        PRINT '("options:")'
        PRINT '("   -h                      prints this message and aborts calculation")'
@@ -157,6 +163,7 @@ CONTAINS
        PRINT '("   --no-vtk-output         cancel output in Paraview VTK format")'
        PRINT '("   --no-xyz-output         cancel output in GMT xyz format")'
        PRINT '("   --version               print version number and exit")'
+       PRINT '("   --with-eigenstrain      includes eigenstrain sources")'
        PRINT '("   --with-stress-output    export stress tensor")'
        PRINT '("   --with-vtk-output       export output in Paraview VTK format")'
        PRINT '("   --with-vtk-relax-output export relaxation to VTK format")'
@@ -1206,14 +1213,14 @@ CONTAINS
        ! - - - - - - - - - - - - - - - - - - - - - - - - - -
        !                M O G I      S O U R C E S
        ! - - - - - - - - - - - - - - - - - - - - - - - - - -
-       PRINT '("# number of coseismic dilatation point sources")'
+       PRINT '("# number of dilatation point sources")'
        CALL getdata(iunit,dataline)
        READ  (dataline,*) in%events(e)%nm
        PRINT '(I5)', in%events(e)%nm
        IF (in%events(e)%nm .GT. 0) THEN
           ALLOCATE(in%events(e)%m(in%events(e)%nm),in%events(e)%mc(in%events(e)%nm), &
                STAT=iostatus)
-          IF (iostatus>0) STOP "could not allocate the tensile source list"
+          IF (iostatus>0) STOP "could not allocate the mogi source list"
           PRINT 2000
           PRINT '("# n strain (positive for extension) xs ys zs")'
           PRINT 2000
@@ -1237,6 +1244,99 @@ CONTAINS
              CALL rotation(in%events(e)%m(k)%x,in%events(e)%m(k)%y,in%rot)
           END DO
           PRINT 2000
+       END IF
+
+       ! - - - - - - - - - - - - - - - - - - - - - - - - - -
+       !              E I G E N S T R A I N
+       ! - - - - - - - - - - - - - - - - - - - - - - - - - -
+       IF (in%iseigenstrain) THEN
+          PRINT '("# number of distributed eigenstrain sources")'
+          CALL getdata(iunit,dataline)
+          READ  (dataline,*) in%events(e)%neigenstrain
+          PRINT '(I5)', in%events(e)%neigenstrain
+          IF (in%events(e)%neigenstrain .GT. 0) THEN
+             ALLOCATE(in%events(e)%eigenstrain(in%events(e)%neigenstrain), &
+                      in%events(e)%eigenstrainc(in%events(e)%neigenstrain), &
+                  STAT=iostatus)
+             IF (iostatus>0) STOP "could not allocate the eigenstrain source list"
+             PRINT 2000
+             PRINT '("# n      e11      e12      e13      e22      e23      ", &
+                      "e33       x1       x2       x3  length   width thickness strike dip")'
+             PRINT 2000
+             DO k=1,in%events(e)%neigenstrain
+                CALL getdata(iunit,dataline)
+                READ  (dataline,*) i, &
+                     in%events(e)%eigenstrain(k)%e%s11, &
+                     in%events(e)%eigenstrain(k)%e%s12, &
+                     in%events(e)%eigenstrain(k)%e%s13, &
+                     in%events(e)%eigenstrain(k)%e%s22, &
+                     in%events(e)%eigenstrain(k)%e%s23, &
+                     in%events(e)%eigenstrain(k)%e%s33, &
+                     in%events(e)%eigenstrain(k)%x, &
+                     in%events(e)%eigenstrain(k)%y, &
+                     in%events(e)%eigenstrain(k)%z, &
+                     in%events(e)%eigenstrain(k)%length, &
+                     in%events(e)%eigenstrain(k)%width, &
+                     in%events(e)%eigenstrain(k)%thickness, &
+                     in%events(e)%eigenstrain(k)%strike, &
+                     in%events(e)%eigenstrain(k)%dip
+
+                ! copy the input format for display
+                in%events(e)%eigenstrainc(k)=in%events(e)%eigenstrain(k)
+             
+                PRINT '(I3.3,9ES9.2E1,3ES8.2E1,2ES9.2E1)',k, &
+                     in%events(e)%eigenstrainc(k)%e%s11, &
+                     in%events(e)%eigenstrainc(k)%e%s12, &
+                     in%events(e)%eigenstrainc(k)%e%s13, &
+                     in%events(e)%eigenstrainc(k)%e%s22, &
+                     in%events(e)%eigenstrainc(k)%e%s23, &
+                     in%events(e)%eigenstrainc(k)%e%s33, &
+                     in%events(e)%eigenstrainc(k)%x, &
+                     in%events(e)%eigenstrainc(k)%y, &
+                     in%events(e)%eigenstrainc(k)%z, &
+                     in%events(e)%eigenstrainc(k)%length, &
+                     in%events(e)%eigenstrainc(k)%width, &
+                     in%events(e)%eigenstrainc(k)%thickness, &
+                     in%events(e)%eigenstrainc(k)%strike, &
+                     in%events(e)%eigenstrainc(k)%dip
+             
+                IF (i .ne. k) THEN
+                   PRINT *, "error in input file: source index misfit"
+                   STOP 1
+                END IF
+             
+                ! comply to Wang's convention
+                CALL wangconvention( &
+                     dummy, & 
+                     in%events(e)%eigenstrain(k)%x, &
+                     in%events(e)%eigenstrain(k)%y, &
+                     in%events(e)%eigenstrain(k)%z, &
+                     in%events(e)%eigenstrain(k)%length, &
+                     in%events(e)%eigenstrain(k)%width, &
+                     in%events(e)%eigenstrain(k)%strike, &
+                     in%events(e)%eigenstrain(k)%dip, &
+                     dummy,in%x0,in%y0,in%rot)
+
+                WRITE (digit,'(I3.3)') k
+
+                ! export the eigenstrain in GMT .xy format
+                rffilename=trim(in%wdir)//"/eigenstrain-"//digit//".xy"
+                CALL exportxy_brick(in%events(e)%eigenstrain(k)%x, &
+                                    in%events(e)%eigenstrain(k)%y, &
+                                    in%events(e)%eigenstrain(k)%z, &
+                                    in%events(e)%eigenstrain(k)%length, &
+                                    in%events(e)%eigenstrain(k)%width, &
+                                    in%events(e)%eigenstrain(k)%thickness, &
+                                    in%events(e)%eigenstrain(k)%strike, &
+                                    in%events(e)%eigenstrain(k)%dip,rffilename)
+             END DO
+#ifdef VTK
+             ! export the eigenstrain in VTK format
+             rffilename=trim(in%wdir)//"/eigenstrain.vtp"
+             CALL exportvtk_allbricks(in%events(e)%neigenstrain,in%events(e)%eigenstrain,rffilename)
+#endif
+             PRINT 2000
+          END IF
        END IF
 
        ! - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1313,6 +1413,7 @@ CONTAINS
         (in%events(1)%ns .EQ. 0) .AND. &
         (in%events(1)%nm .EQ. 0) .AND. &
         (in%events(1)%nl .EQ. 0) .AND. &
+        (in%events(1)%neigenstrain .EQ. 0) .AND. &
         (in%interval .LE. 0._8)) THEN
 
        WRITE_DEBUG_INFO

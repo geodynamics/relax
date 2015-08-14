@@ -330,7 +330,8 @@ PROGRAM relax
   IF ((in%events(e)%nt .NE. 0) .OR. &
       (in%events(e)%ns .NE. 0) .OR. &
       (in%events(e)%nm .NE. 0) .OR. &
-      (in%events(e)%nl .NE. 0)) THEN
+      (in%events(e)%nl .NE. 0) .OR. &
+      (in%events(e)%neigenstrain .NE. 0)) THEN
 
      ! apply the 3d elastic transfer function
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3, &
@@ -1023,6 +1024,21 @@ CONTAINS
                   event%s(i)%strike,event%s(i)%dip,event%s(i)%rake, &
                   event%s(i)%beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3,t1,t2,t3)
           END IF
+       END DO
+
+       ! equivalent body force for eigenstrain
+       DO i=1,event%neigenstrain
+          ! adding sources in the space domain
+          CALL eigenstrainsource(lambda,mu,event%eigenstrain(i)%e, &
+               event%eigenstrain(i)%x, &
+               event%eigenstrain(i)%y, &
+               event%eigenstrain(i)%z, &
+               event%eigenstrain(i)%width, &
+               event%eigenstrain(i)%length, &
+               event%eigenstrain(i)%thickness, &
+               event%eigenstrain(i)%strike, &
+               event%eigenstrain(i)%dip, &
+               in%beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3,t1,t2,t3)
        END DO
     ELSE
        ! forcing term in moment density
