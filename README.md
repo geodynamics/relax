@@ -1,4 +1,4 @@
-![Relax](/graphics/Icon-Relax.png)
+![Relax: It's not an acronym, it's a motto!](/graphics/Icon-Relax.png) Relax: It's not an acronym, it's a motto!
 
 RELAX - time-dependent postseismic deformation with afterslip and viscoelastic flow.
 
