@@ -59,10 +59,10 @@ my_gmt(){
 	for subprog in $EXTRA; do
 		OPTIONP=""
 		if [ -e "$selfdir/$subprog" ]; then
-			eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PSFILE"
+			eval "$selfdir/$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PSFILE"
 		else
 			if [ -e "$subprog" ]; then
-				eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PSFILE"
+				eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PROJ $PSFILE"
 			fi
 		fi
 	done

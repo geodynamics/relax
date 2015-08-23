@@ -74,11 +74,11 @@ my_gmt(){
 		fi
 		if [ -e "$selfdir/$subprog" ]; then
 			#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
-			eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PSFILE"
+			eval "$selfdir/$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PROJ $PSFILE"
 		else
 			if [ -e "$subprog" ]; then
 				#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
-				eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PSFILE"
+				eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PROJ $PSFILE"
 			fi
 		fi
 	done
