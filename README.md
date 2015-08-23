@@ -1,16 +1,16 @@
 ![Relax: It's not an acronym, it's a motto!](/graphics/Icon-Relax.png) 
 
-** Relax: It's not an acronym, it's a motto! **
+**Relax: It's not an acronym, it's a motto!**
 
 "RELAX - time-dependent postseismic deformation with afterslip and viscoelastic flow."
 
-# INSTALLATION:
+## INSTALLATION:
 
 The code is written in Fortran90 and is optimized for the the gfortran and the 
 INTEL ifort compiler. The gmt 4.5+ library is required to export results to GMT 
 for post-processing.
 
-# DOCUMENTATION:
+## DOCUMENTATION:
 
 Generate a .pdf file of the documentation with the command:
 
@@ -20,12 +20,12 @@ Generate a browsable version of the code with:
 
 doxygen .doxygen
 
-# RUN:
+## RUN:
 
 Some examples are available in the examples directory. Look up the *.sh files for
 comments and explanations.
 
-# VISUALIZATION:
+## VISUALIZATION:
 
 Many outputs are exported in the General Mapping Tools (GMT) format, deformation
 maps can be obtained with typical GMT post-processing. Check the post-processing
@@ -33,13 +33,13 @@ and visualization tools available in the 'util' directory.
 Make sure to have the .ps file viewer 'gv' or the .pdf file viewer 'xpdf' installed.
 Simulations can be visualized in 3D with the free software Paraview (paraview.org).
 
-# PURPOSE:
+## PURPOSE:
 
 RELAX computes nonlinear time-dependent viscoelastic deformation with 
 powerlaw rheology and rate-strengthening friction in a cubic grid due to coseismic 
 stress changes, initial stress, surface loads, and/or moving faults.
 
-# DESCRIPTION:
+## DESCRIPTION:
 
 Computation is done semi-analytically inside a cartesian grid. The grid is defined
 by its size sx1*sx2*sx3 and the sampling intervals dx1, dx2 and dx3. Rule of thumb
@@ -56,7 +56,7 @@ and surface traction. Faults and dykes can be of arbitrary orientation in the ha
 space.
 
 
-# INPUT:
+## INPUT:
 
 Static dislocation sources are discretized into a series of planar segments. Slip
 patches are defined in terms of position, orientation, and slip, as illustrated in
@@ -84,7 +84,7 @@ For friction faults where slip rates are evaluated from stress and a constitutiv
 law, the rake corresponds to the orientation of slip. That is, if r_i is the rake
 vector and v_i is the instantaneous velocity vector, then r_j v_j >= 0. 
 
-# REFERENCES:
+## REFERENCES:
 
 More information about parameters and constitutive laws can be found in
 
