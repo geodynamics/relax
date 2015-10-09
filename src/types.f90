@@ -30,7 +30,7 @@ MODULE types
 
   TYPE LAYER_STRUCT
      SEQUENCE
-     REAL*8 :: z,gammadot0,stressexponent,cohesion,friction
+     REAL*8 :: z,gammadot0,stressexponent,cohesion,friction,Gk
   END TYPE LAYER_STRUCT
 
   TYPE VECTOR_STRUCT
@@ -196,6 +196,30 @@ MODULE types
 
      ! fault creep interfaces
      TYPE(LAYER_STRUCT), DIMENSION(:), ALLOCATABLE :: faultcreeplayer,faultcreepstruc
+ 
+     ! number of linear transient interfaces 
+     INTEGER :: nlt
+
+     ! linear transient layers and structure
+     TYPE(LAYER_STRUCT), DIMENSION(:), ALLOCATABLE :: ltransientlayer,ltransientstruc
+
+     ! number of linear transient weak zones
+     INTEGER :: nltwz
+
+     ! linear transient weak zones
+     TYPE(WEAK_STRUCT), DIMENSION(:), ALLOCATABLE :: ltransientweakzone,ltransientweakzonec
+
+     ! number of linear transient interfaces 
+     INTEGER :: nnlt
+
+     ! nonlinear transient layers and structure
+     TYPE(LAYER_STRUCT), DIMENSION(:), ALLOCATABLE :: nltransientlayer,nltransientstruc
+
+     ! number of nonlinear transient weak zones
+     INTEGER :: nnltwz
+     
+     ! linear transient weak zones
+     TYPE(WEAK_STRUCT), DIMENSION(:), ALLOCATABLE :: nltransientweakzone,nltransientweakzonec
 
      ! number of afterslip planes
      INTEGER :: np
@@ -222,6 +246,7 @@ MODULE types
      LOGICAL :: isoutputvtk=.TRUE.
      LOGICAL :: isoutputvtkrelax=.FALSE.
      LOGICAL :: isoutputxyz=.TRUE.
+     LOGICAL :: istransient=.FALSE.
 
      ! other options
      LOGICAL :: isdryrun=.FALSE.

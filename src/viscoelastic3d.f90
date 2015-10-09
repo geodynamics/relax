@@ -107,9 +107,119 @@ CONTAINS
     sig(:,:,sx3)%s33=0
 
   END SUBROUTINE viscoelasticdeviatoricstress
-
+  
+  !!-----------------------------------------------------------------
+  !!> subroutine transienteigenstress
+  !! computes the moment density rate due to a layered transient 
+  !! structure with transient creep
+  !!
+  !!     d Eik / dt = F (sigma',Eik)
+  !!
+  !! where F is some function, sigma' is the instantaneous deviatoric 
+  !! stress and Eik is the evolution of inelastic strain.
+  !!
+  !! \author Sylvain Barbot (10/08/15) - original form
   !-----------------------------------------------------------------
-  !> subroutine ViscousEigenstress
+  SUBROUTINE transienteigenstress(mu,structure,sig,prestress,epsilonik,sx1,sx2,sx3, &
+       dx1,dx2,dx3,moment,epsilonikdot,maxwelltime,dgammadot0)
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3
+    REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(IN), OPTIONAL :: dgammadot0
+    REAL*8, INTENT(IN) :: mu,dx1,dx2,dx3
+    TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
+    TYPE(TENSOR_LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: prestress
+    TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
+    TYPE(TENSOR), INTENT(OUT), DIMENSION(sx1,sx2,sx3) :: moment
+    REAL*8, OPTIONAL, INTENT(INOUT) :: maxwelltime
+    TYPE(TENSOR), INTENT(INOUT), DIMENSION(sx1,sx2,sx3) :: epsilonik 
+    TYPE(TENSOR), INTENT(INOUT), DIMENSION(sx1,sx2,sx3) :: epsilonikdot
+   
+    INTEGER :: i1,i2,i3
+    TYPE(TENSOR) :: s,R,sp,Rp,edummy
+    TYPE(TENSOR), PARAMETER :: zero = tensor(0._4,0._4,0._4,0._4,0._4,0._4)
+    REAL*8 :: gammadot,gammadotp,tau,taup,tauc,gammadot0,power,cohesion,x1,x2,&
+              x3,dg0,dum,eik,muk
+    REAL*4 :: tm
+
+    LOGICAL :: isdgammadot0
+    IF (SIZE(structure,1) .NE. sx3) RETURN
+    IF (SIZE(prestress,1) .NE. sx3) RETURN
+
+    
+    isdgammadot0=PRESENT(dgammadot0)
+    IF (PRESENT(maxwelltime)) THEN
+       tm=REAL(maxwelltime)
+    ELSE
+       tm=1e30
+    END IF
+
+!$omp parallel do private(i1,i2,gammadot0,power,s,sp,tau,taup,R,Rp,eik,edummy,muk,gammadot,gammadotp,x1,x2,x3,dum), &
+!$omp reduction(MIN:tm)
+    DO i3=1,sx3
+       power=structure(i3)%stressexponent
+       muk=structure(i3)%Gk
+       x3=DBLE(i3-1)*dx3
+
+       ! prestress
+       sp=tensordeviatoric(prestress(i3)%t)
+       ! sp = taup * Rp
+       CALL tensordecomposition(sp,taup,Rp)
+             
+       IF (power .LT. 0.999999_8) THEN 
+          WRITE_DEBUG_INFO
+          WRITE (0,'("power=",ES9.2E1)') power
+          WRITE (0,'("invalid power exponent. interrupting.")')
+          STOP 1
+       END IF
+
+       DO i2=1,sx2
+          DO i1=1,sx1
+             ! local coordinates
+             CALL shiftedcoordinates(i1,i2,i3,sx1,sx2,sx3, &
+                  dx1,dx2,dx3,x1,x2,dum)
+
+             ! depth-dependent fluidity structure             
+             gammadot0=structure(i3)%gammadot0
+
+             ! perturbation from isolated viscous zones
+             IF (isdgammadot0) gammadot0=gammadot0+dgammadot0(i1,i2,i3)
+
+             IF (1.0d-20 .GT. gammadot0) CYCLE
+
+             ! local deviatoric stress
+             s=tensordeviatoric(sig(i1,i2,i3))
+             
+             ! s = tau * R
+             CALL tensordecomposition(s .plus. sp,tau,R)
+
+             CALL tensordecomposition(epsilonik(i1,i2,i3),eik,edummy)
+
+             ! powerlaw viscosity
+             gammadot=gammadot0*((tau/mu)**power-(2*muk/mu*eik)**power)
+
+             ! powerlaw viscosity
+             gammadotp=gammadot0*((taup/mu)**power-(2*muk/mu*eik)**power)
+
+             epsilonikdot(i1,i2,i3)=(REAL(gammadot) .times. R) .minus. &
+                                    (REAL(gammadotp) .times. Rp)
+
+             ! update moment density forcing
+             moment(i1,i2,i3)=moment(i1,i2,i3) .plus. &
+                  ((REAL(2._8*mu*gammadot ) .times. R ) .minus. &
+                   (REAL(2._8*mu*gammadotp) .times. Rp))
+
+             tm=MIN(tm,REAL(tau/mu/gammadot))
+             
+          END DO
+       END DO
+    END DO
+!$omp end parallel do
+
+    IF (PRESENT(maxwelltime)) maxwelltime=MIN(tm,maxwelltime)
+  END SUBROUTINE transienteigenstress
+
+
+  !!-----------------------------------------------------------------
+  !!> subroutine ViscousEigenstress
   !! computes the moment density rate due to a layered viscoelastic
   !! structure with powerlaw creep
   !!
@@ -392,6 +502,5 @@ CONTAINS
     END FUNCTION fdgammadot0
 
   END SUBROUTINE builddgammadot0
-
 
 END MODULE viscoelastic3d
