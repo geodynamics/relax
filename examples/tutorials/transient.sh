@@ -88,8 +88,8 @@ $WDIR
 # number of nonlinear transient rheology interfaces
 2
 #  n depth gammadot0 power     Gk
-   1   2.0       5e3   1.0   30e3
-   2   8.0       5e3   1.0   30e3
+   1   2.0       5e3   3.0   30e3
+   2   8.0       5e3   3.0   30e3
 # number of transient power-law ductiles zones
 0
 # depths where friction properties change.

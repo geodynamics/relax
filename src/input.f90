@@ -768,24 +768,23 @@ CONTAINS
        PRINT '(I5)', in%nlt
 
        IF (in%nlt .GT. 0) THEN
-          ALLOCATE(in%ltransientlayer(in%npl),in%ltransientstruc(in%sx3/2),STAT=iostatus)
+          ALLOCATE(in%ltransientlayer(in%nlt),in%ltransientstruc(in%sx3/2),STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the layer structure"
           
           PRINT 2000
-          PRINT '("# n     depth    gamma0     power      Gk")'
+          PRINT '("# n     depth    gamma0  Gk")'
           PRINT 2000
           DO k=1,in%nlt
              CALL getdata(iunit,dataline)
 
-                READ  (dataline,*) i,in%ltransientlayer(k)%z, &
+             READ  (dataline,*) i,in%ltransientlayer(k)%z, &
                      in%ltransientlayer(k)%gammadot0, &
-                     in%ltransientlayer(k)%stressexponent, &
                      in%ltransientlayer(k)%Gk
+             in%ltransientlayer(k)%stressexponent=1
 
              PRINT '(I3.3,4ES10.2E2)', i, &
                   in%ltransientlayer(k)%z, &
                   in%ltransientlayer(k)%gammadot0, &
-                  in%ltransientlayer(k)%stressexponent, &
                   in%ltransientlayer(k)%Gk
              
              ! check positive strain rates
