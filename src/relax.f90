@@ -1141,8 +1141,16 @@ CONTAINS
                event%s(i)%strike,event%s(i)%dip,event%s(i)%rake, &
                event%s(i)%beta,sx1,sx2,sx3/2,dx1,dx2,dx3,eigenstress)
        END DO
+       
+       DO i=1,event%neigenstrain
+          CALL momentdensityeigenstrain(mu,lambda,REAL(slip_factor,4) .times. event%eigenstrain(i)%e, &
+               event%eigenstrain(i)%x,event%eigenstrain(i)%y,event%eigenstrain(i)%z, & 
+               event%eigenstrain(i)%width,event%eigenstrain(i)%length,event%eigenstrain(i)%thickness, &
+               event%eigenstrain(i)%strike,event%eigenstrain(i)%dip, &
+               beta,sx1,sx2,sx3/2,dx1,dx2,dx3,eigenstress)
+       END DO
     END IF
-
+    
     DO i=1,event%ns
        ! remove corresponding eigenmoment
        CALL momentdensityshear(mu,slip_factor*event%s(i)%slip, &
@@ -1151,7 +1159,15 @@ CONTAINS
             event%s(i)%strike,event%s(i)%dip,event%s(i)%rake, &
             event%s(i)%beta,sx1,sx2,sx3/2,dx1,dx2,dx3,tau)
     END DO
-    
+
+    DO i=1,event%neigenstrain
+       CALL momentdensityeigenstrain(mu,lambda,REAL(slip_factor,4) .times. event%eigenstrain(i)%e, & 
+            event%eigenstrain(i)%x,event%eigenstrain(i)%y,event%eigenstrain(i)%z, &
+            event%eigenstrain(i)%width,event%eigenstrain(i)%length,event%eigenstrain(i)%thickness, &
+            event%eigenstrain(i)%strike,event%eigenstrain(i)%dip, &
+            beta,sx1,sx2,sx3/2,dx1,dx2,dx3,tau)
+    END DO
+
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ! -             load tensile cracks
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

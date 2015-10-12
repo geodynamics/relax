@@ -1716,25 +1716,25 @@ CONTAINS
              temp1=omega((x1s-xr)/T,beta)
              temp2=omega((x2s-yr)/W,beta)
              temp3=omega((x3s-zr)/L,beta)
-             sourc=2._8/T*omegap((x1s-xr)/T,beta) &
+             sourc=1._8/T*omegap((x1s-xr)/T,beta) &
                          *temp2 &
                          *temp3
-             dblcp=2._8/W*temp1 &
+             dblcp=1._8/W*temp1 &
                          *omegap((x2s-yr)/W,beta) &
                          *temp3
-             dipcs=2._8/L*temp1 &
+             dipcs=1._8/L*temp1 &
                          *temp2 &
                          *omegap((x3s-zr)/L,beta)
 
              temp1=omega((x1i-xr)/T,beta)
              temp3=omega((x3i+zr)/L,beta)
-             image=2._8/T*omegap(x1i-xr,dx1) &
+             image=1._8/T*omegap(x1i-xr,dx1) &
                          *temp2 &
                          *temp3
-             cplei=2._8/W*temp1 &
+             cplei=1._8/W*temp1 &
                          *omegap((x2s-yr)/W,beta) &
                          *temp3
-             dipci=2._8/L*temp1 &
+             dipci=1._8/L*temp1 &
                          *temp2 &
                          *omegap((x3i+zr)/L,beta)
 
@@ -2507,6 +2507,162 @@ CONTAINS
     END DO
 
   END SUBROUTINE momentdensityshear
+
+
+  !---------------------------------------------------------------------
+  !! function MomentDensityEigenStrain
+  !! computes the inelastic irreversible moment density in the space
+  !! domain corresponding to a distributed source of eigenstrain. 
+  !!
+  !!\verbatim
+  !!
+  !!           x1            !           x1
+  !!   n  theta |            !   n   phi  |
+  !!     \  ____|            !     \  ____|
+  !!       \    |            !       \    |
+  !!         \  |            !         \  |
+  !!      -----\+------ x2   !      -----\+------ x3
+  !!        (x3 down)        !         (x2 up)
+  !!
+  !!\endverbatim
+  !!
+  !! With theta as the strike and phi as the dip (internal convention),
+  !! introduce the rotation matrices
+  !!
+  !!\verbatim
+  !!
+  !!        |  cos(theta)   sin(theta)    0 |
+  !!   R1 = | -sin(theta)   cos(theta)    0 |
+  !!        |      0             0        1 |
+  !!
+  !!        |  cos(phi)     0     sin(phi)  |
+  !!   R2 = |     0         1        0      |
+  !!        | -sin(phi)     0     cos(phi)  |
+  !!
+  !!\endverbatim
+  !!
+  !! a normal vector n of arbitrary orientation and the corresponding
+  !! strike and dip vector, s and d respectively, are
+  !!
+  !!\verbatim
+  !!
+  !!             | 1 |             | 0 |             | 0 |
+  !!   n = R1 R2 | 0 |,  s = R1 R2 | 1 |,  d = R1 R2 | 0 |
+  !!             | 0 |             | 0 |             | 1 |
+  !!
+  !!\endverbatim
+  !!
+  !! vector n, s and d are orthogonal and the corresponding moment
+  !! density second order tensor is deviatoric. The method of images is
+  !! used to avoid tapering of the fault at the surface.
+  !!
+  !! \author valere lambert (28-09-15) - original form
+  !---------------------------------------------------------------------
+  SUBROUTINE momentdensityeigenstrain(mu,lambda,e,x,y,z,L,W,T,strike,dip, &
+       beta,sx1,sx2,sx3,dx1,dx2,dx3,sig)
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3
+    REAL*8, INTENT(IN) :: mu,lambda,x,y,z,L,W,T,strike,dip,&
+         beta,dx1,dx2,dx3
+    TYPE(TENSOR), INTENT(INOUT), DIMENSION(sx1,sx2,sx3) :: sig
+    TYPE(TENSOR), INTENT(IN) :: e 
+    
+    INTEGER :: i1,i2,i3      
+    REAL*4 :: rmu,ekk,aperture
+    REAL*8 :: x1,x2,x3,x1s,x2s,x3s,x1i,x3i, &
+         cstrike,sstrike,cdip,sdip,cr,sr,x2r,&
+         temp1,temp2,temp3,xr,yr,zr,Wp,Lp,Tp,dum
+    REAL*8, DIMENSION(3) :: n,s,d
+    TYPE(TENSOR) :: Ei, lamdij, ea
+    
+    lamdij=TENSOR(lambda,0,0,lambda,0,lambda)
+    
+    rmu=2._4*REAL(mu,4)
+ 
+    cstrike=cos(strike)
+    sstrike=sin(strike)
+    cdip=cos(dip)
+    sdip=sin(dip)
+    
+    ! effective tapered dimensions
+    Wp=W*(1._8+2._8*beta)/2._8
+    Lp=L*(1._8+2._8*beta)/2._8
+    Tp=T*(1._8+2._8*beta)/2._8
+    
+    ! rotate centre coordinates of source and images
+    x2r= cstrike*x  -sstrike*y
+    xr = cdip   *x2r-sdip   *z
+    yr = sstrike*x  +cstrike*y
+    zr = sdip   *x2r+cdip   *z
+    
+    DO i3=1,sx3
+       x3=DBLE(i3-1)*dx3
+       IF (abs(x3-z) .gt. Lp) CYCLE
+       
+       DO i2=1,sx2
+          DO i1=1,sx1
+             CALL shiftedcoordinates(i1,i2,i3,sx1,sx2,sx3, &
+                  dx1,dx2,dx3,x1,x2,dum)
+             
+             IF ((ABS(x1-x).GT.MAX(Lp,Wp,Tp)) .OR. & 
+                 (ABS(x2-y).GT.MAX(Lp,Wp,Tp)) .OR. &
+                 (ABS(x3-z).GT.MAX(Lp,Wp,Tp))) CYCLE 
+             
+             x2r= cstrike*x1-sstrike*x2
+             x1s= cdip*x2r-sdip*x3
+             
+             x2s= sstrike*x1+cstrike*x2
+             x3s= sdip*x2r+cdip*x3
+             
+             ! integrate at depth and along strike with raised cosine taper
+             ! and shift sources to x,y,z coordinate
+             temp1=omega((x1s-xr)/T,beta)
+             temp2=omega((x2s-yr)/W,beta)
+             temp3=omega((x3s-zr)/L,beta)
+             aperture=temp1*temp2*temp3
+             
+             ! add image
+             temp1=omega((x1i-xr)/T,beta)  
+             temp3=omega((x3i+zr)/L,beta)
+             aperture=aperture+temp1*temp2*temp3  
+             
+             ! surface normal vector components  
+             n(1)=+cdip*cstrike
+             n(2)=-cdip*sstrike
+             n(3)=-sdip
+             
+             ! strike component
+             s(1)=-sstrike
+             s(2)=-cstrike
+             s(3)=0
+             
+             ! dip component
+             d(1)=+cstrike*sdip
+             d(2)=-sstrike*sdip
+             d(3)=+cdip
+ 
+             ! eigenstrain (symmetric deviatoric second-order tensor)
+             ea = aperture .times. e  
+             
+             Ei =  (     ea%s11 .times. (s .sdyad. s)) .plus. &
+                   (2._4*ea%s12 .times. (n .sdyad. s)) .plus. &  
+                   (2._4*ea%s13 .times. (s .sdyad. d)) .plus. &  
+                   (     ea%s22 .times. (n .sdyad. n)) .plus. &  
+                   (2._4*ea%s23 .times. (n .sdyad. d)) .plus. &  
+                   (     ea%s33 .times. (d .sdyad. d)) 
+             
+             ekk = tensortrace(Ei)
+             
+             ! moment density (pure shear)
+             sig(i1,i2,i3)=sig(i1,i2,i3) .plus. (ekk .times. lamdij)  .plus. (rmu .times. Ei) 
+             
+          END DO
+       END DO
+    END DO
+    
+  END SUBROUTINE momentdensityeigenstrain
+
+
+
 
   !---------------------------------------------------------------------
   !> function MomentDensityTensile
