@@ -58,7 +58,7 @@ CONTAINS
 !$  INTEGER :: omp_get_num_procs,omp_get_max_threads
     REAL*8 :: dummy,dum1,dum2
     REAL*8 :: minlength,minwidth
-    TYPE(OPTION_S) :: opts(14)
+    TYPE(OPTION_S) :: opts(15)
 
     INTEGER :: k,iostatus,i,e
 
@@ -75,8 +75,9 @@ CONTAINS
     opts(10)=OPTION_S("with-stress-output",.FALSE.,CHAR(29))
     opts(11)=OPTION_S("with-vtk-output",.FALSE.,CHAR(30))
     opts(12)=OPTION_S("with-vtk-relax-output",.FALSE.,CHAR(31))
-    opts(13)=OPTION_S("dry-run",.FALSE.,CHAR(32))
-    opts(14)=OPTION_S("help",.FALSE.,'h')
+    opts(13)=OPTION_S("with-transient",.FALSE.,CHAR(32))
+    opts(14)=OPTION_S("dry-run",.FALSE.,CHAR(33))
+    opts(15)=OPTION_S("help",.FALSE.,'h')
 
     noptions=0;
     DO
@@ -121,6 +122,9 @@ CONTAINS
           ! option with-vtk-relax-output
           in%isoutputvtkrelax=.TRUE.
        CASE(CHAR(32))
+          ! option --with-transient 
+          in%istransient=.TRUE.
+       CASE(CHAR(33))
           ! option dry-run
           in%isdryrun=.TRUE.
        CASE('h')
@@ -150,6 +154,7 @@ CONTAINS
        PRINT '("      [--no-relax-output] [--no-stress-output] [--no-txt-output]")'
        PRINT '("      [--no-vtk-output] [--no-xyz-output] [--with-eigenstrain]")'
        PRINT '("      [--with-vtk-output] [--with-vtk-relax-output]")'
+       PRINT '("      [--with-transient]")'
        PRINT '("")'
        PRINT '("options:")'
        PRINT '("   -h                      prints this message and aborts calculation")'
@@ -167,6 +172,7 @@ CONTAINS
        PRINT '("   --with-stress-output    export stress tensor")'
        PRINT '("   --with-vtk-output       export output in Paraview VTK format")'
        PRINT '("   --with-vtk-relax-output export relaxation to VTK format")'
+       PRINT '("   --with-transient        include the transient rheology")'
        PRINT '("")'
        PRINT '("description:")'
        PRINT '("   Evaluates the deformation due to fault slip, surface loading")'
@@ -750,6 +756,267 @@ CONTAINS
 #endif
        END IF
     END IF ! end nonlinear viscous
+
+
+    IF (in%istransient) THEN
+       ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       !  T R A N S I E N T   I N T E R F A C E
+       ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       PRINT '("# number of linear transient interfaces")'
+       CALL getdata(iunit,dataline)
+       READ  (dataline,*) in%nlt
+       PRINT '(I5)', in%nlt
+
+       IF (in%nlt .GT. 0) THEN
+          ALLOCATE(in%ltransientlayer(in%nlt),in%ltransientstruc(in%sx3/2),STAT=iostatus)
+          IF (iostatus>0) STOP "could not allocate the layer structure"
+          
+          PRINT 2000
+          PRINT '("# n     depth    gamma0  Gk")'
+          PRINT 2000
+          DO k=1,in%nlt
+             CALL getdata(iunit,dataline)
+
+             READ  (dataline,*) i,in%ltransientlayer(k)%z, &
+                     in%ltransientlayer(k)%gammadot0, &
+                     in%ltransientlayer(k)%Gk
+             in%ltransientlayer(k)%stressexponent=1
+
+             PRINT '(I3.3,4ES10.2E2)', i, &
+                  in%ltransientlayer(k)%z, &
+                  in%ltransientlayer(k)%gammadot0, &
+                  in%ltransientlayer(k)%Gk
+             
+             ! check positive strain rates
+             IF (in%ltransientlayer(k)%gammadot0 .LT. 0) THEN
+                WRITE_DEBUG_INFO
+                WRITE (0,'("error in input file: strain rates must be positive")')
+                STOP 1
+             END IF
+
+             IF (i .ne. k) THEN
+                WRITE_DEBUG_INFO
+                WRITE (0,'("error in input file: index misfit")')
+                STOP 1
+             END IF
+
+#ifdef VTK
+             WRITE (digit,'(I3.3)') k
+
+             ! export the viscous layer in VTK format
+             rffilename=trim(in%wdir)//"/ltransientlayer-"//digit//".vtp"
+             CALL exportvtk_rectangle(0.d0,0.d0,in%ltransientlayer(k)%z, &
+                                      DBLE(in%sx2)*in%dx2,DBLE(in%sx1)*in%dx1, &
+                                      0._8,1.57d0,rffilename)
+#endif
+          END DO
+
+          ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          !          L I N E A R   T R A N S I E N T   W E A K   Z O N E S
+          ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          PRINT '("# number of transient weak zones")'
+          CALL getdata(iunit,dataline)
+          READ  (dataline,*) in%nltwz
+          PRINT '(I5)', in%nltwz
+          IF (in%nltwz .GT. 0) THEN
+             ALLOCATE(in%ltransientweakzone(in%nltwz),in%ltransientweakzonec(in%nltwz),STAT=iostatus)
+             IF (iostatus>0) STOP "could not allocate the nonlinear weak zones"
+             PRINT 2000
+             PRINT '("# n dgammadot0     x1       x2       x3  length   width thickn. strike   dip")'
+             PRINT 2000
+             DO k=1,in%nltwz
+                CALL getdata(iunit,dataline)
+                READ  (dataline,*) i, &
+                     in%ltransientweakzone(k)%dgammadot0, &
+                     in%ltransientweakzone(k)%x,in%ltransientweakzone(k)%y,in%ltransientweakzone(k)%z,&
+                     in%ltransientweakzone(k)%length,in%ltransientweakzone(k)%width,in%ltransientweakzone(k)%thickness, &
+                     in%ltransientweakzone(k)%strike,in%ltransientweakzone(k)%dip
+             
+                in%ltransientweakzonec(k)=in%ltransientweakzone(k)
+                
+                PRINT '(I3.3,4ES9.2E1,3ES8.2E1,f7.1,f6.1)',k,&
+                     in%ltransientweakzone(k)%dgammadot0, &
+                     in%ltransientweakzone(k)%x,in%ltransientweakzone(k)%y,in%ltransientweakzone(k)%z, &
+                     in%ltransientweakzone(k)%length,in%ltransientweakzone(k)%width, &
+                     in%ltransientweakzone(k)%thickness, &
+                     in%ltransientweakzone(k)%strike,in%ltransientweakzone(k)%dip
+                
+                IF (i .ne. k) THEN
+                   WRITE_DEBUG_INFO
+                   WRITE (0,'("error in input file: source index misfit")')
+                   STOP 1
+                END IF
+                ! comply to Wang's convention
+                CALL wangconvention( &
+                     dummy, & 
+                     in%ltransientweakzone(k)%x,in%ltransientweakzone(k)%y,in%ltransientweakzone(k)%z, &
+                     in%ltransientweakzone(k)%length,in%ltransientweakzone(k)%width, &
+                     in%ltransientweakzone(k)%strike,in%ltransientweakzone(k)%dip, &
+                     dummy,in%x0,in%y0,in%rot)
+
+                     WRITE (digit,'(I3.3)') k
+
+#ifdef VTK
+                     ! export the ductile zone in VTK format
+                     !rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".vtp"
+                     !CALL exportvtk_brick(in%ltransientweakzone(k)%x, &
+                     !                     in%ltransientweakzone(k)%y, &
+                     !                     in%ltransientweakzone(k)%z, &
+                     !                     in%ltransientweakzone(k)%length, &
+                     !                     in%ltransientweakzone(k)%width, &
+                     !                     in%ltransientweakzone(k)%thickness, &
+                     !                     in%ltransientweakzone(k)%strike, &
+                     !                     in%ltransientweakzone(k)%dip,rffilename)
+#endif
+                     ! export the ductile zone in GMT .xy format
+                     rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".xy"
+                     CALL exportxy_brick(in%ltransientweakzone(k)%x, &
+                                          in%ltransientweakzone(k)%y, &
+                                          in%ltransientweakzone(k)%z, &
+                                          in%ltransientweakzone(k)%length, &
+                                          in%ltransientweakzone(k)%width, &
+                                          in%ltransientweakzone(k)%thickness, &
+                                          in%ltransientweakzone(k)%strike, &
+                                          in%ltransientweakzone(k)%dip,rffilename)
+             END DO
+#ifdef VTK
+             ! export the ductile zone in VTK format
+             rffilename=trim(in%wdir)//"/weakzones-nonlinear.vtp"
+             CALL exportvtk_allbricks(in%nnlwz,in%ltransientweakzone,rffilename)
+#endif
+          END IF
+       END IF ! end linear transient  
+
+       ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       !  N O N - L I N E A R   T R A N S I E N T   I N T E R F A C E
+       ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       PRINT '("# number of nonlinear transient interfaces")'
+       CALL getdata(iunit,dataline)
+       READ  (dataline,*) in%nnlt
+       PRINT '(I5)', in%nnlt
+
+       IF (in%nnlt .GT. 0) THEN
+          ALLOCATE(in%nltransientlayer(in%nnlt),in%nltransientstruc(in%sx3/2),STAT=iostatus)
+          IF (iostatus>0) STOP "could not allocate the layer structure"
+          
+          PRINT 2000
+          PRINT '("# n     depth    gamma0     power        Gk")'
+          PRINT 2000
+          DO k=1,in%nnlt
+             CALL getdata(iunit,dataline)
+
+                READ  (dataline,*) i,in%nltransientlayer(k)%z, &
+                     in%nltransientlayer(k)%gammadot0, &
+                     in%nltransientlayer(k)%stressexponent, &
+                     in%nltransientlayer(k)%Gk
+
+             PRINT '(I3.3,4ES10.2E2)', i, &
+                  in%nltransientlayer(k)%z, &
+                  in%nltransientlayer(k)%gammadot0, &
+                  in%nltransientlayer(k)%stressexponent, &
+                  in%nltransientlayer(k)%Gk
+             
+             ! check positive strain rates
+             IF (in%nltransientlayer(k)%gammadot0 .LT. 0) THEN
+                WRITE_DEBUG_INFO
+                WRITE (0,'("error in input file: strain rates must be positive")')
+                STOP 1
+             END IF
+
+             IF (i .ne. k) THEN
+                WRITE_DEBUG_INFO
+                WRITE (0,'("error in input file: index misfit")')
+                STOP 1
+             END IF
+
+#ifdef VTK
+             WRITE (digit,'(I3.3)') k
+
+             ! export the viscous layer in VTK format
+             rffilename=trim(in%wdir)//"/nltransientlayer-"//digit//".vtp"
+             CALL exportvtk_rectangle(0.d0,0.d0,in%nltransientlayer(k)%z, &
+                                      DBLE(in%sx2)*in%dx2,DBLE(in%sx1)*in%dx1, &
+                                      0._8,1.57d0,rffilename)
+#endif
+          END DO
+
+          ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          !         N O N L I N E A R   T R A N S I E N T   W E A K   Z O N E S
+          ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          PRINT '("# number of transient weak zones")'
+          CALL getdata(iunit,dataline)
+          READ  (dataline,*) in%nnltwz
+          PRINT '(I5)', in%nnltwz
+
+          IF (in%nnltwz .GT. 0) THEN
+             ALLOCATE(in%nltransientweakzone(in%nnltwz),in%nltransientweakzonec(in%nnltwz),STAT=iostatus)
+             IF (iostatus>0) STOP "could not allocate the nonlinear weak zones"
+             PRINT 2000
+             PRINT '("# n dgammadot0     x1       x2       x3  length   width thickn. strike   dip")'
+             PRINT 2000
+             DO k=1,in%nnltwz
+                CALL getdata(iunit,dataline)
+                READ  (dataline,*) i, &
+                     in%nltransientweakzone(k)%dgammadot0, &
+                     in%nltransientweakzone(k)%x,in%nltransientweakzone(k)%y,in%nltransientweakzone(k)%z,&
+                     in%nltransientweakzone(k)%length,in%nltransientweakzone(k)%width,in%nltransientweakzone(k)%thickness, &
+                     in%nltransientweakzone(k)%strike,in%nltransientweakzone(k)%dip
+             
+                in%nltransientweakzonec(k)=in%nltransientweakzone(k)
+                
+                PRINT '(I3.3,4ES9.2E1,3ES8.2E1,f7.1,f6.1)',k,&
+                     in%nltransientweakzone(k)%dgammadot0, &
+                     in%nltransientweakzone(k)%x,in%nltransientweakzone(k)%y,in%nltransientweakzone(k)%z, &
+                     in%nltransientweakzone(k)%length,in%nltransientweakzone(k)%width, &
+                     in%nltransientweakzone(k)%thickness, &
+                     in%nltransientweakzone(k)%strike,in%nltransientweakzone(k)%dip
+                
+                IF (i .ne. k) THEN
+                   WRITE_DEBUG_INFO
+                   WRITE (0,'("error in input file: source index misfit")')
+                   STOP 1
+                END IF
+                ! comply to Wang's convention
+                CALL wangconvention( &
+                     dummy, & 
+                     in%nltransientweakzone(k)%x,in%nltransientweakzone(k)%y,in%nltransientweakzone(k)%z, &
+                     in%nltransientweakzone(k)%length,in%nltransientweakzone(k)%width, &
+                     in%nltransientweakzone(k)%strike,in%nltransientweakzone(k)%dip, &
+                     dummy,in%x0,in%y0,in%rot)
+
+                     WRITE (digit,'(I3.3)') k
+
+#ifdef VTK
+                     ! export the ductile zone in VTK format
+                     !rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".vtp"
+                     !CALL exportvtk_brick(in%nltransientweakzone(k)%x, &
+                     !                     in%nltransientweakzone(k)%y, &
+                     !                     in%nltransientweakzone(k)%z, &
+                     !                     in%nltransientweakzone(k)%length, &
+                     !                     in%nltransientweakzone(k)%width, &
+                     !                     in%nltransientweakzone(k)%thickness, &
+                     !                     in%nltransientweakzone(k)%strike, &
+                     !                     in%nltransientweakzone(k)%dip,rffilename)
+#endif
+                     ! export the ductile zone in GMT .xy format
+                     rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".xy"
+                     CALL exportxy_brick(in%nltransientweakzone(k)%x, &
+                                          in%nltransientweakzone(k)%y, &
+                                          in%nltransientweakzone(k)%z, &
+                                          in%nltransientweakzone(k)%length, &
+                                          in%nltransientweakzone(k)%width, &
+                                          in%nltransientweakzone(k)%thickness, &
+                                          in%nltransientweakzone(k)%strike, &
+                                          in%nltransientweakzone(k)%dip,rffilename)
+             END DO
+#ifdef VTK
+             ! export the ductile zone in VTK format
+             rffilename=trim(in%wdir)//"/weakzones-nonlinear.vtp"
+             CALL exportvtk_allbricks(in%nnlwz,in%nltransientweakzone,rffilename)
+#endif
+          END IF
+       END IF ! end nonlinear transient  
+    END IF ! end istransient
 
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     !                 F A U L T    C R E E P
