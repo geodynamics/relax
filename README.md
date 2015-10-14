@@ -2,10 +2,9 @@
 
 **Relax: It's not an acronym, it's a motto!**
 
-### RELAX!
+### RELAX
 
-Time-dependent postseismic deformation with afterslip and viscoelastic flow.
-Simple input, complex output.
+time-dependent postseismic deformation with afterslip and viscoelastic flow.
 
 ### INSTALLATION:
 
@@ -17,11 +16,11 @@ for post-processing.
 
 Generate a .pdf file of the documentation with the command:
 
-    pdflatex latex/documentation.tex
+pdflatex latex/documentation.tex
 
 Generate a browsable version of the code with:
 
-    doxygen .doxygen
+doxygen .doxygen
 
 ### RUN:
 

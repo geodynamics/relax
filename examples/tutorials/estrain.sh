@@ -18,7 +18,7 @@ OMP_NUM_THREADS=2 relax --no-proj-output --with-eigenstrain $* <<EOF | tee $WDIR
 # origin position & rotation
 0 0 0
 # observation depth for displacement and for stress (stress in only exported in GRD)
-0 2
+2 2
 # output directory (all output written here)
 $WDIR
 # lambda, mu, gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
@@ -58,8 +58,8 @@ $WDIR
 0
 # number of distributed eigenstrain
 1
-# n     e11  e12  e13     e22  e23     e33 x1 x2 x3 length width thickness strike dip
-  1 0.00e-0 1e-3 0e-0 0.00e-0 0e-0 0.00e-0 -1  0  1      2     2         2      0  90
+# n     e11  e12  e13     e22  e23     e33    x1 x2 x3 length width thickness strike dip
+  1 0.00e-0 1e-3 0e-0 0.00e-0 0e-0 0.00e-0 -12.8  0  1   25.6     2         2      0  90
 # number of surface traction
 0
 EOF
