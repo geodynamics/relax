@@ -772,7 +772,7 @@ CONTAINS
           IF (iostatus>0) STOP "could not allocate the layer structure"
           
           PRINT 2000
-          PRINT '("# n     depth    gamma0  Gk")'
+          PRINT '("# n     depth    gamma0        Gk")'
           PRINT 2000
           DO k=1,in%nlt
              CALL getdata(iunit,dataline)

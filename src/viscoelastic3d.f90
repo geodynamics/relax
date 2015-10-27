@@ -136,7 +136,7 @@ CONTAINS
     INTEGER :: i1,i2,i3
     TYPE(TENSOR) :: s,R,sp,Rp,edummy
     TYPE(TENSOR), PARAMETER :: zero = tensor(0._4,0._4,0._4,0._4,0._4,0._4)
-    REAL*8 :: gammadot,gammadotp,tau,taup,tauc,gammadot0,power,cohesion,x1,x2,&
+    REAL*8 :: xi,gammadot,gammadotp,tau,taup,tauc,gammadot0,power,cohesion,x1,x2,&
               x3,dg0,dum,eik,muk
     REAL*4 :: tm
 
@@ -152,7 +152,7 @@ CONTAINS
        tm=1e30
     END IF
 
-!$omp parallel do private(i1,i2,gammadot0,power,s,sp,tau,taup,R,Rp,eik,edummy,muk,gammadot,gammadotp,x1,x2,x3,dum), &
+!$omp parallel do private(i1,i2,gammadot0,power,s,sp,tau,taup,R,Rp,eik,edummy,muk,gammadot,gammadotp,x1,x2,x3,dum,xi), &
 !$omp reduction(MIN:tm)
     DO i3=1,sx3
        power=structure(i3)%stressexponent
@@ -194,10 +194,12 @@ CONTAINS
              CALL tensordecomposition(epsilonik(i1,i2,i3),eik,edummy)
 
              ! powerlaw viscosity
-             gammadot=gammadot0*((tau/mu)**power-(2*muk/mu*eik)**power)
+             gammadot=gammadot0*((tau/mu)**power-(2*(muk/mu)*eik)**power)
+             
+             xi=gammadot0*(tau/mu)**power
 
              ! powerlaw viscosity
-             gammadotp=gammadot0*((taup/mu)**power-(2*muk/mu*eik)**power)
+             gammadotp=gammadot0*((taup/mu)**power-(2*(muk/mu)*eik)**power)
 
              epsilonikdot(i1,i2,i3)=(REAL(gammadot) .times. R) .minus. &
                                     (REAL(gammadotp) .times. Rp)
@@ -207,7 +209,7 @@ CONTAINS
                   ((REAL(2._8*mu*gammadot ) .times. R ) .minus. &
                    (REAL(2._8*mu*gammadotp) .times. Rp))
 
-             tm=MIN(tm,REAL(tau/mu/gammadot))
+             tm=MIN(tm,REAL(tau/mu/xi))
              
           END DO
        END DO
@@ -358,7 +360,7 @@ CONTAINS
              IF (tauc .LE. 1.0d-20) CYCLE
 
              ! powerlaw viscosity
-             gammadot =gammadot0*(tauc/mu)**power
+             gammadot=gammadot0*(tauc/mu)**power
 
              ! powerlaw viscosity
              gammadotp=gammadot0*(taup/mu)**power

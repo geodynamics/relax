@@ -662,7 +662,8 @@ CONTAINS
          power,power0,power1, &
          gamma,gamma0,gamma1, &
          friction,friction0,friction1, &
-         cohesion,cohesion0,cohesion1
+         cohesion,cohesion0,cohesion1, &
+         Gk,Gk0,Gk1
          
 
     nv =SIZE(layers,1)
@@ -680,6 +681,7 @@ CONTAINS
     vstruct(:)%friction=0.6  ! default is friction=0.6
     vstruct(:)%cohesion=0  ! default is no cohesion
     vstruct(:)%stressexponent=layers(1)%stressexponent  ! default
+    vstruct(:)%Gk=layers(1)%Gk ! default 
 
     z0=fix(layers(1)%z/dx3)*dx3
     DO k=1,nv
@@ -708,6 +710,7 @@ CONTAINS
           power1 =layers(k)%stressexponent
           friction1=layers(k)%friction
           cohesion1=layers(k)%cohesion
+          Gk1=layers(k)%Gk
 
           i3s=fix(z0/dx3)+1
           i3e=MIN(fix(z1/dx3+1),sx3)
@@ -717,11 +720,13 @@ CONTAINS
              power=((z-z0)*power1+(z1-z)*power0)/(z1-z0)
              friction=((z-z0)*friction1+(z1-z)*friction0)/(z1-z0)
              cohesion=((z-z0)*cohesion1+(z1-z)*cohesion0)/(z1-z0)
+             Gk=((z-z0)*Gk1+(z1-z)*Gk0)/(z1-z0)
 
              vstruct(i3)%gammadot0=gamma
              vstruct(i3)%stressexponent =power
              vstruct(i3)%friction=friction
              vstruct(i3)%cohesion=cohesion
+             vstruct(i3)%Gk=Gk
           END DO
        END IF
 
@@ -730,6 +735,7 @@ CONTAINS
        power0=power1
        friction0=friction1
        cohesion0=cohesion1
+       Gk0=Gk1
 
     END DO
 
@@ -739,6 +745,7 @@ CONTAINS
        vstruct(i3e:sx3)%stressexponent =REAL(power1)
        vstruct(i3e:sx3)%friction=REAL(friction1)
        vstruct(i3e:sx3)%cohesion=REAL(cohesion1)
+       vstruct(i3e:sx3)%Gk=REAL(Gk1)
     END IF
 
   END SUBROUTINE viscoelasticstructure

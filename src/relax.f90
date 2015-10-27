@@ -317,12 +317,17 @@ PROGRAM relax
   CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,0.d0,t3)
   
   PRINT '("# event ",I3.3)', e
-  PRINT 0990
-
+  IF (in%istransient) THEN
+     PRINT 0991
+  ELSE
+     PRINT 0990
+  END IF
   ! export the amplitude of eigenstrain
-  CALL exporteigenstrain(gamma,in%nop,in%op,in%x0,in%y0, &
-                         in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,0)
   
+  IF (in%iseigenstrain) THEN
+     CALL exporteigenstrain(gamma,in%nop,in%op,in%x0,in%y0, &
+                            in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,0)
+  END IF 
   ! export equivalent body forces
   IF (isoutput(in%skip,t,0,in%odt,oi,in%events(e)%time)) THEN
 #ifdef GRD_EQBF
@@ -467,8 +472,12 @@ PROGRAM relax
   CALL exportcoulombstress(sig,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
                     in%nsop,in%sop,0._8,in%wdir,.TRUE.)
   CALL reporttime(0,0._8,in%reporttimefilename)
-
-  PRINT 1101,0,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+   
+  IF (in%istransient) THEN 
+     PRINT 1103,0,0._8,0._8,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+  ELSE 
+     PRINT 1101,0,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+  END IF 
   IF (in%interval .LE. 0) THEN
      GOTO 100 ! no time integration
   END IF
@@ -810,6 +819,7 @@ PROGRAM relax
      CALL fieldadd(u3,v3,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
      IF (in%istransient) THEN
         CALL tensorfieldadd(epsilonik,epsilonikdot,in%sx1,in%sx2,in%sx3/2,c2=REAL(Dt))
+        !PRINT *, tensoramplitude(epsilonik,1.d0,1.d0,1.d0)
      END IF
      CALL tensorfieldadd(tau,moment,in%sx1,in%sx2,in%sx3/2,c2=REAL(Dt))
      CALL frictionadd(in%np,in%n,Dt)
@@ -839,7 +849,11 @@ PROGRAM relax
            in%events(e)%i=i
 
            PRINT '("coseismic event ",I3.3)', e
-           PRINT 0990
+           IF (in%istransient) THEN
+              PRINT 0991
+           ELSE
+              PRINT 0990
+           END IF
 
            v1=0;v2=0;v3=0;t1=0;t2=0;t3=0;
            CALL dislocations(in%events(e),in%lambda,in%mu, &
@@ -910,7 +924,10 @@ PROGRAM relax
            END IF
         END IF
 #endif
-        CALL exporteigenstrain(gamma,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
+        IF (in%iseigenstrain) THEN
+           CALL exporteigenstrain(gamma,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2, &
+                                  in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
+        END IF
 #ifdef GRD
         IF (in%isoutputgrd) THEN
            IF (in%isoutputrelax) THEN
@@ -1006,16 +1023,27 @@ PROGRAM relax
         CALL exportcoulombstress(sig,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
                           in%nsop,in%sop,t,in%wdir,.FALSE.)
 
-        PRINT 1101,i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, &
-             tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
-             tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
-
+        IF (in%istransient) THEN
+           PRINT 1103,i,Dt,maxwell,t,in%interval, &
+                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
+                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+        ELSE 
+           PRINT 1101,i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, &
+                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
+                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+        END IF
         ! update output counter
         oi=oi+1
      ELSE
-        PRINT 1100,i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, &
-             tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
-             tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+        IF (in%istransient) THEN
+           PRINT 1102,i,Dt,maxwell,t,in%interval, &
+                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
+                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+        ELSE
+           PRINT 1100,i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, &
+                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
+                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+        END IF 
      END IF
 
   END DO
@@ -1069,8 +1097,11 @@ PROGRAM relax
 #endif
 
 0990 FORMAT (" I  |   Dt   | tm(ve) | tm(pl) | tm(as) |     t/tmax     | power  |  C:E^i | ")
+0991 FORMAT (" I  |   Dt   | tm(ve) | tm(pl) | tm(as) | tm(kl) | tm(kn) |     t/tmax     | power  |  C:E^i | ")
 1100 FORMAT (I3.3," ",ES9.2E2,3ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
 1101 FORMAT (I3.3,"*",ES9.2E2,3ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
+1102 FORMAT (I3.3," ",ES9.2E2,5ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
+1103 FORMAT (I3.3,"*",ES9.2E2,5ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
 
 CONTAINS
 
@@ -1118,20 +1149,22 @@ CONTAINS
           END IF
        END DO
 
+       IF (in%iseigenstrain) THEN 
        ! equivalent body force for eigenstrain
-       DO i=1,event%neigenstrain
-          ! adding sources in the space domain
-          CALL eigenstrainsource(lambda,mu,event%eigenstrain(i)%e, &
-               event%eigenstrain(i)%x, &
-               event%eigenstrain(i)%y, &
-               event%eigenstrain(i)%z, &
-               event%eigenstrain(i)%width, &
-               event%eigenstrain(i)%length, &
-               event%eigenstrain(i)%thickness, &
-               event%eigenstrain(i)%strike, &
-               event%eigenstrain(i)%dip, &
-               in%beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3,t1,t2,t3)
-       END DO
+          DO i=1,event%neigenstrain
+             ! adding sources in the space domain
+             CALL eigenstrainsource(lambda,mu,event%eigenstrain(i)%e, &
+                  event%eigenstrain(i)%x, &
+                  event%eigenstrain(i)%y, &
+                  event%eigenstrain(i)%z, &
+                  event%eigenstrain(i)%width, &
+                  event%eigenstrain(i)%length, &
+                  event%eigenstrain(i)%thickness, &
+                  event%eigenstrain(i)%strike, &
+                  event%eigenstrain(i)%dip, &
+                  in%beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3,t1,t2,t3)
+          END DO
+       END IF
     ELSE
        ! forcing term in moment density
        DO i=1,event%ns
@@ -1160,13 +1193,15 @@ CONTAINS
             event%s(i)%beta,sx1,sx2,sx3/2,dx1,dx2,dx3,tau)
     END DO
 
-    DO i=1,event%neigenstrain
-       CALL momentdensityeigenstrain(mu,lambda,REAL(slip_factor,4) .times. event%eigenstrain(i)%e, & 
-            event%eigenstrain(i)%x,event%eigenstrain(i)%y,event%eigenstrain(i)%z, &
-            event%eigenstrain(i)%width,event%eigenstrain(i)%length,event%eigenstrain(i)%thickness, &
-            event%eigenstrain(i)%strike,event%eigenstrain(i)%dip, &
-            beta,sx1,sx2,sx3/2,dx1,dx2,dx3,tau)
-    END DO
+    IF (in%iseigenstrain) THEN
+       DO i=1,event%neigenstrain
+          CALL momentdensityeigenstrain(mu,lambda,REAL(slip_factor,4) .times. event%eigenstrain(i)%e, & 
+               event%eigenstrain(i)%x,event%eigenstrain(i)%y,event%eigenstrain(i)%z, &
+               event%eigenstrain(i)%width,event%eigenstrain(i)%length,event%eigenstrain(i)%thickness, &
+               event%eigenstrain(i)%strike,event%eigenstrain(i)%dip, &
+               beta,sx1,sx2,sx3/2,dx1,dx2,dx3,tau)
+       END DO
+    END IF
 
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ! -             load tensile cracks

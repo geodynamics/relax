@@ -276,7 +276,7 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   DO k=1,in%sx3/2
      tau(:,:,k)=(-1._4) .times. in%stressstruc(k)%t
   END DO
-
+  
   IF (in%istransient) THEN             
      ALLOCATE (epsilonik(in%sx1,in%sx2,in%sx3/2), &
                epsilonikdot(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)             
@@ -418,7 +418,7 @@ SUBROUTINE relaxlite(in,gps,isverbose)
                              in%nnltwz,in%nltransientweakzone,nltransientdgammadot0)
      END IF
   END IF
-
+  
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! -   start the relaxation
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -510,7 +510,6 @@ SUBROUTINE relaxlite(in,gps,isverbose)
            mech(5)=1
         END IF
      END IF
-
 
 
      ! identify the required time step
