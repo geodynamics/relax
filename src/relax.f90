@@ -427,7 +427,7 @@ PROGRAM relax
   CALL exportplanestress(sig,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi-1)
   IF (in%isoutputgrd .AND. in%isoutputstress) THEN
      CALL exportstressgrd(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                          in%ozs,in%x0,in%y0,in%wdir,0)
+                          in%ozs,in%x0,in%y0,in%wdir,0,4)
   END IF
 #endif
 #ifdef PROJ
@@ -819,7 +819,7 @@ PROGRAM relax
      CALL fieldadd(u3,v3,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
      IF (in%istransient) THEN
         CALL tensorfieldadd(epsilonik,epsilonikdot,in%sx1,in%sx2,in%sx3/2,c2=REAL(Dt))
-        !PRINT *, tensoramplitude(epsilonik,1.d0,1.d0,1.d0)
+        CALL tensorfieldadd(epsilonikdot,epsilonikdot,in%sx1,in%sx2,in%sx3/2,0._4,0._4)
      END IF
      CALL tensorfieldadd(tau,moment,in%sx1,in%sx2,in%sx3/2,c2=REAL(Dt))
      CALL frictionadd(in%np,in%n,Dt)
@@ -928,6 +928,12 @@ PROGRAM relax
            CALL exporteigenstrain(gamma,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2, &
                                   in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
         END IF
+
+        IF (in%istransient .AND. in%isoutputgrd) THEN
+           ! actually exports the transient strain
+           CALL exportstressgrd(epsilonik,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
+                                in%ozs,in%x0,in%y0,in%wdir,oi,6)
+        END IF
 #ifdef GRD
         IF (in%isoutputgrd) THEN
            IF (in%isoutputrelax) THEN
@@ -986,7 +992,7 @@ PROGRAM relax
         CALL exportplanestress(sig,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
         IF (in%isoutputgrd .AND. in%isoutputstress) THEN
            CALL exportstressgrd(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                in%ozs,in%x0,in%y0,in%wdir,oi)
+                                in%ozs,in%x0,in%y0,in%wdir,oi,4)
         END IF
 #endif
 #ifdef PROJ

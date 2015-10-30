@@ -183,7 +183,10 @@ CONTAINS
              ! perturbation from isolated viscous zones
              IF (isdgammadot0) gammadot0=gammadot0+dgammadot0(i1,i2,i3)
 
-             IF (1.0d-20 .GT. gammadot0) CYCLE
+             IF (1.0d-20 .GT. gammadot0) THEN
+                epsilonikdot(i1,i2,i3)=TENSOR(0._4,0._4,0._4,0._4,0._4,0._4)
+                CYCLE
+             END IF
 
              ! local deviatoric stress
              s=tensordeviatoric(sig(i1,i2,i3))
@@ -194,20 +197,22 @@ CONTAINS
              CALL tensordecomposition(epsilonik(i1,i2,i3),eik,edummy)
 
              ! powerlaw viscosity
-             gammadot=gammadot0*((tau/mu)**power-(2*(muk/mu)*eik)**power)
+             gammadot=gammadot0*((tau/mu-2*muk/mu*eik)**power)
              
              xi=gammadot0*(tau/mu)**power
 
              ! powerlaw viscosity
-             gammadotp=gammadot0*((taup/mu)**power-(2*(muk/mu)*eik)**power)
+             gammadotp=gammadot0*((taup/mu)**power)
 
-             epsilonikdot(i1,i2,i3)=(REAL(gammadot) .times. R) .minus. &
-                                    (REAL(gammadotp) .times. Rp)
+             epsilonikdot(i1,i2,i3)=(REAL(gammadot) .times. R) 
+!.minus. &
+!                                    (REAL(gammadotp) .times. Rp)
 
              ! update moment density forcing
              moment(i1,i2,i3)=moment(i1,i2,i3) .plus. &
-                  ((REAL(2._8*mu*gammadot ) .times. R ) .minus. &
-                   (REAL(2._8*mu*gammadotp) .times. Rp))
+                  (REAL(2._8*mu*gammadot ) .times. R )
+! .minus. &
+!                   (REAL(2._8*mu*gammadotp) .times. Rp))
 
              tm=MIN(tm,REAL(tau/mu/xi))
              
