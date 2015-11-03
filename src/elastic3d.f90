@@ -681,7 +681,7 @@ CONTAINS
     vstruct(:)%friction=0.6  ! default is friction=0.6
     vstruct(:)%cohesion=0  ! default is no cohesion
     vstruct(:)%stressexponent=layers(1)%stressexponent  ! default
-    vstruct(:)%Gk=layers(1)%Gk ! default 
+    vstruct(:)%Gk=0 ! default 
 
     z0=fix(layers(1)%z/dx3)*dx3
     DO k=1,nv
@@ -702,6 +702,7 @@ CONTAINS
           power1 =layers(k)%stressexponent
           friction1=layers(k)%friction
           cohesion1=layers(k)%cohesion
+          Gk1=layers(k)%Gk
           
           i3e=fix(z1/dx3+1)
        ELSE

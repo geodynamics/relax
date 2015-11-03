@@ -205,7 +205,7 @@ PROGRAM relax
   INTEGER, PARAMETER :: ITERATION_MAX = 99999
   REAL*8, PARAMETER :: STEP_MAX = 1e7
 
-  INTEGER :: i,k,e,oi,iostatus
+  INTEGER :: i,k,e,oi,iostatus,i3
 #ifdef FFTW3_THREADS
   INTEGER :: iret
 !$  INTEGER :: omp_get_max_threads
@@ -622,23 +622,33 @@ PROGRAM relax
      ! 4 - linear transient creep 
      IF (in%istransient) THEN
         IF (ALLOCATED(in%ltransientstruc)) THEN 
-           !CALL transientevolution(IN=sig,IN=epsilonik,IN=struct,OUT=epsilonikdot,INOUT=moment)
-           CALL transienteigenstress(in%mu,in%ltransientstruc, &
-                sig,in%stressstruc,epsilonik,in%sx1,in%sx2,in%sx3/2, &
-                in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
-                DGAMMADOT0=ltransientdgammadot0,MAXWELLTIME=maxwell(4))
-
+           IF (0 .LT. in%nltwz) THEN
+              CALL transienteigenstress(in%mu,in%ltransientstruc, &
+                   sig,in%stressstruc,epsilonik,in%sx1,in%sx2,in%sx3/2, &
+                   in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
+                   DGAMMADOT0=ltransientdgammadot0,MAXWELLTIME=maxwell(4))
+           ELSE
+              CALL transienteigenstress(in%mu,in%ltransientstruc, &
+                   sig,in%stressstruc,epsilonik,in%sx1,in%sx2,in%sx3/2, &
+                   in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
+                   MAXWELLTIME=maxwell(4))
+           END IF
            mech(4)=1
         END IF
      
-     ! 5 - nonlinear transient creep 
+        ! 5 - nonlinear transient creep 
         IF (ALLOCATED(in%nltransientstruc)) THEN 
-           !CALL transientevolution(IN=sig,IN=epsilonik,IN=struct,OUT=epsilonikdot,INOUT=moment)
-           CALL transienteigenstress(in%mu,in%nltransientstruc, &
-                sig,in%stressstruc,epsilonik,in%sx1,in%sx2,in%sx3/2, &
-                in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
-                DGAMMADOT0=nltransientdgammadot0,MAXWELLTIME=maxwell(5))
-     
+           IF (0 .LT. in%nnltwz) THEN
+              CALL transienteigenstress(in%mu,in%nltransientstruc, &
+                   sig,in%stressstruc,epsilonik,in%sx1,in%sx2,in%sx3/2, &
+                   in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
+                   DGAMMADOT0=nltransientdgammadot0,MAXWELLTIME=maxwell(5))
+           ELSE 
+              CALL transienteigenstress(in%mu,in%nltransientstruc, &
+                   sig,in%stressstruc,epsilonik,in%sx1,in%sx2,in%sx3/2, &
+                   in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
+                   MAXWELLTIME=maxwell(5))
+           END IF     
            mech(5)=1
         END IF
      END IF
@@ -762,18 +772,32 @@ PROGRAM relax
      ! 4 - linear transient creep 
      IF (in%istransient) THEN
         IF (ALLOCATED(in%ltransientstruc)) THEN 
-           !CALL transientevolution(IN=sig,IN=epsilonikdot,IN=struct,OUT=epsilonikdot,INOUT=moment)
-           CALL transienteigenstress(in%mu,in%ltransientstruc, &
-                   sig,in%stressstruc,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
-                   in%dx1,in%dx2,in%dx3,moment,epsilonikdot)
+           IF (0 .LT. in%nltwz) THEN
+              CALL transienteigenstress(in%mu,in%ltransientstruc, &
+                      sig,in%stressstruc,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
+                      in%dx1,in%dx2,in%dx3,moment,epsilonikdot,DGAMMADOT0=ltransientdgammadot0)
+           ELSE
+              CALL transienteigenstress(in%mu,in%ltransientstruc, &
+                      sig,in%stressstruc,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
+                      in%dx1,in%dx2,in%dx3,moment,epsilonikdot)
+           END IF
         END IF
      
-     ! 5 - nonlinear transient creep 
+        ! 5 - nonlinear transient creep 
         IF (ALLOCATED(in%nltransientstruc)) THEN 
-           CALL transienteigenstress(in%mu,in%nltransientstruc, &
-                   sig,in%stressstruc,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
-                   in%dx1,in%dx2,in%dx3,moment,epsilonikdot)
+           IF (0 .LT. in%nnltwz) THEN
+              CALL transienteigenstress(in%mu,in%nltransientstruc, &
+                      sig,in%stressstruc,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
+                      in%dx1,in%dx2,in%dx3,moment,epsilonikdot,DGAMMADOT0=nltransientdgammadot0)
+           ELSE
+              CALL transienteigenstress(in%mu,in%nltransientstruc, &
+                      sig,in%stressstruc,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
+                      in%dx1,in%dx2,in%dx3,moment,epsilonikdot)
+           END IF
         END IF
+      
+        CALL tensorfieldadd(epsilonik,epsilonikdot,in%sx1,in%sx2,in%sx3/2,c2=REAL(Dt))
+        CALL tensorfieldadd(epsilonikdot,epsilonikdot,in%sx1,in%sx2,in%sx3/2,0._4,0._4)
      END IF
 
      ! interseismic loading
@@ -817,10 +841,6 @@ PROGRAM relax
      CALL fieldadd(u1,v1,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
      CALL fieldadd(u2,v2,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
      CALL fieldadd(u3,v3,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
-     IF (in%istransient) THEN
-        CALL tensorfieldadd(epsilonik,epsilonikdot,in%sx1,in%sx2,in%sx3/2,c2=REAL(Dt))
-        CALL tensorfieldadd(epsilonikdot,epsilonikdot,in%sx1,in%sx2,in%sx3/2,0._4,0._4)
-     END IF
      CALL tensorfieldadd(tau,moment,in%sx1,in%sx2,in%sx3/2,c2=REAL(Dt))
      CALL frictionadd(in%np,in%n,Dt)
      
@@ -1147,7 +1167,7 @@ CONTAINS
           IF (in%nyquist*MIN(in%dx1,in%dx2,in%dx3).LT.event%s(i)%length .OR. &
               in%nyquist*MIN(in%dx1,in%dx2,in%dx3).LT.event%s(i)%width) THEN
              ! adding sources in the space domain
-             CALL source(mu,slip_factor*event%s(i)%slip, &
+            CALL source(mu,slip_factor*event%s(i)%slip, &
                   event%s(i)%x,event%s(i)%y,event%s(i)%z, &
                   event%s(i)%width,event%s(i)%length, &
                   event%s(i)%strike,event%s(i)%dip,event%s(i)%rake, &
