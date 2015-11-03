@@ -212,12 +212,12 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   INTEGER, PARAMETER :: ITERATION_MAX = 9999
   REAL*8, PARAMETER :: STEP_MAX = 1e7
 
-  INTEGER :: i,k,e,oi,iostatus,mech(3)
+  INTEGER :: i,k,e,oi,iostatus
 #ifdef FFTW3_THREADS
   INTEGER :: iret
 !$  INTEGER :: omp_get_max_threads
 #endif
-  REAL*8 :: maxwell(3)
+  REAL*8, DIMENSION(5) :: maxwell,mech
   CHARACTER(256) :: filename,title,name
 
   CHARACTER(4) :: digit4
@@ -226,8 +226,10 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   ! arrays
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: v1,v2,v3,u1,u2,u3,gamma
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: lineardgammadot0,nonlineardgammadot0
+  REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: ltransientdgammadot0,nltransientdgammadot0 
   REAL*4, DIMENSION(:,:), ALLOCATABLE :: t1,t2,t3
   TYPE(TENSOR), DIMENSION(:,:,:), ALLOCATABLE :: tau,sig,moment
+  TYPE(TENSOR), DIMENSION(:,:,:), ALLOCATABLE :: epsilonik,epsilonikdot 
 
 #ifdef FFTW3_THREADS
   CALL sfftw_init_threads(iret)
@@ -267,6 +269,8 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   IF (ALLOCATED(in%stresslayer)) THEN
      ! depth-dependent background stress
      CALL tensorstructure(in%stressstruc,in%stresslayer,in%dx3)
+     ! Caller has to take care deallocating this
+     ! DEALLOCATE(in%stresslayer)
   ELSE
      ! background stress is zero
      in%stressstruc(:)%t=tensor(0._4,0._4,0._4,0._4,0._4,0._4)
@@ -274,6 +278,13 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   DO k=1,in%sx3/2
      tau(:,:,k)=(-1._4) .times. in%stressstruc(k)%t
   END DO
+  
+  IF (in%istransient) THEN             
+     ALLOCATE (epsilonik(in%sx1,in%sx2,in%sx3/2), &
+               epsilonikdot(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)             
+     IF (iostatus>0) STOP "could not allocate memory epsilonik"
+  END IF 
+  
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! -
@@ -293,14 +304,19 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   
   IF (isverbose) THEN
      PRINT '("# event ",I3.3)', e
+   IF (in%istransient) THEN
+     PRINT 0991
+  ELSE
      PRINT 0990
+  END IF
   END IF
 
   ! test the presence of dislocations for coseismic calculation
   IF ((in%events(e)%nt .NE. 0) .OR. &
       (in%events(e)%ns .NE. 0) .OR. &
       (in%events(e)%nm .NE. 0) .OR. &
-      (in%events(e)%nl .NE. 0)) THEN
+      (in%events(e)%nl .NE. 0) .OR. &
+      (in%events(e)%neigenstrain .NE. 0)) THEN
 
      ! apply the 3d elastic transfer function
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3, &
@@ -377,10 +393,40 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%faultcreeplayer)) THEN
      CALL viscoelasticstructure(in%faultcreepstruc,in%faultcreeplayer,in%dx3)
-     !The caller has to take care of this memory release
-     !DEALLOCATE(in%faultcreeplayer)
   END IF
 
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -   construct linear transient structure
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  IF (ALLOCATED(in%ltransientlayer)) THEN
+     CALL viscoelasticstructure(in%ltransientstruc,in%ltransientlayer,in%dx3)
+     !The caller has to take care of this memory release
+     !DEALLOCATE(in%ltransientlayer)
+
+     ALLOCATE(ltransientdgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
+     IF (iostatus.GT.0) STOP "could not allocate ltransientdgammadot0"
+     IF (0 .LT. in%nltwz) THEN
+        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
+                             in%nltwz,in%ltransientweakzone,ltransientdgammadot0)
+     END IF
+  END IF
+  
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -   construct nonlinear transient structure
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  IF (ALLOCATED(in%nltransientlayer)) THEN
+     CALL viscoelasticstructure(in%nltransientstruc,in%nltransientlayer,in%dx3)
+     !The caller has to take care of this memory release
+     !DEALLOCATE(in%nltransientlayer)
+
+     ALLOCATE(nltransientdgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
+     IF (iostatus.GT.0) STOP "could not allocate nltransientdgammadot0"
+     IF (0 .LT. in%nnltwz) THEN
+        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
+                             in%nnltwz,in%nltransientweakzone,nltransientdgammadot0)
+     END IF
+  END IF
+  
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! -   start the relaxation
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -399,11 +445,10 @@ SUBROUTINE relaxlite(in,gps,isverbose)
 
      ! initialize large time step
      tm=STEP_MAX;
-     maxwell(:)=STEP_MAX;
+     maxwell=STEP_MAX;
      
      ! active mechanism flag
-     mech(:)=0
-
+     mech=0
      ! initialize no forcing term in tensor space
      CALL tensorfieldadd(moment,moment,in%sx1,in%sx2,in%sx3/2,0._4,0._4)
 
@@ -450,10 +495,47 @@ SUBROUTINE relaxlite(in,gps,isverbose)
         mech(3)=1
      END IF
 
+     ! 4 - linear transient creep 
+     IF (in%istransient) THEN
+        IF (ALLOCATED(in%ltransientstruc)) THEN 
+           IF (0 .LT. in%nltwz) THEN
+              CALL transienteigenstress(in%mu,in%ltransientstruc, &
+                   sig,in%stressstruc,epsilonik,in%sx1,in%sx2,in%sx3/2, &
+                   in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
+                   DGAMMADOT0=ltransientdgammadot0,MAXWELLTIME=maxwell(4))
+           ELSE
+              CALL transienteigenstress(in%mu,in%ltransientstruc, &
+                   sig,in%stressstruc,epsilonik,in%sx1,in%sx2,in%sx3/2, &
+                   in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
+                   MAXWELLTIME=maxwell(4))
+           END IF
+           mech(4)=1
+        END IF
+     
+        ! 5 - nonlinear transient creep 
+        IF (ALLOCATED(in%nltransientstruc)) THEN 
+           IF (0 .LT. in%nnltwz) THEN
+              CALL transienteigenstress(in%mu,in%nltransientstruc, &
+                   sig,in%stressstruc,epsilonik,in%sx1,in%sx2,in%sx3/2, &
+                   in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
+                   DGAMMADOT0=nltransientdgammadot0,MAXWELLTIME=maxwell(5))
+           ELSE 
+              CALL transienteigenstress(in%mu,in%nltransientstruc, &
+                   sig,in%stressstruc,epsilonik,in%sx1,in%sx2,in%sx3/2, &
+                   in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
+                   MAXWELLTIME=maxwell(5))
+           END IF     
+           mech(5)=1
+        END IF
+     END IF
+
+
      ! identify the required time step
      tm=1._8/(REAL(mech(1))/maxwell(1)+ &
               REAL(mech(2))/maxwell(2)+ &
-              REAL(mech(3))/maxwell(3))
+              REAL(mech(3))/maxwell(3)+ &
+              REAL(mech(4))/maxwell(4)+ &
+              REAL(mech(5))/maxwell(5))
      ! force finite time step
      tm=MIN(tm,STEP_MAX)
 
@@ -482,6 +564,9 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      CALL fieldadd(v1,u1,in%sx1+2,in%sx2,in%sx3/2,c1=REAL(Dt/2))
      CALL fieldadd(v2,u2,in%sx1+2,in%sx2,in%sx3/2,c1=REAL(Dt/2))
      CALL fieldadd(v3,u3,in%sx1+2,in%sx2,in%sx3/2,c1=REAL(Dt/2))
+     IF (in%istransient) THEN
+        CALL tensorfieldadd(epsilonikdot,epsilonik,in%sx1,in%sx2,in%sx3/2,c1=REAL(Dt/2),c2=1._4)
+     END IF
      CALL tensorfieldadd(sig,tau,in%sx1,in%sx2,in%sx3/2,c1=-REAL(Dt/2),c2=-1._4)
 
      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -550,6 +635,37 @@ SUBROUTINE relaxlite(in,gps,isverbose)
 
      END IF
 
+     ! 4 - linear transient creep 
+     IF (in%istransient) THEN
+        IF (ALLOCATED(in%ltransientstruc)) THEN 
+           IF (0 .LT. in%nltwz) THEN
+              CALL transienteigenstress(in%mu,in%ltransientstruc, &
+                      sig,in%stressstruc,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
+                      in%dx1,in%dx2,in%dx3,moment,epsilonikdot,DGAMMADOT0=ltransientdgammadot0)
+           ELSE
+              CALL transienteigenstress(in%mu,in%ltransientstruc, &
+                      sig,in%stressstruc,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
+                      in%dx1,in%dx2,in%dx3,moment,epsilonikdot)
+           END IF
+        END IF
+     
+        ! 5 - nonlinear transient creep 
+        IF (ALLOCATED(in%nltransientstruc)) THEN 
+           IF (0 .LT. in%nnltwz) THEN
+              CALL transienteigenstress(in%mu,in%nltransientstruc, &
+                      sig,in%stressstruc,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
+                      in%dx1,in%dx2,in%dx3,moment,epsilonikdot,DGAMMADOT0=nltransientdgammadot0)
+           ELSE
+              CALL transienteigenstress(in%mu,in%nltransientstruc, &
+                      sig,in%stressstruc,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
+                      in%dx1,in%dx2,in%dx3,moment,epsilonikdot)
+           END IF
+        END IF
+      
+        CALL tensorfieldadd(epsilonik,epsilonikdot,in%sx1,in%sx2,in%sx3/2,c2=REAL(Dt))
+        CALL tensorfieldadd(epsilonikdot,epsilonikdot,in%sx1,in%sx2,in%sx3/2,0._4,0._4)
+     END IF
+
      ! interseismic loading
      IF ((in%inter%ns .GT. 0) .OR. (in%inter%nt .GT. 0)) THEN
         ! vectors v1,v2,v3 are not affected.
@@ -583,7 +699,11 @@ SUBROUTINE relaxlite(in,gps,isverbose)
 
            IF (isverbose) THEN
               PRINT '("coseismic event ",I3.3)', e
+              IF (in%istransient) THEN
+              PRINT 0991
+           ELSE
               PRINT 0990
+           END IF
            END IF
 
            v1=0;v2=0;v3=0;t1=0;t2=0;t3=0;
@@ -627,16 +747,28 @@ SUBROUTINE relaxlite(in,gps,isverbose)
         IF (isoutput(in%skip,t,i,in%odt,oi,in%events(e)%time)) THEN
         
            WRITE (digit4,'(I4.4)') oi
-           PRINT 1101,i,Dt,maxwell,t,in%interval, &
+IF (in%istransient) THEN
+           PRINT 1103,i,Dt,maxwell,t,in%interval, &
                 tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
                 tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+        ELSE 
+           PRINT 1101,i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, &
+                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
+                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+        END IF
 
            ! update output counter
            oi=oi+1
         ELSE
-           PRINT 1100,i,Dt,maxwell,t,in%interval, &
+        IF (in%istransient) THEN
+           PRINT 1102,i,Dt,maxwell,t,in%interval, &
                 tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
                 tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+        ELSE
+           PRINT 1100,i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, &
+                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
+                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+        END IF 
         END IF
      END IF
 
@@ -655,16 +787,24 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   IF (ALLOCATED(sig)) DEALLOCATE(sig)
   IF (ALLOCATED(tau)) DEALLOCATE(tau)
   IF (ALLOCATED(moment)) DEALLOCATE(moment)
+  IF (ALLOCATED(epsilonik)) DEALLOCATE(epsilonik)
+  IF (ALLOCATED(epsilonikdot)) DEALLOCATE(epsilonikdot)
   IF (ALLOCATED(v1)) DEALLOCATE(v1,v2,v3,t1,t2,t3)
   IF (ALLOCATED(u1)) DEALLOCATE(u1,u2,u3)
-
+  IF (ALLOCATED(lineardgammadot0)) DEALLOCATE(lineardgammadot0)
+  IF (ALLOCATED(nonlineardgammadot0)) DEALLOCATE(nonlineardgammadot0)
+  IF (ALLOCATED(ltransientdgammadot0)) DEALLOCATE(ltransientdgammadot0)
+  IF (ALLOCATED(nltransientdgammadot0)) DEALLOCATE(nltransientdgammadot0)
 #ifdef FFTW3_THREADS
   CALL sfftw_cleanup_threads()
 #endif
 
 0990 FORMAT (" I  |   Dt   | tm(ve) | tm(pl) | tm(as) |     t/tmax     | power  |  C:E^i | ")
+0991 FORMAT (" I  |   Dt   | tm(ve) | tm(pl) | tm(as) | tm(kl) | tm(kn) |     t/tmax     | power  |  C:E^i | ")
 1100 FORMAT (I3.3," ",ES9.2E2,3ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
 1101 FORMAT (I3.3,"*",ES9.2E2,3ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
+1102 FORMAT (I3.3," ",ES9.2E2,5ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
+1103 FORMAT (I3.3,"*",ES9.2E2,5ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
 
 CONTAINS
 
@@ -711,6 +851,23 @@ CONTAINS
                   event%s(i)%beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3,t1,t2,t3)
           END IF
        END DO
+
+       IF (in%iseigenstrain) THEN 
+       ! equivalent body force for eigenstrain
+          DO i=1,event%neigenstrain
+             ! adding sources in the space domain
+             CALL eigenstrainsource(lambda,mu,event%eigenstrain(i)%e, &
+                  event%eigenstrain(i)%x, &
+                  event%eigenstrain(i)%y, &
+                  event%eigenstrain(i)%z, &
+                  event%eigenstrain(i)%width, &
+                  event%eigenstrain(i)%length, &
+                  event%eigenstrain(i)%thickness, &
+                  event%eigenstrain(i)%strike, &
+                  event%eigenstrain(i)%dip, &
+                  in%beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3,t1,t2,t3)
+          END DO
+       END IF
     ELSE
        ! forcing term in moment density
        DO i=1,event%ns
@@ -720,8 +877,16 @@ CONTAINS
                event%s(i)%strike,event%s(i)%dip,event%s(i)%rake, &
                event%s(i)%beta,sx1,sx2,sx3/2,dx1,dx2,dx3,eigenstress)
        END DO
+       
+       DO i=1,event%neigenstrain
+          CALL momentdensityeigenstrain(mu,lambda,REAL(slip_factor,4) .times. event%eigenstrain(i)%e, &
+               event%eigenstrain(i)%x,event%eigenstrain(i)%y,event%eigenstrain(i)%z, & 
+               event%eigenstrain(i)%width,event%eigenstrain(i)%length,event%eigenstrain(i)%thickness, &
+               event%eigenstrain(i)%strike,event%eigenstrain(i)%dip, &
+               beta,sx1,sx2,sx3/2,dx1,dx2,dx3,eigenstress)
+       END DO
     END IF
-
+    
     DO i=1,event%ns
        ! remove corresponding eigenmoment
        CALL momentdensityshear(mu,slip_factor*event%s(i)%slip, &
@@ -730,7 +895,17 @@ CONTAINS
             event%s(i)%strike,event%s(i)%dip,event%s(i)%rake, &
             event%s(i)%beta,sx1,sx2,sx3/2,dx1,dx2,dx3,tau)
     END DO
-    
+
+    IF (in%iseigenstrain) THEN
+       DO i=1,event%neigenstrain
+          CALL momentdensityeigenstrain(mu,lambda,REAL(slip_factor,4) .times. event%eigenstrain(i)%e, & 
+               event%eigenstrain(i)%x,event%eigenstrain(i)%y,event%eigenstrain(i)%z, &
+               event%eigenstrain(i)%width,event%eigenstrain(i)%length,event%eigenstrain(i)%thickness, &
+               event%eigenstrain(i)%strike,event%eigenstrain(i)%dip, &
+               beta,sx1,sx2,sx3/2,dx1,dx2,dx3,tau)
+       END DO
+    END IF
+
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ! -             load tensile cracks
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
