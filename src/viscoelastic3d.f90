@@ -196,17 +196,15 @@ CONTAINS
              xi=gammadot0*(tau/mu)**power
 
              ! powerlaw viscosity
-             gammadotp=gammadot0*((taup/mu)**power)
+             gammadotp=gammadot0*((taup/mu)**(power-1))
 
-             epsilonikdot(i1,i2,i3)=(REAL(gammadot/mu) .times. Q) 
-!.minus. &
-!                                    (REAL(gammadotp) .times. Rp)
+             epsilonikdot(i1,i2,i3)=(REAL(gammadot/mu) .times. Q) .minus. &
+                                    (REAL(gammadotp) .times. sp)
 
              ! update moment density forcing
              moment(i1,i2,i3)=moment(i1,i2,i3) .plus. &
-                  (REAL(2._8*gammadot ) .times. Q )
-! .minus. &
-!                   (REAL(2._8*mu*gammadotp) .times. Rp))
+                  (REAL(2._8*gammadot ) .times. Q ) .minus. &
+                   (REAL(2._8*gammadotp) .times. sp)
 
              tm=MIN(tm,REAL(tau/mu/xi))
              

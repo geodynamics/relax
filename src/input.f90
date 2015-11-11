@@ -999,7 +999,7 @@ CONTAINS
                      !                     in%nltransientweakzone(k)%dip,rffilename)
 #endif
                      ! export the ductile zone in GMT .xy format
-                     rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".xy"
+                     rffilename=trim(in%wdir)//"/weakzone-nltr-"//digit//".xy"
                      CALL exportxy_brick(in%nltransientweakzone(k)%x, &
                                           in%nltransientweakzone(k)%y, &
                                           in%nltransientweakzone(k)%z, &
@@ -1011,7 +1011,7 @@ CONTAINS
              END DO
 #ifdef VTK
              ! export the ductile zone in VTK format
-             rffilename=trim(in%wdir)//"/weakzones-nonlinear.vtp"
+             rffilename=trim(in%wdir)//"/weakzones-nonlinear-transient.vtp"
              CALL exportvtk_allbricks(in%nnlwz,in%nltransientweakzone,rffilename)
 #endif
           END IF

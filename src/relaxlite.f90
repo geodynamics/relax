@@ -302,15 +302,6 @@ SUBROUTINE relaxlite(in,gps,isverbose)
                     in%dx1,in%dx2,in%dx3,v1,v2,v3,t1,t2,t3,tau)
   CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,0.d0,t3)
   
-  IF (isverbose) THEN
-     PRINT '("# event ",I3.3)', e
-   IF (in%istransient) THEN
-     PRINT 0991
-  ELSE
-     PRINT 0990
-  END IF
-  END IF
-
   ! test the presence of dislocations for coseismic calculation
   IF ((in%events(e)%nt .NE. 0) .OR. &
       (in%events(e)%ns .NE. 0) .OR. &
@@ -349,9 +340,25 @@ SUBROUTINE relaxlite(in,gps,isverbose)
 
   WRITE (digit4,'(I4.4)') 0
 
-  IF (isverbose) THEN
-     PRINT 1101,0,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+  i=INDEX(in%wdir," ")
+  filename=in%wdir(1:i-1) // "/" // "out.param" 
+  OPEN (UNIT=20,FILE=filename,IOSTAT=iostatus,FORM="FORMATTED")
+  IF (in%istransient) THEN
+     WRITE(20,0991)
+  ELSE
+     WRITE(20,0990)
   END IF
+
+  IF (in%istransient) THEN
+    WRITE(20,1103) 0,0._8,0._8,0._8,0._8,0._8,0._8,0._8,in%interval,&
+                   0._8,tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+  ELSE
+    WRITE(20,1101) 0,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,&
+                   tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+  END IF
+
+  FLUSH(20)
+
   IF (in%interval .LE. 0) THEN
      GOTO 100 ! no time integration
   END IF
@@ -740,39 +747,23 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      ! -   export displacement and stress
      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-     ! output only at discrete intervals (skip=0, odt>0),
-     ! or every "skip" computational steps (skip>0, odt<0),
-     ! or anytime a coseismic event occurs
-     IF (isverbose) THEN
-        IF (isoutput(in%skip,t,i,in%odt,oi,in%events(e)%time)) THEN
-        
-           WRITE (digit4,'(I4.4)') oi
-IF (in%istransient) THEN
-           PRINT 1103,i,Dt,maxwell,t,in%interval, &
+     WRITE (digit4,'(I4.4)') oi
+     IF (in%istransient) THEN
+        WRITE(20,1103) & 
+              i,Dt,maxwell,t,in%interval, &
+              tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
+              tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
+     ELSE 
+        WRITE(20,1101) &
+                i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, &
                 tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
                 tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
-        ELSE 
-           PRINT 1101,i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, &
-                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
-                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
-        END IF
-
-           ! update output counter
-           oi=oi+1
-        ELSE
-        IF (in%istransient) THEN
-           PRINT 1102,i,Dt,maxwell,t,in%interval, &
-                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
-                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
-        ELSE
-           PRINT 1100,i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, &
-                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
-                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
-        END IF 
-        END IF
      END IF
+     FLUSH(20)
 
   END DO
+  ! close the out.param file.
+  CLOSE(20)
 
 100 CONTINUE
 
