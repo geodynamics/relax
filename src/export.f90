@@ -1205,8 +1205,8 @@ END SUBROUTINE exportcreep_vtk
   !! \author sylvain barbot 03/19/08 - original form
   !------------------------------------------------------------------
   SUBROUTINE exportstressgrd(sig,sx1,sx2,sx3,dx1,dx2,dx3, &
-                             oz,origx,origy,wdir,index)
-    INTEGER, INTENT(IN) :: sx1,sx2,sx3,index
+                             oz,origx,origy,wdir,index,conv)
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3,index,conv
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     REAL*8, INTENT(IN) :: dx1,dx2,dx3,origx,origy,oz
     CHARACTER(256), INTENT(IN) :: wdir
@@ -1232,7 +1232,7 @@ END SUBROUTINE exportcreep_vtk
     END DO
 
     CALL exportgrd(t1,t2,t3,sx1,sx2,1, &
-         dx1,dx2,dx3,0._8,origx,origy,wdir,index,convention=4)
+         dx1,dx2,dx3,0._8,origx,origy,wdir,index,convention=conv)
 
     DO j=1,sx2
        DO i=1,sx1
@@ -1248,12 +1248,11 @@ END SUBROUTINE exportcreep_vtk
     END DO
 
     CALL exportgrd(t1,t2,t3,sx1,sx2,1, &
-         dx1,dx2,dx3,0._8,origx,origy,wdir,index,convention=5)
+         dx1,dx2,dx3,0._8,origx,origy,wdir,index,convention=conv+1)
 
     DEALLOCATE(t1,t2,t3)
 
   END SUBROUTINE exportstressgrd
-
 
   !------------------------------------------------------------------
   !> subroutine ExportGRD
@@ -1345,6 +1344,15 @@ END SUBROUTINE exportcreep_vtk
        file1=wdir(1:pos-1) // "/" // digit // "-s22.grd"
        file2=wdir(1:pos-1) // "/" // digit // "-s23.grd"
        file3=wdir(1:pos-1) // "/" // digit // "-s33.grd"
+
+    CASE (6) ! transient strain 
+       file1=wdir(1:pos-1) // "/" // digit // "-e11.grd"
+       file2=wdir(1:pos-1) // "/" // digit // "-e12.grd"
+       file3=wdir(1:pos-1) // "/" // digit // "-e13.grd"
+    CASE (7) ! transient strain 
+       file1=wdir(1:pos-1) // "/" // digit // "-e22.grd"
+       file2=wdir(1:pos-1) // "/" // digit // "-e23.grd"
+       file3=wdir(1:pos-1) // "/" // digit // "-e33.grd"
     END SELECT
     
     ! convert to c standard

@@ -209,7 +209,7 @@ MODULE types
      ! linear transient weak zones
      TYPE(WEAK_STRUCT), DIMENSION(:), ALLOCATABLE :: ltransientweakzone,ltransientweakzonec
 
-     ! number of linear transient interfaces 
+     ! number of nonlinear transient interfaces 
      INTEGER :: nnlt
 
      ! nonlinear transient layers and structure

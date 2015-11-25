@@ -106,7 +106,7 @@ usage(){
         echo "$self converts an .flt file to a kml polygon"
 	echo "file in xml format for visualization in Google Earth"
 	echo ""
-	echo "usage: $self file.flt"
+	echo "usage: $self [-C file.cpt] [-h] [-s scale] [-x x0] [-y y0] [-z zone] file.flt"
 	echo "       $self file1.flt file2.flt file3.flt "
 	echo ""
 	echo "or from the standard input"

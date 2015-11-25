@@ -5,7 +5,7 @@ self=$(basename $0)
 trap 'echo $self: Some errors occurred. Exiting.; exit' ERR
 
 flt2vtp(){
-	grep -v "#" $FLTFILE | awk '
+	grep -v "#" $FLTFILE | awk -v scale=$SCALE '
 	BEGIN{
 		pi=atan2(1,0)*2;
 		printf("<?xml version=\"1.0\"?>\n");
@@ -15,11 +15,11 @@ flt2vtp(){
 	{
 		i=$1;
 		if (NF==9){
-		x1=$2;
-		x2=$3;
-		x3=$4;
-		L=$5;
-		W=$6;
+		x1=$2*scale;
+		x2=$3*scale;
+		x3=$4*scale;
+		L=$5*scale;
+		W=$6*scale;
 		strike=$7*pi/180;
 		dip=$8*pi/180;
 		rake=$9*pi/180;
@@ -27,11 +27,11 @@ flt2vtp(){
 		ndip=8;
 		} else {
 		slip=$2
-		x1=$3;
-		x2=$4;
-		x3=$5;
-		L=$6;
-		W=$7;
+		x1=$3*scale;
+		x2=$4*scale;
+		x3=$5*scale;
+		L=$6*scale;
+		W=$7*scale;
 		strike=$8*pi/180;
 		dip=$9*pi/180;
 		rake=$10*pi/180;
@@ -114,6 +114,20 @@ usage(){
 if [ -t 0 ] && [ $# -eq 0 ]; then
 	usage
 	exit
+fi
+
+while getopts "s:" flag
+do
+	case "$flag" in
+	s) sset=1;SCALE=$OPTARG;;
+	esac
+done
+for item in $sset; do
+	shift;shift
+done
+
+if [ "1" != "$sset" ]; then
+	SCALE=1
 fi
 
 if [ ! -t 0 ]; then
