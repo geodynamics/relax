@@ -58,8 +58,8 @@ $WDIR
 0
 # number of distributed eigenstrain
 1
-# n     e11  e12  e13     e22  e23     e33    x1 x2 x3 length width thickness strike dip
-  1 0.00e-0 1e-3 0e-0 0.00e-0 0e-0 0.00e-0 -12.8  0  1   25.6     2         2      0  90
+# n     e11  e12  e13     e22  e23     e33 x1 x2 x3 length width thickness strike dip
+  1 0.00e-0 1e-3 0e-0 0.00e-0 0e-0 0.00e-0 -1  0  1      2     2         2      0  90
 # number of surface traction
 0
 EOF
