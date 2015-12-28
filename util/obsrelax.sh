@@ -16,6 +16,7 @@ usage(){
 	echo options:
 	echo    -r  gps1.ned  compute the displacements relative to station gps1.ned
 	echo    -t  time      remove coseismic displacements at given times t1/../t3 [0].
+	echo    -s  silent    doesnt print messages on the standard output.
 	echo 
 	echo example:  obsrelax.sh "output{1,2,3,4,5,6,7}/{lae1,lae2,lae3,lae4,law1,law2,law3,law4,oldw,oldd,meek,rich,sanh}"
 	echo 
@@ -46,7 +47,9 @@ stripoffset(){
 			OFILE=/dev/stdout
 		else
 			OFILE=$WDIR/$(basename $1 .ned)-relax.ned
-			echo $self: changing $IFILE to $OFILE
+		    if [ "$sset" != "1" ]; then
+				echo $self: changing $IFILE to $OFILE
+			fi
 		fi
 
 		grep -v "#" $IFILE |
@@ -85,15 +88,20 @@ if [ "$#" == "0" ]; then
 	exit 1
 fi
 
-while getopts "r:t:" flag
+while getopts "r:t:s:" flag
 do
   case "$flag" in
     r) rset=1;RFILE=$OPTARG;;
     t) tset=1;EPOCHS="$OPTARG";;
+	s) sset=1;;
   esac
 done
 for i in $rset $tset; do
         shift;shift
+done
+
+for i in $sset; do
+        shift;
 done
 
 if [ "$rset" == "1" ];then

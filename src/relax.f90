@@ -624,12 +624,12 @@ PROGRAM relax
         IF (ALLOCATED(in%ltransientstruc)) THEN 
            IF (0 .LT. in%nltwz) THEN
               CALL transienteigenstress(in%mu,in%ltransientstruc, &
-                   sig,in%stressstruc,epsilonik,in%sx1,in%sx2,in%sx3/2, &
+                   sig,epsilonik,in%sx1,in%sx2,in%sx3/2, &
                    in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
                    DGAMMADOT0=ltransientdgammadot0,MAXWELLTIME=maxwell(4))
            ELSE
               CALL transienteigenstress(in%mu,in%ltransientstruc, &
-                   sig,in%stressstruc,epsilonik,in%sx1,in%sx2,in%sx3/2, &
+                   sig,epsilonik,in%sx1,in%sx2,in%sx3/2, &
                    in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
                    MAXWELLTIME=maxwell(4))
            END IF
@@ -640,12 +640,12 @@ PROGRAM relax
         IF (ALLOCATED(in%nltransientstruc)) THEN 
            IF (0 .LT. in%nnltwz) THEN
               CALL transienteigenstress(in%mu,in%nltransientstruc, &
-                   sig,in%stressstruc,epsilonik,in%sx1,in%sx2,in%sx3/2, &
+                   sig,epsilonik,in%sx1,in%sx2,in%sx3/2, &
                    in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
                    DGAMMADOT0=nltransientdgammadot0,MAXWELLTIME=maxwell(5))
            ELSE 
               CALL transienteigenstress(in%mu,in%nltransientstruc, &
-                   sig,in%stressstruc,epsilonik,in%sx1,in%sx2,in%sx3/2, &
+                   sig,epsilonik,in%sx1,in%sx2,in%sx3/2, &
                    in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
                    MAXWELLTIME=maxwell(5))
            END IF     
@@ -774,11 +774,11 @@ PROGRAM relax
         IF (ALLOCATED(in%ltransientstruc)) THEN 
            IF (0 .LT. in%nltwz) THEN
               CALL transienteigenstress(in%mu,in%ltransientstruc, &
-                      sig,in%stressstruc,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
+                      sig,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
                       in%dx1,in%dx2,in%dx3,moment,epsilonikdot,DGAMMADOT0=ltransientdgammadot0)
            ELSE
               CALL transienteigenstress(in%mu,in%ltransientstruc, &
-                      sig,in%stressstruc,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
+                      sig,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
                       in%dx1,in%dx2,in%dx3,moment,epsilonikdot)
            END IF
         END IF
@@ -787,11 +787,11 @@ PROGRAM relax
         IF (ALLOCATED(in%nltransientstruc)) THEN 
            IF (0 .LT. in%nnltwz) THEN
               CALL transienteigenstress(in%mu,in%nltransientstruc, &
-                      sig,in%stressstruc,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
+                      sig,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
                       in%dx1,in%dx2,in%dx3,moment,epsilonikdot,DGAMMADOT0=nltransientdgammadot0)
            ELSE
               CALL transienteigenstress(in%mu,in%nltransientstruc, &
-                      sig,in%stressstruc,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
+                      sig,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
                       in%dx1,in%dx2,in%dx3,moment,epsilonikdot)
            END IF
         END IF

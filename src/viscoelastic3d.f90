@@ -120,13 +120,12 @@ CONTAINS
   !!
   !! \author Sylvain Barbot (10/08/15) - original form
   !-----------------------------------------------------------------
-  SUBROUTINE transienteigenstress(mu,structure,sig,prestress,epsilonik,sx1,sx2,sx3, &
+  SUBROUTINE transienteigenstress(mu,structure,sig,epsilonik,sx1,sx2,sx3, &
        dx1,dx2,dx3,moment,epsilonikdot,maxwelltime,dgammadot0)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
     REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(IN), OPTIONAL :: dgammadot0
     REAL*8, INTENT(IN) :: mu,dx1,dx2,dx3
     TYPE(LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: structure
-    TYPE(TENSOR_LAYER_STRUCT), DIMENSION(:), INTENT(IN) :: prestress
     TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
     TYPE(TENSOR), INTENT(OUT), DIMENSION(sx1,sx2,sx3) :: moment
     REAL*8, OPTIONAL, INTENT(INOUT) :: maxwelltime
@@ -134,30 +133,23 @@ CONTAINS
     TYPE(TENSOR), INTENT(INOUT), DIMENSION(sx1,sx2,sx3) :: epsilonikdot
    
     INTEGER :: i1,i2,i3
-    TYPE(TENSOR) :: s,sp,Q
-    REAL*8 :: xi,gammadot,gammadotp,tau,taup,gammadot0,power,muk,nq
+    TYPE(TENSOR) :: s,Q
+    REAL*8 :: gammadot,tau,gammadot0,power,muk,nq
     REAL*4 :: tm
 
     LOGICAL :: isdgammadot0
     IF (SIZE(structure,1) .NE. sx3) RETURN
-    IF (SIZE(prestress,1) .NE. sx3) RETURN
-
     
     isdgammadot0=PRESENT(dgammadot0)
     tm=1e30
     IF (PRESENT(maxwelltime)) tm=REAL(maxwelltime)
 
-!$omp parallel do private(i1,i2,gammadot0,power,s,sp,tau,taup,Q,nq,muk,gammadot,gammadotp,xi), &
+!$omp parallel do private(i1,i2,gammadot0,power,s,tau,Q,nq,muk,gammadot), &
 !$omp reduction(MIN:tm)
     DO i3=1,sx3
        power=structure(i3)%stressexponent
        muk=structure(i3)%Gk
 
-       ! prestress
-       sp=tensordeviatoric(prestress(i3)%t)
-       ! sp = taup * Rp
-       taup=tensornorm(sp)
-             
        IF (power .LT. 0.999999_8) THEN 
           WRITE_DEBUG_INFO
           WRITE (0,'("power=",ES9.2E1)') power
@@ -182,10 +174,10 @@ CONTAINS
              s=tensordeviatoric(sig(i1,i2,i3))
              
              ! s = tau * R
-             tau=tensornorm(s .plus. sp)
+             tau=tensornorm(s)
 
              ! Q = (sigma - 2Gk*epsilonik)
-             Q=(s .plus. sp .minus. (REAL(2._8*muk) .times. epsilonik(i1,i2,i3)))
+             Q=(s .minus. (REAL(2._8*muk) .times. epsilonik(i1,i2,i3)))
             
              ! q = || Q ||
              nq=tensornorm(Q)
@@ -193,20 +185,13 @@ CONTAINS
              ! powerlaw viscosity
              gammadot=gammadot0*(nq/mu)**(power-1)
 
-             xi=gammadot0*(tau/mu)**power
-
-             ! powerlaw viscosity
-             gammadotp=gammadot0*((taup/mu)**(power-1))
-
-             epsilonikdot(i1,i2,i3)=(REAL(gammadot/mu) .times. Q) .minus. &
-                                    (REAL(gammadotp) .times. sp)
+             epsilonikdot(i1,i2,i3)=REAL(gammadot/mu) .times. Q
 
              ! update moment density forcing
              moment(i1,i2,i3)=moment(i1,i2,i3) .plus. &
-                  (REAL(2._8*gammadot ) .times. Q ) .minus. &
-                   (REAL(2._8*gammadotp) .times. sp)
+                  (REAL(2._8*gammadot ) .times. Q ) 
 
-             tm=MIN(tm,REAL(tau/mu/xi))
+             tm=MIN(tm,REAL(1._8/gammadot))
              
           END DO
        END DO
