@@ -77,7 +77,7 @@ my_gmt(){
 			eval "$selfdir/$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PROJ $PSFILE"
 		else
 			if [ -e "$subprog" ]; then
-				#echo $self: running $subprog $PSFILE $bds $VECTOR $U3 $HEIGHT
+				#echo $self: running $subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PROJ $PSFILE
 				eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PROJ $PSFILE"
 			fi
 		fi
@@ -166,7 +166,7 @@ do
 	C) Cset="-C";contour=$OPTARG;;
 	L) Lset="-L$OPTARG";;
 	O) Oset=1;PSFILE=$(dirname $OPTARG)/$(basename $OPTARG .ps).ps;;
-	J) Jset="-J";PROJ=$OPTARG;;
+	J) Jset="-J";PROJ="$OPTARG";;
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
 done
@@ -305,6 +305,7 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 		        AXIS=-B${tick}:"":/${tick}:""::."$title":WSne
 		fi
 
+		Jset="-J"
 		echo $self": z-min/z-max for "$U3": "`grdinfo -C $U3 | awk '{print $6,$7}'`
 	
 		PSFILE=$ODIR/$INDEX-plot.ps

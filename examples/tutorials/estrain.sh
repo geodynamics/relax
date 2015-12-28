@@ -18,7 +18,7 @@ OMP_NUM_THREADS=2 relax --no-proj-output --with-eigenstrain $* <<EOF | tee $WDIR
 # origin position & rotation
 0 0 0
 # observation depth for displacement and for stress (stress in only exported in GRD)
-0 2
+2 2
 # output directory (all output written here)
 $WDIR
 # lambda, mu, gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km

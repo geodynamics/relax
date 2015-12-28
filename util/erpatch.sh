@@ -14,7 +14,7 @@ selfdir=$(dirname $0)
 cmdline=$*
 trap 'echo $self: Some errors occurred. Exiting.; exit' ERR
 
-while getopts "b:c:gp:v:H:J" flag
+while getopts "b:c:gp:v:H:J:" flag
 do
 	case "$flag" in
 	b) bset=1;bds=$OPTARG;;
@@ -22,14 +22,14 @@ do
 	g) gset=1;;
 	p) pset=1;U3=$OPTARG;;
 	v) vset=1;SIZE=$OPTARG;VECTOR=$OPTARG"c";;
-	J) Jset="-J";;
+	J) Jset="-J";PROJ=$OPTARG;;
 	H) Hset=1;HEIGHT=$OPTARG;;
 	esac
 done
-for item in $bset $cset $pset $vset $Hset; do
+for item in $bset $cset $pset $vset $Hset $Jset; do
 	shift;shift
 done
-for item in $gset $Jset; do
+for item in $gset; do
 	shift
 done
 
