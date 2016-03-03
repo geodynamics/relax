@@ -30,3 +30,10 @@ grep -v "#" s2007BENGKU02GUSM.fsp | awk '{$2=$2-0.9;$1=$1-0.36; print $0}' |  pr
 
 grep -v "#" s2007BENGKU01GUSM.fsp | awk '{$2=$2-0.9;$1=$1-0.36; print $0}' |  proj +proj=utm +zone=47 -r | awk 'BEGIN{Pi=3.14159265;print "# n   slip          x1         x2           x3     length    width strike dip  rake"}{L=$8;W=$9;slip=$6;rake=$7;str0=$10;dip0=$11;str=str0*Pi/180;dip=dip0/180*Pi;s[1]=cos(str);s[2]=sin(str);s[3]=0;d[1]=sin(str)*cos(dip);d[2]=-cos(str)*cos(dip);d[3]=-sin(dip);x1=($2-221910.44)/1e3-s[1]*L/2;x2=($1+56748.29)/1e3-s[2]*L/2;x3=$5;printf "%3d %6.2f %11.2f %11.2f %11.2f   %6.2f %6.2f    %d   %d %5.1f\n", NR,slip,x1*1e3,x2*1e3,x3*1e3,L*1e3,W*1e3,str0,dip0,rake}' > gusman+10M1.flt
 grep -v "#" s2007BENGKU02GUSM.fsp | awk '{$2=$2-0.9;$1=$1-0.36; print $0}' |  proj +proj=utm +zone=47 -r | awk 'BEGIN{Pi=3.14159265;print "# n   slip          x1         x2           x3     length    width strike dip  rake"}{L=$8;W=$9;slip=$6;rake=$7;str0=$10;dip0=$11;str=str0*Pi/180;dip=dip0/180*Pi;s[1]=cos(str);s[2]=sin(str);s[3]=0;d[1]=sin(str)*cos(dip);d[2]=-cos(str)*cos(dip);d[3]=-sin(dip);x1=($2-221910.44)/1e3-s[1]*L/2;x2=($1+56748.29)/1e3-s[2]*L/2;x3=$5;printf "%3d %6.2f %11.2f %11.2f %11.2f   %6.2f %6.2f    %d   %d %5.1f\n", NR,slip,x1*1e3,x2*1e3,x3*1e3,L*1e3,W*1e3,str0,dip0,rake}' > gusman+10M2.flt
+
+# convert Shengji's inversion to the Relax format
+grep -v "#" static_out | awk 'NR>5'| proj -r +proj=utm +zone=47 | awk -v W=9 -v L=9 'BEGIN{Pi=3.14159265;print "# nb  slip      x1      x2      x3   length  width strike dip  rake"}{slip=$4/100;rake=$5;str0=$6;dip0=$7;str=str0*Pi/180;dip=dip0/180*Pi;s[1]=cos(str);s[2]=sin(str);s[3]=0;d[1]=sin(str)*cos(dip);d[2]=-cos(str)*cos(dip);d[3]=-sin(dip);x1=($2-221910.44)/1e3-s[1]*L/2+d[1]*W/2;x2=($1+56748.29)/1e3-s[2]*L/2+d[2]*W/2;x3=$3+d[3]*W/2;printf "%3d %6.2f %7.2f %7.2f %7.2f   %6.2f %6.2f    %d   %d %5.1f\n", NR,slip,x1,x2,x3,L,W,str0,dip0,rake}' > wharton16_mw7.9_km.flt
+
+# convert the flt file to kml
+flt2kml.sh -x -56748.29 -y 221910.44 -z 47 -s 1000 wharton16_mw7.9_km.flt
+
