@@ -225,7 +225,7 @@ MODULE types
      INTEGER :: np
 
      ! afterslip planes
-     TYPE(PLANE_STRUCT), DIMENSION(:), ALLOCATABLE :: n
+     TYPE(PLANE_STRUCT), DIMENSION(:), ALLOCATABLE :: n,nc
 
      ! interseismic event
      TYPE(EVENT_STRUC) :: inter

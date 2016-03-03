@@ -692,7 +692,7 @@ CONTAINS
           ALLOCATE(in%nonlinearweakzone(in%nnlwz),in%nonlinearweakzonec(in%nnlwz),STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the nonlinear weak zones"
           PRINT 2000
-          PRINT '("# n dgammadot0     x1       x2       x3  length   width thickn. strike   dip")'
+          PRINT '("#   n dgammadot0     x1       x2       x3  length   width thickn. strike   dip")'
           PRINT 2000
           DO k=1,in%nnlwz
              CALL getdata(iunit,dataline)
@@ -704,7 +704,7 @@ CONTAINS
           
              in%nonlinearweakzonec(k)=in%nonlinearweakzone(k)
              
-             PRINT '(I3.3,4ES9.2E1,3ES8.2E1,f7.1,f6.1)',k,&
+             PRINT '(I5.5,4ES9.2E1,3ES8.2E1,f7.1,f6.1)',k,&
                   in%nonlinearweakzone(k)%dgammadot0, &
                   in%nonlinearweakzone(k)%x,in%nonlinearweakzone(k)%y,in%nonlinearweakzone(k)%z, &
                   in%nonlinearweakzone(k)%length,in%nonlinearweakzone(k)%width, &
