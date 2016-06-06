@@ -269,6 +269,7 @@ CONTAINS
     END IF
     
     IF (PRESENT(gamma)) THEN
+        iGammaPresent=1
         CALL cuviscouseigen (structure, ductilezones, sig, moment, %VAL(mu), &
                           %VAL(nz), %VAL(sx1), &
                           %VAL(sx2), %VAL(sx3), %VAL(dx1), %VAL(dx2), %VAL(dx3), %VAL(beta), &
@@ -279,6 +280,10 @@ CONTAINS
                           %VAL(sx2), %VAL(sx3), %VAL(dx1), %VAL(dx2), %VAL(dx3), %VAL(beta), &
                           tm, %VAL(dGamma), %VAL(iPresent), %VAL(iGammaPresent))
      END IF
+     IF (PRESENT(maxwelltime)) THEN
+         maxwelltime=MIN(tm,maxwelltime)
+     END IF
+
 #else
     isdgammadot0=PRESENT(dgammadot0)
     IF (PRESENT(maxwelltime)) THEN

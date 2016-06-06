@@ -210,6 +210,7 @@ typedef struct _st_layer
         double  stressexponent ;
         double  cohesion ;
         double  friction ;
+        double  Gk ;
 
 } ST_LAYER ;
 

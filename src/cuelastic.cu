@@ -42,6 +42,7 @@
 
 /* This include contains the common macros and definitions */
 #include "cuinclude.h"
+#include "thrust/extrema.h"
 #include <cufft.h>
 #include <stdio.h>
 /* Switch for enabling/disabling the usage of GPU */

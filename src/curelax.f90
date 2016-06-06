@@ -188,9 +188,6 @@
   !!   - include topography of parameter interface
   !!   - export afterslip output in VTK legacy format (binary)
   !------------------------------------------------------------------------
-
-#include "include.f90"
-  
 PROGRAM relax
 
   USE types
@@ -202,15 +199,17 @@ PROGRAM relax
   USE friction3d
   USE export
 
+#include "include.f90"
+  
   IMPLICIT NONE
-
+  
   INTEGER, PARAMETER :: ITERATION_MAX = 99999 
   REAL*8, PARAMETER :: STEP_MAX = 1e7
 
   INTEGER :: i,k,e,oi,iostatus,mech(3),iTensor,iRet
   
   REAL*8 :: maxwell(3)
-  TYPE(SIMULATION_STRUC) :: in
+  TYPE(SIMULATION_STRUCT) :: in
 #ifdef VTK
   CHARACTER(256) :: filename,title,name
   CHARACTER(3) :: digit
@@ -416,16 +415,16 @@ PROGRAM relax
 
      IF (ALLOCATED(in%linearstruc)) THEN
         CALL viscouseigenstress(in%mu,in%linearstruc,in%linearweakzone,in%nlwz, &
-             sig,in%sx1,in%sx2,in%sx3/2, &
-             in%dx1,in%dx2,in%dx3,moment,0.01_8,MAXWELLTIME=maxwell(1))
+             sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
+             in%dx1,in%dx2,in%dx3,moment,in%beta,MAXWELLTIME=maxwell(1))
         mech(1)=1
      END IF
      
      ! 2- powerlaw viscosity
      IF (ALLOCATED(in%nonlinearstruc)) THEN
         CALL viscouseigenstress(in%mu,in%nonlinearstruc,in%nonlinearweakzone,in%nnlwz, &
-             sig,in%sx1,in%sx2,in%sx3/2, &
-             in%dx1,in%dx2,in%dx3,moment,0.01_8,MAXWELLTIME=maxwell(2))
+             sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
+             in%dx1,in%dx2,in%dx3,moment,in%beta,MAXWELLTIME=maxwell(2))
       mech(2)=1
      END IF
 
@@ -435,7 +434,7 @@ PROGRAM relax
            CALL frictioneigenstress(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
                 in%n(k)%width,in%n(k)%length, &
                 in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
-                sig,in%mu,in%faultcreepstruc, &
+                sig,in%stressstruc,in%mu,in%faultcreepstruc, &
                 in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
                 moment,maxwelltime=maxwell(3))
         END DO
@@ -545,9 +544,9 @@ PROGRAM relax
      IF (ALLOCATED(in%linearstruc)) THEN
         ! linear viscosity
 !        v1=0
-        CALL viscouseigenstress(in%mu,in%linearstruc,in%linearweakzone,in%nlwz,sig, &
-             in%sx1,in%sx2,in%sx3/2, &
-             in%dx1,in%dx2,in%dx3,moment,0.01_8,GAMMA=v1)
+        CALL viscouseigenstress(in%mu,in%linearstruc,in%linearweakzone, &
+                                in%nlwz,sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
+                                in%dx1,in%dx2,in%dx3,moment,in%beta,GAMMA=v1)
         
      END IF
     
@@ -559,9 +558,9 @@ PROGRAM relax
      IF (ALLOCATED(in%nonlinearstruc)) THEN
         ! powerlaw viscosity
 !        v1=0
-        CALL viscouseigenstress(in%mu,in%nonlinearstruc,in%nonlinearweakzone,in%nnlwz,sig, &
-             in%sx1,in%sx2,in%sx3/2, &
-             in%dx1,in%dx2,in%dx3,moment,0.01_8,GAMMA=v1)
+        CALL viscouseigenstress(in%mu,in%nonlinearstruc,in%nonlinearweakzone, &
+                                in%nnlwz,sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
+                                in%dx1,in%dx2,in%dx3,moment,in%beta,GAMMA=v1)
  
      END IF
 
@@ -580,7 +579,7 @@ PROGRAM relax
            CALL frictioneigenstress(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
                 in%n(k)%width,in%n(k)%length, &
                 in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
-                sig,in%mu,in%faultcreepstruc,in%sx1,in%sx2,in%sx3/2, &
+                sig,in%stressstruc,in%mu,in%faultcreepstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment)
 
            ! keep track if afterslip instantaneous velocity
@@ -588,7 +587,7 @@ PROGRAM relax
                 in%n(k)%width,in%n(k)%length, &
                 in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
                 in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                sig,in%faultcreepstruc,in%n(k)%patch)
+                sig,in%stressstruc,in%faultcreepstruc,in%n(k)%patch)
         END DO
 
      END IF
