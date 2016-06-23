@@ -334,6 +334,7 @@ def build(bld):
                         'src/getdata.f',
                         'src/getopt_m.f90',
                         'src/input.f90',
+                        'src/util.f90',
                         'src/mkl_dfti.f90',
                         'src/papi_prof.c',
                         'src/cugreen.cu',

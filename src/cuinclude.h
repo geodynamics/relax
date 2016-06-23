@@ -53,11 +53,11 @@
 /* #define PRINT_DEBUG_INFO 1 */
 
 
-#define CHECK_CUDA_ERROR(sFunction, Label)      if (cudaSuccess != cuError)                                             \
-                                                {                                                                       \
-                                                        printf ("%s : Failed  reason is : %s Line number : %d\n",       \
-                                                        sFunction, cudaGetErrorString(cuError), __LINE__) ;             \
-                                                        goto Label ;                                                    \
+#define CHECK_CUDA_ERROR(sFunction, Label)      if (cudaSuccess != cuError) \
+                                                {                           \
+                                                    printf ("%s : Failed  reason is : %s Line number : %d\n",       \
+                                                    sFunction, cudaGetErrorString(cuError), __LINE__) ;             \
+                                                    goto Label ;                                                    \
                                                 }
 
 
@@ -90,34 +90,34 @@
 
 typedef enum _e_dimension
 {
-        E_INVALID_DIMENSION = 0,
-        E_ONE_DIMENSION,
-        E_TWO_DIMENSION,
-        E_THREE_DIMENSION,
+    E_INVALID_DIMENSION = 0,
+    E_ONE_DIMENSION,
+    E_TWO_DIMENSION,
+    E_THREE_DIMENSION,
 } E_DIMENSION ;
 
 
 typedef enum _e_tensor_field
 {
-        E_INVALID_TENSOR_FIELD = 0,
-        E_TENSOR_TAU_TAU,
-        E_TENSOR_SIG_TAU,
-        E_TENSOR_MOM_MOM,
-        E_TENSOR_SIG_MOM,
-        E_TENSOR_TAU_MOM
+    E_INVALID_TENSOR_FIELD = 0,
+    E_TENSOR_TAU_TAU,
+    E_TENSOR_SIG_TAU,
+    E_TENSOR_MOM_MOM,
+    E_TENSOR_SIG_MOM,
+    E_TENSOR_TAU_MOM
 }E_TENSOR_FIELD ;
 
 
 typedef enum _e_tensor_amp_type
 {
-        E_INVALID_TENSOR_AMP_TYPE=0,
-        E_TENSOR_AMP_MOMENT,
-        E_TENSOR_AMP_TAU
+    E_INVALID_TENSOR_AMP_TYPE=0,
+    E_TENSOR_AMP_MOMENT,
+    E_TENSOR_AMP_TAU
 }E_TENSOR_AMP_TYPE ;
 
 typedef enum _e_tensor_type
 {
-        E_INVALID_TENSOR_TYPE=0,
+    E_INVALID_TENSOR_TYPE=0,
 	E_TENSOR_SIG,
 	E_TENSOR_MOMENT,
 	E_TENSOR_TAU
@@ -125,9 +125,9 @@ typedef enum _e_tensor_type
 
 typedef enum _e_type
 {
-	E_INVALID_TYPE=0,
-        E_TYPE_U,
-        E_TYPE_V
+    E_INVALID_TYPE=0,
+    E_TYPE_U,
+    E_TYPE_V
 }E_TYPE ;
 
 /* -------------------------------------------------------------------------------- */
@@ -197,6 +197,13 @@ typedef struct _st_tensor
         float s33 ;
 } ST_TENSOR ;
 
+typedef struct _st_tensor_layer
+{
+        float z ;
+        float dum ;
+        ST_TENSOR   t ;
+} ST_TENSOR_LAYER ;
+
 typedef struct _st_layer
 {
 /*      double  dZ ;
@@ -251,6 +258,11 @@ extern "C" void papistartprofiling_ (char pcProfName[]) ;
 extern "C" void papiendprofiling_ (char    pcName[]) ;
 
 #endif
+
+extern "C"
+{
+    extern void __util_MOD_ispresent (void *, int *) ;
+}
 
 template <class T>
 __global__ void scaling (T              *pCompData,

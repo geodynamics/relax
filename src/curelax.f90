@@ -223,6 +223,7 @@ PROGRAM relax
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: u1r,u2r,u3r
   REAL*4, DIMENSION(:,:), ALLOCATABLE :: t1,t2,t3
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: inter1,inter2,inter3
+  REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: lineardgammadot0,nonlineardgammadot0
   TYPE(TENSOR), DIMENSION(:,:,:), ALLOCATABLE :: tau,sig,moment
  
 #ifdef PAPI_PROF
@@ -245,7 +246,7 @@ PROGRAM relax
 
   CALL cuinit (%VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3), %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3), iostatus)
   IF (iostatus>0) STOP "could not allocate memory"
-
+   
   ! allocate memory
   ALLOCATE (v1(1,1,1),v2(1,1,1),v3(1,1,1), &
             u1(1,1,1),u2(1,1,1),u3(1,1,1), &
@@ -263,38 +264,16 @@ PROGRAM relax
   ! -     construct pre-stress structure
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%stresslayer)) THEN
+     ! depth-dependent background stress
      CALL tensorstructure(in%stressstruc,in%stresslayer,in%dx3)
-     DEALLOCATE(in%stresslayer)
-     
-     DO k=1,in%sx3/2
-        tau(:,:,k)=(-1._4) .times. in%stressstruc(k)%t
-     END DO
-     DEALLOCATE(in%stressstruc)
+     !DEALLOCATE(in%stresslayer)
+  ELSE
+     ! background stress is zero
+     in%stressstruc(:)%t=tensor(0._4,0._4,0._4,0._4,0._4,0._4)
   END IF
-
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -     construct linear viscoelastic structure
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  IF (ALLOCATED(in%linearlayer)) THEN
-     CALL viscoelasticstructure(in%linearstruc,in%linearlayer,in%dx3)
-     DEALLOCATE(in%linearlayer)
-  END IF
-
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -   construct nonlinear viscoelastic structure
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  IF (ALLOCATED(in%nonlinearlayer)) THEN
-     CALL viscoelasticstructure(in%nonlinearstruc,in%nonlinearlayer,in%dx3)
-     DEALLOCATE(in%nonlinearlayer)
-  END IF
-
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -   construct nonlinear fault creep structure (rate-strenghtening)
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  IF (ALLOCATED(in%faultcreeplayer)) THEN
-     CALL viscoelasticstructure(in%faultcreepstruc,in%faultcreeplayer,in%dx3)
-     DEALLOCATE(in%faultcreeplayer)
-  END IF
+  DO k=1,in%sx3/2
+     tau(:,:,k)=(-1._4) .times. in%stressstruc(k)%t
+  END DO
 
   ! first event
   e=1
@@ -375,6 +354,46 @@ PROGRAM relax
   END IF
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -     construct linear viscoelastic structure
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  IF (ALLOCATED(in%linearlayer)) THEN
+     CALL viscoelasticstructure(in%linearstruc,in%linearlayer,in%dx3)
+     DEALLOCATE(in%linearlayer)
+
+     IF (0 .LT. in%nlwz) THEN
+        ALLOCATE(lineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
+        IF (iostatus.GT.0) STOP "could not allocate lineardgammadot0"
+        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
+                             in%nlwz,in%linearweakzone,lineardgammadot0)
+     END IF
+     !DEALLOCATE(lineardgammadot0)
+  END IF
+
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -   construct nonlinear viscoelastic structure
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  IF (ALLOCATED(in%nonlinearlayer)) THEN
+     CALL viscoelasticstructure(in%nonlinearstruc,in%nonlinearlayer,in%dx3)
+     DEALLOCATE(in%nonlinearlayer)
+
+     IF (0 .LT. in%nnlwz) THEN
+        ALLOCATE(nonlineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
+        IF (iostatus.GT.0) STOP "could not allocate nonlineardgammadot0"
+        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
+                             in%nnlwz,in%nonlinearweakzone,nonlineardgammadot0)
+     END IF
+     !DEALLOCATE(nonlineardgammadot0)
+  END IF
+
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -   construct nonlinear fault creep structure (rate-strenghtening)
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  IF (ALLOCATED(in%faultcreeplayer)) THEN
+     CALL viscoelasticstructure(in%faultcreepstruc,in%faultcreeplayer,in%dx3)
+     DEALLOCATE(in%faultcreeplayer)
+  END IF
+
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! -   start the relaxation
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -414,17 +433,17 @@ PROGRAM relax
 #endif 
 
      IF (ALLOCATED(in%linearstruc)) THEN
-        CALL viscouseigenstress(in%mu,in%linearstruc,in%linearweakzone,in%nlwz, &
+        CALL viscouseigenstress(in%mu,in%linearstruc, &
              sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
-             in%dx1,in%dx2,in%dx3,moment,in%beta,MAXWELLTIME=maxwell(1))
+             in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=lineardgammadot0,MAXWELLTIME=maxwell(1))
         mech(1)=1
      END IF
      
      ! 2- powerlaw viscosity
      IF (ALLOCATED(in%nonlinearstruc)) THEN
-        CALL viscouseigenstress(in%mu,in%nonlinearstruc,in%nonlinearweakzone,in%nnlwz, &
+        CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
              sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
-             in%dx1,in%dx2,in%dx3,moment,in%beta,MAXWELLTIME=maxwell(2))
+             in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=nonlineardgammadot0,MAXWELLTIME=maxwell(2))
       mech(2)=1
      END IF
 
@@ -544,9 +563,9 @@ PROGRAM relax
      IF (ALLOCATED(in%linearstruc)) THEN
         ! linear viscosity
 !        v1=0
-        CALL viscouseigenstress(in%mu,in%linearstruc,in%linearweakzone, &
-                                in%nlwz,sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
-                                in%dx1,in%dx2,in%dx3,moment,in%beta,GAMMA=v1)
+        CALL viscouseigenstress(in%mu,in%linearstruc,sig,in%stressstruc,in%sx1,&
+                                in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,moment, &
+                                DGAMMADOT0=lineardgammadot0,GAMMA=v1)
         
      END IF
     
@@ -558,9 +577,9 @@ PROGRAM relax
      IF (ALLOCATED(in%nonlinearstruc)) THEN
         ! powerlaw viscosity
 !        v1=0
-        CALL viscouseigenstress(in%mu,in%nonlinearstruc,in%nonlinearweakzone, &
-                                in%nnlwz,sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
-                                in%dx1,in%dx2,in%dx3,moment,in%beta,GAMMA=v1)
+        CALL viscouseigenstress(in%mu,in%nonlinearstruc,&
+                                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
+                                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=nonlineardgammadot0,GAMMA=v1)
  
      END IF
 
@@ -767,6 +786,8 @@ PROGRAM relax
   IF (ALLOCATED(v1)) DEALLOCATE(v1,v2,v3,t1,t2,t3)
   IF (ALLOCATED(u1)) DEALLOCATE(u1,u2,u3)
   IF (ALLOCATED(inter1)) DEALLOCATE(inter1,inter2,inter3)
+  IF (ALLOCATED(lineardgammadot0)) DEALLOCATE(lineardgammadot0)
+  IF (ALLOCATED(nonlineardgammadot0)) DEALLOCATE(nonlineardgammadot0)
 
 
 0990 FORMAT (" I  |   Dt   | tm(ve) | tm(pl) | tm(as) |     t/tmax     | power  |  C:E^i | ")
