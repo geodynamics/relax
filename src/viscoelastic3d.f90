@@ -234,14 +234,7 @@ CONTAINS
     INTEGER :: i1,i2,i3
     TYPE(TENSOR) :: s,sp
     REAL*8 :: gammadot,gammadotp,tau,taup,tauc,gammadot0,power,cohesion
-#ifdef USING_CUDA
-    REAL*8 :: tm
-    INTEGER :: iPresent, iGammaPresent
-    INTEGER :: dGamma=0
-#else
     REAL*4 :: tm
-    LOGICAL :: isdgammadot0
-#endif    
     IF (SIZE(structure,1) .NE. sx3) RETURN
     IF (SIZE(prestress,1) .NE. sx3) RETURN
 
