@@ -235,6 +235,8 @@ CONTAINS
     TYPE(TENSOR) :: s,sp
     REAL*8 :: gammadot,gammadotp,tau,taup,tauc,gammadot0,power,cohesion
     REAL*4 :: tm
+    LOGICAL :: isdgammadot0
+
     IF (SIZE(structure,1) .NE. sx3) RETURN
     IF (SIZE(prestress,1) .NE. sx3) RETURN
 

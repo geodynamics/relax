@@ -100,11 +100,14 @@ typedef enum _e_dimension
 typedef enum _e_tensor_field
 {
     E_INVALID_TENSOR_FIELD = 0,
-    E_TENSOR_TAU_TAU,
-    E_TENSOR_SIG_TAU,
-    E_TENSOR_MOM_MOM,
-    E_TENSOR_SIG_MOM,
-    E_TENSOR_TAU_MOM
+    E_TENSOR_TAU_TAU,      //1
+    E_TENSOR_SIG_TAU,      //2
+    E_TENSOR_MOM_MOM,      //3
+    E_TENSOR_SIG_MOM,      //4
+    E_TENSOR_TAU_MOM,      //5
+    E_TENSOR_IK_IKDOT,     //6
+    E_TENSOR_IKDOT_IK,     //7
+    E_TENSOR_IKDOT_IKDOT   //8
 }E_TENSOR_FIELD ;
 
 
@@ -118,10 +121,12 @@ typedef enum _e_tensor_amp_type
 typedef enum _e_tensor_type
 {
     E_INVALID_TENSOR_TYPE=0,
-	E_TENSOR_SIG,
-	E_TENSOR_MOMENT,
-	E_TENSOR_TAU
-}E_TENSOR_TYPE ;
+	E_TENSOR_SIG,      // 1
+	E_TENSOR_MOMENT,   // 2
+	E_TENSOR_TAU,      // 3
+    E_TENSOR_IK,       // 4
+    E_TENSOR_IKDOT     // 5 
+}E_TENSOR_TYPE ; 
 
 typedef enum _e_type
 {
