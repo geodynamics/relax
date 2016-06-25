@@ -31,7 +31,7 @@ OMP_NUM_THREADS=2 time relax --no-proj-output --with-transient $* <<EOF | tee $W
 # The time step is computed automatically and the value unchanged (scale = 1)
 #
 # grid size (sx1,sx2,sx3)
-128 128 128
+256 256 256
 # sampling size defines the grid spacing in units of distance
 # smoothing is a roll-off parameter 0 <= beta <= 0.5 that tapers 
 # the slip distribution on faults beta=0.2 and beta=0.3 are good values
