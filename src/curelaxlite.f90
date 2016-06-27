@@ -188,7 +188,7 @@
   !!   - include topography of parameter interface
   !!   - export afterslip output in VTK legacy format (binary)
   !------------------------------------------------------------------------
-PROGRAM relax
+SUBROUTINE relaxlite(in,gps,isverbose)
 
   USE types
   USE input
@@ -203,13 +203,17 @@ PROGRAM relax
   
   IMPLICIT NONE
   
+  TYPE(SIMULATION_STRUCT), INTENT(INOUT) :: in
+  TYPE(MANIFOLD_STRUCT), INTENT(OUT) :: gps(in%npts)
+  LOGICAL, INTENT(IN) :: isverbose
+
   INTEGER, PARAMETER :: ITERATION_MAX = 99999 
   REAL*8, PARAMETER :: STEP_MAX = 1e7
 
   INTEGER :: i,k,e,oi,iostatus,itensortype,iRet,igamma,imaxwell
   
   REAL*8, DIMENSION(5) :: maxwell,mech
-  TYPE(SIMULATION_STRUCT) :: in
+
 #ifdef VTK
   CHARACTER(256) :: filename,title,name
   CHARACTER(3) :: digit
@@ -227,23 +231,14 @@ PROGRAM relax
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: ltransientdgammadot0,nltransientdgammadot0 
   TYPE(TENSOR), DIMENSION(:,:,:), ALLOCATABLE :: tau,sig,moment
  
-#ifdef PAPI_PROF
-    CHARACTER (LEN=16) ctimername
-    ctimername = 'relax'
-#endif
-
-  ! read input parameters
-  CALL init(in)
-
-  ! abort calculation after help message
-  ! or for dry runs
-  IF (in%isdryrun) THEN
-     PRINT '("dry run: abort calculation")'
-  END IF
-  IF (in%isdryrun .OR. in%ishelp) THEN
-     ! exit program
-     GOTO 100
-  END IF
+  DO k=1,in%npts
+     gps(k)%nepochs=0
+     ALLOCATE(gps(k)%t(1+ITERATION_MAX), &
+              gps(k)%u1(1+ITERATION_MAX), &
+              gps(k)%u2(1+ITERATION_MAX), &
+              gps(k)%u3(1+ITERATION_MAX), STAT=iostatus)
+     IF (iostatus>0) STOP "could not allocate prediction array"
+  END DO
 
   CALL cuinit (%VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3), %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3), iostatus)
   IF (iostatus>0) STOP "could not allocate memory"
@@ -295,11 +290,10 @@ PROGRAM relax
   CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,0.d0,t3)
 
  
-  PRINT '("coseismic event ",I3.3)', e
   IF (in%istransient) THEN
-     PRINT 0991
+     WRITE(20,0991)
   ELSE
-     PRINT 0990
+     WRITE(20,0990)
   END IF
 
   ! test the presence of dislocations for coseismic calculation
@@ -314,11 +308,11 @@ PROGRAM relax
 
      ! add displacement from analytic solutions for small patches (avoid
      ! aliasing)
+     ! Need to implement this ?
   END IF
 
   ! transfer solution
   CALL cufieldrep (%VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2))
-
 
   ! evaluate stress
   itensortype=2
@@ -332,31 +326,32 @@ PROGRAM relax
                               %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3),    & 
                               %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), u1, u2, u3, sig)
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -   export observation points, map view of displacement,
-  ! -   map view of stress components, Coulomb stress on observation
-  ! -   patches, and full displacement and stress field.
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-#ifdef GRD
-  IF (in%isoutputgrd) THEN
-     CALL exportgrd(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0,in%wdir,0)
-  END IF
-#endif
+  CALL pts2series(u1,u2,u3,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%opts,0._8,1,gps)
 
   IF (ALLOCATED(in%ptsname)) THEN
      CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
           in%opts,in%ptsname,0._8,in%wdir,.true.,in%x0,in%y0,in%rot)
   END IF
 
+  i=INDEX(in%wdir," ")
+  filename=in%wdir(1:i-1) // "/" // "out.param" 
+  OPEN (UNIT=20,FILE=filename,IOSTAT=iostatus,FORM="FORMATTED")
+  IF (in%istransient) THEN
+     WRITE(20,0991)
+  ELSE
+     WRITE(20,0990)
+  END IF
+
   itensortype=2
   CALL cutensoramp (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),dAmp)
   dAmp=dAmp*DBLE(in%dx1*in%dx2*in%dx3)
   IF (in%istransient) THEN
-     PRINT 1103,0,0._8,0._8,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,dAmp
+     WRITE(20,1103) 0,0._8,0._8,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,dAmp
   ELSE
-     PRINT 1101,0,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,dAmp
+     WRITE(20,1101) 0,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,dAmp
   END IF
+  
+  FLUSH(20)
  
   IF (in%interval .LE. 0) THEN
      GOTO 100 ! no time integration
@@ -367,7 +362,7 @@ PROGRAM relax
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%linearlayer)) THEN
      CALL viscoelasticstructure(in%linearstruc,in%linearlayer,in%dx3)
-     DEALLOCATE(in%linearlayer)
+     !DEALLOCATE(in%linearlayer)
 
      IF (0 .LT. in%nlwz) THEN
         ALLOCATE(lineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
@@ -375,7 +370,6 @@ PROGRAM relax
         CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
                              in%nlwz,in%linearweakzone,lineardgammadot0)
      END IF
-     !DEALLOCATE(lineardgammadot0)
   END IF
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -383,7 +377,7 @@ PROGRAM relax
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%nonlinearlayer)) THEN
      CALL viscoelasticstructure(in%nonlinearstruc,in%nonlinearlayer,in%dx3)
-     DEALLOCATE(in%nonlinearlayer)
+     !DEALLOCATE(in%nonlinearlayer)
 
      IF (0 .LT. in%nnlwz) THEN
         ALLOCATE(nonlineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
@@ -391,7 +385,6 @@ PROGRAM relax
         CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
                              in%nnlwz,in%nonlinearweakzone,nonlineardgammadot0)
      END IF
-     !DEALLOCATE(nonlineardgammadot0)
   END IF
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -399,7 +392,7 @@ PROGRAM relax
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%faultcreeplayer)) THEN
      CALL viscoelasticstructure(in%faultcreepstruc,in%faultcreeplayer,in%dx3)
-     DEALLOCATE(in%faultcreeplayer)
+     !DEALLOCATE(in%faultcreeplayer)
   END IF
 
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -407,7 +400,7 @@ PROGRAM relax
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%ltransientlayer)) THEN
      CALL viscoelasticstructure(in%ltransientstruc,in%ltransientlayer,in%dx3)
-     DEALLOCATE(in%ltransientlayer)
+     !DEALLOCATE(in%ltransientlayer)
 
      ALLOCATE(ltransientdgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
      IF (iostatus.GT.0) STOP "could not allocate ltransientdgammadot0"
@@ -422,7 +415,7 @@ PROGRAM relax
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%nltransientlayer)) THEN
      CALL viscoelasticstructure(in%nltransientstruc,in%nltransientlayer,in%dx3)
-     DEALLOCATE(in%nltransientlayer)
+     !DEALLOCATE(in%nltransientlayer)
 
      ALLOCATE(nltransientdgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
      IF (iostatus.GT.0) STOP "could not allocate nltransientdgammadot0"
@@ -436,18 +429,12 @@ PROGRAM relax
   ! -   start the relaxation
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  PRINT *, 'starting main loop now'
   itensortype=2
   CALL cutensormemset (%VAL(itensortype))
 
   DO i=1,ITERATION_MAX
      IF (t .GE. in%interval) GOTO 100 ! proper exit
 
-#ifdef PAPI_PROF
-   ! start timer
-    CALL papistartprofiling (ctimername)
-#endif
-     
      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      ! predictor
      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -466,12 +453,6 @@ PROGRAM relax
      ! power density from three mechanisms (linear and power-law viscosity 
      ! and fault creep)
      ! 1- linear viscosity
-
-#ifdef PAPI_PROF
-     ctimername = 'Eigenstress'
-     CALL papistartprofiling (ctimername)
-#endif 
-
      IF (ALLOCATED(in%linearstruc)) THEN
         IF (0 .LT. in%nlwz) THEN
            CALL viscouseigenstress(in%mu,in%linearstruc, &
@@ -552,10 +533,6 @@ PROGRAM relax
         END IF
      END IF
 
-#ifdef PAPI_PROF
-    CALL papiendprofiling (ctimername)
-#endif
-
      ! identify the required time step
      tm=1._8/(REAL(mech(1))/maxwell(1)+ &
               REAL(mech(2))/maxwell(2)+ &
@@ -584,40 +561,16 @@ PROGRAM relax
 
      CALL curesetvectors () 
 
-#ifdef PAPI_PROF
-     ctimername = 'bodyforce'
-     CALL papistartprofiling(ctimername)
-#endif
-
      itensortype=1
      CALL cubodyforceswrapper (%VAL(itensortype), %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3), &
                                %VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2), v1,v2,v3,t1,t2,t3)
-
-#ifdef PAPI_PROF
-    CALL papiendprofiling (ctimername)
-#endif
-
 
      CALL cucopytraction (t3, %VAL(in%sx1), %VAL(in%sx2), iRet)
      
      ! add time-dependent surface loads
      CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,Dt/2.d8,t3,rate=.TRUE.)
 
-#ifdef PAPI_PROF
-     ctimername = 'green'
-     CALL papistartprofiling(ctimername)
-#endif
-
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3,in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
-
-#ifdef PAPI_PROF
-    CALL papiendprofiling (ctimername)
-#endif
-
-#ifdef PAPI_PROF
-     ctimername = 'fieldadd'
-     CALL papistartprofiling(ctimername)
-#endif 
 
      ! v1,v2,v3 contain the predictor displacement
      itensortype = 2
@@ -625,9 +578,6 @@ PROGRAM relax
      cuC2 = 1._4 
      CALL cufieldadd (%VAL(itensortype), v1, v2, v3, u1, u2, u3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
 
-#ifdef PAPI_PROF
-     CALL papiendprofiling(ctimername)
-#endif 
      IF (in%istransient) THEN
         itensortype=7
         cuc1=REAL(Dt/2)
@@ -641,29 +591,19 @@ PROGRAM relax
      CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                             %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
-#ifdef PAPI_PROF
-     ctimername = 'stress'
-     CALL papistartprofiling(ctimername)
-#endif
-
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! corrector
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  itensortype = 2
-  CALL custressupdatewrapper (%VAL(itensortype), %VAL(in%lambda), %VAL(in%mu), &
-                              %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3),    & 
-                              %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), v1, v2, v3, sig)
-
-#ifdef PAPI_PROF
-    CALL papiendprofiling (ctimername)
-#endif
+     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     ! corrector
+     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     itensortype = 2
+     CALL custressupdatewrapper (%VAL(itensortype), %VAL(in%lambda), %VAL(in%mu), &
+                                 %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3),    & 
+                                 %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), v1, v2, v3, sig)
 
      ! reinitialize moment density tensor
      itensortype=2
      CALL cutensormemset (%VAL(itensortype)) 
      
      IF (ALLOCATED(in%linearstruc)) THEN
-        v1=0
         IF (0 .LT. in%nlwz) THEN
            CALL viscouseigenstress(in%mu,in%linearstruc, &
                 sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
@@ -676,11 +616,6 @@ PROGRAM relax
         ! not adding v1 to gamma
      END IF
     
-#ifdef PAPI_PROF
-     ctimername = 'Eigenstress'
-     CALL papistartprofiling(ctimername)
-#endif
-     
      IF (ALLOCATED(in%nonlinearstruc)) THEN
         IF (0 .LT. in%nnlwz) THEN
            CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
@@ -694,11 +629,6 @@ PROGRAM relax
         ! not adding v1 to gamma
      END IF
 
-#ifdef PAPI_PROF
-    CALL papiendprofiling (ctimername)
-#endif
-        
- 
      ! nonlinear fault creep with rate-strengthening friction
      IF (ALLOCATED(in%faultcreepstruc)) THEN
 
@@ -713,11 +643,11 @@ PROGRAM relax
                 in%dx1,in%dx2,in%dx3,moment)
 
            ! keep track if afterslip instantaneous velocity
-           !CALL monitorfriction(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
-                !in%n(k)%width,in%n(k)%length, &
-                !in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
-                !in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                !sig,in%stressstruc,in%faultcreepstruc,in%n(k)%patch)
+           CALL monitorfriction(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
+                in%n(k)%width,in%n(k)%length, &
+                in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
+                in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
+                sig,in%stressstruc,in%faultcreepstruc,in%n(k)%patch)
         END DO
 
      END IF
@@ -781,47 +711,18 @@ PROGRAM relax
 
      CALL curesetvectors () 
 
-#ifdef PAPI_PROF
-     ctimername = 'bodyforce'
-     CALL papistartprofiling(ctimername)
-#endif
-
      itensortype=2
      CALL cubodyforceswrapper (%VAL(itensortype), %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3), &
                                %VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2), v1,v2,v3,t1,t2,t3)
 
-#ifdef PAPI_PROF
-    CALL papiendprofiling (ctimername)
-#endif
-
-
      CALL cucopytraction (t3, %VAL(in%sx1), %VAL(in%sx2), iRet)
 
-#ifdef PAPI_PROF
-     ctimername = 'green'
-     CALL papistartprofiling(ctimername)
-#endif
-
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3,in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
-
-#ifdef PAPI_PROF
-    CALL papiendprofiling (ctimername)
-#endif
-
-#ifdef PAPI_PROF
-     ctimername = 'fieldadd'
-     CALL papistartprofiling(ctimername)
-#endif 
 
      itensortype = 1
      cuC1 = 1._4
      cuC2 = REAL(Dt) 
      CALL cufieldadd (%VAL(itensortype), u1, u2, u3, v1, v2, v3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
-
-#ifdef PAPI_PROF
-     CALL papiendprofiling(ctimername)
-#endif 
-
 
      itensortype=5
      cuc1=1._4
@@ -861,10 +762,10 @@ PROGRAM relax
            CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3, &
                 in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
 
-           itensortype = 1
-           cuC1 = 1._4
-           cuC2 = 1._4 
-           CALL cufieldadd (%VAL(itensortype), u1, u2, u3, v1, v2, v3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
+     itensortype = 1
+     cuC1 = 1._4
+     cuC2 = 1._4 
+     CALL cufieldadd (%VAL(itensortype), u1, u2, u3, v1, v2, v3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
         END IF
      END IF
 
@@ -874,20 +775,14 @@ PROGRAM relax
      CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                             %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
-
-#ifdef PAPI_PROF
-     ctimername = 'stress'
-     CALL papistartprofiling(ctimername)
-#endif
-
   itensortype = 1
   CALL custressupdatewrapper (%VAL(itensortype), %VAL(in%lambda), %VAL(in%mu), &
                               %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3),    & 
                               %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), u1, u2, u3, sig)
 
-#ifdef PAPI_PROF
-     CALL papiendprofiling(ctimername) 
-#endif
+     ! export displacements
+     CALL pts2series(u1,u2,u3,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%opts,t,1+i,gps)
+
      ! points are exported at all time steps
      IF (ALLOCATED(in%ptsname)) THEN
         CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
@@ -901,65 +796,43 @@ PROGRAM relax
      dAmp=dAmp*DBLE(in%dx1*in%dx2*in%dx3)
      dAmp1=dAmp1*DBLE(in%dx1*in%dx2*in%dx3)
      IF (in%istransient) THEN
-        PRINT 1103,i,Dt,maxwell,t,in%interval, dAmp, dAmp1
+        WRITE(20,1103) i,Dt,maxwell,t,in%interval, dAmp, dAmp1
      ELSE
-        PRINT 1101,i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, dAmp, dAmp1
+        WRITE(20,1101) i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, dAmp, dAmp1
      END IF 
-        ! update output counter
-     oi=oi+1
-
-#ifdef PAPI_PROF
-    ctimername = 'relax'
-    CALL papiendprofiling (ctimername)
-#endif
+     FLUSH(20)
 
   END DO
 
 100 CONTINUE
 
-  DO i=1,in%ne
-     IF (ALLOCATED(in%events(i)%s))  DEALLOCATE(in%events(i)%s,in%events(i)%sc)
-     IF (ALLOCATED(in%events(i)%ts)) DEALLOCATE(in%events(i)%ts,in%events(i)%tsc)
-  END DO
-  IF (ALLOCATED(in%events)) DEALLOCATE(in%events)
+  !DO i=1,in%ne
+     !IF (ALLOCATED(in%events(i)%s))  DEALLOCATE(in%events(i)%s,in%events(i)%sc)
+     !IF (ALLOCATED(in%events(i)%ts)) DEALLOCATE(in%events(i)%ts,in%events(i)%tsc)
+  !END DO
+  !IF (ALLOCATED(in%events)) DEALLOCATE(in%events)
 
   CALL cudeinit()
 
   ! free memory
   IF (ALLOCATED(gamma)) DEALLOCATE(gamma)
-  IF (ALLOCATED(in%opts)) DEALLOCATE(in%opts)
-  IF (ALLOCATED(in%ptsname)) DEALLOCATE(in%ptsname)
-  IF (ALLOCATED(in%op)) DEALLOCATE(in%op)
-  IF (ALLOCATED(in%sop)) DEALLOCATE(in%sop)
-  IF (ALLOCATED(in%n)) DEALLOCATE(in%n)
-  IF (ALLOCATED(in%stressstruc)) DEALLOCATE(in%stressstruc)
-  IF (ALLOCATED(in%stresslayer)) DEALLOCATE(in%stresslayer)
-  IF (ALLOCATED(in%linearstruc)) DEALLOCATE(in%linearstruc)
-  IF (ALLOCATED(in%linearlayer)) DEALLOCATE(in%linearlayer)
-  IF (ALLOCATED(in%linearweakzone)) DEALLOCATE(in%linearweakzone)
-  IF (ALLOCATED(in%nonlinearstruc)) DEALLOCATE(in%nonlinearstruc)
-  IF (ALLOCATED(in%nonlinearlayer)) DEALLOCATE(in%nonlinearlayer)
-  IF (ALLOCATED(in%nonlinearweakzone)) DEALLOCATE(in%nonlinearweakzone)
-  IF (ALLOCATED(in%faultcreepstruc)) DEALLOCATE(in%faultcreepstruc)
-  IF (ALLOCATED(in%faultcreeplayer)) DEALLOCATE(in%faultcreeplayer)
   IF (ALLOCATED(sig)) DEALLOCATE(sig)
   IF (ALLOCATED(tau)) DEALLOCATE(tau)
   IF (ALLOCATED(moment)) DEALLOCATE(moment)
-  IF (ALLOCATED(in%stresslayer)) DEALLOCATE(in%stresslayer)
-  IF (ALLOCATED(in%linearlayer)) DEALLOCATE(in%linearlayer)
-  IF (ALLOCATED(in%nonlinearlayer)) DEALLOCATE(in%nonlinearlayer)
-  IF (ALLOCATED(in%faultcreeplayer)) DEALLOCATE(in%faultcreeplayer)
   IF (ALLOCATED(v1)) DEALLOCATE(v1,v2,v3,t1,t2,t3)
   IF (ALLOCATED(u1)) DEALLOCATE(u1,u2,u3)
   IF (ALLOCATED(inter1)) DEALLOCATE(inter1,inter2,inter3)
   IF (ALLOCATED(lineardgammadot0)) DEALLOCATE(lineardgammadot0)
   IF (ALLOCATED(nonlineardgammadot0)) DEALLOCATE(nonlineardgammadot0)
+  IF (ALLOCATED(ltransientdgammadot0)) DEALLOCATE(ltransientdgammadot0)
+  IF (ALLOCATED(nltransientdgammadot0)) DEALLOCATE(nltransientdgammadot0)
 
 
 0990 FORMAT (" I  |   Dt   | tm(ve) | tm(pl) | tm(as) |     t/tmax     | power  |  C:E^i | ")
 0991 FORMAT (" I  |   Dt   | tm(ve) | tm(pl) | tm(as) | tm(kl) | tm(kn) |     t/tmax     | power  |  C:E^i | ")
 1100 FORMAT (I3.3," ",ES9.2E2,3ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
 1101 FORMAT (I3.3,"*",ES9.2E2,3ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
+1102 FORMAT (I3.3," ",ES9.2E2,5ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
 1103 FORMAT (I3.3,"*",ES9.2E2,5ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
 
 CONTAINS
@@ -1256,4 +1129,4 @@ CONTAINS
   END SUBROUTINE integrationstep
 
 
-END PROGRAM relax
+END SUBROUTINE relaxlite

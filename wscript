@@ -125,7 +125,7 @@ def configure(cnf):
         cnf.env.CUDA=cnf.options.use_cuda
         cnf.load('cuda',tooldir='.')   
         if not cnf.env.CUDAFLAGS:
-            cnf.env.CUDAFLAGS = ['-gencode','arch=compute_35,code=sm_35']
+            cnf.env.CUDAFLAGS = ['-gencode','arch=compute_35,code=sm_35','-Xcompiler','-fPIC']
     #       cnf.env.CUDAFLAGS += ['-Xptxas', '-dlcm=cg']
     #       cnf.env.CUDAFLAGS += ['--maxrregcount=32']
     #       cnf.env.CUDAFLAGS = ['-gencode','arch=compute_30,code=sm_30']
@@ -282,6 +282,36 @@ def configure(cnf):
 
 
 def lite(ctx) :
+    if(ctx.env.CUDA):
+        ctx.shlib(features='c fc fcprogram cxx',
+                source=['src/curelaxlite.f90',
+                        'src/ctfft.f',
+                        'src/types.f90',
+                        'src/fourier.f90',
+                        'src/green.f90',
+                        'src/okada/green_space.f90',
+                        'src/okada/dc3d.f',
+                        'src/elastic3d.f90',
+                        'src/friction3d.f90',
+                        'src/viscoelastic3d.f90',
+                        'src/writevtk.c',
+                        'src/writegrd4.2.c',
+                        'src/proj.c',
+                        'src/export.f90',
+                        'src/getdata.f',
+                        'src/getopt_m.f90',
+                        'src/input.f90',
+                        'src/util.f90',
+                        'src/mkl_dfti.f90',
+                        'src/papi_prof.c',
+                        'src/cugreen.cu',
+                        'src/cuelastic.cu'],
+                install_path='${PREFIX}/bin',
+                includes=['build'],
+                use=['gmt','proj','openmp','fftw','imkl','cpp','length','cuda','papi','stdc++'],
+                target='librelax.so'
+                )
+    else:
         ctx.shlib(features='c fc fcprogram',
                 source=['src/relaxlite.f90',
                         'src/ctfft.f',

@@ -558,7 +558,7 @@ extern "C" void cuinit_ (int    iSx1,
     cudaDeviceProp deviceProp;
     cuError = cudaGetDevice (&iDev) ;
     cudaGetDeviceProperties(&deviceProp, iDev);
-    printf("Device %d: \"%s\"\n", iDev, deviceProp.name);
+    //printf("Device %d: \"%s\"\n", iDev, deviceProp.name);
     *iRet = 1 ;
 
     ihSx1 = iSx1 ;
@@ -1374,7 +1374,6 @@ TENSOR_EXIT:
     cuFreeCudaMemory () ;
 }
 
-
 extern "C" void cufieldadd_ (E_TYPE eType,
                              float *pfVal1,
                              float *pfVal2,
@@ -1501,7 +1500,7 @@ void copygammadot0 (int        iSx1,
     cudaError_t cuError = cudaSuccess ;
 
     *iRet = 1 ; 
-    iSize = sizeof (float) * iSx1 * iSx2 * iSx3/2 ;
+    iSize = sizeof (float) * iSx1 * iSx2 * iSx3 ;
     //allocate 
     if (NULL == gpGammadot0)
     { 
@@ -1959,6 +1958,9 @@ void cuFreeCudaMemory()
     CUDA_FREE_MEM(pstSig) ;
     CUDA_FREE_MEM(pstMoment) ;
     CUDA_FREE_MEM(pstTau) ;
+    CUDA_FREE_MEM(pstEpsilonik) ;
+    CUDA_FREE_MEM(pstEpsilonikdot) ;
+    CUDA_FREE_MEM(pstPrestress) ;
     CUDA_FREE_MEM (gpV1) ;
     CUDA_FREE_MEM (gpV2) ;
     CUDA_FREE_MEM (gpV3) ;
@@ -2793,7 +2795,7 @@ __global__ void cuViscousEigenKernel (ST_LAYER          *pstStruct,
         dPower = pstStruct[iInd3].stressexponent ;
         dCohesion = pstStruct[iInd3].cohesion ;
 
-        cuTensorDeviatoric (&(pstPrestress[iInd3].t), &stP) ;
+        cuTensorDeviatoric (&pstPrestress[iInd3].t, &stP) ;
         dTaup = cuTensorNorm(&stP) ;
 
         dGammaDot0 = pstStruct[iInd3].gammadot0 ;

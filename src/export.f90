@@ -3057,6 +3057,9 @@ END SUBROUTINE exportcreep_vtk
 
     INTEGER :: i1,i2,i3,k
     REAL*8 :: u1,u2,u3,x1,x2,x3
+#ifdef USING_CUDA
+    TYPE(TENSOR) :: lsig
+#endif
 
     DO k=1,SIZE(opts)
        x1=opts(k)%v1
@@ -3065,10 +3068,13 @@ END SUBROUTINE exportcreep_vtk
 
        CALL shiftedindex(x1,x2,x3,sx1,sx2,sx3,dx1,dx2,dx3,i1,i2,i3)
 
+#ifdef USING_CUDA
+       CALL cuexportpoints (u1, u2, u3, lsig, %VAL(i1-1), %VAL(i2-1), %VAL(i3-1))
+#else
        u1=c1(i1,i2,i3)
        u2=c2(i1,i2,i3)
        u3=c3(i1,i2,i3)
-
+#endif
        gps(k)%nepochs=index
        gps(k)%t(index)=time
        gps(k)%u1(index)=u1
