@@ -247,6 +247,8 @@ typedef struct _st_weak
         double thickness ;
         double strike ;
         double dip ;
+        
+        ST_TENSOR   e ;
 
 }ST_WEAK ;
 

@@ -362,6 +362,10 @@ PROGRAM relax
      GOTO 100 ! no time integration
   END IF
 
+#ifdef PAPI_PROF
+     ctimername = 'buildgamma'
+     CALL papistartprofiling (ctimername)
+#endif 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! -     construct linear viscoelastic structure
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -372,10 +376,10 @@ PROGRAM relax
      IF (0 .LT. in%nlwz) THEN
         ALLOCATE(lineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
         IF (iostatus.GT.0) STOP "could not allocate lineardgammadot0"
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
-                             in%nlwz,in%linearweakzone,lineardgammadot0)
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nlwz), &
+                             in%linearweakzone,lineardgammadot0)
      END IF
-     !DEALLOCATE(lineardgammadot0)
   END IF
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -388,10 +392,10 @@ PROGRAM relax
      IF (0 .LT. in%nnlwz) THEN
         ALLOCATE(nonlineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
         IF (iostatus.GT.0) STOP "could not allocate nonlineardgammadot0"
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
-                             in%nnlwz,in%nonlinearweakzone,nonlineardgammadot0)
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nnlwz), &
+                             in%nonlinearweakzone,nonlineardgammadot0)
      END IF
-     !DEALLOCATE(nonlineardgammadot0)
   END IF
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -412,8 +416,9 @@ PROGRAM relax
      ALLOCATE(ltransientdgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
      IF (iostatus.GT.0) STOP "could not allocate ltransientdgammadot0"
      IF (0 .LT. in%nltwz) THEN
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
-                             in%nltwz,in%ltransientweakzone,ltransientdgammadot0)
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nltwz), &
+                             in%ltransientweakzone,ltransientdgammadot0)
      END IF
   END IF
 
@@ -427,16 +432,19 @@ PROGRAM relax
      ALLOCATE(nltransientdgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
      IF (iostatus.GT.0) STOP "could not allocate nltransientdgammadot0"
      IF (0 .LT. in%nnltwz) THEN
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
-                             in%nnltwz,in%nltransientweakzone,nltransientdgammadot0)
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nnltwz), &
+                             in%nltransientweakzone,nltransientdgammadot0)
      END IF
   END IF
+#ifdef PAPI_PROF
+    CALL papiendprofiling (ctimername)
+#endif
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! -   start the relaxation
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  PRINT *, 'starting main loop now'
   itensortype=2
   CALL cutensormemset (%VAL(itensortype))
 
@@ -445,6 +453,7 @@ PROGRAM relax
 
 #ifdef PAPI_PROF
    ! start timer
+    ctimername = 'relax'
     CALL papistartprofiling (ctimername)
 #endif
      

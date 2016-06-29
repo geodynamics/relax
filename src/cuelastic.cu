@@ -190,6 +190,9 @@ __global__ void cuStressUpdateKernel (int, int, int, double, double, int, int, i
 __global__ void cuEquiBodyKernel (ST_TENSOR *, int, int, int, int, int, int, float *, float *, 
                                   float *) ;
 
+__global__ void cuBuildGammadotKernel (int, int, int, double, double, double, 
+                                       double, ST_WEAK *, int, float *) ;
+
 __global__ void cuViscousEigenKernel (ST_LAYER *, ST_TENSOR *, ST_TENSOR *, ST_TENSOR_LAYER *,
                                       float *, double, int, int, int, double, double, 
                                       double, float *, float *, bool, bool, bool) ;
@@ -1644,6 +1647,79 @@ CUEXPORT_EXIT:
     printf ("Error\n") ;
 
 }
+extern "C" void cubuildgammadot_ (int     iSx1,
+                                  int     iSx2,
+                                  int     iSx3,
+                                  double  dDx1,
+                                  double  dDx2,
+                                  double  dDx3,
+                                  int     iNz,
+                                  ST_WEAK *pDuctile,
+                                  float   *pDgammadot0)
+{
+    cudaError_t  cuError = cudaSuccess ;
+    int          iSize = 0 ;
+    int          iSize1 = 0 ;
+    dim3         dimGrid (iSx3, iSx2, 1) ;
+    dim3         dimBlock (iSx1, 1, 1) ;
+    double       dBeta = 0 ;
+    float        *pfDgammadot0 = NULL ;
+    ST_WEAK      *pstDuctile = NULL ;
+    
+    iSize = sizeof (ST_WEAK) * iNz ;
+    iSize1 = sizeof (float) * iSx1 * iSx2 * iSx3 ; 
+
+    cuError = cudaMalloc((void **) &pfDgammadot0, iSize1) ;
+    if (cudaSuccess != cuError)
+    {
+        printf ("cubuildgammadot_ : Couldnt allocate memory 1\n") ;
+        cuFreeCudaMemory() ;
+    }
+
+    cuError = cudaMalloc((void **) &pstDuctile, iSize) ;
+    if (cudaSuccess != cuError)
+    {
+        printf ("cubuildgammadot_ : Couldnt allocate memory 2\n") ;
+        cuFreeCudaMemory() ;
+    }
+
+    cuError = cudaMemcpy (pstDuctile, pDuctile, iSize, cudaMemcpyHostToDevice) ;
+    if (cudaSuccess != cuError)
+    {
+        printf ("cubuildgammadot_ : Couldnt copy memory 3\n") ;
+        cuFreeCudaMemory() ;
+    }
+
+    //call kernel
+    cuBuildGammadotKernel <<<dimGrid, dimBlock>>> (iSx1, iSx2, iSx3, dDx1, dDx2,
+                                                   dDx3, dBeta, pstDuctile, iNz, 
+                                                   pfDgammadot0) ;
+
+    cuError = cudaGetLastError () ;
+    if (cudaSuccess != cuError)
+    {
+        printf ("cubuildgammadot0_ : Kernel launch failed\n") ;
+    }
+
+    if (cudaSuccess != cudaDeviceSynchronize())
+    {
+        printf ("cubuildgammadot0_ : sync failed \n") ;
+    }
+
+    //copy back
+
+    cuError = cudaMemcpy (pDgammadot0, pfDgammadot0, iSize1, cudaMemcpyDeviceToHost) ;
+    if (cudaSuccess != cuError)
+    {
+        printf ("cubuildgammadot_ : Couldnt copy memory 4\n") ;
+        cuFreeCudaMemory() ;
+    }
+
+    cudaFree(pfDgammadot0);
+    cudaFree(pstDuctile);
+
+    return ; 
+}
 
 extern "C" void cufrictioneigenstress_ (double     dX,
                                         double     dY,
@@ -2910,6 +2986,42 @@ __global__ void cuTensorAmpKernel (ST_TENSOR    *pstTensor,
     }
 }
 
+__global__ void cuBuildGammadotKernel (int           iSx1,
+                                       int           iSx2,
+                                       int           iSx3,
+                                       double        dDx1,
+                                       double        dDx2,
+                                       double        dDx3,
+                                       double        dBeta, 
+                                       ST_WEAK       *pstDuctile,
+                                       int           iNz,
+                                       float         *pfDgammadot0)
+{
+    int     iInd1 = 0 ;
+    int     iInd2 = 0 ;
+    int     iInd3 = 0 ;
+    int     iIdx = 0 ;
+    
+    double     dX1 ;
+    double     dX2 ;
+    double     dX3 ;
+    double     dDum ;
+
+
+    iInd3 = blockIdx.x ;
+    iInd2 = blockIdx.y ;
+    iInd1 = threadIdx.x ;
+
+    if ((iInd1 < iSx1) && (iInd2 < iSx2) && (iInd3 < iSx3))
+    {
+        dX3 = (iInd3) * dDx3 ;
+        cuShiftedCoordinates (iInd1, iInd2, iInd3, iSx1, iSx2, iSx3,
+                              dDx1, dDx2, dDx3, &dX1, &dX2, &dDum) ;
+    
+        iIdx = (((iInd3 * iSx2) + iInd2) * iSx1) + iInd1 ;
+        pfDgammadot0[iIdx] = cuDgGammaDotNot(pstDuctile, iNz, dX1, dX2, dX3, dBeta) ; 
+    }
+}
 
 __global__ void cuFieldAddKernel (float  *pfData1,
                                   float  *pfData2,
