@@ -197,6 +197,7 @@ PROGRAM relax
   USE viscoelastic3d
   USE friction3d
   USE export
+  USE util
 
   IMPLICIT NONE
 

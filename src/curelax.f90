@@ -322,8 +322,7 @@ PROGRAM relax
 
   ! evaluate stress
   itensortype=2
-  cuc1=0._4
-  cuc2=-1._4 
+  cuc1=0._4;cuc2=-1._4 
   CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                          %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
@@ -331,18 +330,6 @@ PROGRAM relax
   CALL custressupdatewrapper (%VAL(itensortype), %VAL(in%lambda), %VAL(in%mu), &
                               %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3),    & 
                               %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), u1, u2, u3, sig)
-
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -   export observation points, map view of displacement,
-  ! -   map view of stress components, Coulomb stress on observation
-  ! -   patches, and full displacement and stress field.
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-#ifdef GRD
-  IF (in%isoutputgrd) THEN
-     CALL exportgrd(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0,in%wdir,0)
-  END IF
-#endif
 
   IF (ALLOCATED(in%ptsname)) THEN
      CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
@@ -586,8 +573,7 @@ PROGRAM relax
      CALL integrationstep(tm,Dt,t,oi,in%odt,in%skip,in%tscale,in%events,e,in%ne)
 
      itensortype=4
-     cuc1=0._4
-     cuc2=1._4
+     cuc1=0._4;cuc2=1._4
      CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                             %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
@@ -605,7 +591,6 @@ PROGRAM relax
 #ifdef PAPI_PROF
     CALL papiendprofiling (ctimername)
 #endif
-
 
      CALL cucopytraction (t3, %VAL(in%sx1), %VAL(in%sx2), iRet)
      
@@ -630,8 +615,7 @@ PROGRAM relax
 
      ! v1,v2,v3 contain the predictor displacement
      itensortype = 2
-     cuC1 = REAL(Dt/2)
-     cuC2 = 1._4 
+     cuC1 = REAL(Dt/2);cuC2 = 1._4 
      CALL cufieldadd (%VAL(itensortype), v1, v2, v3, u1, u2, u3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
 
 #ifdef PAPI_PROF
@@ -639,14 +623,12 @@ PROGRAM relax
 #endif 
      IF (in%istransient) THEN
         itensortype=7
-        cuc1=REAL(Dt/2)
-        cuc2=1._4
+        cuc1=REAL(Dt/2);cuc2=1._4
         CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                                %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
      END IF
      itensortype=2
-     cuc1=-REAL(Dt/2)
-     cuc2=-1._4
+     cuc1=-REAL(Dt/2);cuc2=-1._4
      CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                             %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
@@ -721,12 +703,6 @@ PROGRAM relax
                 sig,in%stressstruc,in%mu,in%faultcreepstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment)
 
-           ! keep track if afterslip instantaneous velocity
-           !CALL monitorfriction(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
-                !in%n(k)%width,in%n(k)%length, &
-                !in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
-                !in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                !sig,in%stressstruc,in%faultcreepstruc,in%n(k)%patch)
         END DO
 
      END IF
@@ -768,14 +744,12 @@ PROGRAM relax
            END IF     
         END IF
         
-        cuC1 = 1._4
-        cuC2 = REAL(Dt) 
         itensortype=6
+        cuC1 = 1._4;cuC2 = REAL(Dt) 
         CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                                %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
-        cuC1 = 0._4
-        cuC2 = 0._4 
         itensortype=8
+        cuC1 = 0._4;cuC2 = 0._4 
         CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                                %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
@@ -823,22 +797,17 @@ PROGRAM relax
 #endif 
 
      itensortype = 1
-     cuC1 = 1._4
-     cuC2 = REAL(Dt) 
+     cuC1 = 1._4;cuC2 = REAL(Dt) 
      CALL cufieldadd (%VAL(itensortype), u1, u2, u3, v1, v2, v3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
 
 #ifdef PAPI_PROF
      CALL papiendprofiling(ctimername)
 #endif 
 
-
      itensortype=5
-     cuc1=1._4
-     cuc2=REAL(Dt)
+     cuc1=1._4;cuc2=REAL(Dt)
      CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                             %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
-     
-     CALL frictionadd(in%np,in%n,Dt)
      
      ! time increment
      t=t+Dt
@@ -871,15 +840,13 @@ PROGRAM relax
                 in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
 
            itensortype = 1
-           cuC1 = 1._4
-           cuC2 = 1._4 
+           cuC1 = 1._4;cuC2 = 1._4 
            CALL cufieldadd (%VAL(itensortype), u1, u2, u3, v1, v2, v3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
         END IF
      END IF
 
      itensortype=2
-     cuc1=0._4
-     cuc2=-1._4
+     cuc1=0._4;cuc2=-1._4
      CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                             %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
@@ -897,6 +864,7 @@ PROGRAM relax
 #ifdef PAPI_PROF
      CALL papiendprofiling(ctimername) 
 #endif
+
      ! points are exported at all time steps
      IF (ALLOCATED(in%ptsname)) THEN
         CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
@@ -909,6 +877,7 @@ PROGRAM relax
      CALL cutensoramp (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),dAmp1, tau)
      dAmp=dAmp*DBLE(in%dx1*in%dx2*in%dx3)
      dAmp1=dAmp1*DBLE(in%dx1*in%dx2*in%dx3)
+
      IF (in%istransient) THEN
         PRINT 1103,i,Dt,maxwell,t,in%interval, dAmp, dAmp1
      ELSE

@@ -191,13 +191,12 @@
 SUBROUTINE relaxlite(in,gps,isverbose)
 
   USE types
-  USE input
   USE green
   USE green_space
   USE elastic3d
   USE viscoelastic3d
   USE friction3d
-  USE export
+  USE util 
 
 #include "include.f90"
   

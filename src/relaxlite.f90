@@ -201,7 +201,7 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   USE elastic3d
   USE viscoelastic3d
   USE friction3d
-  USE export
+  USE util 
 
   IMPLICIT NONE
 
