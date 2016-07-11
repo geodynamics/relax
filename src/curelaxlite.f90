@@ -366,8 +366,9 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      IF (0 .LT. in%nlwz) THEN
         ALLOCATE(lineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
         IF (iostatus.GT.0) STOP "could not allocate lineardgammadot0"
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
-                             in%nlwz,in%linearweakzone,lineardgammadot0)
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nlwz), &
+                             in%linearweakzone,lineardgammadot0)
      END IF
   END IF
 
@@ -381,8 +382,9 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      IF (0 .LT. in%nnlwz) THEN
         ALLOCATE(nonlineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
         IF (iostatus.GT.0) STOP "could not allocate nonlineardgammadot0"
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
-                             in%nnlwz,in%nonlinearweakzone,nonlineardgammadot0)
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nnlwz), &
+                             in%nonlinearweakzone,nonlineardgammadot0)
      END IF
   END IF
 
@@ -404,8 +406,9 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      ALLOCATE(ltransientdgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
      IF (iostatus.GT.0) STOP "could not allocate ltransientdgammadot0"
      IF (0 .LT. in%nltwz) THEN
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
-                             in%nltwz,in%ltransientweakzone,ltransientdgammadot0)
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nltwz), &
+                             in%ltransientweakzone,ltransientdgammadot0)
      END IF
   END IF
 
@@ -419,8 +422,9 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      ALLOCATE(nltransientdgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
      IF (iostatus.GT.0) STOP "could not allocate nltransientdgammadot0"
      IF (0 .LT. in%nnltwz) THEN
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
-                             in%nnltwz,in%nltransientweakzone,nltransientdgammadot0)
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nnltwz), &
+                             in%nltransientweakzone,nltransientdgammadot0)
      END IF
   END IF
 
@@ -553,8 +557,7 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      CALL integrationstep(tm,Dt,t,oi,in%odt,in%skip,in%tscale,in%events,e,in%ne)
 
      itensortype=4
-     cuc1=0._4
-     cuc2=1._4
+     cuc1=0._4;cuc2=1._4
      CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                             %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
@@ -573,20 +576,17 @@ SUBROUTINE relaxlite(in,gps,isverbose)
 
      ! v1,v2,v3 contain the predictor displacement
      itensortype = 2
-     cuC1 = REAL(Dt/2)
-     cuC2 = 1._4 
+     cuC1 = REAL(Dt/2);cuC2 = 1._4 
      CALL cufieldadd (%VAL(itensortype), v1, v2, v3, u1, u2, u3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
 
      IF (in%istransient) THEN
         itensortype=7
-        cuc1=REAL(Dt/2)
-        cuc2=1._4
+        cuc1=REAL(Dt/2);cuc2=1._4
         CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                                %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
      END IF
      itensortype=2
-     cuc1=-REAL(Dt/2)
-     cuc2=-1._4
+     cuc1=-REAL(Dt/2);cuc2=-1._4
      CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                             %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
@@ -641,12 +641,6 @@ SUBROUTINE relaxlite(in,gps,isverbose)
                 sig,in%stressstruc,in%mu,in%faultcreepstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment)
 
-           ! keep track if afterslip instantaneous velocity
-           CALL monitorfriction(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
-                in%n(k)%width,in%n(k)%length, &
-                in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
-                in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                sig,in%stressstruc,in%faultcreepstruc,in%n(k)%patch)
         END DO
 
      END IF
@@ -688,14 +682,12 @@ SUBROUTINE relaxlite(in,gps,isverbose)
            END IF     
         END IF
         
-        cuC1 = 1._4
-        cuC2 = REAL(Dt) 
         itensortype=6
+        cuC1 = 1._4;cuC2 = REAL(Dt) 
         CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                                %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
-        cuC1 = 0._4
-        cuC2 = 0._4 
         itensortype=8
+        cuC1 = 0._4;cuC2 = 0._4 
         CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                                %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
@@ -719,17 +711,13 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3,in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
 
      itensortype = 1
-     cuC1 = 1._4
-     cuC2 = REAL(Dt) 
+     cuC1 = 1._4;cuC2 = REAL(Dt) 
      CALL cufieldadd (%VAL(itensortype), u1, u2, u3, v1, v2, v3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
 
      itensortype=5
-     cuc1=1._4
-     cuc2=REAL(Dt)
+     cuc1=1._4;cuc2=REAL(Dt)
      CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                             %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
-     
-     CALL frictionadd(in%np,in%n,Dt)
      
      ! time increment
      t=t+Dt
@@ -761,16 +749,14 @@ SUBROUTINE relaxlite(in,gps,isverbose)
            CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3, &
                 in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
 
-     itensortype = 1
-     cuC1 = 1._4
-     cuC2 = 1._4 
-     CALL cufieldadd (%VAL(itensortype), u1, u2, u3, v1, v2, v3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
+           itensortype = 1
+           cuC1 = 1._4;cuC2 = 1._4 
+           CALL cufieldadd (%VAL(itensortype), u1, u2, u3, v1, v2, v3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
         END IF
      END IF
 
      itensortype=2
-     cuc1=0._4
-     cuc2=-1._4
+     cuc1=0._4;cuc2=-1._4
      CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                             %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
