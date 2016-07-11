@@ -251,6 +251,7 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   IF (iostatus>0) STOP "could not allocate memory"
 
   CALL curesetvectors () 
+  i=0
 
   itensortype=3
   CALL cutensormemset (%VAL(itensortype))
