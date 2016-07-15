@@ -252,6 +252,15 @@ typedef struct _st_weak
 
 }ST_WEAK ;
 
+typedef struct _st_inflags
+{
+    bool istransient ;
+    bool islinearviscous ;
+    bool isnonlinearviscous ;
+    bool islineartransientviscous ;
+    bool isnonlineartransientviscous ;
+} ST_INFLGS ;
+
 cudaError_t memcpyUsingStreams (float           *fDest,
                                 float           *fSrc,
                                 int             iBytes,  

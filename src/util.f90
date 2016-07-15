@@ -35,6 +35,14 @@ CONTAINS
     IF (PRESENT(var)) avail=1
 
   END SUBROUTINE
+  
+  SUBROUTINE isallocated(var,avail)
+    REAL*4, DIMENSION(:), OPTIONAL, ALLOCATABLE :: var 
+    INTEGER :: avail
+
+    IF (ALLOCATED(var)) avail=1
+
+  END SUBROUTINE
 
   !------------------------------------------------------------------
   !> subroutine exportpoints

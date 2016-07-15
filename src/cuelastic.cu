@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------
-! Copyright 2013 Sylvain Barbot
+! Copyright 2013-2016 Sylvain Barbot
 !
 ! This file is part of RELAX
 !
@@ -53,7 +53,7 @@
 #include <thrust/device_vector.h>
 
 /* Number of points in the filter. Possible values are : 1, 7 and 14 */
-#define FILTER_SIZE 14
+#define FILTER_SIZE 1
 
 /*      #define ENABLE_REG_BLOCKING         */ //Dont enable this. 
 /*      #define PRINT_DEBUG_INFO        */  
@@ -734,6 +734,11 @@ CUINIT_FAILURE:
     cuFreeCudaMemory () ;
 }
 
+extern "C" void cuinflags_ (int istransient, 
+                            )
+{
+    
+}
 /**
  * This is called from the host code. For more information check custressupdate function.
  * @param   eType[in]       Variable to indicate data to be used(i.e., u? and v?) 
