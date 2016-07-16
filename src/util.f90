@@ -36,13 +36,13 @@ CONTAINS
 
   END SUBROUTINE
   
-  SUBROUTINE isallocated(var,avail)
-    REAL*4, DIMENSION(:), OPTIONAL, ALLOCATABLE :: var 
-    INTEGER :: avail
+  INTEGER FUNCTION isallocated(var)
+    TYPE(LAYER_STRUCT), DIMENSION(:), ALLOCATABLE :: var 
 
-    IF (ALLOCATED(var)) avail=1
+    isallocated=0
+    IF (ALLOCATED(var)) isallocated=1
 
-  END SUBROUTINE
+  END FUNCTION isallocated
 
   !------------------------------------------------------------------
   !> subroutine exportpoints

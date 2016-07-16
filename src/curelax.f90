@@ -246,7 +246,15 @@ PROGRAM relax
      GOTO 100
   END IF
 
-  CALL cuinit (%VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3), %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3), iostatus)
+  CALL cuinflags (in%istransient,in%nlwz,in%nnlwz,in%nltwz,in%nnltwz,  &
+                  %VAL(isallocated(in%linearlayer)),                   & 
+                  %VAL(isallocated(in%nonlinearlayer)),                &
+                  %VAL(isallocated(in%ltransientlayer)),               & 
+                  %VAL(isallocated(in%nltransientlayer)),iostatus)
+  IF (iostatus>0) STOP "could not allocate memory"
+
+  CALL cuinit (%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3),%VAL(in%dx1), & 
+               %VAL(in%dx2),%VAL(in%dx3),iostatus)
   IF (iostatus>0) STOP "could not allocate memory"
    
   ! allocate memory
@@ -622,6 +630,7 @@ PROGRAM relax
 #ifdef PAPI_PROF
      CALL papiendprofiling(ctimername)
 #endif 
+
      IF (in%istransient) THEN
         itensortype=7
         cuc1=REAL(Dt/2);cuc2=1._4

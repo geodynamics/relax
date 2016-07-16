@@ -255,11 +255,15 @@ typedef struct _st_weak
 typedef struct _st_inflags
 {
     bool istransient ;
-    bool islinearviscous ;
-    bool isnonlinearviscous ;
-    bool islineartransientviscous ;
-    bool isnonlineartransientviscous ;
-} ST_INFLGS ;
+    bool islvl ;
+    bool isnlvl ;
+    bool isltvl ;
+    bool isnltvl ;
+    bool islvw ;
+    bool isnlvw ;
+    bool isltvw ;
+    bool isnltvw ;
+} ST_INFLAGS ;
 
 cudaError_t memcpyUsingStreams (float           *fDest,
                                 float           *fSrc,
@@ -280,6 +284,10 @@ extern "C"
     extern void __util_MOD_ispresent (void *, int *) ;
 }
 
+extern "C"
+{
+    extern void __util_MOD_isallocated (void *, int *) ;
+}
 template <class T>
 __global__ void scaling (T              *pCompData,
                          T              fScale,

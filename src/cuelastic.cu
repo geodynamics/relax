@@ -61,20 +61,13 @@
 
 /* Some macros */
 #define PI  3.141592653589793115997963468544185161 
-
 #define DEG2RAD 0.01745329251994329547437168059786927
-
 #define MAX_NUM(a,b) (((a) > (b)) ? (a) : (b))
-
 #define MAX3(a,b,c) (MAX_NUM(a, b) > c ? MAX_NUM(a, b) : c)
-
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
-
 #define DSIGN(a,b) (((b) > 0) ? (a) : -(a)) 
 
-
 /* -------------------------------------- global variables ------------------------------------- */ 
-
             /* Device Variables */
 float       *gpV1 = NULL ;          /* Device Pointer. No dereferencing in host. */
 float       *gpV2 = NULL ;          /* Device Pointer. No dereferencing in host. */     
@@ -100,6 +93,7 @@ int         ihSx3 ;             /* Contains sx3 value*/
 int         iLen1 ;             /* Contains the number points in the filter. */
 int         iLen2 ;             /* Contains the number points in the filter. */
 int         iLen3 ;             /* Contains the number points in the filter. */
+ST_INFLAGS  *pstInflags = NULL ;
 
             /* Device Constants */
 __constant__ double constdKer1 [14] ;
@@ -121,6 +115,8 @@ int checkMemRequirement(int, int, int) ;
 void copygammadot0 (int, int, int, float *, int *) ;
 
 bool cuispresent (void *) ;
+
+bool cuisallocated (ST_LAYER *) ;
 
 __host__ __device__ void cutDot (ST_TENSOR *, double *, double *) ;
 
@@ -381,35 +377,8 @@ STRESS_UPDATE_EXIT_WITH_FREE:
 }
 
 /**
-  !-----------------------------------------------------------------
-  !> subroutine EquivalentBodyForce
-  !! computes and updates the equivalent body-force
-  !!
-  !!         f = - div.( C : E^i )
-  !!
-  !! and the equivalent surface traction
-  !!
-  !!         t = n . C : E^i
-  !!
-  !! with n = (0,0,-1). In indicial notations
-  !!
-  !!         f_i = - (C_ijkl E^i_kl),j
-  !!
-  !! and
-  !!
-  !!         t_1 = n_j C_ijkl E^i_kl
-  !!
-  !! where f is the equivalent body-force, t is the equivalent surface
-  !! traction, C is the elastic moduli tensor and E^i is the moment
-  !! density tensor tensor.
-  !!
-  !! Divergence is computed with a mixed numerical scheme including
-  !! centered finite-difference (in the vertical direction) and
-  !! finite impulse response differentiator filter for derivatives
-  !! estimates. see function 'stress' for further explanations.
-  !-----------------------------------------------------------------
- *
- * @param   pstSig      Device pointer to the sigma. 
+ * @brief  Check equivalentbodyforces in fortran version for description.
+ * @param       pstSig      Device pointer to the sigma. 
  * @param       dDx1[in]        Sampling size in x1(north) direction.
  * @param       dDx2[in]        Sampling size in x2(east) direction.
  * @param       dDx3[in]        Sampling size in x3(down) direction.
@@ -685,7 +654,7 @@ extern "C" void cuinit_ (int    iSx1,
         goto CUINIT_FAILURE ;
     }
 
-//    if (pstFlags->istransient)
+    if (pstInflags->istransient)
     {
         cuError = cudaMalloc ((void **)&pstEpsilonik, iSize2) ;
         if (cudaSuccess != cuError)
@@ -734,10 +703,69 @@ CUINIT_FAILURE:
     cuFreeCudaMemory () ;
 }
 
-extern "C" void cuinflags_ (int istransient, 
-                            )
+/**
+ * This function initializes flags as required. 
+ **/
+
+extern "C" void cuinflags_ (int      *istransient, 
+                            int      *nlwz,
+                            int      *nnlwz,
+                            int      *nltwz,
+                            int      *nnltwz,
+                            int      pLinearLayer,
+                            int      pNonlinearLayer,
+                            int      pLinearTransientLayer,
+                            int      pNonlinearTransientLayer,
+                            int      *iRet)
 {
-    
+    *iRet = 0 ;
+    pstInflags = (ST_INFLAGS *) calloc(1,sizeof(ST_INFLAGS)) ;
+    if (NULL != pstInflags)
+    {
+        if (0 < *istransient)
+        { 
+            pstInflags->istransient = true ;         
+        }
+        if (pLinearLayer)
+        {
+            pstInflags->islvl = true ;         
+        }
+        if (pNonlinearLayer)
+        {
+            pstInflags->isnlvl = true ;         
+        }
+        if (pLinearTransientLayer)
+        {
+            pstInflags->isltvl = true ;         
+        }
+        if (pNonlinearTransientLayer)
+        {
+            pstInflags->isnltvl = true ;         
+        }
+        if (*nlwz)
+        {
+            pstInflags->islvw = true ;         
+        }
+        if (*nnlwz)
+        {
+            pstInflags->isnlvw = true ;         
+        }
+        if (*nltwz)
+        {
+            pstInflags->isltvw = true ;         
+        }
+        if (*nnltwz)
+        {
+            pstInflags->isnltvw = true ;         
+        }
+    }
+    else
+    {
+        printf ("cuinflags_ : Memory allocation failed\n");
+        *iRet = 1 ;
+    }
+
+    return ;
 }
 /**
  * This is called from the host code. For more information check custressupdate function.
@@ -1491,10 +1519,17 @@ CURESET_FAILURE:
 
 }
 
+bool cuisallocated (ST_LAYER *pVar = NULL)
+{
+    int ipresent=0;
+    __util_MOD_isallocated (pVar, &ipresent) ;
+    return (ipresent == 1) ? true : false ;
+}
+
 bool cuispresent (void *pVar = NULL)
 {
     int ipresent=0;
-    __util_MOD_ispresent(pVar, &ipresent) ;
+    __util_MOD_ispresent (pVar, &ipresent) ;
     return (ipresent == 1) ? true : false ;
 }
 
@@ -2052,6 +2087,8 @@ void cuFreeCudaMemory()
     CUDA_FREE_MEM (pfDevTract2) ;
     CUDA_FREE_MEM (pfDevTract3) ;
     CUDA_FREE_MEM (gpGammadot0) ;
+    free (pstInflags) ;
+    pstInflags = NULL ;
 }
 
 int checkMemRequirement(int iSx1,
