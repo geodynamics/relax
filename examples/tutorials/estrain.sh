@@ -2,27 +2,27 @@
 
 # displacement and stress kernels for distributed strain
 
-WDIR=./estrain
+WDIR=./estrain-e33-dip-60
 
 if [ ! -e $WDIR ]; then
 	echo adding directory $WDIR
 	mkdir $WDIR
 fi
 
-OMP_NUM_THREADS=2 relax --no-proj-output --with-eigenstrain $* <<EOF | tee $WDIR/in.param
+OMP_NUM_THREADS=12 relax --no-proj-output --with-eigenstrain $* <<EOF | tee $WDIR/in.param
 # use '#' character to include comments in your input file
 # grid size (sx1,sx2,sx3)
 512 512 512
 # sampling size (in unit of length), smoothing (0-0.5) & nyquist (dx1,dx2,dx3,beta,nq)
-0.05 0.05 0.05 0.2 2
+0.05 0.05 0.05 0.1 2
 # origin position & rotation
 0 0 0
 # observation depth for displacement and for stress (stress in only exported in GRD)
-2 2
+0 2
 # output directory (all output written here)
 $WDIR
 # lambda, mu, gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
-0 0.5 8.33e-4
+1 1 0
 # integration time (in unit of time), step (negative for automatic) and scaling of computed value
 0 -1 1
 # number of observation planes
@@ -59,7 +59,7 @@ $WDIR
 # number of distributed eigenstrain
 1
 # n     e11  e12  e13     e22  e23     e33 x1 x2 x3 length width thickness strike dip
-  1 0.00e-0 1e-3 0e-0 0.00e-0 0e-0 0.00e-0 -1  0  1      2     2         2      0  90
+  1 0.00e-3 0e-3 0e-3 1.00e-3 0e-3 0.00e-3 -1  1  1      2     2         2      0  90
 # number of surface traction
 0
 EOF

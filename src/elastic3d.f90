@@ -1620,7 +1620,7 @@ CONTAINS
     REAL*8 :: x1,x2,x3,x1s,x2s,x3s,x1i,x3i, &
          cstrike,sstrike,cdip,sdip,x2r, &
          sourc,image,temp1,temp2,temp3, &
-         dblcp,cplei,dipcs,dipci,xr,yr,zr,Wp,Lp,Tp,ekk
+         dblcp,cplei,dipcs,dipci,xr,yr,zr,Wp,Lp,Tp,ekk,dum
     REAL(8), DIMENSION(3) :: n,b
     TYPE(TENSOR) :: m
 
@@ -1699,15 +1699,17 @@ CONTAINS
     END DO
 
     ! equivalent body-force density
-!$omp parallel do private(i1,i2,x1,x2,x3,x2r,x1s,x1i,x2s,x3s,x3i,temp1,temp2,temp3), &
+!$omp parallel do private(i1,i2,x1,x2,x3,x2r,x1s,x1i,x2s,x3s,x3i,temp1,temp2,temp3,dum), &
 !$omp private(sourc,dblcp,dipcs,image,cplei,dipci)
     DO i3=1,sx3/2
-       CALL shiftedcoordinates(1,1,i3,sx1,sx2,sx3,dx1,dx2,dx3,x1,x2,x3)
-       IF ((abs(x3-z).gt.Lp) .and. (abs(x3+z).gt.Lp)) CYCLE
+       x3=DBLE(i3-1)*dx3
+       IF (ABS(x3-z).GT.SQRT(2.)*MAX(Wp,Lp,Tp)) CYCLE
 
        DO i2=1,sx2
           DO i1=1,sx1
-             CALL shiftedcoordinates(i1,i2,i3,sx1,sx2,sx3,dx1,dx2,dx3,x1,x2,x3)
+             CALL shiftedcoordinates(i1,i2,i3,sx1,sx2,sx3, &
+                  dx1,dx2,dx3,x1,x2,dum)
+
              IF ((ABS(x1-x) .GT. SQRT(2.)*MAX(Wp,Lp,Tp)) .OR. &
                  (ABS(x2-y) .GT. SQRT(2.)*MAX(Wp,Lp,Tp)) .OR. &
                  (ABS(x3-z) .GT. SQRT(2.)*MAX(Wp,Lp,Tp))) CYCLE
@@ -1736,7 +1738,7 @@ CONTAINS
 
              temp1=omega((x1i-xr)/T,beta)
              temp3=omega((x3i+zr)/L,beta)
-             image=1._8/T*omegap(x1i-xr,dx1) &
+             image=1._8/T*omegap((x1i-xr)/T,beta) &
                          *temp2 &
                          *temp3
              cplei=1._8/W*temp1 &
@@ -1753,15 +1755,14 @@ CONTAINS
                 f1(i1,i2,i3)=REAL(f1(i1,i2,i3) &
                      +2._8*mu*e%s12*sstrike*(sourc+image) &
                      +2._8*mu*e%s12*cdip*cstrike*(dblcp+cplei) &
-                     -(lambda*ekk+2._8*mu*e%s11)*cdip*sstrike*(dblcp+cplei) &
+                     -(lambda*ekk+2._8*mu*e%s11)*sstrike*(dblcp+cplei) &
                      -(lambda*ekk+2._8*mu*e%s22)*cdip*cstrike*(sourc+image))
                 f2(i1,i2,i3)=REAL(f2(i1,i2,i3) &
                      +2._8*mu*e%s12*cstrike*(sourc+image) &
                      -2._8*mu*e%s12*cdip*sstrike*(dblcp+cplei) &
-                     -(lambda*ekk+2._8*mu*e%s11)*cdip*cstrike*(dblcp+cplei) &
+                     -(lambda*ekk+2._8*mu*e%s11)*cstrike*(dblcp+cplei) &
                      +(lambda*ekk+2._8*mu*e%s22)*cdip*sstrike*(sourc+image))
                 f3(i1,i2,i3)=REAL(f3(i1,i2,i3) &
-                     -(lambda*ekk+2._8*mu*e%s11)*sdip*(dblcp-cplei) &
                      -2._8*mu*e%s12*sdip*(dblcp-cplei) &
                      +(lambda*ekk+2._8*mu*e%s22)*sdip*(sourc-image))
              ELSE
@@ -1769,16 +1770,16 @@ CONTAINS
                 f1(i1,i2,i3)=REAL(f1(i1,i2,i3) &
                      +2._8*mu*e%s12*sstrike*sourc &
                      +2._8*mu*e%s12*cdip*cstrike*dblcp &
-                     -(lambda*ekk+2._8*mu*e%s11)*cdip*sstrike*dblcp &
+                     -(lambda*ekk+2._8*mu*e%s11)*sstrike*dblcp &
                      -(lambda*ekk+2._8*mu*e%s22)*cdip*cstrike*sourc)
                 f2(i1,i2,i3)=REAL(f2(i1,i2,i3) &
                      +2._8*mu*e%s12*cstrike*sourc &
                      -2._8*mu*e%s12*cdip*sstrike*dblcp &
-                     -(lambda*ekk+2._8*mu*e%s11)*cdip*cstrike*dblcp &
+                     -(lambda*ekk+2._8*mu*e%s11)*cstrike*dblcp &
                      +(lambda*ekk+2._8*mu*e%s22)*cdip*sstrike*sourc)
                 f3(i1,i2,i3)=REAL(f3(i1,i2,i3) &
                      -2._8*mu*e%s12*sdip*dblcp &
-                     +(lambda*ekk+2._8*mu*e%s22)*cdip*sourc)
+                     +(lambda*ekk+2._8*mu*e%s22)*sdip*sourc)
              END IF
 
              ! vertical shear components
@@ -1787,12 +1788,14 @@ CONTAINS
                   +2._8*mu*e%s13*cdip*sstrike*dipcs &
                   +2._8*mu*e%s13*sdip*cstrike*dblcp &
                   -2._8*mu*e%s23*cdip*cstrike*dipcs &
-                  -2._8*mu*e%s23*sdip*cstrike*sourc)
+                  -2._8*mu*e%s23*sdip*cstrike*sourc &
+                  -(lambda*ekk+2._8*mu*e%s33)*sdip*dipcs*cstrike)
              f2(i1,i2,i3)=REAL(f2(i1,i2,i3) &
                   +2._8*mu*e%s13*cdip*cstrike*dipcs &
                   -2._8*mu*e%s13*sdip*sstrike*dblcp &
                   +2._8*mu*e%s23*cdip*sstrike*dipcs &
-                  +2._8*mu*e%s23*sdip*sstrike*sourc)
+                  +2._8*mu*e%s23*sdip*sstrike*sourc &
+                  +(lambda*ekk+2._8*mu*e%s33)*sdip*dipcs*sstrike)
              f3(i1,i2,i3)=REAL(f3(i1,i2,i3) &
                   +2._8*mu*e%s13*cdip*dblcp &
                   -2._8*mu*e%s23*cdip*sourc &
@@ -2604,22 +2607,23 @@ CONTAINS
     
     DO i3=1,sx3
        x3=DBLE(i3-1)*dx3
-       IF (abs(x3-z) .gt. Lp) CYCLE
+       IF (ABS(x3-z).GT.SQRT(2.)*MAX(Wp,Lp,Tp)) CYCLE
        
        DO i2=1,sx2
           DO i1=1,sx1
              CALL shiftedcoordinates(i1,i2,i3,sx1,sx2,sx3, &
                   dx1,dx2,dx3,x1,x2,dum)
              
-             IF ((ABS(x1-x).GT.MAX(Lp,Wp,Tp)) .OR. & 
-                 (ABS(x2-y).GT.MAX(Lp,Wp,Tp)) .OR. &
-                 (ABS(x3-z).GT.MAX(Lp,Wp,Tp))) CYCLE 
+             IF ((ABS(x1-x) .GT. SQRT(2.)*MAX(Wp,Lp,Tp)) .OR. &
+                 (ABS(x2-y) .GT. SQRT(2.)*MAX(Wp,Lp,Tp)) .OR. &
+                 (ABS(x3-z) .GT. SQRT(2.)*MAX(Wp,Lp,Tp))) CYCLE
              
              x2r= cstrike*x1-sstrike*x2
              x1s= cdip*x2r-sdip*x3
-             
+             x1i= cdip*x2r+sdip*x3
              x2s= sstrike*x1+cstrike*x2
              x3s= sdip*x2r+cdip*x3
+             x3i=-sdip*x2r+cdip*x3
              
              ! integrate at depth and along strike with raised cosine taper
              ! and shift sources to x,y,z coordinate
@@ -2631,7 +2635,7 @@ CONTAINS
              ! add image
              temp1=omega((x1i-xr)/T,beta)  
              temp3=omega((x3i+zr)/L,beta)
-             aperture=aperture+temp1*temp2*temp3  
+             !aperture=aperture+temp1*temp2*temp3  
              
              ! surface normal vector components  
              n(1)=+cdip*cstrike
@@ -2648,7 +2652,7 @@ CONTAINS
              d(2)=-sstrike*sdip
              d(3)=+cdip
  
-             ! eigenstrain (symmetric deviatoric second-order tensor)
+             ! eigenstrain (symmetric second-order tensor)
              ea = aperture .times. e  
              
              Ei =  (     ea%s11 .times. (s .sdyad. s)) .plus. &
@@ -2660,7 +2664,7 @@ CONTAINS
              
              ekk = tensortrace(Ei)
              
-             ! moment density (pure shear)
+             ! moment density
              sig(i1,i2,i3)=sig(i1,i2,i3) .plus. (ekk .times. lamdij)  .plus. (rmu .times. Ei) 
              
           END DO
