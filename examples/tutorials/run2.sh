@@ -16,7 +16,7 @@
 #
 # the output projected in geographical coordinates is cancelled (--no-proj-output)
 
-WDIR=./output2
+WDIR=./output_gpu
 
 if [ ! -e $WDIR ]; then
 	echo adding directory $WDIR

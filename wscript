@@ -69,6 +69,8 @@ def options(opt):
                      help='Use slow internal CTFFT instead of MKL or FFTW')
     other.add_option('--length-flag',
                      help='Fortran compiler option to allow unlimited line length')
+    other.add_option('--relax-lite', action='store_true', default=False,
+                     help="Generating the relax library")
 
 def configure(cnf):
     cnf.load('compiler_c compiler_fc')
@@ -95,37 +97,38 @@ def configure(cnf):
                  lib='proj',define_name="PROJ")
 
     # Find GMT
-    if cnf.options.gmt_dir:
-        if not cnf.options.gmt_incdir:
-            cnf.options.gmt_incdir=cnf.options.gmt_dir + "/include"
-        if not cnf.options.gmt_libdir:
-            cnf.options.gmt_libdir=cnf.options.gmt_dir + "/lib"
-    if cnf.options.gmt_incdir:
-        includedirs=[cnf.options.gmt_incdir]
-    else:
-        includedirs=['','/usr/include/gmt']
-    found_gmt=False
-    for inc in includedirs:
-        try:
-            cnf.check_cc(msg="Checking for gmt.h in '" + inc + "'",
-                         header_name='gmt.h', includes=inc,
-                         libpath=[cnf.options.gmt_libdir],
-                         rpath=[cnf.options.gmt_libdir],
-                         lib=['gmt','netcdf'], uselib_store='gmt')
-        except cnf.errors.ConfigurationError:
-            pass
+    if not cnf.options.relax_lite:
+        if cnf.options.gmt_dir:
+            if not cnf.options.gmt_incdir:
+                cnf.options.gmt_incdir=cnf.options.gmt_dir + "/include"
+            if not cnf.options.gmt_libdir:
+                cnf.options.gmt_libdir=cnf.options.gmt_dir + "/lib"
+        if cnf.options.gmt_incdir:
+            includedirs=[cnf.options.gmt_incdir]
         else:
-            found_gmt=True
-            break
-    if not found_gmt:
-        cnf.fatal('Could not find gmt')
+            includedirs=['','/usr/include/gmt']
+        found_gmt=False
+        for inc in includedirs:
+            try:
+                cnf.check_cc(msg="Checking for gmt.h in '" + inc + "'",
+                             header_name='gmt.h', includes=inc,
+                             libpath=[cnf.options.gmt_libdir],
+                             rpath=[cnf.options.gmt_libdir],
+                             lib=['gmt','netcdf'], uselib_store='gmt')
+            except cnf.errors.ConfigurationError:
+                pass
+            else:
+                found_gmt=True
+                break
+            if not found_gmt:
+                cnf.fatal('Could not find gmt')
 
     #Find Cuda
     if cnf.options.use_cuda:
         cnf.env.CUDA=cnf.options.use_cuda
         cnf.load('cuda',tooldir='.')   
         if not cnf.env.CUDAFLAGS:
-            cnf.env.CUDAFLAGS = ['-gencode','arch=compute_35,code=sm_35']
+            cnf.env.CUDAFLAGS = ['-gencode','arch=compute_35,code=sm_35','-Xcompiler','-fPIC']
     #       cnf.env.CUDAFLAGS += ['-Xptxas', '-dlcm=cg']
     #       cnf.env.CUDAFLAGS += ['--maxrregcount=32']
     #       cnf.env.CUDAFLAGS = ['-gencode','arch=compute_30,code=sm_30']
@@ -135,7 +138,7 @@ def configure(cnf):
             if not cnf.options.cuda_incdir:
                 cnf.options.cuda_incdir=cnf.options.cuda_dir + "/include"
             if not cnf.options.cuda_libdir:
-                cnf.options.cuda_libdir=cnf.options.cuda_dir + "/lib"
+                cnf.options.cuda_libdir=cnf.options.cuda_dir + "/lib64"
         if cnf.options.cuda_incdir:
             includedirs=[cnf.options.cuda_incdir]
         else:
@@ -282,6 +285,31 @@ def configure(cnf):
 
 
 def lite(ctx) :
+    if(ctx.env.CUDA):
+        ctx.shlib(features='c fc fcprogram cxx',
+                source=['src/curelaxlite.f90',
+                        'src/ctfft.f',
+                        'src/types.f90',
+                        'src/fourier.f90',
+                        'src/green.f90',
+                        'src/okada/green_space.f90',
+                        'src/okada/dc3d.f',
+                        'src/elastic3d.f90',
+                        'src/friction3d.f90',
+                        'src/viscoelastic3d.f90',
+                        'src/proj.c',
+                        'src/getdata.f',
+                        'src/getopt_m.f90',
+                        'src/util.f90',
+                        'src/mkl_dfti.f90',
+                        'src/cugreen.cu',
+                        'src/cuelastic.cu'],
+                install_path='${PREFIX}/bin',
+                includes=['build'],
+                use=['proj','openmp','fftw','imkl','cpp','length','cuda','papi','stdc++'],
+                target='librelax.so'
+                )
+    else:
         ctx.shlib(features='c fc fcprogram',
                 source=['src/relaxlite.f90',
                         'src/ctfft.f',
@@ -293,18 +321,14 @@ def lite(ctx) :
                         'src/elastic3d.f90',
                         'src/friction3d.f90',
                         'src/viscoelastic3d.f90',
-                        'src/writevtk.c',
-                        'src/writegrd4.2.c',
                         'src/proj.c',
-                        'src/export.f90',
                         'src/getdata.f',
                         'src/getopt_m.f90',
-                        'src/input.f90',
-                        'src/mkl_dfti.f90',
-                        'src/papi_prof.c'],
+                        'src/util.f90',
+                        'src/mkl_dfti.f90'],
                 install_path='${PREFIX}/bin',
                 includes=['build'],
-                use=['gmt','proj','openmp','fftw','imkl','cpp','length','papi','stdc++'],
+                use=['proj','openmp','fftw','imkl','cpp','length','papi','stdc++'],
                 target='librelax.so'
                 )
 
@@ -334,6 +358,7 @@ def build(bld):
                         'src/getdata.f',
                         'src/getopt_m.f90',
                         'src/input.f90',
+                        'src/util.f90',
                         'src/mkl_dfti.f90',
                         'src/papi_prof.c',
                         'src/cugreen.cu',
@@ -362,6 +387,7 @@ def build(bld):
                         'src/getdata.f',
                         'src/getopt_m.f90',
                         'src/input.f90',
+                        'src/util.f90',
                         'src/mkl_dfti.f90',
                         'src/papi_prof.c'],
                 install_path='${PREFIX}/bin',

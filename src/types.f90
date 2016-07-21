@@ -144,7 +144,7 @@ MODULE types
      INTEGER :: nop
 
      ! observation planes
-     TYPE(PLANE_STRUCT), DIMENSION(:), ALLOCATABLE :: op
+     TYPE(PLANE_STRUCT), DIMENSION(:), ALLOCATABLE :: op,opc
 
      ! number of stress observation planes
      INTEGER :: nsop

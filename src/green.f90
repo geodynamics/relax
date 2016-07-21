@@ -1104,7 +1104,7 @@ CONTAINS
 #endif   
 #ifndef USING_CUDA
 
-#ifdef PAPI_PROF  
+#ifdef papi_PROF  
     cTimerName = 'inversefft'
     CALL papistartprofiling(cTimerName)
 #endif

@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright 2007-2013, Sylvain Barbot
+! Copyright 2007-2012, Sylvain Barbot
 !
 ! This file is part of RELAX
 !
@@ -176,116 +176,93 @@
   !!              and allow scaling of computed time steps.        <br>
   !! (04-26-11) - include command-line arguments
   !! (11-04-11) - compatible with gfortran                         <br>
-  !! (07-25-13) - include cylindrical and spherical ductile zones  <br>
-  !! (01-03-14) - accelerate processing of ductile zones           <br>
   !!
   !! \todo 
   !!   - homogenize VTK output so that geometry of events match event index
+  !!   - evaluate Green's function, stress and body forces in GPU
   !!   - write the code for MPI multi-thread
+  !!   - fix the vtk export to grid for anisotropic sampling
   !!   - export position of observation points to long/lat in opts-geo.dat
+  !!   - check the projected output on the south hemisphere
   !!   - check the fully-relaxed afterslip for uniform stress change
+  !!   - include topography of parameter interface
   !!   - export afterslip output in VTK legacy format (binary)
-  !!   - export ductile zones for cylindrical and spherical geometries
   !------------------------------------------------------------------------
-PROGRAM relax
+SUBROUTINE relaxlite(in,gps,isverbose)
 
   USE types
-  USE input
   USE green
   USE green_space
   USE elastic3d
   USE viscoelastic3d
   USE friction3d
-  USE export
-  USE util
-
-  IMPLICIT NONE
+  USE util 
 
 #include "include.f90"
+  
+  IMPLICIT NONE
+  
+  TYPE(SIMULATION_STRUCT), INTENT(INOUT) :: in
+  TYPE(MANIFOLD_STRUCT), INTENT(OUT) :: gps(in%npts)
+  LOGICAL, INTENT(IN) :: isverbose
 
-  INTEGER, PARAMETER :: ITERATION_MAX = 99999
+  INTEGER, PARAMETER :: ITERATION_MAX = 99999 
   REAL*8, PARAMETER :: STEP_MAX = 1e7
 
-  INTEGER :: i,k,e,oi,iostatus,i3
-#ifdef FFTW3_THREADS
-  INTEGER :: iret
-!$  INTEGER :: omp_get_max_threads
-#endif
+  INTEGER :: i,k,e,oi,iostatus,itensortype,iRet,igamma,imaxwell
+  
   REAL*8, DIMENSION(5) :: maxwell,mech
-  TYPE(SIMULATION_STRUCT) :: in
+
 #ifdef VTK
   CHARACTER(256) :: filename,title,name
   CHARACTER(3) :: digit
 #endif
   CHARACTER(4) :: digit4
-  REAL*8 :: t,Dt,tm
-  
+  REAL*8 :: t,Dt,tm,dAmp,dAmp1
+  REAL*4 :: cuC1, cuC2 
+ 
   ! arrays
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: v1,v2,v3,u1,u2,u3,gamma
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: u1r,u2r,u3r
-  REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: lineardgammadot0,nonlineardgammadot0
-  REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: ltransientdgammadot0,nltransientdgammadot0 
   REAL*4, DIMENSION(:,:), ALLOCATABLE :: t1,t2,t3
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: inter1,inter2,inter3
+  REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: lineardgammadot0,nonlineardgammadot0
+  REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: ltransientdgammadot0,nltransientdgammadot0 
   TYPE(TENSOR), DIMENSION(:,:,:), ALLOCATABLE :: tau,sig,moment
-  TYPE(TENSOR), DIMENSION(:,:,:), ALLOCATABLE :: epsilonik,epsilonikdot 
+ 
+  DO k=1,in%npts
+     gps(k)%nepochs=0
+     ALLOCATE(gps(k)%t(1+ITERATION_MAX), &
+              gps(k)%u1(1+ITERATION_MAX), &
+              gps(k)%u2(1+ITERATION_MAX), &
+              gps(k)%u3(1+ITERATION_MAX), STAT=iostatus)
+     IF (iostatus>0) STOP "could not allocate prediction array"
+  END DO
 
-#ifdef FFTW3_THREADS
-  CALL sfftw_init_threads(iret)
-#ifdef _OPENMP
-  CALL sfftw_plan_with_nthreads(omp_get_max_threads())
-#else
-  CALL sfftw_plan_with_nthreads(4)
-#endif
-#endif
-
-  ! read input parameters
-  CALL init(in)
-  ! abort calculation after help message
-  ! or for dry runs
-  IF (in%isdryrun) THEN
-     PRINT '("dry run: abort calculation")'
-  END IF
-  IF (in%isdryrun .OR. in%ishelp .OR. in%isversion) THEN
-     ! exit program
-     GOTO 100
-  END IF
-
-  ! allocate memory
-  ALLOCATE (v1(in%sx1+2,in%sx2,in%sx3),v2(in%sx1+2,in%sx2,in%sx3),v3(in%sx1+2,in%sx2,in%sx3), &
-            u1(in%sx1+2,in%sx2,in%sx3/2),u2(in%sx1+2,in%sx2,in%sx3/2),u3(in%sx1+2,in%sx2,in%sx3/2), &
-            tau(in%sx1,in%sx2,in%sx3/2),sig(in%sx1,in%sx2,in%sx3/2),gamma(in%sx1+2,in%sx2,in%sx3/2), &
-            t1(in%sx1+2,in%sx2),t2(in%sx1+2,in%sx2),t3(in%sx1+2,in%sx2),STAT=iostatus)
+  CALL cuinit (%VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3), %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3), iostatus)
   IF (iostatus>0) STOP "could not allocate memory"
-#ifdef VTK
-  IF (in%isoutputvtkrelax) THEN
-     ALLOCATE(u1r(in%sx1+2,in%sx2,in%sx3/2),u2r(in%sx1+2,in%sx2,in%sx3/2), &
-              u3r(in%sx1+2,in%sx2,in%sx3/2),STAT=iostatus)
-     IF (iostatus>0) STOP "could not allocate memory for VTK relax output"
-     u1r=0
-     u2r=0
-     u3r=0
-  END IF
-#endif
+   
+  ! allocate memory
+  ALLOCATE (v1(1,1,1),v2(1,1,1),v3(1,1,1), &
+            u1(1,1,1),u2(1,1,1),u3(1,1,1), &
+            tau(in%sx1,in%sx2,in%sx3/2),sig(1,1,1),gamma(1,1,1), &
+            t1(in%sx1+2,in%sx2),t2(in%sx1+2,in%sx2),t3(in%sx1+2,in%sx2), &
+            STAT=iostatus)
+  IF (iostatus>0) STOP "could not allocate memory"
 
-  IF (in%isoutputrelax) THEN
-     ALLOCATE(inter1(in%sx1+2,in%sx2,2),inter2(in%sx1+2,in%sx2,2),inter3(in%sx1+2,in%sx2,2),STAT=iostatus)
-     IF (iostatus>0) STOP "could not allocate memory for postseismic displacement"
-     inter1=0;inter2=0;inter3=0;
-  END IF
+  CALL curesetvectors () 
+  i=0
 
-  v1=0;v2=0;v3=0;u1=0;u2=0;u3=0;gamma=0;t1=0;t2=0;t3=0
-  CALL tensorfieldadd(tau,tau,in%sx1,in%sx2,in%sx3/2,c1=0._4,c2=0._4)
+  itensortype=3
+  CALL cutensormemset (%VAL(itensortype))
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -
   ! -     construct pre-stress structure
-  ! -
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%stresslayer)) THEN
      ! depth-dependent background stress
      CALL tensorstructure(in%stressstruc,in%stresslayer,in%dx3)
-     DEALLOCATE(in%stresslayer)
+     !DEALLOCATE(in%stresslayer)
   ELSE
      ! background stress is zero
      in%stressstruc(:)%t=tensor(0._4,0._4,0._4,0._4,0._4,0._4)
@@ -294,18 +271,7 @@ PROGRAM relax
      tau(:,:,k)=(-1._4) .times. in%stressstruc(k)%t
   END DO
 
-  IF (in%istransient) THEN             
-     ALLOCATE (epsilonik(in%sx1,in%sx2,in%sx3/2), &
-               epsilonikdot(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)             
-     IF (iostatus>0) STOP "could not allocate memory epsilonik"
-  END IF 
-  
-
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -
-  ! -     first event
-  ! -
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! first event
   e=1
   ! first output
   oi=1;
@@ -315,36 +281,26 @@ PROGRAM relax
   ! sources
   CALL dislocations(in%events(e),in%lambda,in%mu,in%beta,in%sx1,in%sx2,in%sx3, &
                     in%dx1,in%dx2,in%dx3,v1,v2,v3,t1,t2,t3,tau)
+
+  itensortype = 1  
+  CALL copytau (tau, %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), %VAL(itensortype))
+  
+  CALL cucopytraction (t3, %VAL(in%sx1), %VAL(in%sx2), iRet)
+  
   CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,0.d0,t3)
-  
-  PRINT '("# event ",I3.3)', e
+
+ 
   IF (in%istransient) THEN
-     PRINT 0991
+     WRITE(20,0991)
   ELSE
-     PRINT 0990
-  END IF
-  ! export the amplitude of eigenstrain
-  
-  IF (in%iseigenstrain) THEN
-     CALL exporteigenstrain(gamma,in%nop,in%op,in%x0,in%y0, &
-                            in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,0)
-  END IF 
-  ! export equivalent body forces
-  IF (isoutput(in%skip,t,0,in%odt,oi,in%events(e)%time)) THEN
-#ifdef GRD_EQBF
-     IF (in%isoutputgrd) THEN
-        CALL exportgrd(v1,v2,v3,in%sx1,in%sx2,in%sx3/2, &
-                       in%dx1,in%dx2,in%dx3,in%ozs,in%x0,in%y0,in%wdir,0,convention=3)
-     END IF
-#endif
+     WRITE(20,0990)
   END IF
 
   ! test the presence of dislocations for coseismic calculation
   IF ((in%events(e)%nt .NE. 0) .OR. &
       (in%events(e)%ns .NE. 0) .OR. &
       (in%events(e)%nm .NE. 0) .OR. &
-      (in%events(e)%nl .NE. 0) .OR. &
-      (in%events(e)%neigenstrain .NE. 0)) THEN
+      (in%events(e)%nl .NE. 0)) THEN
 
      ! apply the 3d elastic transfer function
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3, &
@@ -352,133 +308,51 @@ PROGRAM relax
 
      ! add displacement from analytic solutions for small patches (avoid
      ! aliasing)
-     CALL dislocations_disp(in%events(e),in%lambda,in%mu, &
-                            in%sx1,in%sx2,in%sx3, &
-                            in%dx1,in%dx2,in%dx3,v1,v2,v3)
+     ! Need to implement this ?
   END IF
-  
+
   ! transfer solution
-  CALL fieldrep(u1,v1,in%sx1+2,in%sx2,in%sx3/2)
-  CALL fieldrep(u2,v2,in%sx1+2,in%sx2,in%sx3/2)
-  CALL fieldrep(u3,v3,in%sx1+2,in%sx2,in%sx3/2)
+  CALL cufieldrep (%VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2))
 
   ! evaluate stress
-  CALL tensorfieldadd(sig,tau,in%sx1,in%sx2,in%sx3/2,c1=0._4,c2=-1._4)
-  CALL stressupdate(u1,u2,u3,in%lambda,in%mu, &
-                    in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,sig)
+  itensortype=2
+  cuc1=0._4
+  cuc2=-1._4 
+  CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                         %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -   export observation points, map view of displacement,
-  ! -   map view of stress components, Coulomb stress on observation
-  ! -   patches, and full displacement and stress field.
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  itensortype = 1
+  CALL custressupdatewrapper (%VAL(itensortype), %VAL(in%lambda), %VAL(in%mu), &
+                              %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3),    & 
+                              %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), u1, u2, u3, sig)
 
-  ! export displacements
-#ifdef TXT
-  IF (in%isoutputtxt) THEN
-     CALL exporttxt(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%oz,in%dx3,0,0._8,in%wdir,in%reportfilename)
-  END IF
-#endif
-#ifdef XYZ
-  IF (in%isoutputxyz) THEN
-     CALL exportxyz(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%oz,in%dx1,in%dx2,in%dx3,0,in%wdir)
-  END IF
-#endif
-#ifdef GRD
-  IF (in%isoutputgrd) THEN
-     CALL exportgrd(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0,in%wdir,0)
-     IF (in%isoutputrelax) THEN
-        CALL exportgrd(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2, &
-                       in%dx1,in%dx2,in%dx3,0._8,in%x0,in%y0,in%wdir,0,convention=2)
-     END IF
-  END IF
-#endif
-#ifdef PROJ
-  IF (in%isoutputproj) THEN
-     CALL exportproj(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz, &
-                     in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,0)
-  END IF
-#endif
-#ifdef VTK
-  IF (in%isoutputvtk) THEN
-     !filename=trim(in%wdir)//"/disp-000.vtr"
-     !CALL exportvtk_vectors(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,filename)
-     filename=trim(in%wdir)//"/disp-000.vtk"//char(0)
-     title="coseismic displacement vector field"//char(0)
-     name="displacement"//char(0)
-     CALL exportvtk_vectors_legacy(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                   4,4,8,filename,title,name)
-     !CALL exportvtk_vectors_slice(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,filename)
-  END IF
-  IF (in%isoutputvtkrelax) THEN
-     filename=trim(in%wdir)//"/disp-relax-0000.vtk"//char(0)
-     title="postseismic displacement vector field"//char(0)
-     name="displacement"//char(0)
-     CALL exportvtk_vectors_legacy(u1r,u2r,u3r,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                   4,4,8,filename,title,name)
-  END IF
-#endif
+  CALL pts2series(u1,u2,u3,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%opts,0._8,1,gps)
+
   IF (ALLOCATED(in%ptsname)) THEN
      CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
           in%opts,in%ptsname,0._8,in%wdir,.true.,in%x0,in%y0,in%rot)
   END IF
 
-  ! export initial stress
-#ifdef GRD
-  CALL exportplanestress(sig,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi-1)
-  IF (in%isoutputgrd .AND. in%isoutputstress) THEN
-     CALL exportstressgrd(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                          in%ozs,in%x0,in%y0,in%wdir,0,4)
+  i=INDEX(in%wdir," ")
+  filename=in%wdir(1:i-1) // "/" // "out.param" 
+  OPEN (UNIT=20,FILE=filename,IOSTAT=iostatus,FORM="FORMATTED")
+  IF (in%istransient) THEN
+     WRITE(20,0991)
+  ELSE
+     WRITE(20,0990)
   END IF
-#endif
-#ifdef PROJ
-  IF (in%isoutputproj .AND. in%isoutputstress) THEN
-      CALL exportstressproj(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%ozs, &
-                            in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,0)
+
+  itensortype=2
+  CALL cutensoramp (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),dAmp)
+  dAmp=dAmp*DBLE(in%dx1*in%dx2*in%dx3)
+  IF (in%istransient) THEN
+     WRITE(20,1103) 0,0._8,0._8,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,dAmp
+  ELSE
+     WRITE(20,1101) 0,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,dAmp
   END IF
-#endif
-  ! initialize stress conditions
-  CALL export_rfaults_stress_init(sig,in%sx1,in%sx2,in%sx3, &
-                                     in%dx1,in%dx2,in%dx3,in%nsop,in%sop)
-  WRITE (digit4,'(I4.4)') 0
-#ifdef VTK
-  IF (in%isoutputvtk .AND. in%isoutputstress) THEN
-     filename=trim(in%wdir)//"/sigma-"//digit4//".vtk"//char(0)
-     title="stress tensor field"//char(0)
-     name="stress"//char(0)
-     CALL exportvtk_tensors_legacy(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                   4,4,8,filename,title,name)
-  END IF
-  ! coseismic stress change on predefined planes for 3-D visualization w/ Paraview
-  filename=trim(in%wdir)//"/rfaults-sigma-"//digit4//".vtp"
-  CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                in%nsop,in%sop,filename,sig=sig)
-  ! postseismic stress change on predefined planes (zero by definition)
-  filename=trim(in%wdir)//"/rfaults-dsigma-"//digit4//".vtp"
-  CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                in%nsop,in%sop,filename)
-#endif
-  ! coseismic stress change on predefined planes for gmt
-  filename=trim(in%wdir)//"/rfaults-sigma-"//digit4//".xy"
-  CALL exportgmt_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                in%nsop,in%sop,filename,sig=sig)
-  filename=trim(in%wdir)//"/rfaults-traction-"//digit4//".dat"
-  CALL exportgmt_rfaults_traction(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                in%nsop,in%sop,filename,sig=sig)
-  ! postseismic stress change on predefined planes for gmt (zero by definition)
-  filename=trim(in%wdir)//"/rfaults-dsigma-"//digit4//".xy"
-  CALL exportgmt_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                in%nsop,in%sop,filename)
-  ! time series of stress in ASCII format
-  CALL exportcoulombstress(sig,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                    in%nsop,in%sop,0._8,in%wdir,.TRUE.)
-  CALL reporttime(0,0._8,in%reporttimefilename)
-   
-  IF (in%istransient) THEN 
-     PRINT 1103,0,0._8,0._8,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
-  ELSE 
-     PRINT 1101,0,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
-  END IF 
+  
+  FLUSH(20)
+ 
   IF (in%interval .LE. 0) THEN
      GOTO 100 ! no time integration
   END IF
@@ -488,13 +362,14 @@ PROGRAM relax
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%linearlayer)) THEN
      CALL viscoelasticstructure(in%linearstruc,in%linearlayer,in%dx3)
-     DEALLOCATE(in%linearlayer)
+     !DEALLOCATE(in%linearlayer)
 
      IF (0 .LT. in%nlwz) THEN
         ALLOCATE(lineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
         IF (iostatus.GT.0) STOP "could not allocate lineardgammadot0"
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
-                             in%nlwz,in%linearweakzone,lineardgammadot0)
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nlwz), &
+                             in%linearweakzone,lineardgammadot0)
      END IF
   END IF
 
@@ -503,13 +378,14 @@ PROGRAM relax
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%nonlinearlayer)) THEN
      CALL viscoelasticstructure(in%nonlinearstruc,in%nonlinearlayer,in%dx3)
-     DEALLOCATE(in%nonlinearlayer)
+     !DEALLOCATE(in%nonlinearlayer)
 
      IF (0 .LT. in%nnlwz) THEN
         ALLOCATE(nonlineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
         IF (iostatus.GT.0) STOP "could not allocate nonlineardgammadot0"
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
-                             in%nnlwz,in%nonlinearweakzone,nonlineardgammadot0)
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nnlwz), &
+                             in%nonlinearweakzone,nonlineardgammadot0)
      END IF
   END IF
 
@@ -518,36 +394,38 @@ PROGRAM relax
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%faultcreeplayer)) THEN
      CALL viscoelasticstructure(in%faultcreepstruc,in%faultcreeplayer,in%dx3)
-     DEALLOCATE(in%faultcreeplayer)
+     !DEALLOCATE(in%faultcreeplayer)
   END IF
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! -   construct linear transient structure
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%ltransientlayer)) THEN
      CALL viscoelasticstructure(in%ltransientstruc,in%ltransientlayer,in%dx3)
-     DEALLOCATE(in%ltransientlayer)
+     !DEALLOCATE(in%ltransientlayer)
 
      ALLOCATE(ltransientdgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
      IF (iostatus.GT.0) STOP "could not allocate ltransientdgammadot0"
      IF (0 .LT. in%nltwz) THEN
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
-                             in%nltwz,in%ltransientweakzone,ltransientdgammadot0)
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nltwz), &
+                             in%ltransientweakzone,ltransientdgammadot0)
      END IF
   END IF
-  
+
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! -   construct nonlinear transient structure
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%nltransientlayer)) THEN
      CALL viscoelasticstructure(in%nltransientstruc,in%nltransientlayer,in%dx3)
-     DEALLOCATE(in%nltransientlayer)
+     !DEALLOCATE(in%nltransientlayer)
 
      ALLOCATE(nltransientdgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
      IF (iostatus.GT.0) STOP "could not allocate nltransientdgammadot0"
      IF (0 .LT. in%nnltwz) THEN
-        CALL builddgammadot0(in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,0._8, &
-                             in%nnltwz,in%nltransientweakzone,nltransientdgammadot0)
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nnltwz), &
+                             in%nltransientweakzone,nltransientdgammadot0)
      END IF
   END IF
 
@@ -555,15 +433,12 @@ PROGRAM relax
   ! -   start the relaxation
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  ALLOCATE(moment(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
-  IF (iostatus>0) STOP "could not allocate the mechanical structure"
-
-  !CALL tensorfieldadd(sig,sig,in%sx1,in%sx2,in%sx3/2,c1=0._4,c2=0._4)
-  CALL tensorfieldadd(moment,moment,in%sx1,in%sx2,in%sx3/2,c1=0._4,c2=0._4)  
+  itensortype=2
+  CALL cutensormemset (%VAL(itensortype))
 
   DO i=1,ITERATION_MAX
      IF (t .GE. in%interval) GOTO 100 ! proper exit
-     
+
      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      ! predictor
      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -574,8 +449,10 @@ PROGRAM relax
      
      ! active mechanism flag
      mech=0
+
      ! initialize no forcing term in tensor space
-     CALL tensorfieldadd(moment,moment,in%sx1,in%sx2,in%sx3/2,0._4,0._4)
+     itensortype=2
+     CALL cutensormemset (%VAL(itensortype))
 
      ! power density from three mechanisms (linear and power-law viscosity 
      ! and fault creep)
@@ -592,7 +469,7 @@ PROGRAM relax
         END IF
         mech(1)=1
      END IF
-     
+
      ! 2- powerlaw viscosity
      IF (ALLOCATED(in%nonlinearstruc)) THEN
         IF (0 .LT. in%nnlwz) THEN
@@ -606,7 +483,7 @@ PROGRAM relax
         END IF
         mech(2)=1
      END IF
-     
+
      ! 3- nonlinear fault creep with rate-strengthening friction
      IF (ALLOCATED(in%faultcreepstruc)) THEN
         DO k=1,in%np
@@ -619,20 +496,24 @@ PROGRAM relax
         END DO
         mech(3)=1
      END IF
-
+     
      ! 4 - linear transient creep 
      IF (in%istransient) THEN
+        itensortype=4
+        imaxwell=1
         IF (ALLOCATED(in%ltransientstruc)) THEN 
            IF (0 .LT. in%nltwz) THEN
-              CALL transienteigenstress(in%mu,in%ltransientstruc, &
-                   sig,epsilonik,in%sx1,in%sx2,in%sx3/2, &
-                   in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
-                   DGAMMADOT0=ltransientdgammadot0,MAXWELLTIME=maxwell(4))
+              igamma=1
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%ltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
+                   maxwell(4),%VAL(igamma),ltransientdgammadot0)
            ELSE
-              CALL transienteigenstress(in%mu,in%ltransientstruc, &
-                   sig,epsilonik,in%sx1,in%sx2,in%sx3/2, &
-                   in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
-                   MAXWELLTIME=maxwell(4))
+              igamma=0
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%ltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
+                   maxwell(4),%VAL(igamma))    
            END IF
            mech(4)=1
         END IF
@@ -640,30 +521,21 @@ PROGRAM relax
         ! 5 - nonlinear transient creep 
         IF (ALLOCATED(in%nltransientstruc)) THEN 
            IF (0 .LT. in%nnltwz) THEN
-              CALL transienteigenstress(in%mu,in%nltransientstruc, &
-                   sig,epsilonik,in%sx1,in%sx2,in%sx3/2, &
-                   in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
-                   DGAMMADOT0=nltransientdgammadot0,MAXWELLTIME=maxwell(5))
+              igamma=1
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%nltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
+                   maxwell(5),%VAL(igamma),nltransientdgammadot0)
            ELSE 
-              CALL transienteigenstress(in%mu,in%nltransientstruc, &
-                   sig,epsilonik,in%sx1,in%sx2,in%sx3/2, &
-                   in%dx1,in%dx2,in%dx3,moment,epsilonikdot, &
-                   MAXWELLTIME=maxwell(5))
+              igamma=0
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%nltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
+                   maxwell(5),%VAL(igamma))
            END IF     
            mech(5)=1
         END IF
      END IF
-
-#ifdef VTK
-     IF (in%isoutputvtk .AND. in%isoutputstress) THEN
-        WRITE (digit,'(I3.3)') oi-1
-        filename=trim(in%wdir)//"/power-"//digit//".vtk"//char(0)
-        title="stress rate tensor field"//char(0)
-        name="power"//char(0)
-        CALL exportvtk_tensors_legacy(moment,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                      4,4,8,filename,title,name)
-     END IF
-#endif
 
      ! identify the required time step
      tm=1._8/(REAL(mech(1))/maxwell(1)+ &
@@ -681,41 +553,57 @@ PROGRAM relax
            tm=in%interval/20._8
         END IF
      END IF
-     
+
      ! choose an integration time step
      CALL integrationstep(tm,Dt,t,oi,in%odt,in%skip,in%tscale,in%events,e,in%ne)
 
-     CALL tensorfieldadd(sig,moment,in%sx1,in%sx2,in%sx3/2,c1=0.0_4,c2=1._4)
-     
-     v1=0;v2=0;v3=0;t1=0;t2=0;t3=0;
-     CALL equivalentbodyforce(sig,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,v1,v2,v3,t1,t2,t3)
+     itensortype=4
+     cuc1=0._4;cuc2=1._4
+     CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                            %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
+     CALL curesetvectors () 
+
+     itensortype=1
+     CALL cubodyforceswrapper (%VAL(itensortype), %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3), &
+                               %VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2), v1,v2,v3,t1,t2,t3)
+
+     CALL cucopytraction (t3, %VAL(in%sx1), %VAL(in%sx2), iRet)
+     
      ! add time-dependent surface loads
      CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,Dt/2.d8,t3,rate=.TRUE.)
 
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3,in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
-     
+
      ! v1,v2,v3 contain the predictor displacement
-     CALL fieldadd(v1,u1,in%sx1+2,in%sx2,in%sx3/2,c1=REAL(Dt/2))
-     CALL fieldadd(v2,u2,in%sx1+2,in%sx2,in%sx3/2,c1=REAL(Dt/2))
-     CALL fieldadd(v3,u3,in%sx1+2,in%sx2,in%sx3/2,c1=REAL(Dt/2))
+     itensortype = 2
+     cuC1 = REAL(Dt/2);cuC2 = 1._4 
+     CALL cufieldadd (%VAL(itensortype), v1, v2, v3, u1, u2, u3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
+
      IF (in%istransient) THEN
-        CALL tensorfieldadd(epsilonikdot,epsilonik,in%sx1,in%sx2,in%sx3/2,c1=REAL(Dt/2),c2=1._4)
+        itensortype=7
+        cuc1=REAL(Dt/2);cuc2=1._4
+        CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                               %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
      END IF
-     CALL tensorfieldadd(sig,tau,in%sx1,in%sx2,in%sx3/2,c1=-REAL(Dt/2),c2=-1._4)
+     itensortype=2
+     cuc1=-REAL(Dt/2);cuc2=-1._4
+     CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                            %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      ! corrector
      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     CALL stressupdate(v1,v2,v3,in%lambda,in%mu, &
-                       in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,sig)
+     itensortype = 2
+     CALL custressupdatewrapper (%VAL(itensortype), %VAL(in%lambda), %VAL(in%mu), &
+                                 %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3),    & 
+                                 %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), v1, v2, v3, sig)
 
      ! reinitialize moment density tensor
-     CALL tensorfieldadd(moment,moment,in%sx1,in%sx2,in%sx3/2,0._4,0._4)
+     itensortype=2
+     CALL cutensormemset (%VAL(itensortype)) 
      
      IF (ALLOCATED(in%linearstruc)) THEN
-        ! linear viscosity
-        v1=0
         IF (0 .LT. in%nlwz) THEN
            CALL viscouseigenstress(in%mu,in%linearstruc, &
                 sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
@@ -725,14 +613,10 @@ PROGRAM relax
                 sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment,GAMMA=v1)
         END IF
-        
-        ! update slip history
-        CALL fieldadd(gamma,v1,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
+        ! not adding v1 to gamma
      END IF
-     
+    
      IF (ALLOCATED(in%nonlinearstruc)) THEN
-        ! powerlaw viscosity
-        v1=0
         IF (0 .LT. in%nnlwz) THEN
            CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
                 sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
@@ -742,11 +626,9 @@ PROGRAM relax
                 sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment,GAMMA=v1)
         END IF
-        
-        ! update slip history
-        CALL fieldadd(gamma,v1,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
+        ! not adding v1 to gamma
      END IF
-     
+
      ! nonlinear fault creep with rate-strengthening friction
      IF (ALLOCATED(in%faultcreepstruc)) THEN
 
@@ -760,47 +642,57 @@ PROGRAM relax
                 sig,in%stressstruc,in%mu,in%faultcreepstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment)
 
-           ! keep track if afterslip instantaneous velocity
-           CALL monitorfriction(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
-                in%n(k)%width,in%n(k)%length, &
-                in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
-                in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                sig,in%stressstruc,in%faultcreepstruc,in%n(k)%patch)
         END DO
 
      END IF
 
      ! 4 - linear transient creep 
      IF (in%istransient) THEN
+        itensortype=5
+        imaxwell=0
         IF (ALLOCATED(in%ltransientstruc)) THEN 
            IF (0 .LT. in%nltwz) THEN
-              CALL transienteigenstress(in%mu,in%ltransientstruc, &
-                      sig,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
-                      in%dx1,in%dx2,in%dx3,moment,epsilonikdot,DGAMMADOT0=ltransientdgammadot0)
-           ELSE
-              CALL transienteigenstress(in%mu,in%ltransientstruc, &
-                      sig,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
-                      in%dx1,in%dx2,in%dx3,moment,epsilonikdot)
+              igamma=1
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%ltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), & 
+                   maxwell(4),%VAL(igamma),ltransientdgammadot0)
+           ELSE 
+              igamma=0
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%ltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
+                   maxwell(4),%VAL(igamma))
            END IF
         END IF
      
         ! 5 - nonlinear transient creep 
         IF (ALLOCATED(in%nltransientstruc)) THEN 
            IF (0 .LT. in%nnltwz) THEN
-              CALL transienteigenstress(in%mu,in%nltransientstruc, &
-                      sig,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
-                      in%dx1,in%dx2,in%dx3,moment,epsilonikdot,DGAMMADOT0=nltransientdgammadot0)
-           ELSE
-              CALL transienteigenstress(in%mu,in%nltransientstruc, &
-                      sig,epsilonikdot,in%sx1,in%sx2,in%sx3/2, &
-                      in%dx1,in%dx2,in%dx3,moment,epsilonikdot)
-           END IF
+              igamma=1
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%nltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
+                   maxwell(5),%VAL(igamma),nltransientdgammadot0)
+           ELSE 
+              igamma=0
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%nltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
+                   maxwell(5),%VAL(igamma))
+           END IF     
         END IF
-      
-        CALL tensorfieldadd(epsilonik,epsilonikdot,in%sx1,in%sx2,in%sx3/2,c2=REAL(Dt))
-        CALL tensorfieldadd(epsilonikdot,epsilonikdot,in%sx1,in%sx2,in%sx3/2,0._4,0._4)
-     END IF
+        
+        itensortype=6
+        cuC1 = 1._4;cuC2 = REAL(Dt) 
+        CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                               %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
+        itensortype=8
+        cuC1 = 0._4;cuC2 = 0._4 
+        CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                               %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
+     END IF
      ! interseismic loading
      IF ((in%inter%ns .GT. 0) .OR. (in%inter%nt .GT. 0)) THEN
         ! vectors v1,v2,v3 are not affected.
@@ -808,58 +700,26 @@ PROGRAM relax
              in%dx1,in%dx2,in%dx3,v1,v2,v3,t1,t2,t3,tau,eigenstress=moment)
      END IF
      
-     v1=0;v2=0;v3=0;t1=0;t2=0;t3=0;
-     CALL equivalentbodyforce(moment,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,v1,v2,v3,t1,t2,t3)
 
-     ! add time-dependent surface loads
-     CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,Dt,t3,rate=.TRUE.)
+     CALL curesetvectors () 
 
-     ! export equivalent body forces
-     IF (isoutput(in%skip,t,i,in%odt,oi,in%events(e)%time)) THEN
-#ifdef VTK_EQBF
-        IF (in%isoutputvtk) THEN
-           WRITE (digit,'(I3.3)') oi
-           !filename=trim(in%wdir)//"/eqbf-"//digit//".vtr"
-           !CALL exportvtk_vectors(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,filename)
-           filename=trim(in%wdir)//"/eqbf-"//digit//".vtk"//char(0)
-           title="instantaneous equivalent body-force rate vector field"//char(0)
-           name="body-force-rate"//char(0)
-           CALL exportvtk_vectors_legacy(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
-                                         4,4,8,filename,title,name)
-        END IF
-#endif
-#ifdef GRD_EQBF
-        IF (in%isoutputgrd) THEN
-           CALL exportgrd(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                          in%oz,in%x0,in%y0,in%wdir,oi,convention=3)
-        END IF
-#endif
-     END IF
+     itensortype=2
+     CALL cubodyforceswrapper (%VAL(itensortype), %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3), &
+                               %VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2), v1,v2,v3,t1,t2,t3)
+
+     CALL cucopytraction (t3, %VAL(in%sx1), %VAL(in%sx2), iRet)
 
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3,in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
 
-     ! update deformation field
-     CALL fieldadd(u1,v1,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
-     CALL fieldadd(u2,v2,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
-     CALL fieldadd(u3,v3,in%sx1+2,in%sx2,in%sx3/2,c2=REAL(Dt))
-     CALL tensorfieldadd(tau,moment,in%sx1,in%sx2,in%sx3/2,c2=REAL(Dt))
-     CALL frictionadd(in%np,in%n,Dt)
+     itensortype = 1
+     cuC1 = 1._4;cuC2 = REAL(Dt) 
+     CALL cufieldadd (%VAL(itensortype), u1, u2, u3, v1, v2, v3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
+
+     itensortype=5
+     cuc1=1._4;cuc2=REAL(Dt)
+     CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                            %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
      
-     ! keep track of the viscoelastic contribution alone
-     IF (in%isoutputrelax) THEN
-        CALL sliceadd(inter1(:,:,1),v1,in%sx1+2,in%sx2,in%sx3,int(in%oz/in%dx3)+1,c2=REAL(Dt))
-        CALL sliceadd(inter2(:,:,1),v2,in%sx1+2,in%sx2,in%sx3,int(in%oz/in%dx3)+1,c2=REAL(Dt))
-        CALL sliceadd(inter3(:,:,1),v3,in%sx1+2,in%sx2,in%sx3,int(in%oz/in%dx3)+1,c2=REAL(Dt))
-     END IF
-
-#ifdef VTK
-     IF (in%isoutputvtkrelax) THEN
-        u1r=REAL(u1r+Dt*v1)
-        u2r=REAL(u2r+Dt*v2)
-        u3r=REAL(u3r+Dt*v3) 
-     END IF
-#endif
-
      ! time increment
      t=t+Dt
     
@@ -870,33 +730,44 @@ PROGRAM relax
            in%events(e)%i=i
 
            PRINT '("coseismic event ",I3.3)', e
-           IF (in%istransient) THEN
-              PRINT 0991
-           ELSE
-              PRINT 0990
-           END IF
-
-           v1=0;v2=0;v3=0;t1=0;t2=0;t3=0;
+           PRINT 0990
+          
+           CALL curesetvectors ()
+           itensortype = 0
+           CALL copytau (tau, %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), %VAL(itensortype)) 
+           
            CALL dislocations(in%events(e),in%lambda,in%mu, &
                 in%beta,in%sx1,in%sx2,in%sx3, &
                 in%dx1,in%dx2,in%dx3,v1,v2,v3,t1,t2,t3,tau)
+
+           itensortype = 1
+           CALL copytau (tau, %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), %VAL(itensortype))
+           CALL cucopytraction (t3, %VAL(in%sx1), %VAL(in%sx2), iRet)
+           
            CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,0.d0,t3)
 
            ! apply the 3d elastic transfert function
            CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3, &
                 in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
-           
-           ! transfer solution
-           CALL fieldadd(u1,v1,in%sx1+2,in%sx2,in%sx3/2)
-           CALL fieldadd(u2,v2,in%sx1+2,in%sx2,in%sx3/2)
-           CALL fieldadd(u3,v3,in%sx1+2,in%sx2,in%sx3/2)
 
+           itensortype = 1
+           cuC1 = 1._4;cuC2 = 1._4 
+           CALL cufieldadd (%VAL(itensortype), u1, u2, u3, v1, v2, v3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
         END IF
      END IF
 
-     CALL tensorfieldadd(sig,tau,in%sx1,in%sx2,in%sx3/2,c1=0._4,c2=-1._4)
-     CALL stressupdate(u1,u2,u3,in%lambda,in%mu, &
-                       in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,sig)
+     itensortype=2
+     cuc1=0._4;cuc2=-1._4
+     CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                            %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
+
+  itensortype = 1
+  CALL custressupdatewrapper (%VAL(itensortype), %VAL(in%lambda), %VAL(in%mu), &
+                              %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3),    & 
+                              %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), u1, u2, u3, sig)
+
+     ! export displacements
+     CALL pts2series(u1,u2,u3,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,in%opts,t,1+i,gps)
 
      ! points are exported at all time steps
      IF (ALLOCATED(in%ptsname)) THEN
@@ -904,213 +775,36 @@ PROGRAM relax
              in%opts,in%ptsname,t,in%wdir,.FALSE.,in%x0,in%y0,in%rot)
      END IF
 
-     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     ! -
-     ! -   export displacement and stress
-     ! -
-     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-     ! output only at discrete intervals (skip=0, odt>0),
-     ! or every "skip" computational steps (skip>0, odt<0),
-     ! or anytime a coseismic event occurs
-     IF (isoutput(in%skip,t,i,in%odt,oi,in%events(e)%time)) THEN
-        
-        CALL reporttime(1,t,in%reporttimefilename)
-
-        ! export strike and dip afterslip, afterslip velocity and fault stress
-        IF (in%isoutputtxt) THEN
-           CALL exportcreep_asc(in%np,in%n,in%beta,sig,in%faultcreepstruc, &
-                            in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%x0,in%y0,in%wdir,oi)
-        END IF
-        IF (in%isoutputgrd) THEN
-           CALL exportcreep_grd(in%np,in%n,in%beta,sig,in%faultcreepstruc, &
-                            in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%x0,in%y0,in%wdir,oi)
-        END IF
-        IF (in%isoutputvtk) THEN
-           CALL exportcreep_vtk(in%np,in%n,in%beta,sig,in%faultcreepstruc, &
-                            in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%x0,in%y0,in%wdir,oi)
-        END IF
-
-        ! export
-#ifdef TXT
-        IF (in%isoutputtxt) THEN
-           CALL exporttxt(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%oz,in%dx3,oi,t,in%wdir,in%reportfilename)
-        END IF
-#endif  
-#ifdef XYZ
-        IF (in%isoutputxyz) THEN
-           CALL exportxyz(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%oz,in%dx1,in%dx2,in%dx3,i,in%wdir)
-           IF (in%isoutputrelax) THEN
-              !CALL exportxyz(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2,0.0_8,in%dx1,in%dx2,in%dx3,i,in%wdir)
-           END IF
-        END IF
-#endif
-        IF (in%iseigenstrain) THEN
-           CALL exporteigenstrain(gamma,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2, &
-                                  in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
-        END IF
-
-        IF (in%istransient .AND. in%isoutputgrd) THEN
-           ! actually exports the transient strain
-           CALL exportstressgrd(epsilonik,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                in%ozs,in%x0,in%y0,in%wdir,oi,6)
-        END IF
-#ifdef GRD
-        IF (in%isoutputgrd) THEN
-           IF (in%isoutputrelax) THEN
-              CALL exportgrd(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2, &
-                             in%dx1,in%dx2,in%dx3,0._8,in%x0,in%y0,in%wdir,oi,convention=2)
-           END IF
-           CALL exportgrd(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0,in%wdir,oi)
-        END IF
-#endif
-#ifdef PROJ
-        IF (in%isoutputproj) THEN
-           IF (in%isoutputrelax) THEN
-              CALL exportproj(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2, &
-                              in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0, &
-                              in%lon0,in%lat0,in%zone,in%umult,in%wdir,oi,convention=2)
-           END IF
-           CALL exportproj(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0, &
-                           in%lon0,in%lat0,in%zone,in%umult,in%wdir,oi)
-        END IF
-#endif
-#ifdef VTK
-        IF (in%isoutputvtk) THEN
-           WRITE (digit,'(I3.3)') oi
-           ! export total displacement in VTK XML format
-           !filename=trim(in%wdir)//"/disp-"//digit//".vtr"
-           !CALL exportvtk_vectors(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,filename)
-           filename=trim(in%wdir)//"/disp-"//digit//".vtk"//char(0)
-           title="cumulative displacement vector field"//char(0)
-           name="displacement"//char(0)
-           CALL exportvtk_vectors_legacy(u1,u2,u3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
-                                         4,4,8,filename,title,name)
-           !CALL exportvtk_vectors_slice(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,filename)
-
-           ! export instantaneous velocity in VTK XML format
-           !filename=trim(in%wdir)//"/vel-"//digit//".vtr"
-           !CALL exportvtk_vectors(v1,v2,v3,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3,8,8,8,filename)
-           filename=trim(in%wdir)//"/vel-"//digit//".vtk"//char(0)
-           title="instantaneous velocity vector field"//char(0)
-           name="velocity"//char(0)
-           CALL exportvtk_vectors_legacy(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                         8,8,16,filename,title,name)
-           !CALL exportvtk_vectors_slice(v1,v2,v3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,8,8,filename)
-        END IF
-        IF (in%isoutputvtkrelax) THEN
-           WRITE (digit4,'(I4.4)') oi
-           filename=trim(in%wdir)//"/disp-relax-"//digit4//".vtk"//char(0)
-           title="postseismic displacement vector field"//char(0)
-           name="displacement"//char(0)
-           CALL exportvtk_vectors_legacy(u1r,u2r,u3r,in%sx1,in%sx2,in%sx3/4,in%dx1,in%dx2,in%dx3, &
-                                         4,4,8,filename,title,name)
-        END IF
-#endif
-
-        ! export stress
-#ifdef GRD
-        CALL exportplanestress(sig,in%nop,in%op,in%x0,in%y0,in%dx1,in%dx2,in%dx3,in%sx1,in%sx2,in%sx3/2,in%wdir,oi)
-        IF (in%isoutputgrd .AND. in%isoutputstress) THEN
-           CALL exportstressgrd(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                in%ozs,in%x0,in%y0,in%wdir,oi,4)
-        END IF
-#endif
-#ifdef PROJ
-        IF (in%isoutputproj .AND. in%isoutputstress) THEN
-           CALL exportstressproj(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%ozs, &
-                                 in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,oi)
-        END IF
-#endif
-        WRITE (digit4,'(I4.4)') oi
-#ifdef VTK
-        IF (in%isoutputvtk .AND. in%isoutputstress) THEN
-           filename=trim(in%wdir)//"/sigma-"//digit4//".vtk"//char(0)
-           title="stress tensor field"//char(0)
-           name="stress"//char(0)
-           CALL exportvtk_tensors_legacy(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
-                                         4,4,8,filename,title,name)
-        END IF
-        filename=trim(in%wdir)//"/rfaults-sigma-"//digit4//".vtp"
-        CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                      in%nsop,in%sop,filename,sig=sig)
-        filename=trim(in%wdir)//"/rfaults-dsigma-"//digit4//".vtp"
-        CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                      in%nsop,in%sop,filename,convention=1,sig=sig)
-#endif
-        ! total stress on predefined planes for gmt
-        filename=trim(in%wdir)//"/rfaults-sigma-"//digit4//".xy"
-        CALL exportgmt_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                      in%nsop,in%sop,filename,sig=sig)
-        ! postseismic stress change on predefined planes for gm
-        filename=trim(in%wdir)//"/rfaults-dsigma-"//digit4//".xy"
-        CALL exportgmt_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                                      in%nsop,in%sop,filename,convention=1,sig=sig)
-        ! time series of stress in ASCII format
-        CALL exportcoulombstress(sig,in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                          in%nsop,in%sop,t,in%wdir,.FALSE.)
-
-        IF (in%istransient) THEN
-           PRINT 1103,i,Dt,maxwell,t,in%interval, &
-                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
-                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
-        ELSE 
-           PRINT 1101,i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, &
-                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
-                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
-        END IF
-        ! update output counter
-        oi=oi+1
+     itensortype=1
+     CALL cutensoramp (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),dAmp, moment)
+     itensortype=2
+     CALL cutensoramp (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),dAmp1, tau)
+     dAmp=dAmp*DBLE(in%dx1*in%dx2*in%dx3)
+     dAmp1=dAmp1*DBLE(in%dx1*in%dx2*in%dx3)
+     IF (in%istransient) THEN
+        WRITE(20,1103) i,Dt,maxwell,t,in%interval, dAmp, dAmp1
      ELSE
-        IF (in%istransient) THEN
-           PRINT 1102,i,Dt,maxwell,t,in%interval, &
-                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
-                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
-        ELSE
-           PRINT 1100,i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, &
-                tensoramplitude(moment,in%dx1,in%dx2,in%dx3), &
-                tensoramplitude(tau,in%dx1,in%dx2,in%dx3)
-        END IF 
-     END IF
+        WRITE(20,1101) i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, dAmp, dAmp1
+     END IF 
+     FLUSH(20)
 
   END DO
 
 100 CONTINUE
 
-  DO i=1,in%ne
-     IF (ALLOCATED(in%events(i)%s))  DEALLOCATE(in%events(i)%s,in%events(i)%sc)
-     IF (ALLOCATED(in%events(i)%ts)) DEALLOCATE(in%events(i)%ts,in%events(i)%tsc)
-  END DO
-  IF (ALLOCATED(in%events)) DEALLOCATE(in%events)
+  !DO i=1,in%ne
+     !IF (ALLOCATED(in%events(i)%s))  DEALLOCATE(in%events(i)%s,in%events(i)%sc)
+     !IF (ALLOCATED(in%events(i)%ts)) DEALLOCATE(in%events(i)%ts,in%events(i)%tsc)
+  !END DO
+  !IF (ALLOCATED(in%events)) DEALLOCATE(in%events)
+
+  CALL cudeinit()
 
   ! free memory
   IF (ALLOCATED(gamma)) DEALLOCATE(gamma)
-  IF (ALLOCATED(in%opts)) DEALLOCATE(in%opts)
-  IF (ALLOCATED(in%ptsname)) DEALLOCATE(in%ptsname)
-  IF (ALLOCATED(in%op)) DEALLOCATE(in%op)
-  IF (ALLOCATED(in%sop)) DEALLOCATE(in%sop)
-  IF (ALLOCATED(in%n)) DEALLOCATE(in%n)
-  IF (ALLOCATED(in%stressstruc)) DEALLOCATE(in%stressstruc)
-  IF (ALLOCATED(in%stresslayer)) DEALLOCATE(in%stresslayer)
-  IF (ALLOCATED(in%linearstruc)) DEALLOCATE(in%linearstruc)
-  IF (ALLOCATED(in%linearlayer)) DEALLOCATE(in%linearlayer)
-  IF (ALLOCATED(in%linearweakzone)) DEALLOCATE(in%linearweakzone)
-  IF (ALLOCATED(in%nonlinearstruc)) DEALLOCATE(in%nonlinearstruc)
-  IF (ALLOCATED(in%nonlinearlayer)) DEALLOCATE(in%nonlinearlayer)
-  IF (ALLOCATED(in%nonlinearweakzone)) DEALLOCATE(in%nonlinearweakzone)
-  IF (ALLOCATED(in%faultcreepstruc)) DEALLOCATE(in%faultcreepstruc)
-  IF (ALLOCATED(in%faultcreeplayer)) DEALLOCATE(in%faultcreeplayer)
-  IF (ALLOCATED(in%ltransientlayer)) DEALLOCATE(in%ltransientlayer)
-  IF (ALLOCATED(in%ltransientstruc)) DEALLOCATE(in%ltransientstruc)
-  IF (ALLOCATED(in%ltransientweakzone)) DEALLOCATE(in%ltransientweakzone)
-  IF (ALLOCATED(in%nltransientlayer)) DEALLOCATE(in%nltransientlayer)
-  IF (ALLOCATED(in%nltransientstruc)) DEALLOCATE(in%nltransientstruc)
-  IF (ALLOCATED(in%nltransientweakzone)) DEALLOCATE(in%nltransientweakzone)
   IF (ALLOCATED(sig)) DEALLOCATE(sig)
   IF (ALLOCATED(tau)) DEALLOCATE(tau)
   IF (ALLOCATED(moment)) DEALLOCATE(moment)
-  IF (ALLOCATED(epsilonik)) DEALLOCATE(epsilonik)
-  IF (ALLOCATED(epsilonikdot)) DEALLOCATE(epsilonikdot)
   IF (ALLOCATED(v1)) DEALLOCATE(v1,v2,v3,t1,t2,t3)
   IF (ALLOCATED(u1)) DEALLOCATE(u1,u2,u3)
   IF (ALLOCATED(inter1)) DEALLOCATE(inter1,inter2,inter3)
@@ -1119,9 +813,6 @@ PROGRAM relax
   IF (ALLOCATED(ltransientdgammadot0)) DEALLOCATE(ltransientdgammadot0)
   IF (ALLOCATED(nltransientdgammadot0)) DEALLOCATE(nltransientdgammadot0)
 
-#ifdef FFTW3_THREADS
-  CALL sfftw_cleanup_threads()
-#endif
 
 0990 FORMAT (" I  |   Dt   | tm(ve) | tm(pl) | tm(as) |     t/tmax     | power  |  C:E^i | ")
 0991 FORMAT (" I  |   Dt   | tm(ve) | tm(pl) | tm(as) | tm(kl) | tm(kn) |     t/tmax     | power  |  C:E^i | ")
@@ -1168,30 +859,13 @@ CONTAINS
           IF (in%nyquist*MIN(in%dx1,in%dx2,in%dx3).LT.event%s(i)%length .OR. &
               in%nyquist*MIN(in%dx1,in%dx2,in%dx3).LT.event%s(i)%width) THEN
              ! adding sources in the space domain
-            CALL source(mu,slip_factor*event%s(i)%slip, &
+             CALL source(mu,slip_factor*event%s(i)%slip, &
                   event%s(i)%x,event%s(i)%y,event%s(i)%z, &
                   event%s(i)%width,event%s(i)%length, &
                   event%s(i)%strike,event%s(i)%dip,event%s(i)%rake, &
                   event%s(i)%beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3,t1,t2,t3)
           END IF
        END DO
-
-       IF (in%iseigenstrain) THEN 
-       ! equivalent body force for eigenstrain
-          DO i=1,event%neigenstrain
-             ! adding sources in the space domain
-             CALL eigenstrainsource(lambda,mu,event%eigenstrain(i)%e, &
-                  event%eigenstrain(i)%x, &
-                  event%eigenstrain(i)%y, &
-                  event%eigenstrain(i)%z, &
-                  event%eigenstrain(i)%width, &
-                  event%eigenstrain(i)%length, &
-                  event%eigenstrain(i)%thickness, &
-                  event%eigenstrain(i)%strike, &
-                  event%eigenstrain(i)%dip, &
-                  in%beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3,t1,t2,t3)
-          END DO
-       END IF
     ELSE
        ! forcing term in moment density
        DO i=1,event%ns
@@ -1201,16 +875,8 @@ CONTAINS
                event%s(i)%strike,event%s(i)%dip,event%s(i)%rake, &
                event%s(i)%beta,sx1,sx2,sx3/2,dx1,dx2,dx3,eigenstress)
        END DO
-       
-       DO i=1,event%neigenstrain
-          CALL momentdensityeigenstrain(mu,lambda,REAL(slip_factor,4) .times. event%eigenstrain(i)%e, &
-               event%eigenstrain(i)%x,event%eigenstrain(i)%y,event%eigenstrain(i)%z, & 
-               event%eigenstrain(i)%width,event%eigenstrain(i)%length,event%eigenstrain(i)%thickness, &
-               event%eigenstrain(i)%strike,event%eigenstrain(i)%dip, &
-               beta,sx1,sx2,sx3/2,dx1,dx2,dx3,eigenstress)
-       END DO
     END IF
-    
+
     DO i=1,event%ns
        ! remove corresponding eigenmoment
        CALL momentdensityshear(mu,slip_factor*event%s(i)%slip, &
@@ -1219,17 +885,7 @@ CONTAINS
             event%s(i)%strike,event%s(i)%dip,event%s(i)%rake, &
             event%s(i)%beta,sx1,sx2,sx3/2,dx1,dx2,dx3,tau)
     END DO
-
-    IF (in%iseigenstrain) THEN
-       DO i=1,event%neigenstrain
-          CALL momentdensityeigenstrain(mu,lambda,REAL(slip_factor,4) .times. event%eigenstrain(i)%e, & 
-               event%eigenstrain(i)%x,event%eigenstrain(i)%y,event%eigenstrain(i)%z, &
-               event%eigenstrain(i)%width,event%eigenstrain(i)%length,event%eigenstrain(i)%thickness, &
-               event%eigenstrain(i)%strike,event%eigenstrain(i)%dip, &
-               beta,sx1,sx2,sx3/2,dx1,dx2,dx3,tau)
-       END DO
-    END IF
-
+    
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ! -             load tensile cracks
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1458,4 +1114,5 @@ CONTAINS
 
   END SUBROUTINE integrationstep
 
-END PROGRAM relax
+
+END SUBROUTINE relaxlite

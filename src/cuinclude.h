@@ -53,11 +53,11 @@
 /* #define PRINT_DEBUG_INFO 1 */
 
 
-#define CHECK_CUDA_ERROR(sFunction, Label)      if (cudaSuccess != cuError)                                             \
-                                                {                                                                       \
-                                                        printf ("%s : Failed  reason is : %s Line number : %d\n",       \
-                                                        sFunction, cudaGetErrorString(cuError), __LINE__) ;             \
-                                                        goto Label ;                                                    \
+#define CHECK_CUDA_ERROR(sFunction, Label)      if (cudaSuccess != cuError) \
+                                                {                           \
+                                                    printf ("%s : Failed  reason is : %s Line number : %d\n",       \
+                                                    sFunction, cudaGetErrorString(cuError), __LINE__) ;             \
+                                                    goto Label ;                                                    \
                                                 }
 
 
@@ -90,44 +90,49 @@
 
 typedef enum _e_dimension
 {
-        E_INVALID_DIMENSION = 0,
-        E_ONE_DIMENSION,
-        E_TWO_DIMENSION,
-        E_THREE_DIMENSION,
+    E_INVALID_DIMENSION = 0,
+    E_ONE_DIMENSION,
+    E_TWO_DIMENSION,
+    E_THREE_DIMENSION,
 } E_DIMENSION ;
 
 
 typedef enum _e_tensor_field
 {
-        E_INVALID_TENSOR_FIELD = 0,
-        E_TENSOR_TAU_TAU,
-        E_TENSOR_SIG_TAU,
-        E_TENSOR_MOM_MOM,
-        E_TENSOR_SIG_MOM,
-        E_TENSOR_TAU_MOM
+    E_INVALID_TENSOR_FIELD = 0,
+    E_TENSOR_TAU_TAU,      //1
+    E_TENSOR_SIG_TAU,      //2
+    E_TENSOR_MOM_MOM,      //3
+    E_TENSOR_SIG_MOM,      //4
+    E_TENSOR_TAU_MOM,      //5
+    E_TENSOR_IK_IKDOT,     //6
+    E_TENSOR_IKDOT_IK,     //7
+    E_TENSOR_IKDOT_IKDOT   //8
 }E_TENSOR_FIELD ;
 
 
 typedef enum _e_tensor_amp_type
 {
-        E_INVALID_TENSOR_AMP_TYPE=0,
-        E_TENSOR_AMP_MOMENT,
-        E_TENSOR_AMP_TAU
+    E_INVALID_TENSOR_AMP_TYPE=0,
+    E_TENSOR_AMP_MOMENT,
+    E_TENSOR_AMP_TAU
 }E_TENSOR_AMP_TYPE ;
 
 typedef enum _e_tensor_type
 {
-        E_INVALID_TENSOR_TYPE=0,
-	E_TENSOR_SIG,
-	E_TENSOR_MOMENT,
-	E_TENSOR_TAU
-}E_TENSOR_TYPE ;
+    E_INVALID_TENSOR_TYPE=0,
+	E_TENSOR_SIG,      // 1
+	E_TENSOR_MOMENT,   // 2
+	E_TENSOR_TAU,      // 3
+    E_TENSOR_IK,       // 4
+    E_TENSOR_IKDOT     // 5 
+}E_TENSOR_TYPE ; 
 
 typedef enum _e_type
 {
-	E_INVALID_TYPE=0,
-        E_TYPE_U,
-        E_TYPE_V
+    E_INVALID_TYPE=0,
+    E_TYPE_U,
+    E_TYPE_V
 }E_TYPE ;
 
 /* -------------------------------------------------------------------------------- */
@@ -197,6 +202,13 @@ typedef struct _st_tensor
         float s33 ;
 } ST_TENSOR ;
 
+typedef struct _st_tensor_layer
+{
+        float z ;
+        float dum ;
+        ST_TENSOR   t ;
+} ST_TENSOR_LAYER ;
+
 typedef struct _st_layer
 {
 /*      double  dZ ;
@@ -210,6 +222,7 @@ typedef struct _st_layer
         double  stressexponent ;
         double  cohesion ;
         double  friction ;
+        double  Gk ;
 
 } ST_LAYER ;
 
@@ -234,8 +247,23 @@ typedef struct _st_weak
         double thickness ;
         double strike ;
         double dip ;
+        
+        ST_TENSOR   e ;
 
 }ST_WEAK ;
+
+typedef struct _st_inflags
+{
+    bool istransient ;
+    bool islvl ;
+    bool isnlvl ;
+    bool isltvl ;
+    bool isnltvl ;
+    bool islvw ;
+    bool isnlvw ;
+    bool isltvw ;
+    bool isnltvw ;
+} ST_INFLAGS ;
 
 cudaError_t memcpyUsingStreams (float           *fDest,
                                 float           *fSrc,
@@ -251,6 +279,15 @@ extern "C" void papiendprofiling_ (char    pcName[]) ;
 
 #endif
 
+extern "C"
+{
+    extern void __util_MOD_ispresent (void *, int *) ;
+}
+
+extern "C"
+{
+    extern void __util_MOD_isallocated (void *, int *) ;
+}
 template <class T>
 __global__ void scaling (T              *pCompData,
                          T              fScale,

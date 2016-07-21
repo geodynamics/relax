@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------
-! Copyright 2013 Sylvain Barbot
+! Copyright 2013-2016 Sylvain Barbot
 !
 ! This file is part of RELAX
 !
@@ -42,8 +42,10 @@
 
 /* This include contains the common macros and definitions */
 #include "cuinclude.h"
+#include "thrust/extrema.h"
 #include <cufft.h>
 #include <stdio.h>
+
 /* Switch for enabling/disabling the usage of GPU */
 #ifdef USING_CUDA
 
@@ -51,29 +53,21 @@
 #include <thrust/device_vector.h>
 
 /* Number of points in the filter. Possible values are : 1, 7 and 14 */
-#define FILTER_SIZE 14
+#define FILTER_SIZE 1
 
 /*      #define ENABLE_REG_BLOCKING         */ //Dont enable this. 
 /*      #define PRINT_DEBUG_INFO        */  
 /*      #define STRESS_SHARED_MEM       */ //Dont enable this.
 
-
 /* Some macros */
 #define PI  3.141592653589793115997963468544185161 
-
 #define DEG2RAD 0.01745329251994329547437168059786927
-
 #define MAX_NUM(a,b) (((a) > (b)) ? (a) : (b))
-
 #define MAX3(a,b,c) (MAX_NUM(a, b) > c ? MAX_NUM(a, b) : c)
-
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
-
 #define DSIGN(a,b) (((b) > 0) ? (a) : -(a)) 
 
-
 /* -------------------------------------- global variables ------------------------------------- */ 
-
             /* Device Variables */
 float       *gpV1 = NULL ;          /* Device Pointer. No dereferencing in host. */
 float       *gpV2 = NULL ;          /* Device Pointer. No dereferencing in host. */     
@@ -81,15 +75,17 @@ float       *gpV3 = NULL ;          /* Device Pointer. No dereferencing in host.
 float       *gpU1 = NULL ;          /* Device Pointer. No dereferencing in host. */
 float       *gpU2 = NULL ;          /* Device Pointer. No dereferencing in host. */
 float       *gpU3 = NULL ;          /* Device Pointer. No dereferencing in host. */
-float       *pfDevTract1 = NULL ;       /* Device Pointer. No dereferencing in host. */
-float       *pfDevTract2 = NULL ;       /* Device Pointer. No dereferencing in host. */
-float       *pfDevTract3 = NULL ;       /* Device Pointer. No dereferencing in host. */
+float       *gpGammadot0 = NULL ;   /* Device Pointer. No dereferencing in host. */
+float       *pfDevTract1 = NULL ;   /* Device Pointer. No dereferencing in host. */
+float       *pfDevTract2 = NULL ;   /* Device Pointer. No dereferencing in host. */
+float       *pfDevTract3 = NULL ;   /* Device Pointer. No dereferencing in host. */
 ST_TENSOR   *pstSig = NULL ;        /* Device Pointer. No dereferencing in host. */
 ST_LAYER    *pstStruct = NULL ;     /* Device Pointer. No dereferencing in host. */
-ST_WEAK     *pstZones = NULL ;      /* Device Pointer. No dereferencing in host. */
 ST_TENSOR   *pstMoment = NULL ;     /* Device Pointer. No dereferencing in host. */
 ST_TENSOR   *pstTau = NULL ;        /* Device Pointer. No dereferencing in host. */
-
+ST_TENSOR_LAYER   *pstPrestress = NULL ;  /* Device Pointer. No dereferencing in host. */
+ST_TENSOR   *pstEpsilonik = NULL ;
+ST_TENSOR   *pstEpsilonikdot = NULL ;
             /* Host Variables */
 int         ihSx1 ;             /* Contains sx1 value*/
 int         ihSx2 ;             /* Contains sx2 value*/
@@ -97,6 +93,7 @@ int         ihSx3 ;             /* Contains sx3 value*/
 int         iLen1 ;             /* Contains the number points in the filter. */
 int         iLen2 ;             /* Contains the number points in the filter. */
 int         iLen3 ;             /* Contains the number points in the filter. */
+ST_INFLAGS  *pstInflags = NULL ;
 
             /* Device Constants */
 __constant__ double constdKer1 [14] ;
@@ -114,6 +111,12 @@ int cuOptimalFilter (int *, int *, int *, int, int, int, double, double, double)
 void cuFreeCudaMemory() ;
 
 int checkMemRequirement(int, int, int) ;
+
+void copygammadot0 (int, int, int, float *, int *) ;
+
+bool cuispresent (void *) ;
+
+bool cuisallocated (ST_LAYER *) ;
 
 __host__ __device__ void cutDot (ST_TENSOR *, double *, double *) ;
 
@@ -183,9 +186,17 @@ __global__ void cuStressUpdateKernel (int, int, int, double, double, int, int, i
 __global__ void cuEquiBodyKernel (ST_TENSOR *, int, int, int, int, int, int, float *, float *, 
                                   float *) ;
 
-__global__ void cuViscousKernel  (ST_LAYER *, ST_WEAK *, ST_TENSOR *, ST_TENSOR *, double, int, 
-                                  int, int, int, double, double, double, double, double, float *,
-                                  float *, int, int) ;
+__global__ void cuBuildGammadotKernel (int, int, int, double, double, double, 
+                                       double, ST_WEAK *, int, float *) ;
+
+__global__ void cuViscousEigenKernel (ST_LAYER *, ST_TENSOR *, ST_TENSOR *, ST_TENSOR_LAYER *,
+                                      float *, double, int, int, int, double, double, 
+                                      double, float *, float *, bool, bool, bool) ;
+
+__global__ void cuTransientEigenKernel (ST_LAYER *, ST_TENSOR *, ST_TENSOR *, float *,
+                                        ST_TENSOR *, ST_TENSOR *, double, int,
+                                        int, int, double, double, double, int, float *,
+                                        bool) ;
 
 __global__ void cuLocalStressStrainKernel (int, int, int, int, int, double, double, double, int, 
                                            int, int, float *, float *, float *, ST_TENSOR *) ;
@@ -366,35 +377,8 @@ STRESS_UPDATE_EXIT_WITH_FREE:
 }
 
 /**
-  !-----------------------------------------------------------------
-  !> subroutine EquivalentBodyForce
-  !! computes and updates the equivalent body-force
-  !!
-  !!         f = - div.( C : E^i )
-  !!
-  !! and the equivalent surface traction
-  !!
-  !!         t = n . C : E^i
-  !!
-  !! with n = (0,0,-1). In indicial notations
-  !!
-  !!         f_i = - (C_ijkl E^i_kl),j
-  !!
-  !! and
-  !!
-  !!         t_1 = n_j C_ijkl E^i_kl
-  !!
-  !! where f is the equivalent body-force, t is the equivalent surface
-  !! traction, C is the elastic moduli tensor and E^i is the moment
-  !! density tensor tensor.
-  !!
-  !! Divergence is computed with a mixed numerical scheme including
-  !! centered finite-difference (in the vertical direction) and
-  !! finite impulse response differentiator filter for derivatives
-  !! estimates. see function 'stress' for further explanations.
-  !-----------------------------------------------------------------
- *
- * @param   pstSig      Device pointer to the sigma. 
+ * @brief  Check equivalentbodyforces in fortran version for description.
+ * @param       pstSig      Device pointer to the sigma. 
  * @param       dDx1[in]        Sampling size in x1(north) direction.
  * @param       dDx2[in]        Sampling size in x2(east) direction.
  * @param       dDx3[in]        Sampling size in x3(down) direction.
@@ -546,7 +530,7 @@ extern "C" void cuinit_ (int    iSx1,
     cudaDeviceProp deviceProp;
     cuError = cudaGetDevice (&iDev) ;
     cudaGetDeviceProperties(&deviceProp, iDev);
-    printf("Device %d: \"%s\"\n", iDev, deviceProp.name);
+    //printf("Device %d: \"%s\"\n", iDev, deviceProp.name);
     *iRet = 1 ;
 
     ihSx1 = iSx1 ;
@@ -662,6 +646,30 @@ extern "C" void cuinit_ (int    iSx1,
         goto CUINIT_FAILURE ;
     }
 
+    iSize = sizeof (ST_TENSOR_LAYER) * iSx3/2 ;
+    cuError = cudaMalloc ((void **)&pstPrestress, iSize) ;
+    if (cudaSuccess != cuError)
+    {
+        printf ("cuinit : Failed to allocate memory 14\n") ;
+        goto CUINIT_FAILURE ;
+    }
+
+    if (pstInflags->istransient)
+    {
+        cuError = cudaMalloc ((void **)&pstEpsilonik, iSize2) ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("cuinit : Failed to allocate memory 15\n") ;
+            goto CUINIT_FAILURE ;
+        }
+        cuError = cudaMalloc ((void **)&pstEpsilonikdot, iSize2) ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("cuinit : Failed to allocate memory 16\n") ;
+            goto CUINIT_FAILURE ;
+        }
+    }
+
     //memset u1, u2, u3
     iSize = (sizeof (float) * (ihSx1+2) * ihSx2 * ihSx3) ;
     cuError = cudaMemset (gpU1, 0, iSize) ;
@@ -670,7 +678,6 @@ extern "C" void cuinit_ (int    iSx1,
     CHECK_CUDA_ERROR ("cuinit_ : Memset failed 2\n", CUINIT_FAILURE)
     cuError = cudaMemset (gpU3, 0, iSize) ;
     CHECK_CUDA_ERROR ("cuinit_ : Memset failed 3\n", CUINIT_FAILURE)
-
 
     *iRet = cuOptimalFilter (&iLen1, &iLen2, &iLen3,
                              iSx1, iSx2, iSx3, dDx1, dDx2, dDx3) ;
@@ -696,6 +703,70 @@ CUINIT_FAILURE:
     cuFreeCudaMemory () ;
 }
 
+/**
+ * This function initializes flags as required. 
+ **/
+
+extern "C" void cuinflags_ (int      *istransient, 
+                            int      *nlwz,
+                            int      *nnlwz,
+                            int      *nltwz,
+                            int      *nnltwz,
+                            int      pLinearLayer,
+                            int      pNonlinearLayer,
+                            int      pLinearTransientLayer,
+                            int      pNonlinearTransientLayer,
+                            int      *iRet)
+{
+    *iRet = 0 ;
+    pstInflags = (ST_INFLAGS *) calloc(1,sizeof(ST_INFLAGS)) ;
+    if (NULL != pstInflags)
+    {
+        if (0 < *istransient)
+        { 
+            pstInflags->istransient = true ;         
+        }
+        if (pLinearLayer)
+        {
+            pstInflags->islvl = true ;         
+        }
+        if (pNonlinearLayer)
+        {
+            pstInflags->isnlvl = true ;         
+        }
+        if (pLinearTransientLayer)
+        {
+            pstInflags->isltvl = true ;         
+        }
+        if (pNonlinearTransientLayer)
+        {
+            pstInflags->isnltvl = true ;         
+        }
+        if (*nlwz)
+        {
+            pstInflags->islvw = true ;         
+        }
+        if (*nnlwz)
+        {
+            pstInflags->isnlvw = true ;         
+        }
+        if (*nltwz)
+        {
+            pstInflags->isltvw = true ;         
+        }
+        if (*nnltwz)
+        {
+            pstInflags->isnltvw = true ;         
+        }
+    }
+    else
+    {
+        printf ("cuinflags_ : Memory allocation failed\n");
+        *iRet = 1 ;
+    }
+
+    return ;
+}
 /**
  * This is called from the host code. For more information check custressupdate function.
  * @param   eType[in]       Variable to indicate data to be used(i.e., u? and v?) 
@@ -916,23 +987,148 @@ CUSOURCE_FREE_EXIT:
     cuFreeCudaMemory () ;
 }
 
-extern "C" void cuviscouseigen_ (ST_LAYER   *pStruct,
-                                 ST_WEAK    *pZones,
-                                 ST_TENSOR  *pSig,
-                                 ST_TENSOR  *pMoment,
-                                 double     dMu,
-                                 int        iNz,
-                                 int        iSx1,
-                                 int        iSx2,
-                                 int        iSx3,
-                                 double     dDx1,
-                                 double     dDx2,
-                                 double     dDx3,
-                                 double     dBeta,
-                                 double     *dMaxwell,
-                                 float      *pGamma,
-                                 int        bPresent,
-                                 int        bGammaPresent)
+extern "C" void cutransienteigen_ (ST_LAYER          *pStruct,
+                                   ST_TENSOR         *pstEpsilonik,
+                                   ST_TENSOR         *pstEpsilonikdot,
+                                   double            dMu,
+                                   int               iSx1,
+                                   int               iSx2,
+                                   int               iSx3,
+                                   double            dDx1,
+                                   double            dDx2,
+                                   double            dDx3,
+                                   int               bMaxwell,
+                                   double            *dMaxwell,
+                                   int               bdgammadot0,
+                                   float             *dgammadot0)
+{
+    cudaError_t  cuError = cudaSuccess ;
+    int          iSize = 0 ;
+    float        *devMinArray = NULL ;
+    dim3         dimGrid (iSx3, iSx2, 1) ;
+    dim3         dimBlock (iSx1, 1, 1) ;
+    int          isdgammadot0 = false ;
+    int          iRet = 0;
+    double       dTemp = 0.0 ;
+
+#ifdef PAPI_PROF
+    char cTimerName[17] = "Transienteigen  " ;
+    papistartprofiling_ (cTimerName) ;
+#endif
+
+    iSize = sizeof (ST_LAYER) * iSx3 ;
+    if (bMaxwell)
+    {
+        cuError = cudaMalloc((void **) &devMinArray, sizeof (float) * iSx1 * iSx2 * iSx3) ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("cutransienteigen_: Failed to allocate 0\n") ;
+            cuFreeCudaMemory () ;
+        }
+    }
+
+    cuError = cudaMemcpy (pstStruct, pStruct, iSize, cudaMemcpyHostToDevice) ;
+    if (cudaSuccess != cuError)
+    {
+        printf ("cutransienteigen_: memcpy failed 1\n") ;
+        cuFreeCudaMemory () ;
+    }
+
+    /* if dgammadot0 is present then we need to add that to gammadot0 */
+    if (bdgammadot0)
+    {
+        isdgammadot0 = true;
+        copygammadot0 (iSx1, iSx2, iSx3, dgammadot0, &iRet) ;
+    }
+
+    cuTransientEigenKernel <<<dimGrid, dimBlock>>> (pstStruct, pstSig, pstMoment,
+                                                    gpGammadot0, pstEpsilonik,
+                                                    pstEpsilonikdot, dMu,
+                                                    iSx1, iSx2, iSx3, dDx1, dDx2,
+                                                    dDx3, bMaxwell, devMinArray, isdgammadot0) ;
+
+    cuError = cudaGetLastError () ;
+    if ((cudaSuccess != cuError) && (cudaSuccess != cudaDeviceSynchronize()))
+    {
+        printf ("cutransienteigen_: transient kernel failure \n") ;
+        cuFreeCudaMemory () ;
+    }
+
+    if (bMaxwell)
+    {
+        thrust::device_ptr<float> dev(devMinArray);
+        thrust::device_ptr<float> min = thrust::min_element(dev, dev+(iSx1 * iSx2 * iSx3)) ;
+
+        cuError = cudaGetLastError () ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("cutransienteigen_: Thrust min element failure \n") ;
+            cuFreeCudaMemory () ;
+        }
+
+        dTemp  =  *min ;
+        *dMaxwell = MIN (*dMaxwell, dTemp) ;
+        cudaFree (devMinArray) ;
+    }
+
+#ifdef PAPI_PROF
+    papiendprofiling_ (cTimerName) ;
+#endif
+    return ;
+
+}
+
+extern "C" void cutransienteigenwrapper_ (E_TENSOR_TYPE eType,
+                                          ST_LAYER   *pStruct,
+                                          double     dMu,
+                                          int        iSx1,
+                                          int        iSx2,
+                                          int        iSx3,
+                                          double     dDx1,
+                                          double     dDx2,
+                                          double     dDx3,
+                                          int        bMaxwell,
+                                          double     *dMaxwell,
+                                          int        bgammadot,
+                                          float      *dGammadot0 = NULL)
+{
+
+    switch (eType)
+    {
+        case E_TENSOR_IK :
+        {
+            cutransienteigen_ (pStruct, pstEpsilonik, pstEpsilonikdot, dMu,
+                               iSx1, iSx2, iSx3, dDx1, dDx2, dDx3,
+                               bMaxwell, dMaxwell, bgammadot, dGammadot0) ;
+        }
+        break ;
+        case E_TENSOR_IKDOT:
+        {
+            cutransienteigen_ (pStruct, pstEpsilonikdot, pstEpsilonikdot, dMu,
+                               iSx1, iSx2, iSx3, dDx1, dDx2, dDx3,
+                               bMaxwell, dMaxwell, bgammadot, dGammadot0) ;
+        }
+        break ;
+        case E_INVALID_TYPE:
+        {
+            printf ("custressupdatewrapper_: Invalid input\n") ;
+        }
+    }
+}
+extern "C" void cuviscouseigen_ (ST_LAYER          *pStruct,
+                                 ST_TENSOR         *pSig,
+                                 ST_TENSOR         *pMoment,
+                                 ST_TENSOR_LAYER   *pPrestress, 
+                                 double            dMu,
+                                 int               iSx1,
+                                 int               iSx2,
+                                 int               iSx3,
+                                 double            dDx1,
+                                 double            dDx2,
+                                 double            dDx3,
+                                 float             *dMaxwell,
+                                 float             *dgammadot0,
+                                 float             *pGamma)
 {
     cudaError_t  cuError = cudaSuccess ;
     int          iSize = 0 ;
@@ -940,7 +1136,10 @@ extern "C" void cuviscouseigen_ (ST_LAYER   *pStruct,
     float        *devMinArray = NULL ;
     dim3         dimGrid (iSx3, iSx2, 1) ;
     dim3         dimBlock (iSx1, 1, 1) ;
-    ST_WEAK      *pstZones = NULL ;
+    bool         isdgammadot0 = false ;
+    bool         bMaxwell = false;
+    bool         bGamma = false;
+    int          iRet = 0; 
 
 #ifdef PAPI_PROF
     char cTimerName[17] = "Eigenstress     " ;
@@ -950,33 +1149,40 @@ extern "C" void cuviscouseigen_ (ST_LAYER   *pStruct,
     iSize = sizeof (ST_LAYER) * iSx3 ;
     iSize1 = sizeof (float) * (iSx1 + 2) * iSx2 * iSx3 * 2 ;
 
-    if (1 == bPresent)
+    /* Check if maxwell time is present then we need to do a reduction */
+    if (cuispresent(dMaxwell))
     {
+        bMaxwell = true;
         cuError = cudaMalloc((void **) &devMinArray, sizeof (float) * iSx1 * iSx2 * iSx3) ;
         CHECK_CUDA_ERROR ("cuviscouseigen_ : Failed to allocate 0\n", VISCOUS_FREE_EXIT) ;
     }
 
-    if (0 != iNz)
-    {
-        cuError = cudaMalloc ((void **) &pstZones, sizeof(ST_WEAK) * iNz) ;
-        CHECK_CUDA_ERROR ("cuviscouseigen_ : Failed to allocate 1\n", VISCOUS_FREE_EXIT) ;
-        cuError = cudaMemcpy (pstZones, pZones, sizeof(ST_WEAK) * iNz, cudaMemcpyHostToDevice) ;
-        CHECK_CUDA_ERROR ("cuviscouseigen_ : memcpy failed 0\n", VISCOUS_FREE_EXIT) ;
-
-    }
     cuError = cudaMemcpy (pstStruct, pStruct, iSize, cudaMemcpyHostToDevice) ;
     CHECK_CUDA_ERROR ("cuviscouseigen_ : memcpy failed 1\n", VISCOUS_FREE_EXIT) ;
         
-    if (1 == bGammaPresent)
+    iSize = sizeof (ST_TENSOR_LAYER) * iSx3 ;
+    cuError = cudaMemcpy (pstPrestress, pPrestress, iSize, cudaMemcpyHostToDevice) ;
+    CHECK_CUDA_ERROR ("cuviscouseigen_ : memcpy failed 2\n", VISCOUS_FREE_EXIT) ;
+
+    if (cuispresent(pGamma))
     {
+        bGamma = true ;
         cuError = cudaMemset (gpV1, 0, iSize1) ;
         CHECK_CUDA_ERROR ("cuviscouseigen_ : memset failed 1\n", VISCOUS_FREE_EXIT) ;
     }
 
-    cuViscousKernel <<<dimGrid, dimBlock>>> (pstStruct, pstZones, pstSig, pstMoment, dMu, 0,
-                                             iSx1, iSx2, iSx3, dDx1, dDx2, dDx3, dBeta,
-                                             *dMaxwell, devMinArray, gpV1, bPresent,
-                                             bGammaPresent) ;
+    /* if dgammadot0 is present then we need to add that to gammadot0 */
+    if (cuispresent(dgammadot0))
+    {
+        isdgammadot0 = true;
+        copygammadot0 (iSx1, iSx2, iSx3, dgammadot0, &iRet) ;
+    }
+
+    cuViscousEigenKernel <<<dimGrid, dimBlock>>> (pstStruct, pstSig, pstMoment, 
+                                                  pstPrestress, gpGammadot0, dMu, 
+                                                  iSx1, iSx2, iSx3, dDx1, dDx2, 
+                                                  dDx3, devMinArray, gpV1, bMaxwell,
+                                                  bGamma, isdgammadot0) ;
 
 
     cuError = cudaGetLastError () ;
@@ -986,7 +1192,7 @@ extern "C" void cuviscouseigen_ (ST_LAYER   *pStruct,
         printf ("cuviscouseigen_: sync failed \n") ;
     }
 
-    if (1 == bPresent)
+    if (bMaxwell)
     {
         thrust::device_ptr<float> dev(devMinArray);
         thrust::device_ptr<float> min = thrust::min_element(dev, dev+(iSx1 * iSx2 * iSx3)) ;
@@ -994,7 +1200,7 @@ extern "C" void cuviscouseigen_ (ST_LAYER   *pStruct,
         cuError = cudaGetLastError () ;
         CHECK_CUDA_ERROR ("cuviscouseigen_ : Thrust min element failure \n", VISCOUS_FREE_EXIT) ;
 
-        *dMaxwell =  *min ;
+        *dMaxwell =  (float)*min ;
         cudaFree (devMinArray) ;
     }
 
@@ -1013,9 +1219,7 @@ extern "C" void cutensorfieldadd_ (E_TENSOR_FIELD  eField,
                                    int             iSx2,
                                    int             iSx3,
                                    float           fC1,
-                                   float           fC2,
-                                   ST_TENSOR       *pstTensor1,
-                                   ST_TENSOR       *pstTensor2)
+                                   float           fC2)
 {
     dim3 dimGrid (iSx3, iSx2, 1) ;
     dim3 dimBlock (iSx1, 1, 1) ;
@@ -1031,7 +1235,7 @@ extern "C" void cutensorfieldadd_ (E_TENSOR_FIELD  eField,
             cuTensorFieldKernel <<<dimGrid, dimBlock>>> (pstTau, pstTau, fC1, fC2, iSx1, iSx2, iSx3) ;
             if (cudaSuccess != cudaDeviceSynchronize())
             {
-                printf ("Failed to sync\n") ;
+                printf ("Failed to sync 1\n") ;
             }
         }
         break ;
@@ -1040,7 +1244,7 @@ extern "C" void cutensorfieldadd_ (E_TENSOR_FIELD  eField,
             cuTensorFieldKernel <<<dimGrid, dimBlock>>> (pstSig, pstTau, fC1, fC2, iSx1, iSx2, iSx3) ;
             if (cudaSuccess != cudaDeviceSynchronize())
             {
-                printf ("Failed to sync\n") ;
+                printf ("Failed to sync 2\n") ;
             }
         }
         break ;
@@ -1050,7 +1254,7 @@ extern "C" void cutensorfieldadd_ (E_TENSOR_FIELD  eField,
                                                          iSx2, iSx3) ;
             if (cudaSuccess != cudaDeviceSynchronize())
             {
-                printf ("Failed to sync\n") ;
+                printf ("Failed to sync 3\n") ;
             }
         }
         break ;
@@ -1059,7 +1263,7 @@ extern "C" void cutensorfieldadd_ (E_TENSOR_FIELD  eField,
             cuTensorFieldKernel <<<dimGrid, dimBlock>>> (pstSig, pstMoment, fC1, fC2, iSx1, iSx2, iSx3) ;
             if (cudaSuccess != cudaDeviceSynchronize())
             {
-                printf ("Failed to sync\n") ;
+                printf ("Failed to sync 4\n") ;
             }
         }
         break ;
@@ -1068,13 +1272,40 @@ extern "C" void cutensorfieldadd_ (E_TENSOR_FIELD  eField,
             cuTensorFieldKernel <<<dimGrid, dimBlock>>> (pstTau, pstMoment, fC1, fC2, iSx1, iSx2, iSx3) ;
             if (cudaSuccess != cudaDeviceSynchronize())
             {
-                printf ("Failed to sync\n") ;
+                printf ("Failed to sync 5\n") ;
             }
         }
         break ;
+        case E_TENSOR_IK_IKDOT:
+        {
+            cuTensorFieldKernel <<<dimGrid, dimBlock>>> (pstEpsilonik, pstEpsilonikdot, fC1, fC2, iSx1, iSx2, iSx3) ;
+            if (cudaSuccess != cudaDeviceSynchronize())
+            {
+                printf ("Failed to sync 6\n") ;
+            }
+        }
+        break ;
+        case E_TENSOR_IKDOT_IK:
+        {
+            cuTensorFieldKernel <<<dimGrid, dimBlock>>> (pstEpsilonikdot, pstEpsilonik, fC1, fC2, iSx1, iSx2, iSx3) ;
+            if (cudaSuccess != cudaDeviceSynchronize())
+            {
+                printf ("Failed to sync 6\n") ;
+            }
+        }
+        break ;
+        case E_TENSOR_IKDOT_IKDOT:
+        {
+            cuTensorFieldKernel <<<dimGrid, dimBlock>>> (pstEpsilonikdot, pstEpsilonikdot, fC1, fC2, iSx1, iSx2, iSx3) ;
+            if (cudaSuccess != cudaDeviceSynchronize())
+            {
+                printf ("Failed to sync 7\n") ;
+            }
+        }
+        break ; 
         default :
         {
-            printf ("The enum sent to this function is wrong\n") ;
+            printf ("cutensorfieldadd_ : The enum sent to this function is wrong %d\n",eField) ;
             return ;
         }
     }
@@ -1178,7 +1409,6 @@ TENSOR_EXIT:
     cudaFree (pdTemp) ;
     cuFreeCudaMemory () ;
 }
-
 
 extern "C" void cufieldadd_ (E_TYPE eType,
                              float *pfVal1,
@@ -1289,6 +1519,56 @@ CURESET_FAILURE:
 
 }
 
+bool cuisallocated (ST_LAYER *pVar = NULL)
+{
+    int ipresent=0;
+    __util_MOD_isallocated (pVar, &ipresent) ;
+    return (ipresent == 1) ? true : false ;
+}
+
+bool cuispresent (void *pVar = NULL)
+{
+    int ipresent=0;
+    __util_MOD_ispresent (pVar, &ipresent) ;
+    return (ipresent == 1) ? true : false ;
+}
+
+void copygammadot0 (int        iSx1,
+                    int        iSx2,
+                    int        iSx3,
+                    float      *fGammadot0,
+                    int        *iRet)
+{
+    int         iSize = 0 ;
+    cudaError_t cuError = cudaSuccess ;
+
+    *iRet = 1 ; 
+    iSize = sizeof (float) * iSx1 * iSx2 * iSx3 ;
+    //allocate 
+    if (NULL == gpGammadot0)
+    { 
+        cuError = cudaMalloc((void**)&gpGammadot0, iSize) ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("copygammadot0_ : Failed to allocate memory 1\n") ;
+            goto COPY_GAMMA_DOT_0; 
+        }
+    }
+
+    if (cudaSuccess != cudaMemcpy (gpGammadot0, fGammadot0, iSize, 
+                                   cudaMemcpyHostToDevice))
+    {
+            printf ("copygammadot0_ : failed in memcpy 1\n") ;
+            goto COPY_GAMMA_DOT_0;
+    }
+
+    *iRet = 0 ; 
+    return ;
+
+COPY_GAMMA_DOT_0:
+    cuFreeCudaMemory () ;
+
+}
 
 extern "C" void copytau_ (ST_TENSOR  *pTemp,
                           int        iSx1,
@@ -1406,6 +1686,79 @@ extern "C" void cuexportpoints_ (double         *pfU1,
 CUEXPORT_EXIT:
     printf ("Error\n") ;
 
+}
+extern "C" void cubuildgammadot_ (int     iSx1,
+                                  int     iSx2,
+                                  int     iSx3,
+                                  double  dDx1,
+                                  double  dDx2,
+                                  double  dDx3,
+                                  int     iNz,
+                                  ST_WEAK *pDuctile,
+                                  float   *pDgammadot0)
+{
+    cudaError_t  cuError = cudaSuccess ;
+    int          iSize = 0 ;
+    int          iSize1 = 0 ;
+    dim3         dimGrid (iSx3, iSx2, 1) ;
+    dim3         dimBlock (iSx1, 1, 1) ;
+    double       dBeta = 0 ;
+    float        *pfDgammadot0 = NULL ;
+    ST_WEAK      *pstDuctile = NULL ;
+    
+    iSize = sizeof (ST_WEAK) * iNz ;
+    iSize1 = sizeof (float) * iSx1 * iSx2 * iSx3 ; 
+
+    cuError = cudaMalloc((void **) &pfDgammadot0, iSize1) ;
+    if (cudaSuccess != cuError)
+    {
+        printf ("cubuildgammadot_ : Couldnt allocate memory 1\n") ;
+        cuFreeCudaMemory() ;
+    }
+
+    cuError = cudaMalloc((void **) &pstDuctile, iSize) ;
+    if (cudaSuccess != cuError)
+    {
+        printf ("cubuildgammadot_ : Couldnt allocate memory 2\n") ;
+        cuFreeCudaMemory() ;
+    }
+
+    cuError = cudaMemcpy (pstDuctile, pDuctile, iSize, cudaMemcpyHostToDevice) ;
+    if (cudaSuccess != cuError)
+    {
+        printf ("cubuildgammadot_ : Couldnt copy memory 3\n") ;
+        cuFreeCudaMemory() ;
+    }
+
+    //call kernel
+    cuBuildGammadotKernel <<<dimGrid, dimBlock>>> (iSx1, iSx2, iSx3, dDx1, dDx2,
+                                                   dDx3, dBeta, pstDuctile, iNz, 
+                                                   pfDgammadot0) ;
+
+    cuError = cudaGetLastError () ;
+    if (cudaSuccess != cuError)
+    {
+        printf ("cubuildgammadot0_ : Kernel launch failed\n") ;
+    }
+
+    if (cudaSuccess != cudaDeviceSynchronize())
+    {
+        printf ("cubuildgammadot0_ : sync failed \n") ;
+    }
+
+    //copy back
+
+    cuError = cudaMemcpy (pDgammadot0, pfDgammadot0, iSize1, cudaMemcpyDeviceToHost) ;
+    if (cudaSuccess != cuError)
+    {
+        printf ("cubuildgammadot_ : Couldnt copy memory 4\n") ;
+        cuFreeCudaMemory() ;
+    }
+
+    cudaFree(pfDgammadot0);
+    cudaFree(pstDuctile);
+
+    return ; 
 }
 
 extern "C" void cufrictioneigenstress_ (double     dX,
@@ -1721,6 +2074,9 @@ void cuFreeCudaMemory()
     CUDA_FREE_MEM(pstSig) ;
     CUDA_FREE_MEM(pstMoment) ;
     CUDA_FREE_MEM(pstTau) ;
+    CUDA_FREE_MEM(pstEpsilonik) ;
+    CUDA_FREE_MEM(pstEpsilonikdot) ;
+    CUDA_FREE_MEM(pstPrestress) ;
     CUDA_FREE_MEM (gpV1) ;
     CUDA_FREE_MEM (gpV2) ;
     CUDA_FREE_MEM (gpV3) ;
@@ -1730,6 +2086,9 @@ void cuFreeCudaMemory()
     CUDA_FREE_MEM (pfDevTract1) ;
     CUDA_FREE_MEM (pfDevTract2) ;
     CUDA_FREE_MEM (pfDevTract3) ;
+    CUDA_FREE_MEM (gpGammadot0) ;
+    free (pstInflags) ;
+    pstInflags = NULL ;
 }
 
 int checkMemRequirement(int iSx1,
@@ -1749,6 +2108,9 @@ int checkMemRequirement(int iSx1,
     iTemp=((iSx1*iSx2*iSx3/2)*sizeof(ST_TENSOR)*3)/(1024*1024) ;
     liReq+=iTemp ;  
 
+    iTemp=((iSx1*iSx2*iSx3/2)*sizeof(ST_TENSOR)*2)/(1024*1024) ;
+    liReq+=iTemp ;  
+    
     /* Ti's */
     iTemp=((iSx1+2)*iSx2*sizeof(float)*3)/(1024*1024) ;
     liReq+=iTemp ;
@@ -2394,42 +2756,35 @@ __global__ void cuSourceTractionKernel (int     iSx1,
     }
 }
 
-__global__ void cuViscousKernel  (ST_LAYER   *pstStruct,
-                                  ST_WEAK    *pstZones,
-                                  ST_TENSOR  *pstSig,
-                                  ST_TENSOR  *pstMoment,
-                                  double     dMu,
-                                  int        iNz,
-                                  int        iSx1,
-                                  int        iSx2,
-                                  int        iSx3,
-                                  double     dDx1,
-                                  double     dDx2,
-                                  double     dDx3,
-                                  double     dBeta,
-                                  double     dMaxwell,
-                                  float      *dMinArray,
-                                  float      *pGamma,
-                                  int        bPresent,
-                                  int        bGammaPresent)
+__global__ void cuTransientEigenKernel (ST_LAYER          *pstStruct,
+                                        ST_TENSOR         *pstSig,
+                                        ST_TENSOR         *pstMoment,
+                                        float             *gpGammadot0,
+                                        ST_TENSOR         *pstEpsilonik,
+                                        ST_TENSOR         *pstEpsilonikdot,
+                                        double            dMu,
+                                        int               iSx1,
+                                        int               iSx2,
+                                        int               iSx3,
+                                        double            dDx1,
+                                        double            dDx2,
+                                        double            dDx3,
+                                        int               bMaxwell,
+                                        float             *dMinArray,
+                                        bool              isdgammadot0)
 {
     int        iInd1 = 0 ;
     int        iInd2 = 0 ;
     int        iInd3 = 0 ;
     int        iIdx = 0 ;
     double     dPower = 0.0 ;
-    double     dCohesion = 0.0 ;
-    double     dX3 = 0.0 ;
+    double     dMuk = 0.0 ;
     double     dGammaDot0 = 0.0 ;
     double     dGammaDot = 0.0 ;
-    double     dTau = 0.0 ;
-    double     dTauc = 0.0 ;
-    double     dX1 = 0.0 ;
-    double     dX2 = 0.0 ;
-    double     dDgNot = 0.0 ;
-    double     dDum = 0.0 ;
+    double     dNq = 0.0 ;
     ST_TENSOR  stS = {0} ;
-    ST_TENSOR  stR = {0} ;
+    ST_TENSOR  stQ = {0} ;
+    ST_TENSOR  stTemp = {0} ;
     double     dTemp = 0.0 ;
     int        iCond = 0 ;
 
@@ -2440,59 +2795,174 @@ __global__ void cuViscousKernel  (ST_LAYER   *pstStruct,
     if ((iInd1 < iSx1) && (iInd2 < iSx2) && (iInd3 < iSx3))
     {
         iIdx = (((iInd3 * iSx2) + iInd2) * iSx1) + iInd1 ;
-        if (1 == bPresent)
+        if (bMaxwell)
+        {
+            dMinArray[iIdx] = 1.0e+30 ;
+        }
+        dPower = pstStruct[iInd3].stressexponent - 1 ;
+        dMuk = pstStruct[iInd3].Gk;
+
+        dGammaDot0 = pstStruct[iInd3].gammadot0 ;
+
+        if (isdgammadot0) 
+        {
+            dGammaDot0 += gpGammadot0[iIdx] ;
+        }
+
+        iCond = (1.0e-20 > dGammaDot0) ? 1 : 0 ;
+        if (0 == iCond)
+        {
+            cuTensorDeviatoric (&pstSig[iIdx], &stS) ;
+
+            dTemp = 0.0 ;            
+            cuTensorOperate (&stTemp, (void *)&dTemp, '*') ;
+
+            dTemp = 2 * dMuk ;
+            cuTensorOperate (&stTemp, (void *)(&pstEpsilonik[iIdx]), '=') ;
+
+            // 2Gk*epsilonik
+            cuTensorOperate (&stTemp, (void *)&dTemp, '*') ;
+
+            cuTensorOperate (&stQ, (void *)&stS, '=') ;
+            //  Q = (sigma - 2Gk*epsilonik)
+            cuTensorOperate (&stQ, (void *)&stTemp, '-') ;
+
+            // q = || Q ||
+            dNq = cuTensorNorm(&stQ) ;
+             
+            // powerlaw viscosity
+            dTemp = dNq/dMu ;
+            dGammaDot = dGammaDot0 * pow (dTemp, dPower) ;
+            
+            cuTensorOperate (&pstEpsilonikdot[iIdx], (void *)&stQ, '=') ;
+
+            dTemp = dGammaDot / dMu ;
+            cuTensorOperate (&pstEpsilonikdot[iIdx], (void *)&dTemp, '*') ;
+
+            dTemp = 2 * dGammaDot ;
+            cuTensorOperate (&stQ, (void *)&dTemp, '*') ;
+
+            // update moment density forcing
+            cuTensorOperate (&pstMoment[iIdx], (void *)&stQ, '+') ;
+
+            if (bMaxwell)
+            {
+                dTemp = 1 / dGammaDot ;
+                if (0 != dTemp)
+                {
+                        dMinArray[iIdx] = (float)dTemp ;
+                }
+            }
+        }
+        else
+        {
+            dTemp=0.0;
+            cuTensorOperate (&pstEpsilonikdot[iIdx], (void *)&dTemp, '*') ;
+        }
+    }
+}
+
+__global__ void cuViscousEigenKernel (ST_LAYER          *pstStruct,
+                                      ST_TENSOR         *pstSig,
+                                      ST_TENSOR         *pstMoment,
+                                      ST_TENSOR_LAYER   *pstPrestress,
+                                      float             *gpGammadot0,
+                                      double            dMu,
+                                      int               iSx1,
+                                      int               iSx2,
+                                      int               iSx3,
+                                      double            dDx1,
+                                      double            dDx2,
+                                      double            dDx3,
+                                      float             *dMinArray,
+                                      float             *pGamma,
+                                      bool              bPresent,
+                                      bool              bGammaPresent,
+                                      bool              isdgammadot0)
+{
+    int        iInd1 = 0 ;
+    int        iInd2 = 0 ;
+    int        iInd3 = 0 ;
+    int        iIdx = 0 ;
+    double     dPower = 0.0 ;
+    double     dCohesion = 0.0 ;
+    double     dGammaDot0 = 0.0 ;
+    double     dGammaDot = 0.0 ;
+    double     dGammaDotp = 0.0 ;
+    double     dTau = 0.0 ;
+    double     dTauc = 0.0 ;
+    double     dTaup = 0.0 ;
+    ST_TENSOR  stS = {0} ;
+    ST_TENSOR  stP = {0} ;
+    ST_TENSOR  stSP = {0} ;
+    double     dTemp = 0.0 ;
+    int        iCond = 0 ;
+
+    iInd3 = blockIdx.x ;
+    iInd2 = blockIdx.y ;
+    iInd1 = threadIdx.x ;
+
+    if ((iInd1 < iSx1) && (iInd2 < iSx2) && (iInd3 < iSx3))
+    {
+        iIdx = (((iInd3 * iSx2) + iInd2) * iSx1) + iInd1 ;
+        if (bPresent)
         {
                 dMinArray[iIdx] = 1.0e+30 ;
         }
 
         dPower = pstStruct[iInd3].stressexponent ;
         dCohesion = pstStruct[iInd3].cohesion ;
-        dX3 = iInd3 * dDx3 ;
 
-        cuShiftedCoordinates (iInd1, iInd2, iInd3, iSx1, iSx2, iSx3,
-                              dDx1, dDx2, dDx3, &dX1, &dX2, &dDum) ;
-
+        cuTensorDeviatoric (&pstPrestress[iInd3].t, &stP) ;
+        dTaup = cuTensorNorm(&stP) ;
 
         dGammaDot0 = pstStruct[iInd3].gammadot0 ;
 
-        dDgNot = cuDgGammaDotNot (pstZones, iNz, dX1, dX2, dX3, dBeta) ;
-
-        dGammaDot0 += dDgNot ;
+        if (isdgammadot0) 
+        {
+            dGammaDot0 += gpGammadot0[iIdx] ;
+        }
 
         iCond = (1.0e-20 > dGammaDot0) ? 1 : 0 ;
 
         if (0 == iCond)
         {
-            iIdx = (((iInd3 * iSx2) + iInd2) * iSx1) + iInd1 ;
-
             cuTensorDeviatoric (&pstSig[iIdx], &stS) ;
-            cuTensorDecompose (&stS, &dTau, &stR) ;
 
-            dTauc = dTau - dCohesion ;
+            dTemp=0.0;
+            cuTensorOperate (&stSP, (void *)&dTemp, '*') ;
+            cuTensorOperate (&stSP, (void *)&stS, '+') ;
+            cuTensorOperate (&stSP, (void *)&stP, '+') ;
+
+            dTau = cuTensorNorm(&stSP) ;
+
+            dTauc = MAX_NUM(0, dTau - dCohesion) ;
 
             iCond = (dTauc <= 1.0e-20) ? 1 : 0 ;
             if (0 == iCond)
             {
                 dTemp = dTauc/dMu ;
+                dGammaDot = dGammaDot0 * pow (dTemp, dPower-1) ;
+                dTemp = dTaup/dMu ;
+                dGammaDotp = dGammaDot0 * pow (dTaup/dMu, dPower-1) ;
 
-                dGammaDot = dGammaDot0 * pow (dTemp, dPower) ;
+                dTemp = 2 * dGammaDot ;
+                cuTensorOperate (&stS, (void *)&dTemp, '*') ;
+                
+                dTemp = 2 * dGammaDotp ;
+                cuTensorOperate (&stP, (void *)&dTemp, '*') ;
 
-                dTemp = 2.0*dMu*dGammaDot ;
-
-                cuTensorOperate (&stR, (void *)&dTemp, '*') ;
-
-                cuTensorOperate (&pstMoment[iIdx], (void *)&stR, '+') ;
-
-                dTemp = dTauc/ (dMu * dGammaDot) ;
-
+                cuTensorOperate (&pstMoment[iIdx], (void *)&stS, '+') ;
+                cuTensorOperate (&pstMoment[iIdx], (void *)&stP, '-') ;
 
                 /*if (1 == bGammaPresent)
                 {
                         iIdx = (((iInd3 * iSx2) + iInd2) * (iSx1+2)) + iInd1 ;
                         pGamma[iIdx] = (float) dGammaDot ;
                 }*/
-                if (1 == bPresent)
+                if (bPresent)
                 {
+                    dTemp = 1 / dGammaDot ;
                     iIdx = (((iInd3 * iSx2) + iInd2) * iSx1) + iInd1 ;
                     if (0 != dTemp)
                     {
@@ -2558,6 +3028,42 @@ __global__ void cuTensorAmpKernel (ST_TENSOR    *pstTensor,
     }
 }
 
+__global__ void cuBuildGammadotKernel (int           iSx1,
+                                       int           iSx2,
+                                       int           iSx3,
+                                       double        dDx1,
+                                       double        dDx2,
+                                       double        dDx3,
+                                       double        dBeta, 
+                                       ST_WEAK       *pstDuctile,
+                                       int           iNz,
+                                       float         *pfDgammadot0)
+{
+    int     iInd1 = 0 ;
+    int     iInd2 = 0 ;
+    int     iInd3 = 0 ;
+    int     iIdx = 0 ;
+    
+    double     dX1 ;
+    double     dX2 ;
+    double     dX3 ;
+    double     dDum ;
+
+
+    iInd3 = blockIdx.x ;
+    iInd2 = blockIdx.y ;
+    iInd1 = threadIdx.x ;
+
+    if ((iInd1 < iSx1) && (iInd2 < iSx2) && (iInd3 < iSx3))
+    {
+        dX3 = (iInd3) * dDx3 ;
+        cuShiftedCoordinates (iInd1, iInd2, iInd3, iSx1, iSx2, iSx3,
+                              dDx1, dDx2, dDx3, &dX1, &dX2, &dDum) ;
+    
+        iIdx = (((iInd3 * iSx2) + iInd2) * iSx1) + iInd1 ;
+        pfDgammadot0[iIdx] = cuDgGammaDotNot(pstDuctile, iNz, dX1, dX2, dX3, dBeta) ; 
+    }
+}
 
 __global__ void cuFieldAddKernel (float  *pfData1,
                                   float  *pfData2,
@@ -3121,6 +3627,17 @@ __host__ __device__ void cuTensorOperate (ST_TENSOR  *pstT,
         }
         break ;
 
+        case '-':
+        {
+            pstTemp = (ST_TENSOR *) pTemp ;
+            pstT->s11 -= pstTemp->s11 ;
+            pstT->s12 -= pstTemp->s12 ;
+            pstT->s13 -= pstTemp->s13 ;
+            pstT->s22 -= pstTemp->s22 ;
+            pstT->s23 -= pstTemp->s23 ;
+            pstT->s33 -= pstTemp->s33 ;
+        }
+        break ;
         case '*':
         {
             dTemp = (double *) pTemp ;

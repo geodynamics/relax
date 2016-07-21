@@ -188,9 +188,6 @@
   !!   - include topography of parameter interface
   !!   - export afterslip output in VTK legacy format (binary)
   !------------------------------------------------------------------------
-
-#include "include.f90"
-  
 PROGRAM relax
 
   USE types
@@ -201,16 +198,19 @@ PROGRAM relax
   USE viscoelastic3d
   USE friction3d
   USE export
+  USE util 
 
+#include "include.f90"
+  
   IMPLICIT NONE
-
+  
   INTEGER, PARAMETER :: ITERATION_MAX = 99999 
   REAL*8, PARAMETER :: STEP_MAX = 1e7
 
-  INTEGER :: i,k,e,oi,iostatus,mech(3),iTensor,iRet
+  INTEGER :: i,k,e,oi,iostatus,itensortype,iRet,igamma,imaxwell
   
-  REAL*8 :: maxwell(3)
-  TYPE(SIMULATION_STRUC) :: in
+  REAL*8, DIMENSION(5) :: maxwell,mech
+  TYPE(SIMULATION_STRUCT) :: in
 #ifdef VTK
   CHARACTER(256) :: filename,title,name
   CHARACTER(3) :: digit
@@ -224,11 +224,13 @@ PROGRAM relax
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: u1r,u2r,u3r
   REAL*4, DIMENSION(:,:), ALLOCATABLE :: t1,t2,t3
   REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: inter1,inter2,inter3
+  REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: lineardgammadot0,nonlineardgammadot0
+  REAL*4, DIMENSION(:,:,:), ALLOCATABLE :: ltransientdgammadot0,nltransientdgammadot0 
   TYPE(TENSOR), DIMENSION(:,:,:), ALLOCATABLE :: tau,sig,moment
  
 #ifdef PAPI_PROF
-    CHARACTER (LEN=16) cTimerName
-    cTimerName = 'relax'
+    CHARACTER (LEN=16) ctimername
+    ctimername = 'relax'
 #endif
 
   ! read input parameters
@@ -244,9 +246,17 @@ PROGRAM relax
      GOTO 100
   END IF
 
-  CALL cuinit (%VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3), %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3), iostatus)
+  CALL cuinflags (in%istransient,in%nlwz,in%nnlwz,in%nltwz,in%nnltwz,  &
+                  %VAL(isallocated(in%linearlayer)),                   & 
+                  %VAL(isallocated(in%nonlinearlayer)),                &
+                  %VAL(isallocated(in%ltransientlayer)),               & 
+                  %VAL(isallocated(in%nltransientlayer)),iostatus)
   IF (iostatus>0) STOP "could not allocate memory"
 
+  CALL cuinit (%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3),%VAL(in%dx1), & 
+               %VAL(in%dx2),%VAL(in%dx3),iostatus)
+  IF (iostatus>0) STOP "could not allocate memory"
+   
   ! allocate memory
   ALLOCATE (v1(1,1,1),v2(1,1,1),v3(1,1,1), &
             u1(1,1,1),u2(1,1,1),u3(1,1,1), &
@@ -257,45 +267,23 @@ PROGRAM relax
 
   CALL curesetvectors () 
 
-  iTensor=3
-  CALL cutensormemset (%VAL(iTensor))
+  itensortype=3
+  CALL cutensormemset (%VAL(itensortype))
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! -     construct pre-stress structure
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IF (ALLOCATED(in%stresslayer)) THEN
+     ! depth-dependent background stress
      CALL tensorstructure(in%stressstruc,in%stresslayer,in%dx3)
-     DEALLOCATE(in%stresslayer)
-     
-     DO k=1,in%sx3/2
-        tau(:,:,k)=(-1._4) .times. in%stressstruc(k)%t
-     END DO
-     DEALLOCATE(in%stressstruc)
+     !DEALLOCATE(in%stresslayer)
+  ELSE
+     ! background stress is zero
+     in%stressstruc(:)%t=tensor(0._4,0._4,0._4,0._4,0._4,0._4)
   END IF
-
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -     construct linear viscoelastic structure
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  IF (ALLOCATED(in%linearlayer)) THEN
-     CALL viscoelasticstructure(in%linearstruc,in%linearlayer,in%dx3)
-     DEALLOCATE(in%linearlayer)
-  END IF
-
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -   construct nonlinear viscoelastic structure
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  IF (ALLOCATED(in%nonlinearlayer)) THEN
-     CALL viscoelasticstructure(in%nonlinearstruc,in%nonlinearlayer,in%dx3)
-     DEALLOCATE(in%nonlinearlayer)
-  END IF
-
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -   construct nonlinear fault creep structure (rate-strenghtening)
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  IF (ALLOCATED(in%faultcreeplayer)) THEN
-     CALL viscoelasticstructure(in%faultcreepstruc,in%faultcreeplayer,in%dx3)
-     DEALLOCATE(in%faultcreeplayer)
-  END IF
+  DO k=1,in%sx3/2
+     tau(:,:,k)=(-1._4) .times. in%stressstruc(k)%t
+  END DO
 
   ! first event
   e=1
@@ -308,8 +296,8 @@ PROGRAM relax
   CALL dislocations(in%events(e),in%lambda,in%mu,in%beta,in%sx1,in%sx2,in%sx3, &
                     in%dx1,in%dx2,in%dx3,v1,v2,v3,t1,t2,t3,tau)
 
-  iTensor = 1  
-  CALL copytau (tau, %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), %VAL(iTensor))
+  itensortype = 1  
+  CALL copytau (tau, %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), %VAL(itensortype))
   
   CALL cucopytraction (t3, %VAL(in%sx1), %VAL(in%sx2), iRet)
   
@@ -317,7 +305,11 @@ PROGRAM relax
 
  
   PRINT '("coseismic event ",I3.3)', e
-  PRINT 0990
+  IF (in%istransient) THEN
+     PRINT 0991
+  ELSE
+     PRINT 0990
+  END IF
 
   ! test the presence of dislocations for coseismic calculation
   IF ((in%events(e)%nt .NE. 0) .OR. &
@@ -338,56 +330,127 @@ PROGRAM relax
 
 
   ! evaluate stress
-  iTensor=2
-  cuc1=0._4
-  cuc2=-1._4 
-  CALL cutensorfieldadd (%VAL(iTensor), %VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2), & 
-                         %VAL(cuc1), %VAL(cuc2), sig, tau)
+  itensortype=2
+  cuc1=0._4;cuc2=-1._4 
+  CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                         %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
-  iTensor = 1
-  CALL custressupdatewrapper (%VAL(iTensor), %VAL(in%lambda), %VAL(in%mu), &
+  itensortype = 1
+  CALL custressupdatewrapper (%VAL(itensortype), %VAL(in%lambda), %VAL(in%mu), &
                               %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3),    & 
                               %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), u1, u2, u3, sig)
-
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! -   export observation points, map view of displacement,
-  ! -   map view of stress components, Coulomb stress on observation
-  ! -   patches, and full displacement and stress field.
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-#ifdef GRD
-  IF (in%isoutputgrd) THEN
-     CALL exportgrd(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0,in%wdir,0)
-  END IF
-#endif
 
   IF (ALLOCATED(in%ptsname)) THEN
      CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
           in%opts,in%ptsname,0._8,in%wdir,.true.,in%x0,in%y0,in%rot)
   END IF
 
-  iTensor=2
-  CALL cutensoramp (%VAL(iTensor),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),dAmp)
+  itensortype=2
+  CALL cutensoramp (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),dAmp)
   dAmp=dAmp*DBLE(in%dx1*in%dx2*in%dx3)
-  PRINT 1101,0,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,dAmp
+  IF (in%istransient) THEN
+     PRINT 1103,0,0._8,0._8,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,dAmp
+  ELSE
+     PRINT 1101,0,0._8,0._8,0._8,0._8,0._8,in%interval,0._8,dAmp
+  END IF
  
   IF (in%interval .LE. 0) THEN
      GOTO 100 ! no time integration
   END IF
 
+#ifdef PAPI_PROF
+     ctimername = 'buildgamma'
+     CALL papistartprofiling (ctimername)
+#endif 
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -     construct linear viscoelastic structure
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  IF (ALLOCATED(in%linearlayer)) THEN
+     CALL viscoelasticstructure(in%linearstruc,in%linearlayer,in%dx3)
+     DEALLOCATE(in%linearlayer)
+
+     IF (0 .LT. in%nlwz) THEN
+        ALLOCATE(lineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
+        IF (iostatus.GT.0) STOP "could not allocate lineardgammadot0"
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nlwz), &
+                             in%linearweakzone,lineardgammadot0)
+     END IF
+  END IF
+
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -   construct nonlinear viscoelastic structure
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  IF (ALLOCATED(in%nonlinearlayer)) THEN
+     CALL viscoelasticstructure(in%nonlinearstruc,in%nonlinearlayer,in%dx3)
+     DEALLOCATE(in%nonlinearlayer)
+
+     IF (0 .LT. in%nnlwz) THEN
+        ALLOCATE(nonlineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
+        IF (iostatus.GT.0) STOP "could not allocate nonlineardgammadot0"
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nnlwz), &
+                             in%nonlinearweakzone,nonlineardgammadot0)
+     END IF
+  END IF
+
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -   construct nonlinear fault creep structure (rate-strenghtening)
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  IF (ALLOCATED(in%faultcreeplayer)) THEN
+     CALL viscoelasticstructure(in%faultcreepstruc,in%faultcreeplayer,in%dx3)
+     DEALLOCATE(in%faultcreeplayer)
+  END IF
+
+    ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -   construct linear transient structure
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  IF (ALLOCATED(in%ltransientlayer)) THEN
+     CALL viscoelasticstructure(in%ltransientstruc,in%ltransientlayer,in%dx3)
+     DEALLOCATE(in%ltransientlayer)
+
+     ALLOCATE(ltransientdgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
+     IF (iostatus.GT.0) STOP "could not allocate ltransientdgammadot0"
+     IF (0 .LT. in%nltwz) THEN
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nltwz), &
+                             in%ltransientweakzone,ltransientdgammadot0)
+     END IF
+  END IF
+
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! -   construct nonlinear transient structure
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  IF (ALLOCATED(in%nltransientlayer)) THEN
+     CALL viscoelasticstructure(in%nltransientstruc,in%nltransientlayer,in%dx3)
+     DEALLOCATE(in%nltransientlayer)
+
+     ALLOCATE(nltransientdgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
+     IF (iostatus.GT.0) STOP "could not allocate nltransientdgammadot0"
+     IF (0 .LT. in%nnltwz) THEN
+        CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
+                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nnltwz), &
+                             in%nltransientweakzone,nltransientdgammadot0)
+     END IF
+  END IF
+#ifdef PAPI_PROF
+    CALL papiendprofiling (ctimername)
+#endif
+
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! -   start the relaxation
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  iTensor=2
-  CALL cutensormemset (%VAL(iTensor))
+  itensortype=2
+  CALL cutensormemset (%VAL(itensortype))
 
   DO i=1,ITERATION_MAX
      IF (t .GE. in%interval) GOTO 100 ! proper exit
 
 #ifdef PAPI_PROF
    ! start timer
-    CALL papistartprofiling (cTimerName)
+    ctimername = 'relax'
+    CALL papistartprofiling (ctimername)
 #endif
      
      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -396,37 +459,49 @@ PROGRAM relax
 
      ! initialize large time step
      tm=STEP_MAX;
-     maxwell(:)=STEP_MAX;
+     maxwell=STEP_MAX;
      
      ! active mechanism flag
-     mech(:)=0
+     mech=0
 
      ! initialize no forcing term in tensor space
-     iTensor=2
-     CALL cutensormemset (%VAL(iTensor))
+     itensortype=2
+     CALL cutensormemset (%VAL(itensortype))
 
      ! power density from three mechanisms (linear and power-law viscosity 
      ! and fault creep)
      ! 1- linear viscosity
 
 #ifdef PAPI_PROF
-    cTimerName = 'Eigenstress'
-    CALL papistartprofiling (cTimerName)
+     ctimername = 'Eigenstress'
+     CALL papistartprofiling (ctimername)
 #endif 
 
      IF (ALLOCATED(in%linearstruc)) THEN
-        CALL viscouseigenstress(in%mu,in%linearstruc,in%linearweakzone,in%nlwz, &
-             sig,in%sx1,in%sx2,in%sx3/2, &
-             in%dx1,in%dx2,in%dx3,moment,0.01_8,MAXWELLTIME=maxwell(1))
+        IF (0 .LT. in%nlwz) THEN
+           CALL viscouseigenstress(in%mu,in%linearstruc, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=lineardgammadot0,MAXWELLTIME=maxwell(1))
+        ELSE
+           CALL viscouseigenstress(in%mu,in%linearstruc, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,MAXWELLTIME=maxwell(1))
+        END IF
         mech(1)=1
      END IF
-     
+
      ! 2- powerlaw viscosity
      IF (ALLOCATED(in%nonlinearstruc)) THEN
-        CALL viscouseigenstress(in%mu,in%nonlinearstruc,in%nonlinearweakzone,in%nnlwz, &
-             sig,in%sx1,in%sx2,in%sx3/2, &
-             in%dx1,in%dx2,in%dx3,moment,0.01_8,MAXWELLTIME=maxwell(2))
-      mech(2)=1
+        IF (0 .LT. in%nnlwz) THEN
+           CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=nonlineardgammadot0,MAXWELLTIME=maxwell(2))
+        ELSE
+           CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,MAXWELLTIME=maxwell(2))
+        END IF
+        mech(2)=1
      END IF
 
      ! 3- nonlinear fault creep with rate-strengthening friction
@@ -435,21 +510,63 @@ PROGRAM relax
            CALL frictioneigenstress(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
                 in%n(k)%width,in%n(k)%length, &
                 in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
-                sig,in%mu,in%faultcreepstruc, &
+                sig,in%stressstruc,in%mu,in%faultcreepstruc, &
                 in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
                 moment,maxwelltime=maxwell(3))
         END DO
         mech(3)=1
      END IF
+     
+     ! 4 - linear transient creep 
+     IF (in%istransient) THEN
+        itensortype=4
+        imaxwell=1
+        IF (ALLOCATED(in%ltransientstruc)) THEN 
+           IF (0 .LT. in%nltwz) THEN
+              igamma=1
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%ltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
+                   maxwell(4),%VAL(igamma),ltransientdgammadot0)
+           ELSE
+              igamma=0
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%ltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
+                   maxwell(4),%VAL(igamma))    
+           END IF
+           mech(4)=1
+        END IF
+     
+        ! 5 - nonlinear transient creep 
+        IF (ALLOCATED(in%nltransientstruc)) THEN 
+           IF (0 .LT. in%nnltwz) THEN
+              igamma=1
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%nltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
+                   maxwell(5),%VAL(igamma),nltransientdgammadot0)
+           ELSE 
+              igamma=0
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%nltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
+                   maxwell(5),%VAL(igamma))
+           END IF     
+           mech(5)=1
+        END IF
+     END IF
 
 #ifdef PAPI_PROF
-    CALL papiendprofiling (cTimerName)
+    CALL papiendprofiling (ctimername)
 #endif
 
      ! identify the required time step
      tm=1._8/(REAL(mech(1))/maxwell(1)+ &
               REAL(mech(2))/maxwell(2)+ &
-              REAL(mech(3))/maxwell(3))
+              REAL(mech(3))/maxwell(3)+ &
+              REAL(mech(4))/maxwell(4)+ &
+              REAL(mech(5))/maxwell(5))
      ! force finite time step
      tm=MIN(tm,STEP_MAX)
 
@@ -464,26 +581,25 @@ PROGRAM relax
      ! choose an integration time step
      CALL integrationstep(tm,Dt,t,oi,in%odt,in%skip,in%tscale,in%events,e,in%ne)
 
-     iTensor=4
-     cuc1=0._4
-     cuc2=1._4
-     CALL cutensorfieldadd (%VAL(iTensor), %VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuc1), %VAL(cuc2), sig, moment)
+     itensortype=4
+     cuc1=0._4;cuc2=1._4
+     CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                            %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
      CALL curesetvectors () 
 
 #ifdef PAPI_PROF
-     cTimerName = 'bodyforce'
-     CALL papistartprofiling(cTimerName)
+     ctimername = 'bodyforce'
+     CALL papistartprofiling(ctimername)
 #endif
 
-     iTensor=1
-     CALL cubodyforceswrapper (%VAL(iTensor), %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3), &
+     itensortype=1
+     CALL cubodyforceswrapper (%VAL(itensortype), %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3), &
                                %VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2), v1,v2,v3,t1,t2,t3)
 
 #ifdef PAPI_PROF
-    CALL papiendprofiling (cTimerName)
+    CALL papiendprofiling (ctimername)
 #endif
-
 
      CALL cucopytraction (t3, %VAL(in%sx1), %VAL(in%sx2), iRet)
      
@@ -491,82 +607,96 @@ PROGRAM relax
      CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,Dt/2.d8,t3,rate=.TRUE.)
 
 #ifdef PAPI_PROF
-     cTimerName = 'green'
-     CALL papistartprofiling(cTimerName)
+     ctimername = 'green'
+     CALL papistartprofiling(ctimername)
 #endif
 
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3,in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
 
 #ifdef PAPI_PROF
-    CALL papiendprofiling (cTimerName)
+    CALL papiendprofiling (ctimername)
 #endif
 
 #ifdef PAPI_PROF
-     cTimerName = 'fieldadd'
-     CALL papistartprofiling(cTimerName)
+     ctimername = 'fieldadd'
+     CALL papistartprofiling(ctimername)
 #endif 
 
      ! v1,v2,v3 contain the predictor displacement
-     iTensor = 2
-     cuC1 = REAL(Dt/2)
-     cuC2 = 1._4 
-     CALL cufieldadd (%VAL(iTensor), v1, v2, v3, u1, u2, u3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
+     itensortype = 2
+     cuC1 = REAL(Dt/2);cuC2 = 1._4 
+     CALL cufieldadd (%VAL(itensortype), v1, v2, v3, u1, u2, u3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
 
 #ifdef PAPI_PROF
-     CALL papiendprofiling(cTimerName)
+     CALL papiendprofiling(ctimername)
 #endif 
 
-     iTensor=2
-     cuc1=-REAL(Dt/2)
-     cuc2=-1._4
-     CALL cutensorfieldadd (%VAL(iTensor), %VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuc1), %VAL(cuc2), sig, tau)
+     IF (in%istransient) THEN
+        itensortype=7
+        cuc1=REAL(Dt/2);cuc2=1._4
+        CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                               %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
+     END IF
+     itensortype=2
+     cuc1=-REAL(Dt/2);cuc2=-1._4
+     CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                            %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
 #ifdef PAPI_PROF
-     cTimerName = 'stress'
-     CALL papistartprofiling(cTimerName)
+     ctimername = 'stress'
+     CALL papistartprofiling(ctimername)
 #endif
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! corrector
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  iTensor = 2
-  CALL custressupdatewrapper (%VAL(iTensor), %VAL(in%lambda), %VAL(in%mu), &
+  itensortype = 2
+  CALL custressupdatewrapper (%VAL(itensortype), %VAL(in%lambda), %VAL(in%mu), &
                               %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3),    & 
                               %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), v1, v2, v3, sig)
 
 #ifdef PAPI_PROF
-    CALL papiendprofiling (cTimerName)
+    CALL papiendprofiling (ctimername)
 #endif
 
      ! reinitialize moment density tensor
-     iTensor=2
-     CALL cutensormemset (%VAL(iTensor)) 
+     itensortype=2
+     CALL cutensormemset (%VAL(itensortype)) 
      
      IF (ALLOCATED(in%linearstruc)) THEN
-        ! linear viscosity
-!        v1=0
-        CALL viscouseigenstress(in%mu,in%linearstruc,in%linearweakzone,in%nlwz,sig, &
-             in%sx1,in%sx2,in%sx3/2, &
-             in%dx1,in%dx2,in%dx3,moment,0.01_8,GAMMA=v1)
-        
+        v1=0
+        IF (0 .LT. in%nlwz) THEN
+           CALL viscouseigenstress(in%mu,in%linearstruc, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=lineardgammadot0,GAMMA=v1)
+        ELSE
+           CALL viscouseigenstress(in%mu,in%linearstruc, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,GAMMA=v1)
+        END IF
+        ! not adding v1 to gamma
      END IF
     
 #ifdef PAPI_PROF
-     cTimerName = 'Eigenstress'
-     CALL papistartprofiling(cTimerName)
+     ctimername = 'Eigenstress'
+     CALL papistartprofiling(ctimername)
 #endif
- 
+     
      IF (ALLOCATED(in%nonlinearstruc)) THEN
-        ! powerlaw viscosity
-!        v1=0
-        CALL viscouseigenstress(in%mu,in%nonlinearstruc,in%nonlinearweakzone,in%nnlwz,sig, &
-             in%sx1,in%sx2,in%sx3/2, &
-             in%dx1,in%dx2,in%dx3,moment,0.01_8,GAMMA=v1)
- 
+        IF (0 .LT. in%nnlwz) THEN
+           CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=nonlineardgammadot0,GAMMA=v1)
+        ELSE
+           CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
+                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
+                in%dx1,in%dx2,in%dx3,moment,GAMMA=v1)
+        END IF
+        ! not adding v1 to gamma
      END IF
 
 #ifdef PAPI_PROF
-    CALL papiendprofiling (cTimerName)
+    CALL papiendprofiling (ctimername)
 #endif
         
  
@@ -580,19 +710,60 @@ PROGRAM relax
            CALL frictioneigenstress(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
                 in%n(k)%width,in%n(k)%length, &
                 in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
-                sig,in%mu,in%faultcreepstruc,in%sx1,in%sx2,in%sx3/2, &
+                sig,in%stressstruc,in%mu,in%faultcreepstruc,in%sx1,in%sx2,in%sx3/2, &
                 in%dx1,in%dx2,in%dx3,moment)
 
-           ! keep track if afterslip instantaneous velocity
-           CALL monitorfriction(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
-                in%n(k)%width,in%n(k)%length, &
-                in%n(k)%strike,in%n(k)%dip,in%n(k)%rake,in%beta, &
-                in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
-                sig,in%faultcreepstruc,in%n(k)%patch)
         END DO
 
      END IF
 
+     ! 4 - linear transient creep 
+     IF (in%istransient) THEN
+        itensortype=5
+        imaxwell=0
+        IF (ALLOCATED(in%ltransientstruc)) THEN 
+           IF (0 .LT. in%nltwz) THEN
+              igamma=1
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%ltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), & 
+                   maxwell(4),%VAL(igamma),ltransientdgammadot0)
+           ELSE 
+              igamma=0
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%ltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
+                   maxwell(4),%VAL(igamma))
+           END IF
+        END IF
+     
+        ! 5 - nonlinear transient creep 
+        IF (ALLOCATED(in%nltransientstruc)) THEN 
+           IF (0 .LT. in%nnltwz) THEN
+              igamma=1
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%nltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
+                   maxwell(5),%VAL(igamma),nltransientdgammadot0)
+           ELSE 
+              igamma=0
+              CALL cutransienteigenwrapper(%VAL(itensortype),in%nltransientstruc, &
+                   %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
+                   %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
+                   maxwell(5),%VAL(igamma))
+           END IF     
+        END IF
+        
+        itensortype=6
+        cuC1 = 1._4;cuC2 = REAL(Dt) 
+        CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                               %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
+        itensortype=8
+        cuC1 = 0._4;cuC2 = 0._4 
+        CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                               %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
+
+     END IF
      ! interseismic loading
      IF ((in%inter%ns .GT. 0) .OR. (in%inter%nt .GT. 0)) THEN
         ! vectors v1,v2,v3 are not affected.
@@ -604,53 +775,49 @@ PROGRAM relax
      CALL curesetvectors () 
 
 #ifdef PAPI_PROF
-     cTimerName = 'bodyforce'
-     CALL papistartprofiling(cTimerName)
+     ctimername = 'bodyforce'
+     CALL papistartprofiling(ctimername)
 #endif
 
-     iTensor=2
-     CALL cubodyforceswrapper (%VAL(iTensor), %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3), &
+     itensortype=2
+     CALL cubodyforceswrapper (%VAL(itensortype), %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3), &
                                %VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2), v1,v2,v3,t1,t2,t3)
 
 #ifdef PAPI_PROF
-    CALL papiendprofiling (cTimerName)
+    CALL papiendprofiling (ctimername)
 #endif
 
 
      CALL cucopytraction (t3, %VAL(in%sx1), %VAL(in%sx2), iRet)
 
 #ifdef PAPI_PROF
-     cTimerName = 'green'
-     CALL papistartprofiling(cTimerName)
+     ctimername = 'green'
+     CALL papistartprofiling(ctimername)
 #endif
 
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3,in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
 
 #ifdef PAPI_PROF
-    CALL papiendprofiling (cTimerName)
+    CALL papiendprofiling (ctimername)
 #endif
 
 #ifdef PAPI_PROF
-     cTimerName = 'fieldadd'
-     CALL papistartprofiling(cTimerName)
+     ctimername = 'fieldadd'
+     CALL papistartprofiling(ctimername)
 #endif 
 
-     iTensor = 1
-     cuC1 = 1._4
-     cuC2 = REAL(Dt) 
-     CALL cufieldadd (%VAL(iTensor), u1, u2, u3, v1, v2, v3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
+     itensortype = 1
+     cuC1 = 1._4;cuC2 = REAL(Dt) 
+     CALL cufieldadd (%VAL(itensortype), u1, u2, u3, v1, v2, v3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
 
 #ifdef PAPI_PROF
-     CALL papiendprofiling(cTimerName)
+     CALL papiendprofiling(ctimername)
 #endif 
 
-
-     iTensor=5
-     cuc1=1._4
-     cuc2=REAL(Dt)
-     CALL cutensorfieldadd (%VAL(iTensor), %VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuc1), %VAL(cuc2), tau, moment)
-     
-     CALL frictionadd(in%np,in%n,Dt)
+     itensortype=5
+     cuc1=1._4;cuc2=REAL(Dt)
+     CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                            %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
      
      ! time increment
      t=t+Dt
@@ -665,15 +832,15 @@ PROGRAM relax
            PRINT 0990
           
            CALL curesetvectors ()
-           iTensor = 0
-           CALL copytau (tau, %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), %VAL(iTensor)) 
+           itensortype = 0
+           CALL copytau (tau, %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), %VAL(itensortype)) 
            
            CALL dislocations(in%events(e),in%lambda,in%mu, &
                 in%beta,in%sx1,in%sx2,in%sx3, &
                 in%dx1,in%dx2,in%dx3,v1,v2,v3,t1,t2,t3,tau)
 
-           iTensor = 1
-           CALL copytau (tau, %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), %VAL(iTensor))
+           itensortype = 1
+           CALL copytau (tau, %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), %VAL(itensortype))
            CALL cucopytraction (t3, %VAL(in%sx1), %VAL(in%sx2), iRet)
            
            CALL traction(in%mu,in%events(e),in%sx1,in%sx2,in%dx1,in%dx2,t,0.d0,t3)
@@ -682,51 +849,56 @@ PROGRAM relax
            CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3, &
                 in%dx1,in%dx2,in%dx3,in%lambda,in%mu,in%gam)
 
-     iTensor = 1
-     cuC1 = 1._4
-     cuC2 = 1._4 
-     CALL cufieldadd (%VAL(iTensor), u1, u2, u3, v1, v2, v3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
+           itensortype = 1
+           cuC1 = 1._4;cuC2 = 1._4 
+           CALL cufieldadd (%VAL(itensortype), u1, u2, u3, v1, v2, v3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
         END IF
      END IF
 
-     iTensor=2
-     cuc1=0._4
-     cuc2=-1._4
-     CALL cutensorfieldadd (%VAL(iTensor), %VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuc1), %VAL(cuc2), sig, tau)
+     itensortype=2
+     cuc1=0._4;cuc2=-1._4
+     CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
+                            %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
 
 
 #ifdef PAPI_PROF
-     cTimerName = 'stress'
-     CALL papistartprofiling(cTimerName)
+     ctimername = 'stress'
+     CALL papistartprofiling(ctimername)
 #endif
 
-  iTensor = 1
-  CALL custressupdatewrapper (%VAL(iTensor), %VAL(in%lambda), %VAL(in%mu), &
+  itensortype = 1
+  CALL custressupdatewrapper (%VAL(itensortype), %VAL(in%lambda), %VAL(in%mu), &
                               %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3),    & 
                               %VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3/2), u1, u2, u3, sig)
 
 #ifdef PAPI_PROF
-     CALL papiendprofiling(cTimerName) 
+     CALL papiendprofiling(ctimername) 
 #endif
+
      ! points are exported at all time steps
      IF (ALLOCATED(in%ptsname)) THEN
         CALL exportpoints(u1,u2,u3,sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
              in%opts,in%ptsname,t,in%wdir,.FALSE.,in%x0,in%y0,in%rot)
      END IF
 
-     iTensor=1
-     CALL cutensoramp (%VAL(iTensor),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),dAmp, moment)
-     iTensor=2
-     CALL cutensoramp (%VAL(iTensor),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),dAmp1, tau)
+     itensortype=1
+     CALL cutensoramp (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),dAmp, moment)
+     itensortype=2
+     CALL cutensoramp (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),dAmp1, tau)
      dAmp=dAmp*DBLE(in%dx1*in%dx2*in%dx3)
      dAmp1=dAmp1*DBLE(in%dx1*in%dx2*in%dx3)
-     PRINT 1101,i,Dt,maxwell,t,in%interval, dAmp, dAmp1
+
+     IF (in%istransient) THEN
+        PRINT 1103,i,Dt,maxwell,t,in%interval, dAmp, dAmp1
+     ELSE
+        PRINT 1101,i,Dt,maxwell(1),maxwell(2),maxwell(3),t,in%interval, dAmp, dAmp1
+     END IF 
         ! update output counter
      oi=oi+1
 
 #ifdef PAPI_PROF
-    cTimerName = 'relax'
-    CALL papiendprofiling (cTimerName)
+    ctimername = 'relax'
+    CALL papiendprofiling (ctimername)
 #endif
 
   END DO
@@ -768,11 +940,15 @@ PROGRAM relax
   IF (ALLOCATED(v1)) DEALLOCATE(v1,v2,v3,t1,t2,t3)
   IF (ALLOCATED(u1)) DEALLOCATE(u1,u2,u3)
   IF (ALLOCATED(inter1)) DEALLOCATE(inter1,inter2,inter3)
+  IF (ALLOCATED(lineardgammadot0)) DEALLOCATE(lineardgammadot0)
+  IF (ALLOCATED(nonlineardgammadot0)) DEALLOCATE(nonlineardgammadot0)
 
 
 0990 FORMAT (" I  |   Dt   | tm(ve) | tm(pl) | tm(as) |     t/tmax     | power  |  C:E^i | ")
+0991 FORMAT (" I  |   Dt   | tm(ve) | tm(pl) | tm(as) | tm(kl) | tm(kn) |     t/tmax     | power  |  C:E^i | ")
 1100 FORMAT (I3.3," ",ES9.2E2,3ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
 1101 FORMAT (I3.3,"*",ES9.2E2,3ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
+1103 FORMAT (I3.3,"*",ES9.2E2,5ES9.2E2,ES9.2E2,"/",ES7.2E1,2ES9.2E2)
 
 CONTAINS
 
