@@ -241,11 +241,6 @@ CONTAINS
     IF (SIZE(prestress,1) .NE. sx3) RETURN
 
     
-#ifdef USING_CUDA 
-     CALL cuviscouseigen (structure,sig,moment,prestress,%VAL(mu), &
-                          %VAL(sx1),%VAL(sx2),%VAL(sx3),%VAL(dx1), &
-                          %VAL(dx2),%VAL(dx3),tm,dgammadot0,gamma)
-#else
     isdgammadot0=PRESENT(dgammadot0)
     IF (PRESENT(maxwelltime)) THEN
        tm=REAL(maxwelltime)
@@ -314,7 +309,6 @@ CONTAINS
        END DO
     END DO
 !$omp end parallel do
-#endif
 
     IF (PRESENT(maxwelltime)) maxwelltime=MIN(tm,maxwelltime)
   END SUBROUTINE viscouseigenstress

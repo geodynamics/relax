@@ -93,8 +93,9 @@ int         ihSx3 ;             /* Contains sx3 value*/
 int         iLen1 ;             /* Contains the number points in the filter. */
 int         iLen2 ;             /* Contains the number points in the filter. */
 int         iLen3 ;             /* Contains the number points in the filter. */
-ST_INFLAGS  *pstInflags = NULL ;
 
+ST_RELAX_CTX stCtx ;
+float        *devMinArray = NULL ;
             /* Device Constants */
 __constant__ double constdKer1 [14] ;
 __constant__ double constdKer2 [14] ;
@@ -222,44 +223,7 @@ __global__ void cuSourceForceKernel (int, int, int, double, double, double, doub
 
 /* ----------------------------------------- Intermediate functions ---------------------------- */
 
-/*
-!-----------------------------------------------------------------
-  !> StressUpdate
-  !! computes the 3-d stress tensor sigma_ij' from the current
-  !! deformation field. Strain is the second order tensor
-  !!
-  !!  \f[ \epsilon_{ij} = \frac{1}{2} ( u_{i,j} + u_{j,i} ) \f]
-  !!
-  !! The displacement derivatives are approximated numerically by the
-  !! application of a differentiator space-domain finite impulse
-  !! response filter. Coefficients of the filter can be obtained with
-  !! the MATLAB command line
-  !!
-  !!  \f[ \sigma' = - C' : E \f]
-  !!
-  !! or in indicial notation
-  !!
-  !!
-  !!  \f[ \sigma_{ij}' = -\lambda'*\delta_{ij}*\epsilon_{kk} - 2*\mu'*\epsilon_{ij}\f]
-  !!
-  !! where C' is the heterogeneous elastic moduli tensor and lambda'
-  !! and mu' are the inhomogeneous lame parameters
-  !!
-  !!  \f[ C' = C(x) - C_0 \f]
-  !!
-  !! For isotropic materials
-  !!
-  !!  \f[ \mu'(x) = \mu(x) - \mu_0 \f]
-  !!  \f[ \lambda'(x) = \lambda(x) - \lambda_0 \f]
-  !!
-  !! Optionally, the surface traction sigma_i3 can be sampled.
-  !! 
-  !-----------------------------------------------------------------
-*/
-
 /**
- *  
- *
  * @param   dLambda[in]     Lame's first parameter
  * @param   dMu[in]         shear modulus or Lame's second parameter. 
  * @param   dDx1[in]        Sampling size in x1(north) direction.
@@ -496,7 +460,6 @@ BODY_FORCES_EXIT_WITH_FREE :
 /* -------------------------------------- Intermediate functions end ----------------------------------- */
 
 
-
 /* -------------------------------- extern functions called from fortran ------------------------------- */
 /**
  * This function allocates and initializes various memory required. 
@@ -654,7 +617,7 @@ extern "C" void cuinit_ (int    iSx1,
         goto CUINIT_FAILURE ;
     }
 
-    if (pstInflags->istransient)
+    if (stCtx.pstInflags->istransient)
     {
         cuError = cudaMalloc ((void **)&pstEpsilonik, iSize2) ;
         if (cudaSuccess != cuError)
@@ -670,6 +633,57 @@ extern "C" void cuinit_ (int    iSx1,
         }
     }
 
+    if (stCtx.pstInflags->islvw)
+    {
+        iSize = sizeof (float) * iSx1 * iSx2 * iSx3/2 ;
+        cuError = cudaMalloc ((void **)&stCtx.pfLinearGammadot0, iSize) ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("cuinit : Failed to allocate memory 17\n") ;
+            cuFreeCudaMemory() ;
+        }
+    }
+    if (stCtx.pstInflags->isltvw)
+    {
+        iSize = sizeof (float) * iSx1 * iSx2 * iSx3/2 ;
+        cuError = cudaMalloc ((void **)&stCtx.pfLinearTransientGammadot0, iSize) ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("cuinit : Failed to allocate memory 18\n") ;
+            cuFreeCudaMemory() ;
+        }
+    }
+    if (stCtx.pstInflags->isnlvw)
+    {
+        iSize = sizeof (float) * iSx1 * iSx2 * iSx3/2 ;
+        cuError = cudaMalloc ((void **)&stCtx.pfNonlinearGammadot0, iSize) ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("cuinit : Failed to allocate memory 19\n") ;
+            cuFreeCudaMemory() ;
+        }
+    }        
+    if (stCtx.pstInflags->isnltvw)
+    {
+        iSize = sizeof (float) * iSx1 * iSx2 * iSx3/2 ;
+        cuError = cudaMalloc ((void **)&stCtx.pfNonlinearTransientGammadot0, iSize) ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("cuinit : Failed to allocate memory 20\n") ;
+            cuFreeCudaMemory() ;
+        }
+    }        
+    if (stCtx.pstInflags->islvl || stCtx.pstInflags->isnlvl ||
+        stCtx.pstInflags->isltvl || stCtx.pstInflags->isnltvl)
+    {
+        iSize = sizeof (float) * iSx1 * iSx2 * iSx3/2 ;
+        cuError = cudaMalloc((void **) &devMinArray, iSize) ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("cuinit : Failed to allocate memory 21\n") ;
+            cuFreeCudaMemory() ;
+        }
+    }
     //memset u1, u2, u3
     iSize = (sizeof (float) * (ihSx1+2) * ihSx2 * ihSx3) ;
     cuError = cudaMemset (gpU1, 0, iSize) ;
@@ -712,52 +726,26 @@ extern "C" void cuinflags_ (int      *istransient,
                             int      *nnlwz,
                             int      *nltwz,
                             int      *nnltwz,
-                            int      pLinearLayer,
-                            int      pNonlinearLayer,
-                            int      pLinearTransientLayer,
-                            int      pNonlinearTransientLayer,
+                            int      iLinearLayer,
+                            int      iNonlinearLayer,
+                            int      iLinearTransientLayer,
+                            int      iNonlinearTransientLayer,
                             int      *iRet)
 {
     *iRet = 0 ;
-    pstInflags = (ST_INFLAGS *) calloc(1,sizeof(ST_INFLAGS)) ;
-    if (NULL != pstInflags)
+
+    stCtx.pstInflags = (ST_INFLAGS *) calloc(1,sizeof(ST_INFLAGS)) ;
+    if (NULL != stCtx.pstInflags)
     {
-        if (0 < *istransient)
-        { 
-            pstInflags->istransient = true ;         
-        }
-        if (pLinearLayer)
-        {
-            pstInflags->islvl = true ;         
-        }
-        if (pNonlinearLayer)
-        {
-            pstInflags->isnlvl = true ;         
-        }
-        if (pLinearTransientLayer)
-        {
-            pstInflags->isltvl = true ;         
-        }
-        if (pNonlinearTransientLayer)
-        {
-            pstInflags->isnltvl = true ;         
-        }
-        if (*nlwz)
-        {
-            pstInflags->islvw = true ;         
-        }
-        if (*nnlwz)
-        {
-            pstInflags->isnlvw = true ;         
-        }
-        if (*nltwz)
-        {
-            pstInflags->isltvw = true ;         
-        }
-        if (*nnltwz)
-        {
-            pstInflags->isnltvw = true ;         
-        }
+        stCtx.pstInflags->istransient = (*istransient > 0) ? true : false ;
+        stCtx.pstInflags->islvl = (iLinearLayer) ? true : false ;
+        stCtx.pstInflags->isnlvl = (iNonlinearLayer) ? true : false ;
+        stCtx.pstInflags->isltvl = (iLinearTransientLayer) ? true : false ;
+        stCtx.pstInflags->isnltvl = (iNonlinearTransientLayer) ? true : false ;
+        stCtx.pstInflags->islvw = (*nlwz) ? true : false ;
+        stCtx.pstInflags->isnlvw = (*nnlwz) ? true : false ;
+        stCtx.pstInflags->isltvw = (*nltwz) ? true : false ;
+        stCtx.pstInflags->isnltvw = (*nnltwz) ? true : false ;
     }
     else
     {
@@ -999,16 +987,14 @@ extern "C" void cutransienteigen_ (ST_LAYER          *pStruct,
                                    double            dDx3,
                                    int               bMaxwell,
                                    double            *dMaxwell,
-                                   int               bdgammadot0,
-                                   float             *dgammadot0)
+                                   int               gammadotType)
 {
     cudaError_t  cuError = cudaSuccess ;
     int          iSize = 0 ;
-    float        *devMinArray = NULL ;
     dim3         dimGrid (iSx3, iSx2, 1) ;
     dim3         dimBlock (iSx1, 1, 1) ;
-    int          isdgammadot0 = false ;
-    int          iRet = 0;
+    int          isdgammadot0 = true ;
+    float       *pfDgammadot0 = NULL ;
     double       dTemp = 0.0 ;
 
 #ifdef PAPI_PROF
@@ -1017,16 +1003,6 @@ extern "C" void cutransienteigen_ (ST_LAYER          *pStruct,
 #endif
 
     iSize = sizeof (ST_LAYER) * iSx3 ;
-    if (bMaxwell)
-    {
-        cuError = cudaMalloc((void **) &devMinArray, sizeof (float) * iSx1 * iSx2 * iSx3) ;
-        if (cudaSuccess != cuError)
-        {
-            printf ("cutransienteigen_: Failed to allocate 0\n") ;
-            cuFreeCudaMemory () ;
-        }
-    }
-
     cuError = cudaMemcpy (pstStruct, pStruct, iSize, cudaMemcpyHostToDevice) ;
     if (cudaSuccess != cuError)
     {
@@ -1034,15 +1010,25 @@ extern "C" void cutransienteigen_ (ST_LAYER          *pStruct,
         cuFreeCudaMemory () ;
     }
 
-    /* if dgammadot0 is present then we need to add that to gammadot0 */
-    if (bdgammadot0)
+    switch(gammadotType)
     {
-        isdgammadot0 = true;
-        copygammadot0 (iSx1, iSx2, iSx3, dgammadot0, &iRet) ;
+        case E_GAMMADOT0_TYPE_INVALID:
+            isdgammadot0 = false ;
+        break ;
+        case E_GAMMADOT0_TYPE_LINEAR_TRANSIENT:
+            pfDgammadot0=stCtx.pfLinearTransientGammadot0 ;
+        break ;
+        case E_GAMMADOT0_TYPE_NONLINEAR_TRANSIENT:
+            pfDgammadot0=stCtx.pfNonlinearTransientGammadot0 ;
+        break ;
+        default: 
+            isdgammadot0 = false ;
+            printf ("Invalid gammadottype\n") ;
+        break ;
     }
 
     cuTransientEigenKernel <<<dimGrid, dimBlock>>> (pstStruct, pstSig, pstMoment,
-                                                    gpGammadot0, pstEpsilonik,
+                                                    pfDgammadot0, pstEpsilonik,
                                                     pstEpsilonikdot, dMu,
                                                     iSx1, iSx2, iSx3, dDx1, dDx2,
                                                     dDx3, bMaxwell, devMinArray, isdgammadot0) ;
@@ -1068,7 +1054,14 @@ extern "C" void cutransienteigen_ (ST_LAYER          *pStruct,
 
         dTemp  =  *min ;
         *dMaxwell = MIN (*dMaxwell, dTemp) ;
-        cudaFree (devMinArray) ;
+        printf("*dMaxwell is : %f\n",*dMaxwell);
+        iSize = sizeof(float) * iSx1 * iSx2 * iSx3 ;
+        cuError = cudaMemset (devMinArray, 0, iSize) ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("cutransienteigen_: Couldn't memset devMinArray") ;
+            cuFreeCudaMemory () ;
+        }
     }
 
 #ifdef PAPI_PROF
@@ -1089,8 +1082,7 @@ extern "C" void cutransienteigenwrapper_ (E_TENSOR_TYPE eType,
                                           double     dDx3,
                                           int        bMaxwell,
                                           double     *dMaxwell,
-                                          int        bgammadot,
-                                          float      *dGammadot0 = NULL)
+                                          int        bgammadot)
 {
 
     switch (eType)
@@ -1099,14 +1091,14 @@ extern "C" void cutransienteigenwrapper_ (E_TENSOR_TYPE eType,
         {
             cutransienteigen_ (pStruct, pstEpsilonik, pstEpsilonikdot, dMu,
                                iSx1, iSx2, iSx3, dDx1, dDx2, dDx3,
-                               bMaxwell, dMaxwell, bgammadot, dGammadot0) ;
+                               bMaxwell, dMaxwell, bgammadot) ;
         }
         break ;
         case E_TENSOR_IKDOT:
         {
             cutransienteigen_ (pStruct, pstEpsilonikdot, pstEpsilonikdot, dMu,
                                iSx1, iSx2, iSx3, dDx1, dDx2, dDx3,
-                               bMaxwell, dMaxwell, bgammadot, dGammadot0) ;
+                               bMaxwell, dMaxwell, bgammadot) ;
         }
         break ;
         case E_INVALID_TYPE:
@@ -1115,9 +1107,8 @@ extern "C" void cutransienteigenwrapper_ (E_TENSOR_TYPE eType,
         }
     }
 }
+
 extern "C" void cuviscouseigen_ (ST_LAYER          *pStruct,
-                                 ST_TENSOR         *pSig,
-                                 ST_TENSOR         *pMoment,
                                  ST_TENSOR_LAYER   *pPrestress, 
                                  double            dMu,
                                  int               iSx1,
@@ -1126,20 +1117,17 @@ extern "C" void cuviscouseigen_ (ST_LAYER          *pStruct,
                                  double            dDx1,
                                  double            dDx2,
                                  double            dDx3,
-                                 float             *dMaxwell,
-                                 float             *dgammadot0,
-                                 float             *pGamma)
+                                 int               bMaxwell,
+                                 double            *dMaxwell,
+                                 int               gammadotType)
 {
     cudaError_t  cuError = cudaSuccess ;
     int          iSize = 0 ;
-    int          iSize1 = 0 ;
-    float        *devMinArray = NULL ;
     dim3         dimGrid (iSx3, iSx2, 1) ;
     dim3         dimBlock (iSx1, 1, 1) ;
-    bool         isdgammadot0 = false ;
-    bool         bMaxwell = false;
-    bool         bGamma = false;
-    int          iRet = 0; 
+    bool         isdgammadot0 = true ;
+    float        *pfDgammadot0 = NULL ;
+    bool         bGamma = false ;
 
 #ifdef PAPI_PROF
     char cTimerName[17] = "Eigenstress     " ;
@@ -1147,15 +1135,6 @@ extern "C" void cuviscouseigen_ (ST_LAYER          *pStruct,
 #endif
 
     iSize = sizeof (ST_LAYER) * iSx3 ;
-    iSize1 = sizeof (float) * (iSx1 + 2) * iSx2 * iSx3 * 2 ;
-
-    /* Check if maxwell time is present then we need to do a reduction */
-    if (cuispresent(dMaxwell))
-    {
-        bMaxwell = true;
-        cuError = cudaMalloc((void **) &devMinArray, sizeof (float) * iSx1 * iSx2 * iSx3) ;
-        CHECK_CUDA_ERROR ("cuviscouseigen_ : Failed to allocate 0\n", VISCOUS_FREE_EXIT) ;
-    }
 
     cuError = cudaMemcpy (pstStruct, pStruct, iSize, cudaMemcpyHostToDevice) ;
     CHECK_CUDA_ERROR ("cuviscouseigen_ : memcpy failed 1\n", VISCOUS_FREE_EXIT) ;
@@ -1164,22 +1143,25 @@ extern "C" void cuviscouseigen_ (ST_LAYER          *pStruct,
     cuError = cudaMemcpy (pstPrestress, pPrestress, iSize, cudaMemcpyHostToDevice) ;
     CHECK_CUDA_ERROR ("cuviscouseigen_ : memcpy failed 2\n", VISCOUS_FREE_EXIT) ;
 
-    if (cuispresent(pGamma))
+    switch(gammadotType)
     {
-        bGamma = true ;
-        cuError = cudaMemset (gpV1, 0, iSize1) ;
-        CHECK_CUDA_ERROR ("cuviscouseigen_ : memset failed 1\n", VISCOUS_FREE_EXIT) ;
+        case E_GAMMADOT0_TYPE_INVALID:
+            isdgammadot0 = false ;
+        break ;
+        case E_GAMMADOT0_TYPE_LINEAR:
+            pfDgammadot0=stCtx.pfLinearGammadot0 ;
+        break ;
+        case E_GAMMADOT0_TYPE_NONLINEAR:
+            pfDgammadot0=stCtx.pfNonlinearGammadot0 ;
+        break ;
+        default: 
+            isdgammadot0 = false ;
+            printf ("Invalid gammadottype\n") ;
+        break ;
     }
-
-    /* if dgammadot0 is present then we need to add that to gammadot0 */
-    if (cuispresent(dgammadot0))
-    {
-        isdgammadot0 = true;
-        copygammadot0 (iSx1, iSx2, iSx3, dgammadot0, &iRet) ;
-    }
-
+     
     cuViscousEigenKernel <<<dimGrid, dimBlock>>> (pstStruct, pstSig, pstMoment, 
-                                                  pstPrestress, gpGammadot0, dMu, 
+                                                  pstPrestress, pfDgammadot0, dMu, 
                                                   iSx1, iSx2, iSx3, dDx1, dDx2, 
                                                   dDx3, devMinArray, gpV1, bMaxwell,
                                                   bGamma, isdgammadot0) ;
@@ -1201,7 +1183,13 @@ extern "C" void cuviscouseigen_ (ST_LAYER          *pStruct,
         CHECK_CUDA_ERROR ("cuviscouseigen_ : Thrust min element failure \n", VISCOUS_FREE_EXIT) ;
 
         *dMaxwell =  (float)*min ;
-        cudaFree (devMinArray) ;
+        iSize = sizeof(float) * iSx1 * iSx2 * iSx3 ;
+        cuError = cudaMemset (devMinArray, 0, iSize) ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("cuvisouseigen_: Couldn't memset devMinArray") ;
+            cuFreeCudaMemory () ;
+        }
     }
 
 
@@ -1695,11 +1683,10 @@ extern "C" void cubuildgammadot_ (int     iSx1,
                                   double  dDx3,
                                   int     iNz,
                                   ST_WEAK *pDuctile,
-                                  float   *pDgammadot0)
+                                  int     gammadotType)
 {
     cudaError_t  cuError = cudaSuccess ;
     int          iSize = 0 ;
-    int          iSize1 = 0 ;
     dim3         dimGrid (iSx3, iSx2, 1) ;
     dim3         dimBlock (iSx1, 1, 1) ;
     double       dBeta = 0 ;
@@ -1707,15 +1694,25 @@ extern "C" void cubuildgammadot_ (int     iSx1,
     ST_WEAK      *pstDuctile = NULL ;
     
     iSize = sizeof (ST_WEAK) * iNz ;
-    iSize1 = sizeof (float) * iSx1 * iSx2 * iSx3 ; 
 
-    cuError = cudaMalloc((void **) &pfDgammadot0, iSize1) ;
-    if (cudaSuccess != cuError)
+    switch(gammadotType)
     {
-        printf ("cubuildgammadot_ : Couldnt allocate memory 1\n") ;
-        cuFreeCudaMemory() ;
+        case E_GAMMADOT0_TYPE_LINEAR:
+            pfDgammadot0=stCtx.pfLinearGammadot0 ;
+        break ;
+        case E_GAMMADOT0_TYPE_NONLINEAR:
+            pfDgammadot0=stCtx.pfNonlinearGammadot0 ;
+        break ;
+        case E_GAMMADOT0_TYPE_LINEAR_TRANSIENT:
+            pfDgammadot0=stCtx.pfLinearTransientGammadot0 ;
+        break ;
+        case E_GAMMADOT0_TYPE_NONLINEAR_TRANSIENT:
+            pfDgammadot0=stCtx.pfNonlinearTransientGammadot0 ;
+        break ;
+        default: 
+            printf ("Invalid gammadottype\n") ;
+        break ;
     }
-
     cuError = cudaMalloc((void **) &pstDuctile, iSize) ;
     if (cudaSuccess != cuError)
     {
@@ -1746,16 +1743,6 @@ extern "C" void cubuildgammadot_ (int     iSx1,
         printf ("cubuildgammadot0_ : sync failed \n") ;
     }
 
-    //copy back
-
-    cuError = cudaMemcpy (pDgammadot0, pfDgammadot0, iSize1, cudaMemcpyDeviceToHost) ;
-    if (cudaSuccess != cuError)
-    {
-        printf ("cubuildgammadot_ : Couldnt copy memory 4\n") ;
-        cuFreeCudaMemory() ;
-    }
-
-    cudaFree(pfDgammadot0);
     cudaFree(pstDuctile);
 
     return ; 
@@ -1796,7 +1783,6 @@ extern "C" void cufrictioneigenstress_ (double     dX,
     double      dXr ;
     double      dYr ;
     double      dZr ;
-    float       *devMinArray ;
     dim3        dimGrid (iSx3, iSx2, 1) ;
     dim3        dimBlock (iSx1, 1, 1) ;
     cudaError_t cuError ;
@@ -1820,11 +1806,6 @@ extern "C" void cufrictioneigenstress_ (double     dX,
     dYr = dSstrike * dX + dCstrike * dY ;
     dZr = dSdip * dX2r + dCdip * dZ ;
 
-    if (1 == bPresent)
-    {
-        cuError = cudaMalloc((void **) &devMinArray, sizeof (float) * iSx1 * iSx2 * iSx3) ;
-        CHECK_CUDA_ERROR ("cufrictioneigenstress_ : Failed to allocate 0\n", FRICTION_FREE_EXIT) ;
-    }
     iSize = sizeof (ST_LAYER) * iSx3 ;
     cuError = cudaMemcpy (pstStruct, pStruct, iSize, cudaMemcpyHostToDevice) ;
     CHECK_CUDA_ERROR ("cufrictioneigenstress_ : memcpy failed 1\n", FRICTION_FREE_EXIT) ;
@@ -1850,7 +1831,13 @@ extern "C" void cufrictioneigenstress_ (double     dX,
         CHECK_CUDA_ERROR ("cufrictioneigenstress_ : Thrust min element failure \n", FRICTION_FREE_EXIT) ;
 
         *dMaxwell =  *min ;
-        cudaFree (devMinArray) ;
+        iSize = sizeof(float) * iSx1 * iSx2 * iSx3 ;
+        cuError = cudaMemset (devMinArray, 0, iSize) ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("cufrictioneigenstress_: Couldn't memset devMinArray") ;
+            cuFreeCudaMemory () ;
+        }
     }
 
 FRICTION_FREE_EXIT:
@@ -2087,8 +2074,8 @@ void cuFreeCudaMemory()
     CUDA_FREE_MEM (pfDevTract2) ;
     CUDA_FREE_MEM (pfDevTract3) ;
     CUDA_FREE_MEM (gpGammadot0) ;
-    free (pstInflags) ;
-    pstInflags = NULL ;
+    free (stCtx.pstInflags) ;
+    stCtx.pstInflags = NULL ;
 }
 
 int checkMemRequirement(int iSx1,

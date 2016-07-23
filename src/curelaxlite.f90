@@ -209,7 +209,7 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   INTEGER, PARAMETER :: ITERATION_MAX = 99999 
   REAL*8, PARAMETER :: STEP_MAX = 1e7
 
-  INTEGER :: i,k,e,oi,iostatus,itensortype,iRet,igamma,imaxwell
+  INTEGER :: i,k,e,oi,iostatus,itensortype,iRet,gammadot0type,imaxwell
   
   REAL*8, DIMENSION(5) :: maxwell,mech
 
@@ -239,7 +239,15 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      IF (iostatus>0) STOP "could not allocate prediction array"
   END DO
 
-  CALL cuinit (%VAL(in%sx1), %VAL(in%sx2), %VAL(in%sx3), %VAL(in%dx1), %VAL(in%dx2), %VAL(in%dx3), iostatus)
+  CALL cuinflags (in%istransient,in%nlwz,in%nnlwz,in%nltwz,in%nnltwz,  &
+                  %VAL(isallocated(in%linearlayer)),                   & 
+                  %VAL(isallocated(in%nonlinearlayer)),                &
+                  %VAL(isallocated(in%ltransientlayer)),               & 
+                  %VAL(isallocated(in%nltransientlayer)),iostatus)
+  IF (iostatus>0) STOP "could not allocate memory"
+
+  CALL cuinit (%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3),%VAL(in%dx1), & 
+               %VAL(in%dx2),%VAL(in%dx3),iostatus)
   IF (iostatus>0) STOP "could not allocate memory"
    
   ! allocate memory
@@ -365,11 +373,11 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      !DEALLOCATE(in%linearlayer)
 
      IF (0 .LT. in%nlwz) THEN
-        ALLOCATE(lineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
         IF (iostatus.GT.0) STOP "could not allocate lineardgammadot0"
+        gammadot0type=1
         CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
-                             %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nlwz), &
-                             in%linearweakzone,lineardgammadot0)
+                             %VAL(in%dx2),%VAL(in%dx3),%VAL(in%nlwz), &
+                             in%linearweakzone,%VAL(gammadot0type))
      END IF
   END IF
 
@@ -381,11 +389,11 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      !DEALLOCATE(in%nonlinearlayer)
 
      IF (0 .LT. in%nnlwz) THEN
-        ALLOCATE(nonlineardgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
         IF (iostatus.GT.0) STOP "could not allocate nonlineardgammadot0"
+        gammadot0type=2
         CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
                              %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nnlwz), &
-                             in%nonlinearweakzone,nonlineardgammadot0)
+                             in%nonlinearweakzone,%VAL(gammadot0type))
      END IF
   END IF
 
@@ -404,12 +412,12 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      CALL viscoelasticstructure(in%ltransientstruc,in%ltransientlayer,in%dx3)
      !DEALLOCATE(in%ltransientlayer)
 
-     ALLOCATE(ltransientdgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
      IF (iostatus.GT.0) STOP "could not allocate ltransientdgammadot0"
      IF (0 .LT. in%nltwz) THEN
+        gammadot0type=3
         CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
                              %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nltwz), &
-                             in%ltransientweakzone,ltransientdgammadot0)
+                             in%ltransientweakzone,%VAL(gammadot0type))
      END IF
   END IF
 
@@ -420,12 +428,12 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      CALL viscoelasticstructure(in%nltransientstruc,in%nltransientlayer,in%dx3)
      !DEALLOCATE(in%nltransientlayer)
 
-     ALLOCATE(nltransientdgammadot0(in%sx1,in%sx2,in%sx3/2),STAT=iostatus)
      IF (iostatus.GT.0) STOP "could not allocate nltransientdgammadot0"
      IF (0 .LT. in%nnltwz) THEN
+        gammadot0type=4
         CALL cubuildgammadot(%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),%VAL(in%dx1),& 
                              %VAL(in%dx2), %VAL(in%dx3),%VAL(in%nnltwz), &
-                             in%nltransientweakzone,nltransientdgammadot0)
+                             in%nltransientweakzone,%VAL(gammadot0type))
      END IF
   END IF
 
@@ -459,13 +467,19 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      ! 1- linear viscosity
      IF (ALLOCATED(in%linearstruc)) THEN
         IF (0 .LT. in%nlwz) THEN
-           CALL viscouseigenstress(in%mu,in%linearstruc, &
-                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
-                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=lineardgammadot0,MAXWELLTIME=maxwell(1))
+           gammadot0type=1
+           CALL cuviscouseigen(in%linearstruc,in%stressstruc,           &
+                               %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),   &
+                               %VAL(in%sx3/2),%VAL(in%dx1),%VAL(in%dx2),&
+                               %VAL(in%dx3),%VAL(imaxwell),maxwell(1),  &
+                               %VAL(gammadot0type))
         ELSE
-           CALL viscouseigenstress(in%mu,in%linearstruc, &
-                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
-                in%dx1,in%dx2,in%dx3,moment,MAXWELLTIME=maxwell(1))
+           gammadot0type=0
+           CALL cuviscouseigen(in%linearstruc,in%stressstruc,           &
+                               %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),   &
+                               %VAL(in%sx3/2),%VAL(in%dx1),%VAL(in%dx2),&
+                               %VAL(in%dx3),%VAL(imaxwell),maxwell(1),  &
+                               %VAL(gammadot0type))
         END IF
         mech(1)=1
      END IF
@@ -473,13 +487,19 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      ! 2- powerlaw viscosity
      IF (ALLOCATED(in%nonlinearstruc)) THEN
         IF (0 .LT. in%nnlwz) THEN
-           CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
-                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
-                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=nonlineardgammadot0,MAXWELLTIME=maxwell(2))
+           gammadot0type=2
+           CALL cuviscouseigen(in%nonlinearstruc,in%stressstruc,        &
+                               %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),   &
+                               %VAL(in%sx3/2),%VAL(in%dx1),%VAL(in%dx2),&
+                               %VAL(in%dx3),%VAL(imaxwell),maxwell(2),  &
+                               %VAL(gammadot0type))
         ELSE
-           CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
-                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
-                in%dx1,in%dx2,in%dx3,moment,MAXWELLTIME=maxwell(2))
+           gammadot0type=0
+           CALL cuviscouseigen(in%nonlinearstruc,in%stressstruc,        &
+                               %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),   &
+                               %VAL(in%sx3/2),%VAL(in%dx1),%VAL(in%dx2),&
+                               %VAL(in%dx3),%VAL(imaxwell),maxwell(2),  &
+                               %VAL(gammadot0type))
         END IF
         mech(2)=1
      END IF
@@ -500,20 +520,19 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      ! 4 - linear transient creep 
      IF (in%istransient) THEN
         itensortype=4
-        imaxwell=1
         IF (ALLOCATED(in%ltransientstruc)) THEN 
            IF (0 .LT. in%nltwz) THEN
-              igamma=1
+              gammadot0type=3
               CALL cutransienteigenwrapper(%VAL(itensortype),in%ltransientstruc, &
                    %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
                    %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
-                   maxwell(4),%VAL(igamma),ltransientdgammadot0)
+                   maxwell(4),%VAL(gammadot0type))
            ELSE
-              igamma=0
+              gammadot0type=0
               CALL cutransienteigenwrapper(%VAL(itensortype),in%ltransientstruc, &
                    %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
                    %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
-                   maxwell(4),%VAL(igamma))    
+                   maxwell(4),%VAL(gammadot0type))    
            END IF
            mech(4)=1
         END IF
@@ -521,18 +540,18 @@ SUBROUTINE relaxlite(in,gps,isverbose)
         ! 5 - nonlinear transient creep 
         IF (ALLOCATED(in%nltransientstruc)) THEN 
            IF (0 .LT. in%nnltwz) THEN
-              igamma=1
+              gammadot0type=4
               CALL cutransienteigenwrapper(%VAL(itensortype),in%nltransientstruc, &
                    %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
                    %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
-                   maxwell(5),%VAL(igamma),nltransientdgammadot0)
+                   maxwell(5),%VAL(gammadot0type))
            ELSE 
-              igamma=0
+              gammadot0type=0
               CALL cutransienteigenwrapper(%VAL(itensortype),in%nltransientstruc, &
                    %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
                    %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
-                   maxwell(5),%VAL(igamma))
-           END IF     
+                   maxwell(5),%VAL(gammadot0type))
+              END IF     
            mech(5)=1
         END IF
      END IF
@@ -581,7 +600,7 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      CALL cufieldadd (%VAL(itensortype), v1, v2, v3, u1, u2, u3, %VAL(in%sx1+2),%VAL(in%sx2),%VAL(in%sx3/2), %VAL(cuC1), %VAL(cuC2))
 
      IF (in%istransient) THEN
-        itensortype=7
+        itensortype=7         ! E_TENSOR_IKDOT_IK
         cuc1=REAL(Dt/2);cuc2=1._4
         CALL cutensorfieldadd (%VAL(itensortype),%VAL(in%sx1),%VAL(in%sx2), &
                                %VAL(in%sx3/2),%VAL(cuc1),%VAL(cuc2))
@@ -602,29 +621,42 @@ SUBROUTINE relaxlite(in,gps,isverbose)
      ! reinitialize moment density tensor
      itensortype=2
      CALL cutensormemset (%VAL(itensortype)) 
-     
+     imaxwell=0 
      IF (ALLOCATED(in%linearstruc)) THEN
+        v1=0
         IF (0 .LT. in%nlwz) THEN
-           CALL viscouseigenstress(in%mu,in%linearstruc, &
-                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
-                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=lineardgammadot0,GAMMA=v1)
+           gammadot0type=1
+           CALL cuviscouseigen(in%linearstruc,in%stressstruc,           &
+                               %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),   &
+                               %VAL(in%sx3/2),%VAL(in%dx1),%VAL(in%dx2),&
+                               %VAL(in%dx3),%VAL(imaxwell),maxwell(1),  &
+                               %VAL(gammadot0type))
         ELSE
-           CALL viscouseigenstress(in%mu,in%linearstruc, &
-                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
-                in%dx1,in%dx2,in%dx3,moment,GAMMA=v1)
+           gammadot0type=0
+           CALL cuviscouseigen(in%linearstruc,in%stressstruc,           &
+                               %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),   &
+                               %VAL(in%sx3/2),%VAL(in%dx1),%VAL(in%dx2),&
+                               %VAL(in%dx3),%VAL(imaxwell),maxwell(1),  &
+                               %VAL(gammadot0type))
         END IF
         ! not adding v1 to gamma
      END IF
     
      IF (ALLOCATED(in%nonlinearstruc)) THEN
         IF (0 .LT. in%nnlwz) THEN
-           CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
-                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
-                in%dx1,in%dx2,in%dx3,moment,DGAMMADOT0=nonlineardgammadot0,GAMMA=v1)
+           gammadot0type=2
+           CALL cuviscouseigen(in%nonlinearstruc,in%stressstruc,        &
+                               %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),   &
+                               %VAL(in%sx3/2),%VAL(in%dx1),%VAL(in%dx2),&
+                               %VAL(in%dx3),%VAL(imaxwell),maxwell(1),  &
+                               %VAL(gammadot0type))
         ELSE
-           CALL viscouseigenstress(in%mu,in%nonlinearstruc, &
-                sig,in%stressstruc,in%sx1,in%sx2,in%sx3/2, &
-                in%dx1,in%dx2,in%dx3,moment,GAMMA=v1)
+           gammadot0type=0
+           CALL cuviscouseigen(in%nonlinearstruc,in%stressstruc,        &
+                               %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),   &
+                               %VAL(in%sx3/2),%VAL(in%dx1),%VAL(in%dx2),&
+                               %VAL(in%dx3),%VAL(imaxwell),maxwell(1),  &
+                               %VAL(gammadot0type))
         END IF
         ! not adding v1 to gamma
      END IF
@@ -652,34 +684,34 @@ SUBROUTINE relaxlite(in,gps,isverbose)
         imaxwell=0
         IF (ALLOCATED(in%ltransientstruc)) THEN 
            IF (0 .LT. in%nltwz) THEN
-              igamma=1
+              gammadot0type=3
               CALL cutransienteigenwrapper(%VAL(itensortype),in%ltransientstruc, &
                    %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
                    %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), & 
-                   maxwell(4),%VAL(igamma),ltransientdgammadot0)
+                   maxwell(4),%VAL(gammadot0type))
            ELSE 
-              igamma=0
+              gammadot0type=0
               CALL cutransienteigenwrapper(%VAL(itensortype),in%ltransientstruc, &
                    %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
                    %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
-                   maxwell(4),%VAL(igamma))
+                   maxwell(4),%VAL(gammadot0type))
            END IF
         END IF
      
         ! 5 - nonlinear transient creep 
         IF (ALLOCATED(in%nltransientstruc)) THEN 
            IF (0 .LT. in%nnltwz) THEN
-              igamma=1
+              gammadot0type=4
               CALL cutransienteigenwrapper(%VAL(itensortype),in%nltransientstruc, &
                    %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
                    %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
-                   maxwell(5),%VAL(igamma),nltransientdgammadot0)
+                   maxwell(5),%VAL(gammadot0type))
            ELSE 
-              igamma=0
+              gammadot0type=0
               CALL cutransienteigenwrapper(%VAL(itensortype),in%nltransientstruc, &
                    %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
                    %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
-                   maxwell(5),%VAL(igamma))
+                   maxwell(5),%VAL(gammadot0type))
            END IF     
         END IF
         
@@ -810,8 +842,6 @@ SUBROUTINE relaxlite(in,gps,isverbose)
   IF (ALLOCATED(inter1)) DEALLOCATE(inter1,inter2,inter3)
   IF (ALLOCATED(lineardgammadot0)) DEALLOCATE(lineardgammadot0)
   IF (ALLOCATED(nonlineardgammadot0)) DEALLOCATE(nonlineardgammadot0)
-  IF (ALLOCATED(ltransientdgammadot0)) DEALLOCATE(ltransientdgammadot0)
-  IF (ALLOCATED(nltransientdgammadot0)) DEALLOCATE(nltransientdgammadot0)
 
 
 0990 FORMAT (" I  |   Dt   | tm(ve) | tm(pl) | tm(as) |     t/tmax     | power  |  C:E^i | ")

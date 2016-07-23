@@ -2,4 +2,5 @@
 *.mod
 .lock*
 .waf*
+*.pyc
 build/

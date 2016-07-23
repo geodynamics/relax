@@ -135,6 +135,15 @@ typedef enum _e_type
     E_TYPE_V
 }E_TYPE ;
 
+typedef enum _e_gammadot0_type
+{
+    E_GAMMADOT0_TYPE_INVALID=0,
+    E_GAMMADOT0_TYPE_LINEAR,                //1 
+    E_GAMMADOT0_TYPE_NONLINEAR,             //2
+    E_GAMMADOT0_TYPE_LINEAR_TRANSIENT,      //3
+    E_GAMMADOT0_TYPE_NONLINEAR_TRANSIENT,   //4
+}E_GAMMADOT0_TYPE ;
+
 /* -------------------------------------------------------------------------------- */
 
 __constant__  double DEV_CONST_FIR_1[1] = { 5.000e-01 } ;
@@ -264,6 +273,15 @@ typedef struct _st_inflags
     bool isltvw ;
     bool isnltvw ;
 } ST_INFLAGS ;
+
+typedef struct _st_relax_ctx
+{
+    ST_INFLAGS *pstInflags ;
+    float      *pfLinearGammadot0 ;
+    float      *pfNonlinearGammadot0 ;
+    float      *pfLinearTransientGammadot0 ;
+    float      *pfNonlinearTransientGammadot0 ;
+}ST_RELAX_CTX ;
 
 cudaError_t memcpyUsingStreams (float           *fDest,
                                 float           *fSrc,
