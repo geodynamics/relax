@@ -631,6 +631,18 @@ extern "C" void cuinit_ (int    iSx1,
             printf ("cuinit : Failed to allocate memory 16\n") ;
             goto CUINIT_FAILURE ;
         }
+        cuError = cudaMemset (pstEpsilonik, 0, iSize2) ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("cuinit : Failed in memset 15 - 1\n") ;
+            goto CUINIT_FAILURE ;
+        }
+        cuError = cudaMemset (pstEpsilonikdot, 0, iSize2) ;
+        if (cudaSuccess != cuError)
+        {
+            printf ("cuinit : Failed in memset 16 - 1\n") ;
+            goto CUINIT_FAILURE ;
+        }
     }
 
     if (stCtx.pstInflags->islvw)
@@ -1054,7 +1066,6 @@ extern "C" void cutransienteigen_ (ST_LAYER          *pStruct,
 
         dTemp  =  *min ;
         *dMaxwell = MIN (*dMaxwell, dTemp) ;
-        printf("*dMaxwell is : %f\n",*dMaxwell);
         iSize = sizeof(float) * iSx1 * iSx2 * iSx3 ;
         cuError = cudaMemset (devMinArray, 0, iSize) ;
         if (cudaSuccess != cuError)
@@ -1278,7 +1289,7 @@ extern "C" void cutensorfieldadd_ (E_TENSOR_FIELD  eField,
             cuTensorFieldKernel <<<dimGrid, dimBlock>>> (pstEpsilonikdot, pstEpsilonik, fC1, fC2, iSx1, iSx2, iSx3) ;
             if (cudaSuccess != cudaDeviceSynchronize())
             {
-                printf ("Failed to sync 6\n") ;
+                printf ("Failed to sync 7\n") ;
             }
         }
         break ;
@@ -1287,7 +1298,7 @@ extern "C" void cutensorfieldadd_ (E_TENSOR_FIELD  eField,
             cuTensorFieldKernel <<<dimGrid, dimBlock>>> (pstEpsilonikdot, pstEpsilonikdot, fC1, fC2, iSx1, iSx2, iSx3) ;
             if (cudaSuccess != cudaDeviceSynchronize())
             {
-                printf ("Failed to sync 7\n") ;
+                printf ("Failed to sync 8\n") ;
             }
         }
         break ; 

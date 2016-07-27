@@ -564,7 +564,6 @@ PROGRAM relax
                    %VAL(in%mu),%VAL(in%sx1),%VAL(in%sx2),%VAL(in%sx3/2),  &
                    %VAL(in%dx1),%VAL(in%dx2),%VAL(in%dx3),%VAL(imaxwell), &
                    maxwell(5),%VAL(gammadot0type))
-              PRINT *, 'nonlinear transient maxwell is :', maxwell(5)
            END IF     
            mech(5)=1
         END IF
