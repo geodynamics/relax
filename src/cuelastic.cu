@@ -2085,6 +2085,10 @@ void cuFreeCudaMemory()
     CUDA_FREE_MEM (pfDevTract2) ;
     CUDA_FREE_MEM (pfDevTract3) ;
     CUDA_FREE_MEM (gpGammadot0) ;
+    CUDA_FREE_MEM (stCtx.pfLinearGammadot0) ;
+    CUDA_FREE_MEM (stCtx.pfNonlinearGammadot0) ;
+    CUDA_FREE_MEM (stCtx.pfLinearTransientGammadot0) ;
+    CUDA_FREE_MEM (stCtx.pfNonlinearTransientGammadot0) ;
     free (stCtx.pstInflags) ;
     stCtx.pstInflags = NULL ;
 }
