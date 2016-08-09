@@ -59,7 +59,7 @@ my_gmt(){
 	for subprog in $EXTRA; do
 		OPTIONP=""
 		if [ -e "$selfdir/$subprog" ]; then
-			eval "$selfdir/$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PSFILE"
+			eval "$selfdir/$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PROJ $PSFILE"
 		else
 			if [ -e "$subprog" ]; then
 				eval "$subprog $gset -b $bds -v $VECTOR $OPTIONP -H $HEIGHT $Jset $PROJ $PSFILE"
@@ -183,6 +183,7 @@ if [ "$1" != "" ]; then
 	TITLE=$(basename $PSFILE .ps)
 	#PSFILE=$ODIR/plot.ps
 	PDFFILE=$ODIR/$(basename $PSFILE .ps).pdf
+	Jset="-J"
 	
 	if [ "$pset" == "1" ]; then
 		colors=$WDIR/palette.cpt
@@ -214,7 +215,7 @@ if [ "$1" != "" ]; then
 		        AXIS=-Ba${tick}:"":/a${tick}:""::."$TITLE":WSne
 		else
 			HEIGHT=7i
-			PROJ="M0/0/$HEIGHT"
+			PROJ="M$HEIGHT"
 		        AXIS=-B${tick}:"":/${tick}:""::."$TITLE":WSne
 		fi
 	fi

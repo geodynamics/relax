@@ -104,7 +104,7 @@ my_gmt(){
 	if [ "$VECTOR" != "-" ]; then
 		UL=`echo $bds | awk -F "/" '{print $1,$4}' `
 		pstext -O -K -J${PROJ} -N -R$bds \
-			-G0/0/0 -Yr0.3i \
+			-G0/0/0 -Yr-0.3i \
 			<<EOF >> $PSFILE
 $UL 14 0 4 LM $SIZE $unit
 EOF

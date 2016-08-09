@@ -1,0 +1,3 @@
+
+# convert the Hayes model to the Relax format
+grep -v "#" 20005iis.param | proj +proj=utm +zone=52 -r | awk '{if(NR>5){$1=($1-661641.27)/1e3;$2=($2-3628438.35)/1e3;print $0}}' | awk 'BEGIN{print "# nb slip(m)  x1(km)       x2      x3 length(km) width strike dip   rake";pi=atan2(1,0)*2}{str=$6*pi/180;dip=$7/180*pi;s[1]=cos(str);s[2]=sin(str);s[3]=0;n[1]=sin(str)*cos(dip);n[2]=-cos(str)*cos(dip);d[3]=sin(dip);slip=$4/1e2;rake=$5;len=5;wid=2.9;x1=$2-s[1]*len/2;x2=$1-s[2]*len/2;x3=$3-s[3]*len;printf("%3.3d  %6.3f %8.2f %8.2f %7.4f      %5.2f %5.2f %6.1f %3.1f %6.2f\n",NR,slip,x1,x2,x3,len,wid,str*180/pi,dip*180/pi,rake)}' > ../../kumamoto16/faults/kumamoto-hayes16-prel_km.flt
