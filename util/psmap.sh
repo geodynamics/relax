@@ -202,7 +202,7 @@ if [ "$1" != "" ]; then
 
 		# Cartesian vs geographic coordinates
 		if [ "$gset" != "-g" ]; then
-			if [ "$Jset" == "" ]; then
+			if [ "$Jset" == "-J" ]; then
 				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*7)}'`
 				if [ "$rset" != "1" ]; then
 					PROJ="X7i/"$HEIGHT
