@@ -26,6 +26,7 @@ usage(){
         echo "         -g switch to geographic projection (longitude/latitude)"
         echo "         -h display this error message and exit"
 	echo "         -i file.grd illuminates the grd image with file.grd"
+	echo "         -l clip.xy clip the background color and vector plot"
         echo "         -o output directory"
         echo "         -p palette sets the color scale bounds to palette"
         echo "         -r reverse the y-axis"
@@ -50,20 +51,28 @@ usage(){
 
 my_gmt(){
 
+	psbasemap -R$bds -J${PROJ} \
+	    $AXIS \
+	     -K -P -X1.2i -Y${YSHIFT}i \
+	    > $PSFILE
+
+	if [ "" != "$lset" ]; then
+		psclip -O -K -J${PROJ} -R$bds -m $clip >> $PSFILE
+	fi
+
 	if [ -e "$U3" ]; then
 		grdimage $U3 -R$bds -J${PROJ} -Q \
-		    $AXIS \
-		    -K -C$colors -P -X1.2i -Y${YSHIFT}i $illumination \
-		    > $PSFILE
+		    -O -K -C$colors -P $illumination \
+		    >> $PSFILE
 		if [ "$Cset" == "-C" ]; then
 			grdcontour -K -O $U3 -W0.3p/100/100/100 -R$bds -J${PROJ} -S4 -C$contour -P >> $PSFILE
 		fi
-	else
-		psbasemap -R$bds -J${PROJ} \
-		    $AXIS \
-		     -K -P -X1.2i -Y${YSHIFT}i \
-		    > $PSFILE
 	fi
+
+	if [ "" != "$lset" ]; then
+		psclip -O -K -J${PROJ} -R$bds -C >> $PSFILE
+	fi
+
 
 	# running all required subprograms
 	for subprog in $EXTRA; do
@@ -89,6 +98,10 @@ my_gmt(){
 		#echo $self": found "$U1": plotting vectors"
 		echo $self": Using VECTOR="$VECTOR", STEP="$ADX
 
+		if [ "" != "$lset" ]; then
+			psclip -O -K -J${PROJ} -R$bds -m $clip >> $PSFILE
+		fi
+
 		# arrowwidth/headlength/headwidth
 		# grdvector crashes with wrong sampling
 		#	-Q0.51c/0.8c/0.7cn1.0c \
@@ -98,6 +111,11 @@ my_gmt(){
 			-S$VECTOR -W0.5p/0/0/0 \
 			-G255/255/255 \
 			 >> $PSFILE
+
+		if [ "" != "$lset" ]; then
+			psclip -O -K -J${PROJ} -R$bds -C >> $PSFILE
+		fi
+
 	fi
 
 	# plot the vector legend if $VECTOR is set
@@ -145,7 +163,7 @@ gmtset PAPER_MEDIA archA
 libdir=$(dirname $0)/../share
 EXTRA=""
 
-while getopts "b:c:e:ghi:o:p:v:s:t:u:xrC:J:L:O:T:Y:" flag
+while getopts "b:c:e:ghi:l:o:p:v:s:t:u:xrC:J:L:O:T:Y:" flag
 do
 	case "$flag" in
 	b) bset=1;bds=$OPTARG;;
@@ -154,6 +172,7 @@ do
 	g) gset="-g";;
 	h) hset=1;;
 	i) iset=1;illumination="-I$OPTARG";illuminationopt="-I";;
+	l) lset=1;clip=$OPTARG;;
 	o) oset=1;ODIR=$OPTARG;;
 	p) pset=1;P=$OPTARG;PSSCALE=`echo $OPTARG | awk -F"/" 'function abs(x){return x<0?-x:x}{print abs($2-$1)/6}'`;;
 	r) rset=1;;
@@ -170,7 +189,7 @@ do
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
 done
-for item in $bset $cset $iset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Lset $Oset $Jset $EXTRA;do
+for item in $bset $cset $iset $lset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Lset $Oset $Jset $EXTRA;do
 	shift;shift
 done
 for item in $gset $hset $xset $rset;do
