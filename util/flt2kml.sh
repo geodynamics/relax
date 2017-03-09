@@ -74,7 +74,7 @@ flt2kml(){
         	        printf("%f %f\n",x2              ,x1              );
 		}' | \
 		awk -v x=$x -v y=$y -v scale=$SCALE '{$1=$1*scale+x;$2=$2*scale+y;printf "%f %f\n", $1,$2}' | \
-		invproj +proj=utm +zone=$UTMZONE -f "%f" | awk '{
+		invproj +proj=utm +zone=$UTMZONE -f "%f" $SOUTH | awk '{
 			printf "%f,%f,0 ",$1,$2
 			if (4==((NR-1)%5)){
 				print "";
@@ -124,10 +124,11 @@ if [ -t 0 ] && [ $# -eq 0 ]; then
 	usage
 fi
 
-while getopts "C:hs:x:y:z:" flag
+while getopts "C:Shs:x:y:z:" flag
 do
 	case "$flag" in
 	C) Cset=1;CPT="$OPTARG";;
+	S) Sset=1;SOUTH="+south";;
 	h) hset=1;;
 	s) sset=1;SCALE=$OPTARG;;
 	x) xset=1;x=$OPTARG;;
@@ -138,7 +139,7 @@ done
 for item in $Cset $sset $xset $yset $zset; do
 	shift;shift
 done
-for item in $hset; do
+for item in $hset $Sset; do
 	shift;
 done
 
