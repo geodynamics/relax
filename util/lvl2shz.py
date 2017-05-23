@@ -93,9 +93,9 @@ def lvl2shz(index,x1o,x2o,x3o,L,W,T,strike,dip,lo,wo,to,alphal,alphaw,alphat,str
         for j in range(Nt):
             # loop in strike direction
             for i in range(Nl):
-                x1=x1o+i*lt*Sv[0]+(float(j)+0.5)*tt*Nv[0]+sum(w.take(range(k+1)))*Dv[0]
-                x2=x2o+i*lt*Sv[1]+(float(j)+0.5)*tt*Nv[1]+sum(w.take(range(k+1)))*Dv[1]
-                x3=x3o+i*lt*Sv[2]+(float(j)+0.5)*tt*Nv[2]+sum(w.take(range(k+1)))*Dv[2]
+                x1=x1o+i*lt*Sv[0]+((float(j)+0.5)*tt-0.5*T)*Nv[0]+sum(w.take(range(k+1)))*Dv[0]
+                x2=x2o+i*lt*Sv[1]+((float(j)+0.5)*tt-0.5*T)*Nv[1]+sum(w.take(range(k+1)))*Dv[1]
+                x3=x3o+i*lt*Sv[2]+((float(j)+0.5)*tt-0.5*T)*Nv[2]+sum(w.take(range(k+1)))*Dv[2]
                 index=index+1
 
                 if strain[0] is None:
