@@ -37,6 +37,7 @@ usage(){
 	echo "         -T title header"
 	echo "         -x do not display map (only create .ps file)"
 	echo "         -C interval plots contours every interval distance"
+	echo "         -H fixed height"
 	echo "         -L draws a distance scale at coordinates lon/lat"
 	echo "         -O file.ps only plot base map with extra scripts"
 	echo "         -J overwrites the geographic projections (for -J o the -b option is relative)"
@@ -163,7 +164,7 @@ gmtset PAPER_MEDIA archA
 libdir=$(dirname $0)/../share
 EXTRA=""
 
-while getopts "b:c:e:ghi:l:o:p:v:s:t:u:xrC:J:L:O:T:Y:" flag
+while getopts "b:c:e:ghi:l:o:p:v:s:t:u:xrC:HJ:L:O:T:Y:" flag
 do
 	case "$flag" in
 	b) bset=1;bds=$OPTARG;;
@@ -183,6 +184,7 @@ do
 	v) vset=1;SIZE=$OPTARG;VECTOR=$OPTARG"c";;
 	x) xset=1;;
 	C) Cset="-C";contour=$OPTARG;;
+	H) Hset="-H";;
 	L) Lset="-L$OPTARG";;
 	O) Oset=1;PSFILE=$(dirname $OPTARG)/$(basename $OPTARG .ps).ps;;
 	J) Jset="-J";PROJ="$OPTARG";;
@@ -192,7 +194,7 @@ done
 for item in $bset $cset $iset $lset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Lset $Oset $Jset $EXTRA;do
 	shift;shift
 done
-for item in $gset $hset $xset $rset;do
+for item in $gset $hset $xset $rset $Hset;do
 	shift;
 done
 
@@ -254,9 +256,14 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 
 		# tick marks
 		if [ "$tset" != "1" ]; then
-			tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/4}'`
+			xtick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/7}'`
+			ytick=`echo $bds | awk -F "/" '{s=1;print ($4-$3)/s/7}'`
+		else
+			xtick=`echo $tick | awk -F "/" '{print $1}'`
+			ytick=`echo $tick | awk -F "/" '{if (1==NF){print $1}else{print $2}}'`
 		fi
-		tickf=`echo $tick | awk '{print $1/2}'`
+		xtickf=`echo $xtick | awk '{print $1/2}'`
+		ytickf=`echo $ytick | awk '{print $1/2}'`
 
 		echo $self": Using directory "$WDIR", plotting index "$INDEX
 
@@ -307,7 +314,11 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 		if [ "$gset" != "-g" ]; then
 			if [ "$Jset" == "" ]; then
 				# Cartesian coordinates
-				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*7)}'`
+				if [ "$Hset" == "" ]; then
+					HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*7)}'`
+				else
+					HEIGHT="7i"
+				fi
 				if [ "$rset" != "1" ]; then
 					PROJ="X7i/"$HEIGHT
 				else
@@ -316,12 +327,12 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 			else
 				HEIGHT="-"
 			fi
-			AXIS=-Bf${tickf}a${tick}:"":/f${tickf}a${tick}:""::."$title":WSne
+			AXIS=-Bf${xtickf}a${xtick}:"":/f${ytickf}a${ytick}:""::."$title":WSne
 		else
 			# geographic coordinates
 			HEIGHT=7i
 			PROJ="M$HEIGHT"
-		        AXIS=-B${tick}:"":/${tick}:""::."$title":WSne
+		        AXIS=-B${xtick}:"":/${ytick}:""::."$title":WSne
 		fi
 
 		Jset="-J"
@@ -348,9 +359,11 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 
 			# tick marks
 			if [ "$tset" != "1" ]; then
-				tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/7}'`
+				xtick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/7}'`
+				ytick=`echo $bds | awk -F "/" '{s=1;print ($4-$3)/s/7}'`
 			fi
-			tickf=`echo $tick | awk '{print $1/2}'`
+			xtickf=`echo $xtick | awk '{print $1/2}'`
+			ytickf=`echo $ytick | awk '{print $1/2}'`
 
 			# Cartesian vs geographic coordinates
 			if [ "$gset" != "-g" ]; then

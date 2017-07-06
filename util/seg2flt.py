@@ -46,10 +46,14 @@ def seg2flt(index,x1o,x2o,x3o,L,W,strike,dip,rake,lo,wo,alphal,alphaw,slip=None)
     w=array([0])
     while Wc>0:
         Wt=wo*alphaw**k
-        if Wt > Wc/2:
+        if Wt > Wc/2.001:
             Wt = Wc
     
         wn=min(Wt,Wc)
+
+        #Wt=float(W)/float(int(ceil(W/(wo*alphaw**k))))
+        #wn=Wt
+
         w=append(w, wn)
         k=k+1
         Wc=Wc-wn
