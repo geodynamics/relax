@@ -1527,7 +1527,7 @@ CONTAINS
                   STAT=iostatus)
              IF (iostatus>0) STOP "could not allocate the eigenstrain source list"
              PRINT 2000
-             PRINT '("# n      e11      e12      e13      e22      e23      ", &
+             PRINT '("#  n       e11       e12       e13       e22       e23       ", &
                       "e33       x1       x2       x3  length   width thickness strike dip")'
              PRINT 2000
              DO k=1,in%events(e)%neigenstrain
@@ -1551,7 +1551,7 @@ CONTAINS
                 ! copy the input format for display
                 in%events(e)%eigenstrainc(k)=in%events(e)%eigenstrain(k)
              
-                PRINT '(I3.3,9ES9.2E1,3ES8.2E1,2ES9.2E1)',k, &
+                PRINT '(I4.4,9ES10.2E2,3ES8.2E1,2ES9.2E1)',k, &
                      in%events(e)%eigenstrainc(k)%e%s11, &
                      in%events(e)%eigenstrainc(k)%e%s12, &
                      in%events(e)%eigenstrainc(k)%e%s13, &
