@@ -123,7 +123,7 @@ my_gmt(){
 	if [ "$VECTOR" != "-" ]; then
 		UL=`echo $bds | awk -F "/" '{print $1,$4}' `
 		pstext -O -K -J${PROJ} -N -R$bds \
-			-G0/0/0 -Yr-0.3i \
+			-G0/0/0 -Yr+0.3i \
 			<<EOF >> $PSFILE
 $UL 14 0 4 LM $SIZE $unit
 EOF
@@ -409,7 +409,7 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 		#gv -geometry +0+0 -spartan -scale=0.5 $PSFILE &
 		ps2pdf -sPAPERSIZE="archA" -dPDFSETTINGS=/prepress $PSFILE $PDFFILE
 		echo $self": Converted to pdf file "$PDFFILE
-		xpdf -geometry +0+0 -paper "archA" $PDFFILE -z 100 -g 565x655 >& /dev/null &
+		xpdf -geometry +0+0 -paper "archA" $PDFFILE -z 100 -g 565x755 -z width >& /dev/null &
 	fi
 	
 	if [ "$#" != "0" ];then
