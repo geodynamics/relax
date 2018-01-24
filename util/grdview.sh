@@ -112,7 +112,7 @@ gmtset PAPER_MEDIA archA
 libdir=$(dirname $0)/../share
 EXTRA=""
 
-while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrE:G:N:O:J:Y:" flag; do
+while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrE:G:HN:O:J:Y:" flag; do
 	case "$flag" in
 	b) bset=1;bds=$OPTARG;;
 	c) cset="-c";carg=$OPTARG;;
@@ -131,6 +131,7 @@ while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrE:G:N:O:J:Y:" flag; do
 	x) xset=1;;
 	E) Eset="-E$OPTARG";;
 	G) Gset="-G$OPTARG";;
+	H) Hset="-H";;
 	N) Nset="-N$OPTARG";;
 	O) Oset=1;PSFILE=$(dirname $OPTARG)/$(basename $OPTARG .ps).ps;;
 	J) Jset=1;PROJ="-J$OPTARG";;
@@ -140,7 +141,7 @@ done
 for item in $bset $cset $iset $oset $pset $sset $tset $vset $Tset $uset $Yset $Eset $Gset $Nset $Oset $Jset $EXTRA;do
 	shift;shift
 done
-for item in $gset $hset $xset $rset;do
+for item in $gset $hset $xset $rset $Hset;do
 	shift;
 done
 
@@ -250,7 +251,11 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 		if [ "$gset" != "-g" ]; then
 			if [ "$Jset" == "" ]; then
 				# Cartesian coordinates
-				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*5)}'`
+				if [ "$Hset" == "" ]; then
+					HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*5)}'`
+				else
+					HEIGHT="7i"
+				fi
 				SCALE=`echo $bds | awk -F "/" -v s=$verticalexxageration '{printf("%f\n",5/($2-$1)*s)}'`
 				if [ "$rset" != "1" ]; then
 					PROJ="-JX5i/"$HEIGHT
@@ -301,7 +306,11 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 
 			# Cartesian vs geographic coordinates
 			if [ "$gset" != "-g" ]; then
-				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*5)}'`
+				if [ "$Hset" == "" ]; then
+					HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*5)}'`
+				else
+					HEIGHT="7i"
+				fi
 				SCALE=`echo $bds | awk -F "/" -v s=$verticalexxageration '{printf("%f\n",5/($2-$1)*s)}'`
 				if [ "$rset" != "1" ]; then
 					PROJ=-JX5i/$HEIGHT
@@ -340,7 +349,7 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 		#gv -geometry +0+0 -spartan -scale=0.5 $PSFILE &
 		ps2pdf -sPAPERSIZE="archA" -dPDFSETTINGS=/prepress $PSFILE $PDFFILE
 		echo $self": Converted to pdf file "$PDFFILE
-		xpdf -geometry +0+0 -paper "archA" $PDFFILE -z 100 -g 565x655 >& /dev/null &
+		xpdf -geometry +0+0 -paper "archA" $PDFFILE -z 100 -g 565x755 -z width >& /dev/null &
 	fi
 	
 	if [ "$#" != "0" ];then
