@@ -53,7 +53,7 @@ my_gmt(){
 
 	if [ -e "$U3" ]; then
 		grdview $U3 -R$bds $PROJ $PROJZ -Qc $Eset $Nset \
-		    $AXIS $Gset \
+		    ${AXIS}SWNEZ+ $Eset $Gset \
 		    -K -C$colors -P -X1.2i -Y${YSHIFT}i $iset \
 		    > $PSFILE
 	else
@@ -94,8 +94,8 @@ my_gmt(){
 		rm -f $colors
 	fi
 
-	psbasemap -R$bds $PROJ $PROJZ \
-		${AXIS}WSNEZ+ $Eset -O -P >> $PSFILE
+	#psbasemap -R$bds $PROJ $PROJZ \
+	#	${AXIS}WSNEZ+ $Eset -O -P >> $PSFILE
 
 	#echo 0 0 | psxy -O $PROJ -R$bds -Sp0.001c >> $PSFILE
 
@@ -124,7 +124,7 @@ while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrE:G:HN:O:J:Y:" flag; do
 	p) pset=1;P=$OPTARG;PSSCALE=`echo $OPTARG | awk -F"/" 'function abs(x){return x<0?-x:x}{print abs($2-$1)/6}'`;;
 	r) rset=1;;
 	s) sset=1;ADX=$OPTARG;;
-	t) tset=1;tick=$OPTARG;tickz=$OPTARG;;
+	t) tset=1;tickx=$OPTARG;ticky=$OPTARG;tickz=$OPTARG;;
 	T) Tset=1;title=$OPTARG;;
 	u) uset=1;unit=$OPTARG;;
 	v) vset=1;verticalexxageration=$OPTARG;;
@@ -206,9 +206,13 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 
 		# tick marks
 		if [ "$tset" != "1" ]; then
-			tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/4}'`
+			tickx=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/4}'`
+			ticky=`echo $bds | awk -F "/" '{s=1;print ($4-$3)/s/4}'`
+			tickz=`echo $bds | awk -F "/" '{s=1;print ($6-$5)/s/4}'`
 		fi
-		tickf=`echo $tick | awk '{print $1/4}'`
+		tickxf=`echo $tickx | awk '{print $1/2}'`
+		tickyf=`echo $ticky | awk '{print $1/2}'`
+		tickzf=`echo $tickz | awk '{print $1/2}'`
 
 		echo $self": Using directory "$WDIR", plotting index "$INDEX
 
@@ -254,7 +258,7 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 				if [ "$Hset" == "" ]; then
 					HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*5)}'`
 				else
-					HEIGHT="7i"
+					HEIGHT="8i"
 				fi
 				SCALE=`echo $bds | awk -F "/" -v s=$verticalexxageration '{printf("%f\n",5/($2-$1)*s)}'`
 				if [ "$rset" != "1" ]; then
@@ -267,12 +271,12 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 			else
 				HEIGHT="-"
 			fi
-			AXIS=-Bf${tickf}a${tick}:"":/f${tickf}a${tick}:"":/f25a100:""::."$title":
+			AXIS=-Bf${tickxf}a${tickx}:"x":/f${tickyf}a${ticky}:"y":/f${tickzf}a${tickz}:"z"::."$title":
 		else
 			# geographic coordinates
 			HEIGHT=5i
 			PROJ="-JM$HEIGHT"
-		        AXIS=-B${tick}:"":/${tick}:""::."$title":WSne
+		        AXIS=-B${tickx}:"":/${ticky}:""::."$title":WSne
 		fi
 
 		echo $self": z-min/z-max for "$U3": "`grdinfo -C $U3 | awk '{print $6,$7}'`
@@ -298,11 +302,13 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 
 			# tick marks
 			if [ "$tset" != "1" ]; then
-				tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/5}'`
+				tickx=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/5}'`
+				ticky=`echo $bds | awk -F "/" '{s=1;print ($4-$3)/s/5}'`
 				tickz=`echo $bds | awk -F "/" '{s=1;print ($6-$5)/s/5}'`
 			fi
-			tickf=`echo $tick | awk '{print $1/4}'`
-			tickzf=`echo $tickz | awk '{print $1/4}'`
+			tickxf=`echo $tickx | awk '{print $1/2}'`
+			tickyf=`echo $ticky | awk '{print $1/2}'`
+			tickzf=`echo $tickz | awk '{print $1/2}'`
 
 			# Cartesian vs geographic coordinates
 			if [ "$gset" != "-g" ]; then
@@ -319,11 +325,11 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 					PROJ=-JX5i/-$HEIGHT
 					PROJZ=-Jz$SCALE
 				fi
-			        AXIS=-Ba${tick}:"":/a${tick}:"":/f${tickzf}a${tickz}:""::."$TITLE":
+			        AXIS=-Ba${tickx}:"":/a${ticky}:"":/f${tickzf}a${tickz}:""::."$TITLE":
 			else
 				HEIGHT=5i
 				PROJ="-JM0/0/$HEIGHT"
-			        AXIS=-B${tick}:"":/${tick}:"":/f50:""::."$TITLE":WSne
+			        AXIS=-B${tickx}:"":/${ticky}:"":/f50:""::."$TITLE":WSne
 			fi
 		fi
 	fi
