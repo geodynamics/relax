@@ -61,6 +61,18 @@ MODULE types
      TYPE(TENSOR) :: sig0
   END TYPE SEGMENT_STRUCT
 
+  TYPE TRIANGLE_PATCH_STRUCT
+     SEQUENCE
+     REAL*8 :: slip, rake
+     INTEGER :: i1,i2,i3
+  END TYPE TRIANGLE_PATCH_STRUCT
+
+  TYPE TETRAHEDRON_STRUCT
+     SEQUENCE
+     TYPE(TENSOR) :: e
+     INTEGER :: i1,i2,i3,i4
+  END TYPE TETRAHEDRON_STRUCT
+
   TYPE SLIPPATCH_STRUCT
      SEQUENCE
      ! absolute position
@@ -86,9 +98,11 @@ MODULE types
 
   TYPE EVENT_STRUC
      REAL*8 :: time
-     INTEGER*4 :: i,ns,nt,nm,nl,neigenstrain
+     INTEGER*4 :: i,ns,nt,nm,nl,nCuboid,nTetrahedron,nTetrahedronVertex
      TYPE(SOURCE_STRUCT), DIMENSION(:), ALLOCATABLE :: s,sc,ts,tsc,m,mc,l,lc
-     TYPE(WEAK_STRUCT), DIMENSION(:), ALLOCATABLE :: eigenstrain,eigenstrainc
+     TYPE(WEAK_STRUCT), DIMENSION(:), ALLOCATABLE :: cuboid,cuboidc
+     TYPE(TETRAHEDRON_STRUCT), DIMENSION(:), ALLOCATABLE :: tetrahedron
+     REAL*8, DIMENSION(:,:), ALLOCATABLE :: tetrahedronVertex
   END TYPE EVENT_STRUC
   
   TYPE MANIFOLD_STRUCT
@@ -247,6 +261,7 @@ MODULE types
      LOGICAL :: isoutputvtkrelax=.FALSE.
      LOGICAL :: isoutputxyz=.TRUE.
      LOGICAL :: istransient=.FALSE.
+     LOGICAL :: iscurvilinear=.FALSE.
 
      ! other options
      LOGICAL :: isdryrun=.FALSE.

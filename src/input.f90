@@ -58,7 +58,7 @@ CONTAINS
 !$  INTEGER :: omp_get_num_procs,omp_get_max_threads
     REAL*8 :: dummy,dum1,dum2
     REAL*8 :: minlength,minwidth
-    TYPE(OPTION_S) :: opts(15)
+    TYPE(OPTION_S) :: opts(16)
 
     INTEGER :: k,iostatus,i,e
 
@@ -76,8 +76,9 @@ CONTAINS
     opts(11)=OPTION_S("with-vtk-output",.FALSE.,CHAR(30))
     opts(12)=OPTION_S("with-vtk-relax-output",.FALSE.,CHAR(31))
     opts(13)=OPTION_S("with-transient",.FALSE.,CHAR(32))
-    opts(14)=OPTION_S("dry-run",.FALSE.,CHAR(33))
-    opts(15)=OPTION_S("help",.FALSE.,'h')
+    opts(14)=OPTION_S("with-curvilinear",.FALSE.,CHAR(33))
+    opts(15)=OPTION_S("dry-run",.FALSE.,CHAR(34))
+    opts(16)=OPTION_S("help",.FALSE.,'h')
 
     noptions=0;
     DO
@@ -125,6 +126,9 @@ CONTAINS
           ! option --with-transient 
           in%istransient=.TRUE.
        CASE(CHAR(33))
+          ! option --curvilinear
+          in%iscurvilinear=.TRUE.
+       CASE(CHAR(34))
           ! option dry-run
           in%isdryrun=.TRUE.
        CASE('h')
@@ -1517,55 +1521,55 @@ CONTAINS
        !              E I G E N S T R A I N
        ! - - - - - - - - - - - - - - - - - - - - - - - - - -
        IF (in%iseigenstrain) THEN
-          PRINT '("# number of distributed eigenstrain sources")'
+          PRINT '("# number of cuboid eigenstrain sources")'
           CALL getdata(iunit,dataline)
-          READ  (dataline,*) in%events(e)%neigenstrain
-          PRINT '(I5)', in%events(e)%neigenstrain
-          IF (in%events(e)%neigenstrain .GT. 0) THEN
-             ALLOCATE(in%events(e)%eigenstrain(in%events(e)%neigenstrain), &
-                      in%events(e)%eigenstrainc(in%events(e)%neigenstrain), &
+          READ  (dataline,*) in%events(e)%ncuboid
+          PRINT '(I5)', in%events(e)%ncuboid
+          IF (in%events(e)%ncuboid .GT. 0) THEN
+             ALLOCATE(in%events(e)%cuboid(in%events(e)%ncuboid), &
+                      in%events(e)%cuboidc(in%events(e)%ncuboid), &
                   STAT=iostatus)
-             IF (iostatus>0) STOP "could not allocate the eigenstrain source list"
+             IF (iostatus>0) STOP "could not allocate the cuboid eigenstrain source list"
              PRINT 2000
              PRINT '("#  n       e11       e12       e13       e22       e23       ", &
                       "e33       x1       x2       x3  length   width thickness strike dip")'
              PRINT 2000
-             DO k=1,in%events(e)%neigenstrain
+             DO k=1,in%events(e)%ncuboid
                 CALL getdata(iunit,dataline)
                 READ  (dataline,*) i, &
-                     in%events(e)%eigenstrain(k)%e%s11, &
-                     in%events(e)%eigenstrain(k)%e%s12, &
-                     in%events(e)%eigenstrain(k)%e%s13, &
-                     in%events(e)%eigenstrain(k)%e%s22, &
-                     in%events(e)%eigenstrain(k)%e%s23, &
-                     in%events(e)%eigenstrain(k)%e%s33, &
-                     in%events(e)%eigenstrain(k)%x, &
-                     in%events(e)%eigenstrain(k)%y, &
-                     in%events(e)%eigenstrain(k)%z, &
-                     in%events(e)%eigenstrain(k)%length, &
-                     in%events(e)%eigenstrain(k)%width, &
-                     in%events(e)%eigenstrain(k)%thickness, &
-                     in%events(e)%eigenstrain(k)%strike, &
-                     in%events(e)%eigenstrain(k)%dip
+                     in%events(e)%cuboid(k)%e%s11, &
+                     in%events(e)%cuboid(k)%e%s12, &
+                     in%events(e)%cuboid(k)%e%s13, &
+                     in%events(e)%cuboid(k)%e%s22, &
+                     in%events(e)%cuboid(k)%e%s23, &
+                     in%events(e)%cuboid(k)%e%s33, &
+                     in%events(e)%cuboid(k)%x, &
+                     in%events(e)%cuboid(k)%y, &
+                     in%events(e)%cuboid(k)%z, &
+                     in%events(e)%cuboid(k)%length, &
+                     in%events(e)%cuboid(k)%width, &
+                     in%events(e)%cuboid(k)%thickness, &
+                     in%events(e)%cuboid(k)%strike, &
+                     in%events(e)%cuboid(k)%dip
 
                 ! copy the input format for display
-                in%events(e)%eigenstrainc(k)=in%events(e)%eigenstrain(k)
+                in%events(e)%cuboidc(k)=in%events(e)%cuboid(k)
              
                 PRINT '(I4.4,9ES10.2E2,3ES8.2E1,2ES9.2E1)',k, &
-                     in%events(e)%eigenstrainc(k)%e%s11, &
-                     in%events(e)%eigenstrainc(k)%e%s12, &
-                     in%events(e)%eigenstrainc(k)%e%s13, &
-                     in%events(e)%eigenstrainc(k)%e%s22, &
-                     in%events(e)%eigenstrainc(k)%e%s23, &
-                     in%events(e)%eigenstrainc(k)%e%s33, &
-                     in%events(e)%eigenstrainc(k)%x, &
-                     in%events(e)%eigenstrainc(k)%y, &
-                     in%events(e)%eigenstrainc(k)%z, &
-                     in%events(e)%eigenstrainc(k)%length, &
-                     in%events(e)%eigenstrainc(k)%width, &
-                     in%events(e)%eigenstrainc(k)%thickness, &
-                     in%events(e)%eigenstrainc(k)%strike, &
-                     in%events(e)%eigenstrainc(k)%dip
+                     in%events(e)%cuboidc(k)%e%s11, &
+                     in%events(e)%cuboidc(k)%e%s12, &
+                     in%events(e)%cuboidc(k)%e%s13, &
+                     in%events(e)%cuboidc(k)%e%s22, &
+                     in%events(e)%cuboidc(k)%e%s23, &
+                     in%events(e)%cuboidc(k)%e%s33, &
+                     in%events(e)%cuboidc(k)%x, &
+                     in%events(e)%cuboidc(k)%y, &
+                     in%events(e)%cuboidc(k)%z, &
+                     in%events(e)%cuboidc(k)%length, &
+                     in%events(e)%cuboidc(k)%width, &
+                     in%events(e)%cuboidc(k)%thickness, &
+                     in%events(e)%cuboidc(k)%strike, &
+                     in%events(e)%cuboidc(k)%dip
              
                 IF (i .ne. k) THEN
                    PRINT *, "error in input file: source index misfit"
@@ -1575,35 +1579,120 @@ CONTAINS
                 ! comply to Wang's convention
                 CALL wangconvention( &
                      dummy, & 
-                     in%events(e)%eigenstrain(k)%x, &
-                     in%events(e)%eigenstrain(k)%y, &
-                     in%events(e)%eigenstrain(k)%z, &
-                     in%events(e)%eigenstrain(k)%length, &
-                     in%events(e)%eigenstrain(k)%width, &
-                     in%events(e)%eigenstrain(k)%strike, &
-                     in%events(e)%eigenstrain(k)%dip, &
+                     in%events(e)%cuboid(k)%x, &
+                     in%events(e)%cuboid(k)%y, &
+                     in%events(e)%cuboid(k)%z, &
+                     in%events(e)%cuboid(k)%length, &
+                     in%events(e)%cuboid(k)%width, &
+                     in%events(e)%cuboid(k)%strike, &
+                     in%events(e)%cuboid(k)%dip, &
                      dummy,in%x0,in%y0,in%rot)
 
                 WRITE (digit,'(I3.3)') k
 
-                ! export the eigenstrain in GMT .xy format
-                rffilename=trim(in%wdir)//"/eigenstrain-"//digit//".xy"
-                CALL exportxy_brick(in%events(e)%eigenstrain(k)%x, &
-                                    in%events(e)%eigenstrain(k)%y, &
-                                    in%events(e)%eigenstrain(k)%z, &
-                                    in%events(e)%eigenstrain(k)%length, &
-                                    in%events(e)%eigenstrain(k)%width, &
-                                    in%events(e)%eigenstrain(k)%thickness, &
-                                    in%events(e)%eigenstrain(k)%strike, &
-                                    in%events(e)%eigenstrain(k)%dip,rffilename)
+                ! export the cuboid eigenstrain in GMT .xy format
+                !rffilename=trim(in%wdir)//"/cuboid-"//digit//".xy"
+                !CALL exportxy_brick(in%events(e)%cuboid(k)%x, &
+                !                    in%events(e)%cuboid(k)%y, &
+                !                    in%events(e)%cuboid(k)%z, &
+                !                    in%events(e)%cuboid(k)%length, &
+                !                    in%events(e)%cuboid(k)%width, &
+                !                    in%events(e)%cuboid(k)%thickness, &
+                !                    in%events(e)%cuboid(k)%strike, &
+                !                    in%events(e)%cuboid(k)%dip,rffilename)
              END DO
 #ifdef VTK
-             ! export the eigenstrain in VTK format
-             rffilename=trim(in%wdir)//"/eigenstrain.vtp"
-             CALL exportvtk_allbricks(in%events(e)%neigenstrain,in%events(e)%eigenstrain,rffilename)
+             ! export the cuboid eigenstrain in VTK format
+             rffilename=trim(in%wdir)//"/cuboid.vtp"
+             CALL exportvtk_allbricks(in%events(e)%ncuboid,in%events(e)%cuboid,rffilename)
 #endif
              PRINT 2000
           END IF
+
+          IF (in%iscurvilinear) THEN
+             PRINT '("# number of distributed tetrahedral eigenstrain sources")'
+             CALL getdata(iunit,dataline)
+             READ  (dataline,*) in%events(e)%ntetrahedron
+             PRINT '(I5)', in%events(e)%ntetrahedron
+             IF (in%events(e)%ntetrahedron .GT. 0) THEN
+                ALLOCATE(in%events(e)%tetrahedron(in%events(e)%ntetrahedron), &
+                     STAT=iostatus)
+                IF (iostatus>0) STOP "could not allocate the tetrahedral eigenstrain source list"
+                PRINT 2000
+                PRINT '("#  n       e11       e12       e13       e22       e23       ", &
+                         "e33       i1       i2       i3       i4")'
+                PRINT 2000
+                DO k=1,in%events(e)%ntetrahedron
+                   CALL getdata(iunit,dataline)
+                   READ (dataline,*) i, &
+                        in%events(e)%tetrahedron(k)%e%s11, &
+                        in%events(e)%tetrahedron(k)%e%s12, &
+                        in%events(e)%tetrahedron(k)%e%s13, &
+                        in%events(e)%tetrahedron(k)%e%s22, &
+                        in%events(e)%tetrahedron(k)%e%s23, &
+                        in%events(e)%tetrahedron(k)%e%s33, &
+                        in%events(e)%tetrahedron(k)%i1, &
+                        in%events(e)%tetrahedron(k)%i2, &
+                        in%events(e)%tetrahedron(k)%i3, &
+                        in%events(e)%tetrahedron(k)%i4
+
+                   PRINT '(I4.4,6ES10.2E2,4(X,I8))',k, &
+                        in%events(e)%tetrahedron(k)%e%s11, &
+                        in%events(e)%tetrahedron(k)%e%s12, &
+                        in%events(e)%tetrahedron(k)%e%s13, &
+                        in%events(e)%tetrahedron(k)%e%s22, &
+                        in%events(e)%tetrahedron(k)%e%s23, &
+                        in%events(e)%tetrahedron(k)%e%s33, &
+                        in%events(e)%tetrahedron(k)%i1, &
+                        in%events(e)%tetrahedron(k)%i2, &
+                        in%events(e)%tetrahedron(k)%i3, &
+                        in%events(e)%tetrahedron(k)%i4
+             
+                   IF (i .ne. k) THEN
+                      PRINT *, "error in input file: source index misfit"
+                      STOP 1
+                   END IF
+                END DO
+
+                PRINT '("# number of tetrahedron vertices")'
+                CALL getdata(iunit,dataline)
+                READ  (dataline,*) in%events(e)%nTetrahedronVertex
+                PRINT '(I5)', in%events(e)%nTetrahedronVertex
+
+                ALLOCATE(in%events(e)%tetrahedronVertex(3,in%events(e)%ntetrahedronVertex), &
+                     STAT=iostatus)
+                IF (iostatus>0) STOP "could not allocate the tetrahedral eigenstrain source list"
+
+                PRINT 2000
+                PRINT '("#  n        x1        x2        x3")'
+                PRINT 2000
+                IF (in%events(e)%nTetrahedronVertex .GT. 0) THEN
+                   DO k=1,in%events(e)%nTetrahedronVertex
+                      CALL getdata(iunit,dataline)
+                      READ (dataline,*) i, &
+                           in%events(e)%tetrahedronVertex(1,k), &
+                           in%events(e)%tetrahedronVertex(2,k), &
+                           in%events(e)%tetrahedronVertex(3,k)
+
+                      PRINT '(I4.4,3ES10.2E2)',k, &
+                           in%events(e)%tetrahedronVertex(1,k), &
+                           in%events(e)%tetrahedronVertex(2,k), &
+                           in%events(e)%tetrahedronVertex(3,k)
+             
+                      IF (i .ne. k) THEN
+                         PRINT *, "error in input file: source index misfit"
+                         STOP 1
+                      END IF
+                   END DO
+
+                ELSE
+                   PRINT *, "error in input file: must provide tetrahedra vertices."
+                   STOP 1
+                END IF
+
+             END IF
+          END IF
+
        END IF
 
        ! - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1680,7 +1769,8 @@ CONTAINS
         (in%events(1)%ns .EQ. 0) .AND. &
         (in%events(1)%nm .EQ. 0) .AND. &
         (in%events(1)%nl .EQ. 0) .AND. &
-        (in%events(1)%neigenstrain .EQ. 0) .AND. &
+        (in%events(1)%nCuboid .EQ. 0) .AND. &
+        (in%events(1)%nTetrahedron .EQ. 0) .AND. &
         (in%interval .LE. 0._8)) THEN
 
        WRITE_DEBUG_INFO

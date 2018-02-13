@@ -178,14 +178,9 @@
   !! (11-04-11) - compatible with gfortran                         <br>
   !! (07-25-13) - include cylindrical and spherical ductile zones  <br>
   !! (01-03-14) - accelerate processing of ductile zones           <br>
+  !! (08-08-15) - add cuboidal transformation strain volumes       <br> 
+  !! (02-12-18) - add tetrahedral transformation strain volumes    <br>
   !!
-  !! \todo 
-  !!   - homogenize VTK output so that geometry of events match event index
-  !!   - write the code for MPI multi-thread
-  !!   - export position of observation points to long/lat in opts-geo.dat
-  !!   - check the fully-relaxed afterslip for uniform stress change
-  !!   - export afterslip output in VTK legacy format (binary)
-  !!   - export ductile zones for cylindrical and spherical geometries
   !------------------------------------------------------------------------
 PROGRAM relax
 
@@ -331,12 +326,12 @@ PROGRAM relax
   END IF 
   ! export equivalent body forces
   IF (isoutput(in%skip,t,0,in%odt,oi,in%events(e)%time)) THEN
-#ifdef GRD_EQBF
+!#ifdef GRD_EQBF
      IF (in%isoutputgrd) THEN
         CALL exportgrd(v1,v2,v3,in%sx1,in%sx2,in%sx3/2, &
                        in%dx1,in%dx2,in%dx3,in%ozs,in%x0,in%y0,in%wdir,0,convention=3)
      END IF
-#endif
+!#endif
   END IF
 
   ! test the presence of dislocations for coseismic calculation
@@ -344,7 +339,8 @@ PROGRAM relax
       (in%events(e)%ns .NE. 0) .OR. &
       (in%events(e)%nm .NE. 0) .OR. &
       (in%events(e)%nl .NE. 0) .OR. &
-      (in%events(e)%neigenstrain .NE. 0)) THEN
+      (in%events(e)%nCuboid .NE. 0) .OR. &
+      (in%events(e)%nTetrahedron .NE. 0)) THEN
 
      ! apply the 3d elastic transfer function
      CALL greenfunctioncowling(v1,v2,v3,t1,t2,t3, &
@@ -1177,18 +1173,29 @@ CONTAINS
        END DO
 
        IF (in%iseigenstrain) THEN 
-       ! equivalent body force for eigenstrain
-          DO i=1,event%neigenstrain
+          ! equivalent body force for cuboid eigenstrain
+          DO i=1,event%nCuboid
              ! adding sources in the space domain
-             CALL eigenstrainsource(lambda,mu,event%eigenstrain(i)%e, &
-                  event%eigenstrain(i)%x, &
-                  event%eigenstrain(i)%y, &
-                  event%eigenstrain(i)%z, &
-                  event%eigenstrain(i)%width, &
-                  event%eigenstrain(i)%length, &
-                  event%eigenstrain(i)%thickness, &
-                  event%eigenstrain(i)%strike, &
-                  event%eigenstrain(i)%dip, &
+             CALL cuboidSource(lambda,mu,event%cuboid(i)%e, &
+                  event%cuboid(i)%x, &
+                  event%cuboid(i)%y, &
+                  event%cuboid(i)%z, &
+                  event%cuboid(i)%width, &
+                  event%cuboid(i)%length, &
+                  event%cuboid(i)%thickness, &
+                  event%cuboid(i)%strike, &
+                  event%cuboid(i)%dip, &
+                  in%beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3,t1,t2,t3)
+          END DO
+
+          ! equivalent body force for tetrahedron eigenstrain
+          DO i=1,event%nTetrahedron
+             ! adding sources in the space domain
+             CALL tetrahedronSource(lambda,mu,event%tetrahedron(i)%e, &
+                  event%tetrahedronVertex(:,event%tetrahedron(i)%i1), &
+                  event%tetrahedronVertex(:,event%tetrahedron(i)%i2), &
+                  event%tetrahedronVertex(:,event%tetrahedron(i)%i3), &
+                  event%tetrahedronVertex(:,event%tetrahedron(i)%i4), &
                   in%beta,sx1,sx2,sx3,dx1,dx2,dx3,v1,v2,v3,t1,t2,t3)
           END DO
        END IF
@@ -1202,11 +1209,11 @@ CONTAINS
                event%s(i)%beta,sx1,sx2,sx3/2,dx1,dx2,dx3,eigenstress)
        END DO
        
-       DO i=1,event%neigenstrain
-          CALL momentdensityeigenstrain(mu,lambda,REAL(slip_factor,4) .times. event%eigenstrain(i)%e, &
-               event%eigenstrain(i)%x,event%eigenstrain(i)%y,event%eigenstrain(i)%z, & 
-               event%eigenstrain(i)%width,event%eigenstrain(i)%length,event%eigenstrain(i)%thickness, &
-               event%eigenstrain(i)%strike,event%eigenstrain(i)%dip, &
+       DO i=1,event%nCuboid
+          CALL momentDensityCuboid(mu,lambda,REAL(slip_factor,4) .times. event%cuboid(i)%e, &
+               event%cuboid(i)%x,event%cuboid(i)%y,event%cuboid(i)%z, & 
+               event%cuboid(i)%width,event%cuboid(i)%length,event%cuboid(i)%thickness, &
+               event%cuboid(i)%strike,event%cuboid(i)%dip, &
                beta,sx1,sx2,sx3/2,dx1,dx2,dx3,eigenstress)
        END DO
     END IF
@@ -1221,11 +1228,19 @@ CONTAINS
     END DO
 
     IF (in%iseigenstrain) THEN
-       DO i=1,event%neigenstrain
-          CALL momentdensityeigenstrain(mu,lambda,REAL(slip_factor,4) .times. event%eigenstrain(i)%e, & 
-               event%eigenstrain(i)%x,event%eigenstrain(i)%y,event%eigenstrain(i)%z, &
-               event%eigenstrain(i)%width,event%eigenstrain(i)%length,event%eigenstrain(i)%thickness, &
-               event%eigenstrain(i)%strike,event%eigenstrain(i)%dip, &
+       DO i=1,event%nCuboid
+          CALL momentDensityCuboid(mu,lambda,REAL(slip_factor,4) .times. event%cuboid(i)%e, & 
+               event%cuboid(i)%x,event%cuboid(i)%y,event%cuboid(i)%z, &
+               event%cuboid(i)%width,event%cuboid(i)%length,event%cuboid(i)%thickness, &
+               event%cuboid(i)%strike,event%cuboid(i)%dip, &
+               beta,sx1,sx2,sx3/2,dx1,dx2,dx3,tau)
+       END DO
+       DO i=1,event%nTetrahedron
+          CALL momentDensityTetrahedron(mu,lambda,REAL(slip_factor,4) .times. event%tetrahedron(i)%e, & 
+                  event%tetrahedronVertex(:,event%tetrahedron(i)%i1), &
+                  event%tetrahedronVertex(:,event%tetrahedron(i)%i2), &
+                  event%tetrahedronVertex(:,event%tetrahedron(i)%i3), &
+                  event%tetrahedronVertex(:,event%tetrahedron(i)%i4), &
                beta,sx1,sx2,sx3/2,dx1,dx2,dx3,tau)
        END DO
     END IF

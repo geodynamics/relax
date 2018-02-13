@@ -51,6 +51,14 @@ MODULE elastic3d
      MODULE PROCEDURE tensorvectordotprod
   END INTERFACE
 
+  INTERFACE OPERATOR (.vdot.)
+     MODULE PROCEDURE vectordotprod
+  END INTERFACE
+
+  INTERFACE OPERATOR (.vcross.)
+     MODULE PROCEDURE vectorcrossprod
+  END INTERFACE
+
 CONTAINS
 
   !------------------------------------------------------------
@@ -229,9 +237,38 @@ CONTAINS
   END FUNCTION tensorvectordotprod
 
   !------------------------------------------------------------
-  !> function TensorVectorDotProd
-  !! compute the dot product T.v where T is a second-order
-  !! tensor and v is a vector.
+  !> function VectorDotProd
+  !! compute the dot product u.v where u and v are vectors.
+  !
+  ! sylvain barbot (02/13/18) - original form
+  !------------------------------------------------------------
+  FUNCTION vectordotprod(u,v)
+    REAL*8, DIMENSION(3), INTENT(IN) :: u,v
+    REAL*8 :: vectordotprod
+
+    vectordotprod=u(1)*v(1)+u(2)*v(2)+u(3)*v(3)
+
+  END FUNCTION vectordotprod
+
+  !------------------------------------------------------------
+  !> function VectorCrossProd
+  !! compute the cross product u x v where u and v are vectors.
+  !
+  ! sylvain barbot (02/13/18) - original form
+  !------------------------------------------------------------
+  FUNCTION vectorcrossprod(u,v)
+    REAL*8, DIMENSION(3), INTENT(IN) :: u,v
+    REAL*8, DIMENSION(3) :: vectorcrossprod
+
+    vectorcrossprod=(/ u(2)*v(3)-u(3)*v(2), &
+                     u(3)*v(1)-u(1)*v(3), &
+                     u(1)*v(2)-u(2)*v(1) /)
+
+  END FUNCTION vectorcrossprod
+
+  !------------------------------------------------------------
+  !> function TensorDeviatoric
+  !! compute the deviatoric tensor.
   !
   ! sylvain barbot (07/09/07) - original form
   !------------------------------------------------------------
@@ -280,6 +317,19 @@ CONTAINS
          t%s33**2)/2._8)
 
   END FUNCTION tensornorm
+
+  !------------------------------------------------------------
+  !> function VectorNorm
+  !! computes the norm of a vector
+  !
+  ! sylvain barbot (02/13/18) - original form
+  !------------------------------------------------------------
+  REAL*8 FUNCTION vectornorm(v)
+    REAL*8, DIMENSION(3), INTENT(IN) :: v
+
+    vectornorm=SQRT(v(1)**2+v(2)**2+v(3)**2)
+
+  END FUNCTION vectornorm
 
   !------------------------------------------------------------
   !> function TensorDecomposition
@@ -456,6 +506,18 @@ CONTAINS
   END FUNCTION sinc
   
   !-------------------------------------------------------------------------
+  !> function gaussi computes the normalized gaussian integral function
+  !
+  ! Sylvain Barbot (02-14-18)
+  !-------------------------------------------------------------------------
+  FUNCTION gaussi(x,sigma)
+    REAL*8 :: gaussi
+    REAL*8, INTENT(IN) :: x,sigma
+    
+    gaussi=(1+ERF(x/SQRT(2._8)/sigma))/2
+  END FUNCTION gaussi
+  
+  !-------------------------------------------------------------------------
   !> function gauss computes the normalized gaussian function
   !
   ! Sylvain Barbot (06-29-07)
@@ -541,6 +603,21 @@ CONTAINS
     omegak=(om1+om2)/denom
 
   END FUNCTION omegak
+
+  !------------------------------------------------------------------------
+  !> function heaviside
+  !! computes the Heaviside function
+  !------------------------------------------------------------------------
+  REAL*8 FUNCTION heaviside(x)
+    REAL*8, INTENT(IN) :: x
+
+     IF (0 .LT. x) THEN
+        heaviside=1.0_8
+     ELSE
+        heaviside=0.0_8
+     END IF
+
+  END FUNCTION heaviside
 
   !----------------------------------------------------------------
   !> subroutine TensorStructure
@@ -1594,15 +1671,13 @@ CONTAINS
   END SUBROUTINE sourcespectrumhalfspace
 
   !---------------------------------------------------------------------
-  !> function EigenstrainSource computes the equivalent body-forces
+  !> function cuboidSource computes the equivalent body-forces
   !! in the space domain for a distributed source of eigenstrain
   !! with width W, length L, thickness W, in a rigidity mu.
   !!
-  !! Fault strain is represented with equivalent body forces.
-  !!
   !! \author sylvain barbot (08-08-15) - original form
   !---------------------------------------------------------------------
-  SUBROUTINE eigenstrainsource(lambda,mu,e,x,y,z,L,W,T,strike,dip, &
+  SUBROUTINE cuboidSource(lambda,mu,e,x,y,z,L,W,T,strike,dip, &
        beta,sx1,sx2,sx3,dx1,dx2,dx3,f1,f2,f3,t1,t2,t3)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
     REAL*8, INTENT(IN) :: lambda,mu
@@ -1806,7 +1881,156 @@ CONTAINS
     END DO
 !$omp end parallel do
 
-  END SUBROUTINE eigenstrainsource
+  END SUBROUTINE cuboidSource
+
+  !---------------------------------------------------------------------
+  !> function tetrahedronSource computes the equivalent body-forces
+  !! in the space domain for a distributed source of eigenstrain
+  !! confined in a tetrahedral volume with the following geometry:
+  !!
+  !!                      / North (x1)
+  !!                     /
+  !!        surface     /
+  !!      -------------+-------------- East (x2)
+  !!                  /|
+  !!                 / |     + A
+  !!                /  |    /  .
+  !!                   |   /     .
+  !!                   |  /        .
+  !!                   | /           .
+  !!                   |/              + B
+  !!                   /            .  |
+  !!                  /|          /    |
+  !!                 / :       .       |
+  !!                /  |    /          |
+  !!               /   : .             |
+  !!              /   /|               |
+  !!             / .   :               |
+  !!            +------|---------------+
+  !!          C        :                 D
+  !!                   |
+  !!                   Down (x3)
+  !!
+  !! \author sylvain barbot (02-12-18) - original form
+  !---------------------------------------------------------------------
+  SUBROUTINE tetrahedronSource(lambda,mu,e,A,B,C,D, &
+       beta,sx1,sx2,sx3,dx1,dx2,dx3,f1,f2,f3,t1,t2,t3)
+    REAL*8, INTENT(IN) :: lambda,mu
+    TYPE(TENSOR), INTENT(IN) :: e
+    REAL*8, DIMENSION(3), INTENT(IN) :: A,B,C,D
+    REAL*8, INTENT(IN) :: beta,dx1,dx2,dx3
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3
+#ifdef ALIGN_DATA
+    REAL*4, DIMENSION(sx1+2,sx2,sx3), INTENT(INOUT) :: f1,f2,f3
+    REAL*4, DIMENSION(sx1+2,sx2), INTENT(INOUT) :: t1,t2,t3
+#else
+    REAL*4, DIMENSION(sx1,sx2,sx3), INTENT(INOUT) :: f1,f2,f3
+    REAL*4, DIMENSION(sx1,sx2), INTENT(INOUT) :: t1,t2,t3
+#endif
+
+    INTEGER :: i1,i2,i3
+    REAL(8), DIMENSION(3) :: x
+    REAL(8), DIMENSION(3) :: nA,nB,nC,nD
+    REAL(8), DIMENSION(3) :: tA,tB,tC,tD
+    REAL(8) :: dABCD,dBCDA,dCDAB,dDABC
+    REAL(8) :: HABCD,HBCDA,HCDAB,HDABC
+    TYPE(TENSOR) :: m
+    REAL(8) :: dum
+
+
+    ! moment density
+    m=e
+    CALL isotropicstressstrain(m,lambda,mu)
+
+    ! normal vectors
+    nA=(C-B) .vcross. (D-B) ! surface BCD
+    nB=(D-C) .vcross. (A-C) ! surface CDA
+    nC=(A-D) .vcross. (B-D) ! surface DAB
+    nD=(B-A) .vcross. (C-A) ! surface ABC
+
+    ! unit vectors
+    nA=nA/vectornorm(nA)
+    nB=nB/vectornorm(nB)
+    nC=nC/vectornorm(nC)
+    nD=nD/vectornorm(nD)
+
+    ! check that unit vectors are pointing outward
+    IF ((nA .vdot. (A-(B+C+D)/3)) .GT. 0) THEN
+       nA=-nA
+    END IF
+    IF ((nB .vdot. (B-(C+D+A)/3)) .GT. 0) THEN
+       nB=-nB
+    END IF
+    IF ((nC .vdot. (C-(D+A+B)/3)) .GT. 0) THEN
+       nC=-nC
+    END IF
+    IF ((nD .vdot. (D-(A+B+C)/3)) .GT. 0) THEN
+       nD=-nD
+    END IF
+
+    ! surface tractions
+    tA=m .tdot. nA
+    tB=m .tdot. nB
+    tC=m .tdot. nC
+    tD=m .tdot. nD
+
+    ! equivalent body-force density
+!$omp parallel do private(i1,i2,x,HABCD,HBCDA,HCDAB,HDABC,dABCD,dBCDA,dCDAB,dDABC)
+    DO i3=1,sx3/2
+       x(3)=DBLE(i3-1)*dx3
+
+       DO i2=1,sx2
+          DO i1=1,sx1
+             CALL shiftedcoordinates(i1,i2,i3,sx1,sx2,sx3, &
+                  dx1,dx2,dx3,x(1),x(2),dum)
+
+             IF ((ABS(((B+C+D)/3-x) .vdot. nA) .GT. 7._8*dx1) .AND. &
+                 (ABS(((C+D+A)/3-x) .vdot. nB) .GT. 7._8*dx1) .AND. &
+                 (ABS(((D+A+B)/3-x) .vdot. nC) .GT. 7._8*dx1) .AND. &
+                 (ABS(((A+B+C)/3-x) .vdot. nD) .GT. 7._8*dx1)) CYCLE
+
+             ! Heaviside functions
+             HABCD=gaussi(((B+C+D)/3-x) .vdot. nA,dx1)
+             HBCDA=gaussi(((C+D+A)/3-x) .vdot. nB,dx1)
+             HCDAB=gaussi(((D+A+B)/3-x) .vdot. nC,dx1)
+             HDABC=gaussi(((A+B+C)/3-x) .vdot. nD,dx1)
+             
+             ! Delta functions
+             dABCD=gauss(((B+C+D)/3-x) .vdot. nA,dx1)
+             dBCDA=gauss(((C+D+A)/3-x) .vdot. nB,dx1)
+             dCDAB=gauss(((D+A+B)/3-x) .vdot. nC,dx1)
+             dDABC=gauss(((A+B+C)/3-x) .vdot. nD,dx1)
+
+             ! equivalent body-force component f1
+             f1(i1,i2,i3)=REAL(f1(i1,i2,i3) &
+                     -tA(1)*dABCD*HBCDA*HCDAB*HDABC &
+                     -tB(1)*HABCD*dBCDA*HCDAB*HDABC &
+                     -tC(1)*HABCD*HBCDA*dCDAB*HDABC &
+                     -tD(1)*HABCD*HBCDA*HCDAB*dDABC &
+                     )
+
+             ! equivalent body-force component f2
+             f2(i1,i2,i3)=REAL(f2(i1,i2,i3) &
+                     -tA(2)*dABCD*HBCDA*HCDAB*HDABC &
+                     -tB(2)*HABCD*dBCDA*HCDAB*HDABC &
+                     -tC(2)*HABCD*HBCDA*dCDAB*HDABC &
+                     -tD(2)*HABCD*HBCDA*HCDAB*dDABC &
+                     )
+
+             ! equivalent body-force component f3
+             f3(i1,i2,i3)=REAL(f3(i1,i2,i3) &
+                     -tA(3)*dABCD*HBCDA*HCDAB*HDABC &
+                     -tB(3)*HABCD*dBCDA*HCDAB*HDABC &
+                     -tC(3)*HABCD*HBCDA*dCDAB*HDABC &
+                     -tD(3)*HABCD*HBCDA*HCDAB*dDABC &
+                     )
+
+          END DO
+       END DO
+    END DO
+!$omp end parallel do
+
+  END SUBROUTINE tetrahedronSource
 
   !---------------------------------------------------------------------
   !> function Source computes the equivalent body-forces
@@ -2521,7 +2745,124 @@ CONTAINS
 
 
   !---------------------------------------------------------------------
-  !! function MomentDensityEigenStrain
+  !! function MomentDensityTetrahedron
+  !! computes the anelastic irreversible moment density in the space
+  !! domain corresponding to a distributed source of eigenstrain
+  !! confined in a tetrahedral volume following the geometry:
+  !!
+  !!\verbatim
+  !!
+  !!                      / North (x1)
+  !!                     /
+  !!        surface     /
+  !!      -------------+-------------- East (x2)
+  !!                  /|
+  !!                 / |     + A
+  !!                /  |    /  .
+  !!                   |   /     .
+  !!                   |  /        .
+  !!                   | /           .
+  !!                   |/              + B
+  !!                   /            .  |
+  !!                  /|          /    |
+  !!                 / :       .       |
+  !!                /  |    /          |
+  !!               /   : .             |
+  !!              /   /|               |
+  !!             / .   :               |
+  !!            +------|---------------+
+  !!          C        :                 D
+  !!                   |
+  !!                   Down (x3)
+  !!
+  !!\endverbatim
+  !!
+  !! \author sylvain barbot (02-14-18) - original form
+  !---------------------------------------------------------------------
+  SUBROUTINE momentDensityTetrahedron(mu,lambda,e,A,B,C,D, &
+       beta,sx1,sx2,sx3,dx1,dx2,dx3,sig)
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3
+    REAL*8, DIMENSION(3) :: A,C,B,D
+    REAL*8, INTENT(IN) :: mu,lambda,beta,dx1,dx2,dx3
+    TYPE(TENSOR), INTENT(INOUT), DIMENSION(sx1,sx2,sx3) :: sig
+    TYPE(TENSOR), INTENT(IN) :: e 
+    
+    INTEGER :: i1,i2,i3      
+    REAL*4 :: rmu,ekk
+    REAL*8, DIMENSION(3) :: x
+    REAL(8), DIMENSION(3) :: nA,nB,nC,nD
+    REAL(8) :: HABCD,HBCDA,HCDAB,HDABC
+    REAL*8 :: dum
+    TYPE(TENSOR) :: lamdij, ea
+    
+    lamdij=TENSOR(lambda,0,0,lambda,0,lambda)
+    
+    rmu=2._4*REAL(mu,4)
+ 
+    ! normal vectors
+    nA=(C-B) .vcross. (D-B) ! surface BCD
+    nB=(D-C) .vcross. (A-C) ! surface CDA
+    nC=(A-D) .vcross. (B-D) ! surface DAB
+    nD=(B-A) .vcross. (C-A) ! surface ABC
+
+    ! unit vectors
+    nA=nA/vectornorm(nA)
+    nB=nB/vectornorm(nB)
+    nC=nC/vectornorm(nC)
+    nD=nD/vectornorm(nD)
+
+    ! check that unit vectors are pointing outward
+    IF ((nA .vdot. (A-(B+C+D)/3)) .GT. 0) THEN
+       nA=-nA
+    END IF
+    IF ((nB .vdot. (B-(C+D+A)/3)) .GT. 0) THEN
+       nB=-nB
+    END IF
+    IF ((nC .vdot. (C-(D+A+B)/3)) .GT. 0) THEN
+       nC=-nC
+    END IF
+    IF ((nD .vdot. (D-(A+B+C)/3)) .GT. 0) THEN
+       nD=-nD
+    END IF
+
+    DO i3=1,sx3
+       x(3)=DBLE(i3-1)*dx3
+       
+       DO i2=1,sx2
+          DO i1=1,sx1
+             CALL shiftedcoordinates(i1,i2,i3,sx1,sx2,sx3, &
+                  dx1,dx2,dx3,x(1),x(2),dum)
+             
+             IF ((ABS(((B+C+D)/3-x) .vdot. nA) .GT. 7._8*dx1) .AND. &
+                 (ABS(((C+D+A)/3-x) .vdot. nB) .GT. 7._8*dx1) .AND. &
+                 (ABS(((D+A+B)/3-x) .vdot. nC) .GT. 7._8*dx1) .AND. &
+                 (ABS(((A+B+C)/3-x) .vdot. nD) .GT. 7._8*dx1)) CYCLE
+
+             ! Heaviside functions
+             HABCD=gaussi(((B+C+D)/3-x) .vdot. nA,dx1)
+             HBCDA=gaussi(((C+D+A)/3-x) .vdot. nB,dx1)
+             HCDAB=gaussi(((D+A+B)/3-x) .vdot. nC,dx1)
+             HDABC=gaussi(((A+B+C)/3-x) .vdot. nD,dx1)
+             
+             ! eigenstrain (symmetric second-order tensor)
+             ea = REAL(HABCD*HBCDA*HCDAB*HDABC,4) .times. e  
+             
+             ekk = tensortrace(ea)
+             
+             ! moment density
+             sig(i1,i2,i3)=sig(i1,i2,i3) .plus. (ekk .times. lamdij) .plus. (rmu .times. ea) 
+             
+          END DO
+       END DO
+    END DO
+    
+  END SUBROUTINE momentDensityTetrahedron
+
+
+
+
+  !---------------------------------------------------------------------
+  !! function MomentDensityCuboid
   !! computes the inelastic irreversible moment density in the space
   !! domain corresponding to a distributed source of eigenstrain. 
   !!
@@ -2569,7 +2910,7 @@ CONTAINS
   !!
   !! \author valere lambert (28-09-15) - original form
   !---------------------------------------------------------------------
-  SUBROUTINE momentdensityeigenstrain(mu,lambda,e,x,y,z,L,W,T,strike,dip, &
+  SUBROUTINE momentDensityCuboid(mu,lambda,e,x,y,z,L,W,T,strike,dip, &
        beta,sx1,sx2,sx3,dx1,dx2,dx3,sig)
     INTEGER, INTENT(IN) :: sx1,sx2,sx3
     REAL*8, INTENT(IN) :: mu,lambda,x,y,z,L,W,T,strike,dip,&
@@ -2671,7 +3012,7 @@ CONTAINS
        END DO
     END DO
     
-  END SUBROUTINE momentdensityeigenstrain
+  END SUBROUTINE momentDensityCuboid
 
 
 
