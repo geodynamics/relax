@@ -326,12 +326,12 @@ PROGRAM relax
   END IF 
   ! export equivalent body forces
   IF (isoutput(in%skip,t,0,in%odt,oi,in%events(e)%time)) THEN
-!#ifdef GRD_EQBF
+#ifdef GRD_EQBF
      IF (in%isoutputgrd) THEN
         CALL exportgrd(v1,v2,v3,in%sx1,in%sx2,in%sx3/2, &
                        in%dx1,in%dx2,in%dx3,in%ozs,in%x0,in%y0,in%wdir,0,convention=3)
      END IF
-!#endif
+#endif
   END IF
 
   ! test the presence of dislocations for coseismic calculation

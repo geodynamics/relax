@@ -2003,26 +2003,26 @@ CONTAINS
 
              ! equivalent body-force component f1
              f1(i1,i2,i3)=REAL(f1(i1,i2,i3) &
-                     -tA(1)*dABCD*HBCDA*HCDAB*HDABC &
-                     -tB(1)*HABCD*dBCDA*HCDAB*HDABC &
-                     -tC(1)*HABCD*HBCDA*dCDAB*HDABC &
-                     -tD(1)*HABCD*HBCDA*HCDAB*dDABC &
+                     +tA(1)*dABCD*HBCDA*HCDAB*HDABC &
+                     +tB(1)*HABCD*dBCDA*HCDAB*HDABC &
+                     +tC(1)*HABCD*HBCDA*dCDAB*HDABC &
+                     +tD(1)*HABCD*HBCDA*HCDAB*dDABC &
                      )
 
              ! equivalent body-force component f2
              f2(i1,i2,i3)=REAL(f2(i1,i2,i3) &
-                     -tA(2)*dABCD*HBCDA*HCDAB*HDABC &
-                     -tB(2)*HABCD*dBCDA*HCDAB*HDABC &
-                     -tC(2)*HABCD*HBCDA*dCDAB*HDABC &
-                     -tD(2)*HABCD*HBCDA*HCDAB*dDABC &
+                     +tA(2)*dABCD*HBCDA*HCDAB*HDABC &
+                     +tB(2)*HABCD*dBCDA*HCDAB*HDABC &
+                     +tC(2)*HABCD*HBCDA*dCDAB*HDABC &
+                     +tD(2)*HABCD*HBCDA*HCDAB*dDABC &
                      )
 
              ! equivalent body-force component f3
              f3(i1,i2,i3)=REAL(f3(i1,i2,i3) &
-                     -tA(3)*dABCD*HBCDA*HCDAB*HDABC &
-                     -tB(3)*HABCD*dBCDA*HCDAB*HDABC &
-                     -tC(3)*HABCD*HBCDA*dCDAB*HDABC &
-                     -tD(3)*HABCD*HBCDA*HCDAB*dDABC &
+                     +tA(3)*dABCD*HBCDA*HCDAB*HDABC &
+                     +tB(3)*HABCD*dBCDA*HCDAB*HDABC &
+                     +tC(3)*HABCD*HBCDA*dCDAB*HDABC &
+                     +tD(3)*HABCD*HBCDA*HCDAB*dDABC &
                      )
 
           END DO
