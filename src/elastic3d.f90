@@ -2833,10 +2833,10 @@ CONTAINS
              CALL shiftedcoordinates(i1,i2,i3,sx1,sx2,sx3, &
                   dx1,dx2,dx3,x(1),x(2),dum)
              
-             IF ((ABS(((B+C+D)/3-x) .vdot. nA) .GT. 7._8*dx1) .AND. &
-                 (ABS(((C+D+A)/3-x) .vdot. nB) .GT. 7._8*dx1) .AND. &
-                 (ABS(((D+A+B)/3-x) .vdot. nC) .GT. 7._8*dx1) .AND. &
-                 (ABS(((A+B+C)/3-x) .vdot. nD) .GT. 7._8*dx1)) CYCLE
+             IF (((((B+C+D)/3-x) .vdot. nA) .LT. 7._8*dx1) .AND. &
+                 ((((C+D+A)/3-x) .vdot. nB) .LT. 7._8*dx1) .AND. &
+                 ((((D+A+B)/3-x) .vdot. nC) .LT. 7._8*dx1) .AND. &
+                 ((((A+B+C)/3-x) .vdot. nD) .LT. 7._8*dx1)) CYCLE
 
              ! Heaviside functions
              HABCD=gaussi(((B+C+D)/3-x) .vdot. nA,dx1)
