@@ -1948,6 +1948,12 @@ CONTAINS
     nC=(A-D) .vcross. (B-D) ! surface DAB
     nD=(B-A) .vcross. (C-A) ! surface ABC
 
+    ! avoid tetrahedra with no volume
+    IF (0 .EQ. vectornorm(nA)) CYCLE
+    IF (0 .EQ. vectornorm(nB)) CYCLE
+    IF (0 .EQ. vectornorm(nC)) CYCLE
+    IF (0 .EQ. vectornorm(nD)) CYCLE
+
     ! unit vectors
     nA=nA/vectornorm(nA)
     nB=nB/vectornorm(nB)
@@ -2804,6 +2810,12 @@ CONTAINS
     nB=(D-C) .vcross. (A-C) ! surface CDA
     nC=(A-D) .vcross. (B-D) ! surface DAB
     nD=(B-A) .vcross. (C-A) ! surface ABC
+
+    ! avoid tetrahedra with no volume
+    IF (0 .EQ. vectornorm(nA)) CYCLE
+    IF (0 .EQ. vectornorm(nB)) CYCLE
+    IF (0 .EQ. vectornorm(nC)) CYCLE
+    IF (0 .EQ. vectornorm(nD)) CYCLE
 
     ! unit vectors
     nA=nA/vectornorm(nA)
