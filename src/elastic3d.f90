@@ -1949,10 +1949,10 @@ CONTAINS
     nD=(B-A) .vcross. (C-A) ! surface ABC
 
     ! avoid tetrahedra with no volume
-    IF (0 .EQ. vectornorm(nA)) CYCLE
-    IF (0 .EQ. vectornorm(nB)) CYCLE
-    IF (0 .EQ. vectornorm(nC)) CYCLE
-    IF (0 .EQ. vectornorm(nD)) CYCLE
+    IF (0 .EQ. vectornorm(nA)) RETURN
+    IF (0 .EQ. vectornorm(nB)) RETURN
+    IF (0 .EQ. vectornorm(nC)) RETURN
+    IF (0 .EQ. vectornorm(nD)) RETURN
 
     ! unit vectors
     nA=nA/vectornorm(nA)
@@ -2812,10 +2812,10 @@ CONTAINS
     nD=(B-A) .vcross. (C-A) ! surface ABC
 
     ! avoid tetrahedra with no volume
-    IF (0 .EQ. vectornorm(nA)) CYCLE
-    IF (0 .EQ. vectornorm(nB)) CYCLE
-    IF (0 .EQ. vectornorm(nC)) CYCLE
-    IF (0 .EQ. vectornorm(nD)) CYCLE
+    IF (0 .EQ. vectornorm(nA)) RETURN
+    IF (0 .EQ. vectornorm(nB)) RETURN
+    IF (0 .EQ. vectornorm(nC)) RETURN
+    IF (0 .EQ. vectornorm(nD)) RETURN
 
     ! unit vectors
     nA=nA/vectornorm(nA)
