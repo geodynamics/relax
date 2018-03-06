@@ -2837,6 +2837,7 @@ CONTAINS
        nD=-nD
     END IF
 
+!$omp parallel do private(i1,i2,x,HABCD,HBCDA,HCDAB,HDABC,ea,ekk)
     DO i3=1,sx3
        x(3)=DBLE(i3-1)*dx3
        
@@ -2867,6 +2868,7 @@ CONTAINS
           END DO
        END DO
     END DO
+!$omp end parallel do
     
   END SUBROUTINE momentDensityTetrahedron
 
