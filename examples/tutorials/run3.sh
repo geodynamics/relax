@@ -104,7 +104,7 @@ time relax --no-proj-output --no-stress-output $* <<EOF | tee $WDIR/in.param
 # output directory
 $WDIR
 # elastic parameters and gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
-1 1 8.33e-4
+30 30 8.33e-4
 # integration time (t1)
 0.5 -1 0.01
 # number of observation planes

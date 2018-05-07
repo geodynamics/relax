@@ -22,7 +22,7 @@ OMP_NUM_THREADS=12 relax --no-proj-output --with-eigenstrain $* <<EOF | tee $WDI
 # output directory (all output written here)
 $WDIR
 # lambda, mu, gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
-1 1 0
+30 30 0
 # integration time (in unit of time), step (negative for automatic) and scaling of computed value
 0 -1 1
 # number of observation planes
