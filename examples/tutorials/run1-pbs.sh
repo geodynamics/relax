@@ -44,7 +44,7 @@ OMP_NUM_THREADS=12 relax <<EOF
 # output directory (all output written here)
 $WDIR
 # elastic parameters and gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
-1 1 8.33e-4
+30 30 8.33e-4
 # integration time (in unit of time), step (negative for automatic) and scaling of computed value
 20 -1 1
 # number of observation planes

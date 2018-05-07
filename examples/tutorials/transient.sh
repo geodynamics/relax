@@ -47,7 +47,7 @@ $WDIR
 # the elastic parameters (Lambda and mu) are the Lame parameter and the shear modulus
 # gamma=(1-nu)*rho*g/mu is a wavelength relevant to buoyancy.
 # elastic parameters and gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
-30e3 30e3 8.33e-4
+30 30 8.33e-4
 # integration time refers to the length in units of time of the simulation.
 # integration time (t1)
 20 -1 0.5
