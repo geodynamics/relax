@@ -52,7 +52,7 @@ usage(){
 my_gmt(){
 
 	if [ -e "$U3" ]; then
-		grdview $U3 -R$bds $PROJ $PROJZ -Qc $Eset $Nset \
+		grdview $U3 -Qi300 -R$bds $PROJ $PROJZ $Eset $Nset \
 		    ${AXIS}SWNEZ+ $Eset $Gset \
 		    -K -C$colors -P -X1.2i -Y${YSHIFT}i $iset \
 		    > $PSFILE

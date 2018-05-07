@@ -175,7 +175,7 @@ do
 	i) iset=1;illumination="-I$OPTARG";illuminationopt="-I";;
 	l) lset=1;clip=$OPTARG;;
 	o) oset=1;ODIR=$OPTARG;;
-	p) pset=1;P=$OPTARG;PSSCALE=`echo $OPTARG | awk -F"/" 'function abs(x){return x<0?-x:x}{print abs($2-$1)/6}'`;;
+	p) pset=1;P=$OPTARG;PSSCALE=`echo $OPTARG | awk -F"/" 'function abs(x){return x<0?-x:x}{print abs($2-$1)/4}'`;;
 	r) rset=1;;
 	s) sset=1;ADX=$OPTARG;;
 	t) tset=1;tick=$OPTARG;;
@@ -404,11 +404,12 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 	# open file for display
 	echo $self": Created map "$PSFILE
 	
+	ps2pdf -sPAPERSIZE="archA" -dPDFSETTINGS=/prepress $PSFILE $PDFFILE
+	echo $self": Converted to pdf file "$PDFFILE
+
 	if [ "$xset" != "1" ]; then
 		#display -trim $PSFILE &
 		#gv -geometry +0+0 -spartan -scale=0.5 $PSFILE &
-		ps2pdf -sPAPERSIZE="archA" -dPDFSETTINGS=/prepress $PSFILE $PDFFILE
-		echo $self": Converted to pdf file "$PDFFILE
 		xpdf -geometry +0+0 -paper "archA" $PDFFILE -z 100 -g 565x755 -z width >& /dev/null &
 	fi
 	
