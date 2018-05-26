@@ -1636,6 +1636,7 @@ END SUBROUTINE exportcreep_vtk
        PRINT '(a)', rffilename
        STOP "could not open file for export"
     END IF
+    WRITE (15,'("# position east, north, up, traction e, n, u, normal vector e, n, u")')
 
     DO k=1,nsop
 
@@ -1694,7 +1695,7 @@ END SUBROUTINE exportcreep_vtk
        ! shear traction
        ts=t-taun*n
 
-       WRITE (15,'(6ES11.2)') x2,x1,-x3,ts(2),ts(1),-ts(3)
+       WRITE (15,'(9ES11.2)') x2,x1,-x3,ts(2),ts(1),-ts(3),n(2),n(1),-n(3)
 
     END DO
 
