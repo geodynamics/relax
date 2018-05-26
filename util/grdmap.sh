@@ -168,7 +168,7 @@ while getopts "b:c:e:ghi:l:o:p:v:s:t:u:xrC:HJ:L:O:T:Y:" flag
 do
 	case "$flag" in
 	b) bset=1;bds=$OPTARG;;
-	c) cset="-c";carg=$OPTARG;;
+	c) cset="-c";carg=$(dirname $OPTARG)/$(basename $OPTARG .cpt).cpt;;
 	e) eset=1;EXTRA="$EXTRA $OPTARG";;
 	g) gset="-g";;
 	h) hset=1;;
@@ -336,7 +336,7 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 		fi
 
 		Jset="-J"
-		echo $self": z-min/z-max for "$U3": "`grdinfo -C $U3 | awk '{print $6,$7}'`
+		echo $self": z-min/z-max for "$U3": "`grdinfo -L0 -C $U3 | awk '{print $6,$7}'`
 	
 		PSFILE=$ODIR/$INDEX-plot.ps
 		PDFFILE=$ODIR/$INDEX-plot.pdf
