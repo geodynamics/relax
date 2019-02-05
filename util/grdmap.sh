@@ -167,7 +167,7 @@ EXTRA=""
 while getopts "b:c:e:ghi:l:o:p:v:s:t:u:xrC:HJ:L:O:T:Y:" flag
 do
 	case "$flag" in
-	b) bset=1;bds=$OPTARG;;
+	b) bset=1;bds0=$OPTARG;;
 	c) cset="-c";carg=$(dirname $OPTARG)/$(basename $OPTARG .cpt).cpt;;
 	e) eset=1;EXTRA="$EXTRA $OPTARG";;
 	g) gset="-g";;
@@ -251,9 +251,13 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 			U3=$WDIR/$INDEX
 		fi
 		if [ "$bset" != "1" ]; then
-			bds=`grdinfo -C $U3 | awk '{s=1;print $2/s"/"$3/s"/"$4/s"/"$5/s}'`
+			bds0="-/-/-/-"
 		fi
-
+		# bounds
+		bds=`grdinfo -C $U3 | awk -v bds=$bds0 'function valid(x,y){return ("-"==x)?y:x}BEGIN{
+			split(bds,a,"/")}{
+			s=1;print valid(a[1],$2/s)"/"valid(a[2],$3/s)"/"valid(a[3],$4/s)"/"valid(a[4],$5/s)}'`
+	
 		# tick marks
 		if [ "$tset" != "1" ]; then
 			xtick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/7}'`
@@ -340,7 +344,7 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 	
 		PSFILE=$ODIR/$INDEX-plot.ps
 		PDFFILE=$ODIR/$INDEX-plot.pdf
-	
+
 	else
 		WDIR=$(dirname $PSFILE)
 		ODIR=$WDIR
