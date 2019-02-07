@@ -1,0 +1,12 @@
+#	$Id: my_creep.cpt,v 1.1 2019/02/05 23:11:20 sbarbot Exp $
+#
+# provides a color scale for the log of the velocity on a fault
+# with emphasis on slow slip
+#
+# COLOR_MODEL = RGB
+-12.	0	108	194	-11.0	0	108	194
+-11.0	0	108	194	-9.0 	221	221	115
+-9.0	221	221	115	-7.0	186	050	134
+-7.0	186	050	134	-3.0	174	040	086
+-3.0	174	040	086     -0.0    128	045	030
+-0.0    128	045	030      1.0    047	045	030
