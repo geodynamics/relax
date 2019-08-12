@@ -118,7 +118,7 @@ CONTAINS
        x1=x1+x0
        x2=x2+y0
 
-       WRITE (15,'(14ES12.4E2)') time,v1,v2,v3, &
+       WRITE (15,'(14ES16.8E2)') time,v1,v2,v3, &
                                  lsig%s11,lsig%s12,lsig%s13, &
                                  lsig%s22,lsig%s23,lsig%s33
        CLOSE(15)
