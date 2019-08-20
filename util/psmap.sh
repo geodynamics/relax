@@ -135,7 +135,7 @@ do
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
 done
-for item in $bset $cset $iset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Oset $Jset $Lset $EXTRA;do
+for item in $bset $cset $iset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Jset $Lset $EXTRA;do
 	shift;shift
 done
 for item in $gset $hset $xset $rset;do
@@ -170,84 +170,89 @@ else
 fi
 
 # usage
-if [ $# -lt "1" -a "$Oset" != "1" ] || [ "$hset" == "1" ] ; then
+if [ $# -lt "1" ] || [ "$hset" == "1" ] ; then
 	usage
 else
 	echo $self: using colorfile $cptfile
 fi
 
-if [ "$1" != "" ]; then
-	PSFILE=$(dirname $1)/$(basename $1 .ps).ps;
-	WDIR=$(dirname $PSFILE)
-	ODIR=$WDIR
-	TITLE=$(basename $PSFILE .ps)
-	#PSFILE=$ODIR/plot.ps
-	PDFFILE=$ODIR/$(basename $PSFILE .ps).pdf
-	Jset="-J"
-	
-	if [ "$pset" == "1" ]; then
-		colors=$WDIR/palette.cpt
-	fi
-	if [ "$bset" != "1" ]; then
-		echo "$self: -b option should be set with the -E option. exiting."
-		echo ""
-		usage
-	else
-
-		# tick marks
-		if [ "$tset" != "1" ]; then
-			tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/7}'`
-		fi
-		tickf=`echo $tick | awk '{print $1/2}'`
-
-		# Cartesian vs geographic coordinates
-		if [ "$gset" != "-g" ]; then
-			if [ "$Jset" == "-J" ]; then
-				HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*7)}'`
-				if [ "$rset" != "1" ]; then
-					PROJ="X7i/"$HEIGHT
-				else
-					PROJ="X7i/"-$HEIGHT
-				fi
-			else
-				HEIGHT="-"
-			fi
-		        AXIS=-Ba${tick}:"":/a${tick}:""::."$TITLE":WSne
+while [ "$#" != "0" ];do
+	if [ "$1" != "" ]; then
+		PSFILE=$(dirname $1)/$(basename $1 .ps).ps;
+		WDIR=$(dirname $PSFILE)
+		ODIR=$WDIR
+		if [ "$Tset" != "1" ]; then
+			TITLE=$(basename $PSFILE .ps)
 		else
-			HEIGHT=7i
-			PROJ="M$HEIGHT"
-		        AXIS=-B${tick}:"":/${tick}:""::."$TITLE":WSne
+			TITLE=$title
+		fi
+		PDFFILE=$ODIR/$(basename $PSFILE .ps).pdf
+		Jset="-J"
+	
+		if [ "$pset" == "1" ]; then
+			colors=$WDIR/palette.cpt
+		fi
+		if [ "$bset" != "1" ]; then
+			echo "$self: -b option should be set with the -E option. exiting."
+			echo ""
+			usage
+		else
+
+			# tick marks
+			if [ "$tset" != "1" ]; then
+				tick=`echo $bds | awk -F "/" '{s=1;print ($2-$1)/s/7}'`
+			fi
+			tickf=`echo $tick | awk '{print $1/2}'`
+
+			# Cartesian vs geographic coordinates
+			if [ "$gset" != "-g" ]; then
+				if [ "$Jset" == "-J" ]; then
+					HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*7)}'`
+					if [ "$rset" != "1" ]; then
+						PROJ="X7i/"$HEIGHT
+					else
+						PROJ="X7i/"-$HEIGHT
+					fi
+				else
+					HEIGHT="-"
+				fi
+			        AXIS=-Ba${tick}:"":/a${tick}:""::."$TITLE":WSne
+			else
+				HEIGHT=7i
+				PROJ="M$HEIGHT"
+			        AXIS=-B${tick}:"":/${tick}:""::."$TITLE":WSne
+			fi
 		fi
 	fi
-fi
-
-# color bounds
-if [ "$pset" == "1" ]; then
-	makecpt -C$cptfile -T$P -D > $colors;
-	m=`echo $P | awk -F"/" 'function max(x,y){return (x>y)?x:y};function abs(x){return (0<x)?x:-x}{print max(abs($1),$2)}'`
-fi
-
-my_gmt
-
-# add trailer information
-echo %% Postscript created with >> $PSFILE
-echo %% $(basename $0) $cmdline >> $PSFILE
-
-# open file for display
-echo $self": created map "$PSFILE
-
-if [ "$xset" != "1" ]; then
-	#display -trim $PSFILE &
-	#gv -geometry +0+0 -spartan -scale=0.5 $PSFILE &
-	ps2pdf -sPAPERSIZE="archA" -dPDFSETTINGS=/prepress $PSFILE $PDFFILE
-	echo $self": converted to pdf file "$PDFFILE
-	xpdf -geometry +0+0 -paper "archA" $PDFFILE -z 100 -g 565x655 >& /dev/null &
-fi
-
-if [ "$#" != "0" ];then
-	shift
-	if [ "$#" != "0" ];then
-		echo ""
+	
+	# color bounds
+	if [ "$pset" == "1" ]; then
+		makecpt -C$cptfile -T$P -D > $colors;
+		m=`echo $P | awk -F"/" 'function max(x,y){return (x>y)?x:y};function abs(x){return (0<x)?x:-x}{print max(abs($1),$2)}'`
 	fi
-fi
 
+	my_gmt
+
+	# add trailer information
+	echo %% Postscript created with >> $PSFILE
+	echo %% $(basename $0) $cmdline >> $PSFILE
+
+	# open file for display
+	echo $self": created map "$PSFILE
+
+	if [ "$xset" != "1" ]; then
+		#display -trim $PSFILE &
+		#gv -geometry +0+0 -spartan -scale=0.5 $PSFILE &
+		ps2pdf -sPAPERSIZE="archA" -dPDFSETTINGS=/prepress $PSFILE $PDFFILE
+		echo $self": converted to pdf file "$PDFFILE
+		xpdf -geometry +0+0 -paper "archA" $PDFFILE -z 100 -g 565x755 -z width >& /dev/null &
+	fi
+
+	if [ "$#" != "0" ];then
+		shift
+		if [ "$#" != "0" ];then
+			echo ""
+		fi
+	fi
+
+done
