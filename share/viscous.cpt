@@ -1,6 +1,4 @@
-#       $Id: GMT_seis.cpt 9545 2011-07-27 19:31:54Z pwessel $
-#
-# Colormap using in seismic tomographic images
+# Colormap used for effective viscosity
 # Designed by Sylvain Barbot
 # COLOR_MODEL = RGB
 -1.00	040	0	0	-.777	255	0	0
@@ -12,3 +10,6 @@
 .111	90	255	30	.444	0	240	110
 .444	0	240	110	.666	0	80	255
 .666	0	80	255	1.00	0	0	105
+B	255	255	255
+F	0	0	0
+N	255	255	255
