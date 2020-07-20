@@ -22,6 +22,7 @@ usage(){
         echo "options:"
         echo "         -b bds sets the map bound to bds"
 	echo "         -c palette_name [default jet]"
+	echo "         -d reverse color palette"
         echo "         -e file.sh runs file.sh to add content to map"
         echo "         -g switch to geographic projection (longitude/latitude)"
         echo "         -h display this error message and exit"
@@ -63,7 +64,7 @@ my_gmt(){
 
 	if [ -e "$U3" ]; then
 		grdimage $U3 -R$bds -J${PROJ} -Q \
-		    -O -K -C$colors -P $illumination \
+		    -O -K -Ei -Sb -C$colors -P $illumination \
 		    >> $PSFILE
 		if [ "$Cset" == "-C" ]; then
 			grdcontour -K -O $U3 -W0.3p/100/100/100 -R$bds -J${PROJ} -S4 -C$contour -P >> $PSFILE
@@ -107,10 +108,12 @@ my_gmt(){
 		# grdvector crashes with wrong sampling
 		#	-Q0.51c/0.8c/0.7cn1.0c \
 	        #	-Q0.3c/0.5c/0.4cn1.0c \
+		#	-Q0.05/0.2/0.08n0.3c \
+		#	-S$VECTOR -W0.24p/0/0/0 \
 		grdvector $U1 $U2 -K -J${PROJ} -O -R$bds -I$ADX/$ADX \
-			-Q0.05/0.2/0.08n0.3c \
-			-S$VECTOR -W0.5p/0/0/0 \
-			-G255/255/255 \
+			-Q0.04/0.2/0.05n0.3c \
+			-S$VECTOR \
+			-W0.23p/2/2/2 \
 			 >> $PSFILE
 
 		if [ "" != "$lset" ]; then
@@ -164,11 +167,12 @@ gmtset PAPER_MEDIA archA
 libdir=$(dirname $0)/../share
 EXTRA=""
 
-while getopts "b:c:e:ghi:l:o:p:v:s:t:u:xrC:HJ:L:O:T:Y:" flag
+while getopts "b:c:de:ghi:l:o:p:v:s:t:u:xrC:HJ:L:O:T:Y:" flag
 do
 	case "$flag" in
 	b) bset=1;bds0=$OPTARG;;
 	c) cset="-c";carg=$(dirname $OPTARG)/$(basename $OPTARG .cpt).cpt;;
+	d) dset="-I";;
 	e) eset=1;EXTRA="$EXTRA $OPTARG";;
 	g) gset="-g";;
 	h) hset=1;;
@@ -194,7 +198,7 @@ done
 for item in $bset $cset $iset $lset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Lset $Oset $Jset $EXTRA;do
 	shift;shift
 done
-for item in $gset $hset $xset $rset $Hset;do
+for item in $dset $gset $hset $xset $rset $Hset;do
 	shift;
 done
 
@@ -209,9 +213,9 @@ fi
 
 # vertical shift of plot
 if [ "$Yset" != "1" ]; then
-	YSHIFT=2.0
+	YSHIFT=1.75
 else
-	YSHIFT=`echo $Yshift | awk '{print $1+2}'`
+	YSHIFT=`echo $Yshift | awk '{print $1+1.75}'`
 fi
 
 # color scale
@@ -296,10 +300,10 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 			# polar, rainbow, red2green, relief, topo, sealand, seis, split, wysiwyg  
 			PSSCALE=`grdinfo $U3 -C | awk 'function abs(x){return x<0?-x:x}{if (abs($6) >= abs($7)) print abs($6)/2; else print abs($7)/2}'`
 			if [ "0" == $PSSCALE ]; then
-				grd2cpt $U3 -C$cptfile -Z -T= -L-1/1 > $colors
+				grd2cpt $U3 -C$cptfile -Z -T= -L-1/1 $dset > $colors
 				PSSCALE=0.5
 			else
-				grd2cpt $U3 -C$cptfile -Z -T= > $colors
+				grd2cpt $U3 -C$cptfile -Z -T= $dset > $colors
 			fi
 		fi
 
@@ -321,7 +325,7 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 				if [ "$Hset" == "" ]; then
 					HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*7)}'`
 				else
-					HEIGHT="7i"
+					HEIGHT="9i"
 				fi
 				if [ "$rset" != "1" ]; then
 					PROJ="X7i/"$HEIGHT
@@ -392,7 +396,7 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 
 	# color bounds
 	if [ "$pset" == "1" ]; then
-		makecpt -C$cptfile -T$P -D > $colors;
+		makecpt -C$cptfile -T$P -D $dset > $colors;
 		m=`echo $P | awk -F"/" 'function max(x,y){return (x>y)?x:y};function abs(x){return (0<x)?x:-x}{print max(abs($1),$2)}'`
 		if [ "$U3" != "" ]; then
 			TRIANGLES=`grdinfo -C $U3 | awk -v m=$m 'function max(x,y){return (x>y)?x:y};function abs(x){return (0<x)?x:-x}{if (m<max(abs($6),abs($7))){print "-E"}}'`
@@ -414,7 +418,7 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 	if [ "$xset" != "1" ]; then
 		#display -trim $PSFILE &
 		#gv -geometry +0+0 -spartan -scale=0.5 $PSFILE &
-		xpdf -geometry +0+0 -paper "archA" $PDFFILE -z 100 -g 565x755 -z width >& /dev/null &
+		xpdf -geometry +0+0 -paper "archA" $PDFFILE -z 100 -g 630x850 -z width >& /dev/null &
 	fi
 	
 	if [ "$#" != "0" ];then
