@@ -40,6 +40,8 @@ usage(){
 	echo "         -N base level"
 	echo "         -O file.ps only plot base map with extra scripts"
 	echo "         -J overwrites the geographic projections (for -J o the -b option is relative)"
+        echo "         -S size of the plot"
+        echo "         -X shift the plot horizontally on the page"
         echo "         -Y shift the plot vertically on the page"
 	echo ""
 	echo "Creates N maps based on grd files file1.grd ... fileN.grd, or based"
@@ -52,15 +54,17 @@ usage(){
 my_gmt(){
 
 	if [ -e "$U3" ]; then
+		echo $self: grdview $U3 -Qi300 -R$bds $PROJ $PROJZ $Eset $Nset \
+		    ${AXIS}SWNEZ+ $Eset $Gset -C$colors -P -X${XSHIFT}i -Y${YSHIFT}i $iset
 		grdview $U3 -Qi300 -R$bds $PROJ $PROJZ $Eset $Nset \
 		    ${AXIS}SWNEZ+ $Eset $Gset \
 		    -K -C$colors -P -X1.2i -Y${YSHIFT}i $iset \
 		    > $PSFILE
 	else
-		echo $self: psbasemap -R$bds $PROJ $PROJZ $AXIS $Eset -K -P 
+		echo $self: psbasemap -R$bds $PROJ $PROJZ $AXIS $Eset
 		psbasemap -R$bds $PROJ $PROJZ \
 		    ${AXIS}wsne $Eset \
-		     -K -P -X1.2i -Y${YSHIFT}i \
+		     -K -P -X${XSHIFT}i -Y${YSHIFT}i \
 		    > $PSFILE
 	fi
 
@@ -94,8 +98,11 @@ my_gmt(){
 		rm -f $colors
 	fi
 
-	#psbasemap -R$bds $PROJ $PROJZ \
-	#	${AXIS}WSNEZ+ $Eset -O -P >> $PSFILE
+	if [ ! -e "$U3" ]; then
+		echo $self: closing frame
+		psbasemap -R$bds $PROJ $PROJZ \
+			${AXIS}WSNEZ+ $Eset -O -K -P >> $PSFILE
+	fi
 
 	#echo 0 0 | psxy -O $PROJ -R$bds -Sp0.001c >> $PSFILE
 
@@ -107,12 +114,13 @@ gmtset ANOT_FONT_SIZE 12p
 gmtset COLOR_BACKGROUND 0/0/255
 gmtset COLOR_FOREGROUND 255/0/0
 gmtset COLOR_NAN 255/255/255
+#gmtset PAPER_MEDIA A0
 gmtset PAPER_MEDIA archA
 
 libdir=$(dirname $0)/../share
 EXTRA=""
 
-while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrE:G:HN:O:J:Y:" flag; do
+while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrE:G:HN:O:J:S:X:Y:" flag; do
 	case "$flag" in
 	b) bset=1;bds=$OPTARG;;
 	c) cset="-c";carg=$OPTARG;;
@@ -135,10 +143,12 @@ while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrE:G:HN:O:J:Y:" flag; do
 	N) Nset="-N$OPTARG";;
 	O) Oset=1;PSFILE=$(dirname $OPTARG)/$(basename $OPTARG .ps).ps;;
 	J) Jset=1;PROJ="-J$OPTARG";;
+	S) Sset=1;SIZE=$OPTARG;;
+	X) Xset=1;Xshift=$OPTARG;;
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
 done
-for item in $bset $cset $iset $oset $pset $sset $tset $vset $Tset $uset $Yset $Eset $Gset $Nset $Oset $Jset $EXTRA;do
+for item in $bset $cset $iset $oset $pset $sset $tset $vset $Tset $uset $Sset $Xset $Yset $Eset $Gset $Nset $Oset $Jset $EXTRA;do
 	shift;shift
 done
 for item in $gset $hset $xset $rset $Hset;do
@@ -152,6 +162,18 @@ done
 if [ "$vset" != "1" ]; then
 	# unused value but preserve the number of elements in call to subroutine
 	verticalexxageration=1
+fi
+
+# size of plot
+if [ "$Sset" != "1" ]; then
+	SIZE=5
+fi
+
+# horizontal shift of plot
+if [ "$Xset" != "1" ]; then
+	XSHIFT=1.2
+else
+	XSHIFT=`echo $Xshift | awk '{print $1+1.2}'`
 fi
 
 # vertical shift of plot
@@ -313,21 +335,21 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 			# Cartesian vs geographic coordinates
 			if [ "$gset" != "-g" ]; then
 				if [ "$Hset" == "" ]; then
-					HEIGHT=`echo $bds | awk -F "/" '{printf("%fi\n",($4-$3)/($2-$1)*5)}'`
+					HEIGHT=`echo $bds | awk -F "/" -v s=$SIZE '{printf("%fi\n",($4-$3)/($2-$1)*s)}'`
 				else
 					HEIGHT="7i"
 				fi
-				SCALE=`echo $bds | awk -F "/" -v s=$verticalexxageration '{printf("%f\n",5/($2-$1)*s)}'`
+				SCALE=`echo $bds | awk -F "/" -v v=$verticalexxageration -v s=$SIZE '{printf("%f\n",s/($2-$1)*v)}'`
 				if [ "$rset" != "1" ]; then
-					PROJ=-JX5i/$HEIGHT
+					PROJ=-JX${SIZE}i/$HEIGHT
 					PROJZ=-Jz$SCALE
 				else
-					PROJ=-JX5i/-$HEIGHT
+					PROJ=-JX${SIZE}i/-$HEIGHT
 					PROJZ=-Jz$SCALE
 				fi
-			        AXIS=-Ba${tickx}:"":/a${ticky}:"":/f${tickzf}a${tickz}:""::."$TITLE":
+			        AXIS=-Ba${tickx}:"x":/a${ticky}:"y":/f${tickzf}a${tickz}:"z"::."$TITLE":
 			else
-				HEIGHT=5i
+				HEIGHT=${SIZE}i
 				PROJ="-JM0/0/$HEIGHT"
 			        AXIS=-B${tickx}:"":/${ticky}:"":/f50:""::."$TITLE":WSne
 			fi

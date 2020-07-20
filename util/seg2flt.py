@@ -46,7 +46,9 @@ def seg2flt(index,x1o,x2o,x3o,L,W,strike,dip,rake,lo,wo,alphal,alphaw,slip=None)
     w=array([0])
     while Wc>0:
         Wt=wo*alphaw**k
-        if Wt > Wc/2.001:
+        #if Wt > Wc/2.001:
+        #    Wt = Wc
+        if abs(Wt-Wc)<0.01*Wt:
             Wt = Wc
     
         wn=min(Wt,Wc)
@@ -78,7 +80,7 @@ def seg2flt(index,x1o,x2o,x3o,L,W,strike,dip,rake,lo,wo,alphal,alphaw,slip=None)
             x3=x3o+i*lt*Sv[2]+sum(w.take(range(j+1)))*Dv[2]
             index=index+1
             if slip is None:
-                savetxt(stdout,[[index,x1,x2,x3,lt,w[j+1],strike,dip,rake]],delimiter=" ",fmt="%4i %9.4f %9.4f %9.4f %9.4f %9.4f %8.2f %5.2f %4.1f")
+                savetxt(stdout,[[index,x1,x2,x3,lt,w[j+1],strike,dip,rake]],delimiter=" ",fmt="%4i %9.4f %9.4f %9.4f %13.8e %13.8e %8.2f %5.2f %4.1f")
             else:
                 savetxt(stdout,[[index,slip,x1,x2,x3,lt,w[j+1],strike,dip,rake]],delimiter=" ",fmt="%4i %+10.3e %8.4f %8.4f %8.4f %8.3f %8.3f %8.2f %5.2f %4.1f")
 
