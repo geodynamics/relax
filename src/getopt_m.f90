@@ -181,7 +181,7 @@ character function process_long( longopts, arg )
         ! else not found
         process_long = '?'
         if ( opterr ) then
-                WRITE (0,'(a,a,a)'), "error: unrecognized option '", trim(arg), "'"
+                WRITE (0,'(a,a,a)') "error: unrecognized option '", trim(arg), "'"
         endif
 end function process_long
 
