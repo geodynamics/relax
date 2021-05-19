@@ -183,10 +183,10 @@ CONTAINS
 
     IF (FFT_FORWARD == direction) THEN
       CALL sfftw_plan_dft_r2c_3d(plan,sx1,sx2,sx3, &
-           data(1,1,1),data(1,1,1),FFTW_ESTIMATE)
+           data(1,1,1),data(1,1,1),FFTW_MEASURE)
     ELSE
       CALL sfftw_plan_dft_c2r_3d(plan,sx1,sx2,sx3, &
-           data(1,1,1),data(1,1,1),FFTW_ESTIMATE)
+           data(1,1,1),data(1,1,1),FFTW_MEASURE)
     END IF
 
     CALL sfftw_execute(plan)
@@ -199,6 +199,19 @@ CONTAINS
    END IF
 
   END SUBROUTINE fft3
+
+  SUBROUTINE fft3_init(data,sx1,sx2,sx3)
+    INTEGER, INTENT(IN) :: sx1,sx2,sx3
+    REAL*4, DIMENSION(sx1+2,sx2,sx3), INTENT(INOUT) :: data
+
+    INTEGER*8 :: plan
+
+    CALL sfftw_plan_dft_r2c_3d(plan,sx1,sx2,sx3, &
+           data(1,1,1),data(1,1,1),FFTW_MEASURE)
+    CALL sfftw_plan_dft_c2r_3d(plan,sx1,sx2,sx3, &
+           data(1,1,1),data(1,1,1),FFTW_MEASURE)
+
+  END SUBROUTINE fft3_init
 #else
 #ifdef SGI_FFT
   !--------------------------------------------------------------------
@@ -365,10 +378,10 @@ CONTAINS
 
     IF (FFT_FORWARD == direction) THEN
       CALL sfftw_plan_dft_r2c_2d(plan,sx1,sx2, &
-           data(1,1),data(1,1),FFTW_ESTIMATE)
+           data(1,1),data(1,1),FFTW_MEASURE)
     ELSE
       CALL sfftw_plan_dft_c2r_2d(plan,sx1,sx2, &
-           data(1,1),data(1,1),FFTW_ESTIMATE)
+           data(1,1),data(1,1),FFTW_MEASURE)
     END IF
 
     CALL sfftw_execute(plan)
@@ -381,6 +394,19 @@ CONTAINS
     END IF
 
   END SUBROUTINE fft2
+
+  SUBROUTINE fft2_init(data,sx1,sx2)
+    INTEGER, INTENT(IN) :: sx1,sx2
+    REAL*4, DIMENSION(sx1+2,sx2), INTENT(INOUT) :: data
+
+    INTEGER*8 :: plan
+
+    CALL sfftw_plan_dft_r2c_2d(plan,sx1,sx2, &
+             data(1,1),data(1,1),FFTW_MEASURE)
+    CALL sfftw_plan_dft_c2r_2d(plan,sx1,sx2, &
+             data(1,1),data(1,1),FFTW_MEASURE)
+
+  END SUBROUTINE fft2_init
 #else
 #ifdef SGI_FFT
   SUBROUTINE fft2(data,sx1,sx2,dx1,dx2,direction)

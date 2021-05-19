@@ -252,6 +252,13 @@ PROGRAM relax
             tau(in%sx1,in%sx2,in%sx3/2),sig(in%sx1,in%sx2,in%sx3/2),gamma(in%sx1+2,in%sx2,in%sx3/2), &
             t1(in%sx1+2,in%sx2),t2(in%sx1+2,in%sx2),t3(in%sx1+2,in%sx2),STAT=iostatus)
   IF (iostatus>0) STOP "could not allocate memory"
+
+#ifdef FFTW3
+  PRINT '("# optimize FFTW")'
+  CALL fft2_init(t1,in%sx1,in%sx2)
+  CALL fft3_init(v1,in%sx1,in%sx2,in%sx3)
+#endif
+
 #ifdef VTK
   IF (in%isoutputvtkrelax) THEN
      ALLOCATE(u1r(in%sx1+2,in%sx2,in%sx3/2),u2r(in%sx1+2,in%sx2,in%sx3/2), &
