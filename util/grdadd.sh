@@ -36,9 +36,9 @@ if [ "$ITEMB" == "0" ]; then
 else
 	echo $self": copying to files $(basename $GRDFILEC1), $(basename $GRDFILEC2), $(basename $GRDFILEC3)"
 
-	grdmath $GRDFILEA1 $GRDFILEB1 ADD = $GRDFILEC1
-	grdmath $GRDFILEA2 $GRDFILEB2 ADD = $GRDFILEC2
-	grdmath $GRDFILEA3 $GRDFILEB3 ADD = $GRDFILEC3
+	gmt grdmath $GRDFILEA1 $GRDFILEB1 ADD = $GRDFILEC1
+	gmt grdmath $GRDFILEA2 $GRDFILEB2 ADD = $GRDFILEC2
+	gmt grdmath $GRDFILEA3 $GRDFILEB3 ADD = $GRDFILEC3
 fi
 
 

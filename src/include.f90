@@ -23,9 +23,6 @@
 ! export data to the TXT format
 !#define TXT 1
 
-! export data to longitude/latitude format
-#define PROJ 1
-
 ! export amplitude of scalar fields along 
 ! an observation plane in text format
 #define TXT_EXPORTEIGENSTRAIN 1

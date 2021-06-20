@@ -44,21 +44,13 @@ def options(opt):
     papi.add_option('--papi-libdir',
                     help='Directory where papi library files are installed')
 
-    proj=opt.add_option_group('Proj Options')
-    proj.add_option('--proj-dir',
-                    help='Base directory where proj is installed')
-    proj.add_option('--proj-incdir',
-                    help='Directory where proj include files are installed')
-    proj.add_option('--proj-libdir',
-                    help='Directory where proj library files are installed')
-
-    gmt=opt.add_option_group('Gmt Options')
-    gmt.add_option('--gmt-dir',
-                    help='Base directory where gmt is installed')
-    gmt.add_option('--gmt-incdir',
-                    help='Directory where gmt include files are installed')
-    gmt.add_option('--gmt-libdir',
-                    help='Directory where gmt library files are installed')
+    netcdf=opt.add_option_group('NETCDF Options')
+    netcdf.add_option('--netcdf-dir',
+                    help='Base directory where NETCDF is installed')
+    netcdf.add_option('--netcdf-incdir',
+                    help='Directory where NETCDF include files are installed')
+    netcdf.add_option('--netcdf-libdir',
+                    help='Directory where NETCDF library files are installed')
 
     other=opt.add_option_group('Other Options')
     other.add_option('--openmp-flag',
@@ -84,44 +76,34 @@ def configure(cnf):
 
     cnf.check_fortran()
 
-    # Find Proj
-    if cnf.options.proj_dir:
-        if not cnf.options.proj_incdir:
-            cnf.options.proj_incdir=cnf.options.proj_dir + "/include"
-        if not cnf.options.proj_libdir:
-            cnf.options.proj_libdir=cnf.options.proj_dir + "/lib"
-    cnf.check_cc(header_name='proj_api.h',uselib_store='proj',
-                 includes=[cnf.options.proj_incdir],
-                 libpath=[cnf.options.proj_libdir],
-                 rpath=[cnf.options.proj_libdir],
-                 lib='proj',define_name="PROJ")
-
-    # Find GMT
+    # Find NETCDF
     if not cnf.options.relax_lite:
-        if cnf.options.gmt_dir:
-            if not cnf.options.gmt_incdir:
-                cnf.options.gmt_incdir=cnf.options.gmt_dir + "/include"
-            if not cnf.options.gmt_libdir:
-                cnf.options.gmt_libdir=cnf.options.gmt_dir + "/lib"
-        if cnf.options.gmt_incdir:
-            includedirs=[cnf.options.gmt_incdir]
+        if cnf.options.netcdf_dir:
+            if not cnf.options.netcdf_incdir:
+                cnf.options.netcdf_incdir=cnf.options.netcdf_dir + "/include"
+            if not cnf.options.netcdf_libdir:
+                cnf.options.netcdf_libdir=cnf.options.netcdf_dir + "/lib"
+        if cnf.options.netcdf_incdir:
+            includedirs=[cnf.options.netcdf_incdir]
         else:
-            includedirs=['','/usr/include/gmt']
-        found_gmt=False
+            includedirs=['','/usr/include/netcdf']
+        found_netcdf=False
         for inc in includedirs:
             try:
-                cnf.check_cc(msg="Checking for gmt.h in '" + inc + "'",
-                             header_name='gmt.h', includes=inc,
-                             libpath=[cnf.options.gmt_libdir],
-                             rpath=[cnf.options.gmt_libdir],
-                             lib=['gmt','netcdf'], uselib_store='gmt')
+                netcdf_frag="PROGRAM MAIN\n" + 'USE netcdf\n' \
+                        + "END PROGRAM MAIN\n"
+                cnf.check_fc(msg="Checking for netcdf.mod",
+                             includes=[inc], fragment=netcdf_frag, uselib_store='netcdf',
+                             libpath=[cnf.options.netcdf_libdir],
+                             rpath=[cnf.options.netcdf_libdir],
+                             lib=['netcdff'])
             except cnf.errors.ConfigurationError:
                 pass
             else:
-                found_gmt=True
+                found_netcdf=True
                 break
-            if not found_gmt:
-                cnf.fatal('Could not find gmt')
+            if not found_netcdf:
+                cnf.fatal('Could not find NETCDF')
 
     #Find Cuda
     if cnf.options.use_cuda:
@@ -297,7 +279,6 @@ def lite(ctx) :
                         'src/elastic3d.f90',
                         'src/friction3d.f90',
                         'src/viscoelastic3d.f90',
-                        'src/proj.c',
                         'src/getdata.f',
                         'src/getopt_m.f90',
                         'src/util.f90',
@@ -306,7 +287,7 @@ def lite(ctx) :
                         'src/cuelastic.cu'],
                 install_path='${PREFIX}/bin',
                 includes=['build'],
-                use=['proj','openmp','fftw','imkl','cpp','length','cuda','papi','stdc++'],
+                use=['openmp','fftw','imkl','cpp','length','cuda','papi','stdc++'],
                 target='librelax.so'
                 )
     else:
@@ -321,14 +302,13 @@ def lite(ctx) :
                         'src/elastic3d.f90',
                         'src/friction3d.f90',
                         'src/viscoelastic3d.f90',
-                        'src/proj.c',
                         'src/getdata.f',
                         'src/getopt_m.f90',
                         'src/util.f90',
                         'src/mkl_dfti.f90'],
                 install_path='${PREFIX}/bin',
                 includes=['build'],
-                use=['proj','openmp','fftw','imkl','cpp','length','papi','stdc++'],
+                use=['openmp','fftw','imkl','cpp','length','papi','stdc++'],
                 target='librelax.so'
                 )
 
@@ -352,8 +332,7 @@ def build(bld):
                         'src/friction3d.f90',
                         'src/viscoelastic3d.f90',
                         'src/writevtk.c',
-                        'src/writegrd4.2.c',
-                        'src/proj.c',
+                        'src/exportnetcdf.f90',
                         'src/export.f90',
                         'src/getdata.f',
                         'src/getopt_m.f90',
@@ -365,14 +344,14 @@ def build(bld):
                         'src/cuelastic.cu'],
                 install_path='${PREFIX}/bin',
                 includes=['build'],
-                use=['gmt','proj','openmp','fftw','imkl','cpp','length','cuda','papi','stdc++'],
+                use=['netcdf','openmp','fftw','imkl','cpp','length','cuda','papi','stdc++'],
                 target='relax'
                 )
     else:
         bld.program(features='c fc fcprogram',
                 source=['src/relax.f90',
                         'src/ctfft.f',
-						'src/types.f90',
+			'src/types.f90',
                         'src/fourier.f90',
                         'src/green.f90',
                         'src/okada/green_space.f90',
@@ -381,8 +360,7 @@ def build(bld):
                         'src/friction3d.f90',
                         'src/viscoelastic3d.f90',
                         'src/writevtk.c',
-                        'src/writegrd4.2.c',
-                        'src/proj.c',
+                        'src/exportnetcdf.f90',
                         'src/export.f90',
                         'src/getdata.f',
                         'src/getopt_m.f90',
@@ -392,6 +370,6 @@ def build(bld):
                         'src/papi_prof.c'],
                 install_path='${PREFIX}/bin',
                 includes=['build'],
-                use=['gmt','proj','openmp','fftw','imkl','cpp','length','papi','stdc++'],
+                use=['netcdf','openmp','fftw','imkl','cpp','length','papi','stdc++'],
                 target='relax'
                 )

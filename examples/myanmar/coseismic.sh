@@ -26,7 +26,7 @@ DX=0.5
 
 LEN=`echo $SX $DX | awk '{print ($1-1)*$2/2}'`
 
-OMP_NUM_THREADS=2 time relax --no-proj-output $* <<EOF | tee $WDIR/in.param
+OMP_NUM_THREADS=2 time relax $* <<EOF | tee $WDIR/in.param
 # grid dimension (sx1,sx2,sx3)
 $SX $SX $SX
 # sampling (dx1,dx2,dx3), smoothing (beta, nyquist)

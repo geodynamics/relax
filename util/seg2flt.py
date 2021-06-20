@@ -53,8 +53,8 @@ def seg2flt(index,x1o,x2o,x3o,L,W,strike,dip,rake,lo,wo,alphal,alphaw,slip=None)
     
         wn=min(Wt,Wc)
 
-        #Wt=float(W)/float(int(ceil(W/(wo*alphaw**k))))
-        #wn=Wt
+        Wt=float(W)/float(int(ceil(W/(wo*alphaw**k))))
+        wn=Wt
 
         w=append(w, wn)
         k=k+1

@@ -28,7 +28,7 @@
 #
 # to visualize a time series of postseismic deformation (requires GRD output): 
 #
-#   map.sh -b -5/5/-5/5 -p -0.002/0.002/0.0001 -v 0.005 output1/0{01,02,03,04,05,06,07,08,09,10}-relax
+#   grdmap.sh -b -5/5/-5/5 -p -0.002/0.002/0.0001 -v 0.005 output1/0{01,02,03,04,05,06,07,08,09,10}-relax
 #
 # type map.sh for a description of command-line options. 
 # the command used to generate a map can be retrieve from the .ps file with
@@ -79,12 +79,6 @@ OMP_NUM_THREADS=4 relax $* <<EOF | tee $WDIR/in.param
 0.05 0.05 0.05 0.2 2
 # origin position & rotation
 0 0 0
-# geographic origin (longitude and latitude), UTM zone and real length unit (usually m or km)
-# displacements and stress are converted to lon/lat geographic coordinates
-# unit corresponds to a scaling from dx1,dx2,dx3 to real unit
-# use unit = 1   if dimensions are described in units of m
-# use unit = 1e3 if dimensions are described in units of km
-120 22 51 1e3
 # observation depth for displacement and for stress (stress in only exported in GRD)
 0 0.5
 # output directory (all output written here)
@@ -92,7 +86,7 @@ $WDIR
 # elastic parameters and gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
 30 30 8.33e-4
 # integration time (in unit of time), step (negative for automatic) and scaling of computed value
-20 -1 1
+0 -1 1
 # number of observation planes
 1
 # no x1 x2 x3 length width strike dip
@@ -122,7 +116,7 @@ $WDIR
 # number of shear dislocations (strike-slip and dip-slip faulting)
 1
 # no slip x1 x2 x3 length width strike dip rake
-   1    1 -1  0  0      1     1      0  90    0
+   1    1 -1  0  0      2     1      0  90    0
 # number of tensile cracks
 0
 # number of dilatation sources

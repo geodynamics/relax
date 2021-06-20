@@ -43,7 +43,7 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time relax --no-stress-output --no-proj-output $* <<EOF | tee $WDIR/in.param
+time relax --no-stress-output $* <<EOF | tee $WDIR/in.param
 # grid size (sx1,sx2,sx3)
 256 256 256 
 # sampling size, smoothing & nyquist (dx1,dx2,dx3,beta,nq)

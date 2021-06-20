@@ -58,27 +58,26 @@ CONTAINS
 !$  INTEGER :: omp_get_num_procs,omp_get_max_threads
     REAL*8 :: dummy,dum1,dum2
     REAL*8 :: minlength,minwidth
-    TYPE(OPTION_S) :: opts(16)
+    TYPE(OPTION_S) :: opts(15)
 
     INTEGER :: k,iostatus,i,e
 
     ! parse the command line for options
-    opts( 1)=OPTION_S("no-proj-output",.FALSE.,CHAR(20))
-    opts( 2)=OPTION_S("no-relax-output",.FALSE.,CHAR(21))
-    opts( 3)=OPTION_S("no-txt-output",.FALSE.,CHAR(22))
-    opts( 4)=OPTION_S("no-vtk-output",.FALSE.,CHAR(23))
-    opts( 5)=OPTION_S("no-grd-output",.FALSE.,CHAR(24))
-    opts( 6)=OPTION_S("no-xyz-output",.FALSE.,CHAR(25))
-    opts( 7)=OPTION_S("no-stress-output",.FALSE.,CHAR(26))
-    opts( 8)=OPTION_S("version",.FALSE.,CHAR(27))
-    opts( 9)=OPTION_S("with-eigenstrain",.FALSE.,CHAR(28))
-    opts(10)=OPTION_S("with-stress-output",.FALSE.,CHAR(29))
-    opts(11)=OPTION_S("with-vtk-output",.FALSE.,CHAR(30))
-    opts(12)=OPTION_S("with-vtk-relax-output",.FALSE.,CHAR(31))
-    opts(13)=OPTION_S("with-transient",.FALSE.,CHAR(32))
-    opts(14)=OPTION_S("with-curvilinear",.FALSE.,CHAR(33))
-    opts(15)=OPTION_S("dry-run",.FALSE.,CHAR(34))
-    opts(16)=OPTION_S("help",.FALSE.,'h')
+    opts( 1)=OPTION_S("no-relax-output",.FALSE.,CHAR(21))
+    opts( 2)=OPTION_S("no-txt-output",.FALSE.,CHAR(22))
+    opts( 3)=OPTION_S("no-vtk-output",.FALSE.,CHAR(23))
+    opts( 4)=OPTION_S("no-grd-output",.FALSE.,CHAR(24))
+    opts( 5)=OPTION_S("no-xyz-output",.FALSE.,CHAR(25))
+    opts( 6)=OPTION_S("no-stress-output",.FALSE.,CHAR(26))
+    opts( 7)=OPTION_S("version",.FALSE.,CHAR(27))
+    opts( 8)=OPTION_S("with-eigenstrain",.FALSE.,CHAR(28))
+    opts( 9)=OPTION_S("with-stress-output",.FALSE.,CHAR(29))
+    opts(10)=OPTION_S("with-vtk-output",.FALSE.,CHAR(30))
+    opts(11)=OPTION_S("with-vtk-relax-output",.FALSE.,CHAR(31))
+    opts(12)=OPTION_S("with-transient",.FALSE.,CHAR(32))
+    opts(13)=OPTION_S("with-curvilinear",.FALSE.,CHAR(33))
+    opts(14)=OPTION_S("dry-run",.FALSE.,CHAR(34))
+    opts(15)=OPTION_S("help",.FALSE.,'h')
 
     noptions=0;
     DO
@@ -86,9 +85,6 @@ CONTAINS
        SELECT CASE(ch)
        CASE(CHAR(0))
           EXIT
-       CASE(CHAR(20))
-          ! option no-proj-output
-          in%isoutputproj=.FALSE.
        CASE(CHAR(21))
           ! option no-relax-output
           in%isoutputrelax=.FALSE.
@@ -208,13 +204,6 @@ CONTAINS
 #endif
 !$  PRINT '("#     * parallel OpenMP implementation with ",I3.3,"/",I3.3," threads")', &
 !$                  omp_get_max_threads(),omp_get_num_procs()
-#ifdef PROJ
-    IF (in%isoutputproj) THEN
-       PRINT '("#     * export to longitude/latitude text format")'
-    ELSE
-       PRINT '("#     * export to longitude/latitude text format cancelled (--",a,")")', trim(opts(1)%name)
-    END IF
-#endif
 #ifdef TXT
     IF (in%isoutputtxt) THEN
        PRINT '("#     * export to TXT format")'
@@ -276,20 +265,6 @@ CONTAINS
     CALL getdata(iunit,dataline)
     READ  (dataline,*) in%x0,in%y0,in%rot
     PRINT '(3ES9.2E1)', in%x0,in%y0,in%rot
-
-#ifdef PROJ
-    IF (in%isoutputproj) THEN
-       PRINT '("# geographic origin (longitude, latitude, UTM zone, unit)")'
-       CALL getdata(iunit,dataline)
-       READ  (dataline,*) in%lon0,in%lat0,in%zone,in%umult
-       PRINT '(2ES9.2E1,I3.2,ES9.2E1)',in%lon0,in%lat0,in%zone,in%umult
-       IF (in%zone.GT.60 .OR. in%zone.LT.1) THEN
-          WRITE_DEBUG_INFO
-          WRITE (0,'("invalid UTM zone ",I3," (1<=zone<=60. exiting.)")') in%zone
-          STOP 1
-       END IF
-    END IF
-#endif
 
     PRINT '("# observation depth (displacement and stress)")'
     CALL getdata(iunit,dataline)

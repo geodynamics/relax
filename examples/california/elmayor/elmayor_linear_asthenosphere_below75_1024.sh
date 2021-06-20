@@ -50,7 +50,7 @@ SX=1024
 DX=0.6
 LEN=`echo $SX $DX | awk '{print $1*$2/3}'`
 
-time relax --no-vtk-output --no-stress-output --no-proj-output $* <<EOF | tee $WDIR/in.param
+time relax --no-vtk-output --no-stress-output $* <<EOF | tee $WDIR/in.param
 # grid size (sx1,sx2,sx3)
 $SX $SX $SX
 # dx1  dx2  dx3 beta nyquist

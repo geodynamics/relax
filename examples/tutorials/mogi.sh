@@ -20,4 +20,4 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time relax --no-stress-output --no-proj-output $* < mogi.input
+time relax --no-stress-output $* < mogi.input

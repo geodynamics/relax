@@ -131,12 +131,6 @@ MODULE types
      ! center coordinates and rotation
      REAL*8 :: x0,y0,rot
 
-#ifdef PROJ
-     ! geographic coordinates of center, UTM zone, length unit
-     REAL*8 :: lon0,lat0,umult
-     INTEGER :: zone
-#endif
-
      ! observation depths
      REAL*8 :: oz,ozs
 
@@ -253,7 +247,6 @@ MODULE types
      ! overrides output to formats
      LOGICAL :: iseigenstrain=.FALSE.
      LOGICAL :: isoutputgrd=.TRUE.
-     LOGICAL :: isoutputproj=.TRUE.
      LOGICAL :: isoutputrelax=.TRUE.
      LOGICAL :: isoutputstress=.TRUE.
      LOGICAL :: isoutputtxt=.TRUE.

@@ -396,12 +396,6 @@ PROGRAM relax
      END IF
   END IF
 #endif
-#ifdef PROJ
-  IF (in%isoutputproj) THEN
-     CALL exportproj(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz, &
-                     in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,0)
-  END IF
-#endif
 #ifdef VTK
   IF (in%isoutputvtk) THEN
      !filename=trim(in%wdir)//"/disp-000.vtr"
@@ -432,12 +426,6 @@ PROGRAM relax
   IF (in%isoutputgrd .AND. in%isoutputstress) THEN
      CALL exportstressgrd(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
                           in%ozs,in%x0,in%y0,in%wdir,0,4)
-  END IF
-#endif
-#ifdef PROJ
-  IF (in%isoutputproj .AND. in%isoutputstress) THEN
-      CALL exportstressproj(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%ozs, &
-                            in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,0)
   END IF
 #endif
   ! initialize stress conditions
@@ -967,17 +955,6 @@ PROGRAM relax
            CALL exportgrd(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0,in%wdir,oi)
         END IF
 #endif
-#ifdef PROJ
-        IF (in%isoutputproj) THEN
-           IF (in%isoutputrelax) THEN
-              CALL exportproj(inter1,inter2,inter3,in%sx1,in%sx2,in%sx3/2, &
-                              in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0, &
-                              in%lon0,in%lat0,in%zone,in%umult,in%wdir,oi,convention=2)
-           END IF
-           CALL exportproj(u1,u2,u3,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%oz,in%x0,in%y0, &
-                           in%lon0,in%lat0,in%zone,in%umult,in%wdir,oi)
-        END IF
-#endif
 #ifdef VTK
         IF (in%isoutputvtk) THEN
            WRITE (digit,'(I3.3)') oi
@@ -1017,12 +994,6 @@ PROGRAM relax
         IF (in%isoutputgrd .AND. in%isoutputstress) THEN
            CALL exportstressgrd(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3, &
                                 in%ozs,in%x0,in%y0,in%wdir,oi,4)
-        END IF
-#endif
-#ifdef PROJ
-        IF (in%isoutputproj .AND. in%isoutputstress) THEN
-           CALL exportstressproj(sig,in%sx1,in%sx2,in%sx3/2,in%dx1,in%dx2,in%dx3,in%ozs, &
-                                 in%x0,in%y0,in%lon0,in%lat0,in%zone,in%umult,in%wdir,oi)
         END IF
 #endif
         WRITE (digit4,'(I4.4)') oi

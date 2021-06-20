@@ -2,7 +2,6 @@ if not exist relax.exe (goto :error)
 
 SET GMT_SHAREDIR=%CD%\share
 
-SET PROJ_LIB=%CD%\share
 
 PATH=%CD%;%PATH%
 

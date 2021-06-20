@@ -4196,7 +4196,7 @@ CONTAINS
           END IF
 
           IF (flip) THEN
-             p(i2s,sx1-i1s+1)=data(i1,i2)
+             p(i2s,i1s)=data(i1,i2)
           ELSE
              p(i1s,i2s)=data(i1,i2)
           END IF

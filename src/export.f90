@@ -23,13 +23,13 @@ MODULE export
 
   USE types
   USE elastic3d
+  USE exportnetcdf
   USE viscoelastic3d
   USE friction3d
 
   IMPLICIT NONE
 
   PRIVATE xyzwrite
-  PRIVATE geoxyzwrite
 
 CONTAINS
 
@@ -117,32 +117,6 @@ CONTAINS
   END SUBROUTINE export2d
 
   !------------------------------------------------------------------
-  ! subroutine geoxyzwrite
-  !
-  ! sylvain barbot (22/05/10) - original form
-  !------------------------------------------------------------------
-  SUBROUTINE geoxyzwrite(x,y,z,sx1,sx2,filename)
-    INTEGER, INTENT(IN) :: sx1,sx2
-    REAL*4, INTENT(IN), DIMENSION(sx1,sx2) :: z
-    REAL*8, INTENT(IN), DIMENSION(sx1,sx2) :: x,y
-    CHARACTER(256), INTENT(IN) :: filename
-
-    INTEGER :: iostatus,i1,i2
-
-    OPEN (UNIT=15,FILE=filename,IOSTAT=iostatus,FORM="FORMATTED")
-    IF (iostatus>0) STOP "could not open file for proj export"
-
-    DO i2=1,sx2
-       DO i1=1,sx1
-          WRITE (15,'(ES15.8E1,ES15.8E1,ES11.3E2)') &
-                 x(i1,i2),y(i1,i2),z(i1,i2)
-       END DO
-    END DO
-    CLOSE(15)
-
-  END SUBROUTINE geoxyzwrite
-
-  !------------------------------------------------------------------
   ! subroutine xyzwrite
   !
   ! sylvain barbot (06/10/09) - original form
@@ -169,170 +143,6 @@ CONTAINS
     CLOSE(15)
 
   END SUBROUTINE xyzwrite
-
-#ifdef PROJ
-  !------------------------------------------------------------------
-  !> subroutine ExportStressPROJ
-  !! export a map view of stress with coordinates in 
-  !! longitude/latitude. Text format output is the GMT-compatible
-  !! .xyz file format where data in each file is organized as follows
-  !!
-  !! longitude latitude s11 
-  !! longitude latitude s12
-  !! longitude latitude s13
-  !! longitude latitude s22
-  !! longitude latitude s23
-  !! longitude latitude s33
-  !!
-  !! this is an interface to exportproj.
-  !!
-  !! \author sylvain barbot (05/22/10) - original form
-  !------------------------------------------------------------------
-  SUBROUTINE exportstressproj(sig,sx1,sx2,sx3,dx1,dx2,dx3,oz, &
-                              x0,y0,lon0,lat0,zone,scale,wdir,index)
-    INTEGER, INTENT(IN) :: index,sx1,sx2,sx3,zone
-    TYPE(TENSOR), INTENT(IN), DIMENSION(sx1,sx2,sx3) :: sig
-    REAL*8, INTENT(IN) :: oz,dx1,dx2,dx3,x0,y0,lon0,lat0,scale
-    CHARACTER(256), INTENT(IN) :: wdir
-
-    REAL*4, DIMENSION(:,:), ALLOCATABLE :: t1,t2,t3
-    INTEGER :: iostatus,i,j,k,l
-
-    ALLOCATE(t1(sx1+2,sx2),t2(sx1+2,sx2),t3(sx1+2,sx2),STAT=iostatus)
-    IF (iostatus>0) STOP "could not allocate memory for grid export"
-
-    k=fix(oz/dx3)+1
-    DO j=1,sx2
-       DO i=1,sx1
-#ifdef ALIGN_DATA
-          l=(j-1)*(sx1+2)+i
-#else
-          l=(j-1)*sx1+i
-#endif
-          t1(l,1)=sig(i,j,k)%s11
-          t2(l,1)=sig(i,j,k)%s12
-          t3(l,1)=sig(i,j,k)%s13
-       END DO
-    END DO
-
-    CALL exportproj(t1,t2,t3,sx1,sx2,1,dx1,dx2,dx3,0._8, &
-                  x0,y0,lon0,lat0,zone,scale,wdir,index,convention=4)
-
-    DO j=1,sx2
-       DO i=1,sx1
-#ifdef ALIGN_DATA
-          l=(j-1)*(sx1+2)+i
-#else
-          l=(j-1)*sx1+i
-#endif
-          t1(l,1)=sig(i,j,k)%s22
-          t2(l,1)=sig(i,j,k)%s23
-          t3(l,1)=sig(i,j,k)%s33
-       END DO
-    END DO
-
-    CALL exportproj(t1,t2,t3,sx1,sx2,1,dx1,dx2,dx3,0._8, &
-                  x0,y0,lon0,lat0,zone,scale,wdir,index,convention=5)
-
-    DEALLOCATE(t1,t2,t3)
-
-  END SUBROUTINE exportstressproj
-
-  !------------------------------------------------------------------
-  !> subroutine ExportPROJ
-  !! export a map view of displacements with coordinates in 
-  !! longitude/latitude. Text format output is the GMT-compatible
-  !! .xyz file format where data in each file is organized as follows
-  !!
-  !! longitude latitude u1, 
-  !! longitude latitude u2 and 
-  !! longitude latitude -u3
-  !!
-  !! for index-geo-north.xyz, 
-  !!     index-geo-east.xyz and 
-  !!     index-geo-up.xyz, respectively.
-  !!
-  !! \author sylvain barbot (05/22/10) - original form
-  !------------------------------------------------------------------
-  SUBROUTINE exportproj(c1,c2,c3,sx1,sx2,sx3,dx1,dx2,dx3,oz, &
-                        x0,y0,lon0,lat0,zone,scale,wdir,i,convention)
-    INTEGER, INTENT(IN) :: i,sx1,sx2,sx3,zone
-#ifdef ALIGN_DATA
-    REAL*4, INTENT(IN), DIMENSION(sx1+2,sx2,sx3) :: c1,c2,c3
-#else
-    REAL*4, INTENT(IN), DIMENSION(sx1,sx2,sx3) :: c1,c2,c3
-#endif
-    REAL*8, INTENT(IN) :: oz,dx1,dx2,dx3,x0,y0,lon0,lat0,scale
-    CHARACTER(256), INTENT(IN) :: wdir
-    INTEGER, INTENT(IN), OPTIONAL :: convention
-
-    INTEGER :: iostatus,i1,i2,pos,conv
-    CHARACTER(3) :: digit
-    REAL*4, DIMENSION(:,:), ALLOCATABLE :: t1,t2,t3
-    REAL*8, DIMENSION(:,:), ALLOCATABLE :: x,y
-    CHARACTER(256) :: file1,file2,file3
-    REAL*8 :: lon1,lat1
-
-    IF (PRESENT(convention)) THEN
-       conv=convention
-    ELSE
-       conv=1
-    END IF
-
-    lon1=lon0
-    lat1=lat0
-
-    ALLOCATE(t1(sx1,sx2),t2(sx1,sx2),t3(sx1,sx2), &
-             x(sx1,sx2),y(sx1,sx2),STAT=iostatus)
-    IF (iostatus>0) STOP "could not allocate memory for export"
-
-    CALL exportspatial(c1(:,:,int(oz/dx3)+1),sx1,sx2,t1)
-    CALL exportspatial(c2(:,:,int(oz/dx3)+1),sx1,sx2,t2)
-    CALL exportspatial(c3(:,:,int(oz/dx3)+1),sx1,sx2,t3)
-    t3=-t3
-
-    ! grid coordinates (x=easting, y=northing)
-    DO i2=1,sx2
-       DO i1=1,sx1
-          y(i1,i2)=(i1-sx1/2)*(dx1*scale)+x0
-          x(i1,i2)=(i2-sx2/2)*(dx2*scale)+y0
-       END DO
-    END DO
-    CALL proj(x,y,sx1*sx2,lon1,lat1,zone)
-
-    pos=INDEX(wdir," ")
-    WRITE (digit,'(I3.3)') i
-    SELECT CASE(conv)
-    CASE (1) ! cumulative displacement
-       file1=wdir(1:pos-1) // "/" // digit // "-geo-north.xyz"
-       file2=wdir(1:pos-1) // "/" // digit // "-geo-east.xyz"
-       file3=wdir(1:pos-1) // "/" // digit // "-geo-up.xyz"
-    CASE (2) ! postseismic displacement
-       file1=wdir(1:pos-1) // "/" // digit // "-relax-geo-north.xyz"
-       file2=wdir(1:pos-1) // "/" // digit // "-relax-geo-east.xyz"
-       file3=wdir(1:pos-1) // "/" // digit // "-relax-geo-up.xyz"
-    CASE (3) ! equivalent body forces
-       file1=wdir(1:pos-1) // "/" // digit // "-eqbf-geo-north.xyz"
-       file2=wdir(1:pos-1) // "/" // digit // "-eqbf-geo-east.xyz"
-       file3=wdir(1:pos-1) // "/" // digit // "-eqbf-geo-up.xyz"
-    CASE (4) ! equivalent body forces
-       file1=wdir(1:pos-1) // "/" // digit // "-geo-s11.xyz"
-       file2=wdir(1:pos-1) // "/" // digit // "-geo-s12.xyz"
-       file3=wdir(1:pos-1) // "/" // digit // "-geo-s13.xyz"
-    CASE (5) ! equivalent body forces
-       file1=wdir(1:pos-1) // "/" // digit // "-geo-s22.xyz"
-       file2=wdir(1:pos-1) // "/" // digit // "-geo-s23.xyz"
-       file3=wdir(1:pos-1) // "/" // digit // "-geo-s33.xyz"
-    END SELECT
-    
-    CALL geoxyzwrite(x,y,t1,sx1,sx2,file1)
-    CALL geoxyzwrite(x,y,t2,sx1,sx2,file2)
-    CALL geoxyzwrite(x,y,t3,sx1,sx2,file3)
-
-    DEALLOCATE(t1,t2,t3)
-
-  END SUBROUTINE exportproj
-#endif
 
 #ifdef XYZ
   !------------------------------------------------------------------
@@ -550,15 +360,6 @@ CONTAINS
        fn23=trim(wdir)//"/"//digit//".op"//sdigit//"-s23.grd"
        fn33=trim(wdir)//"/"//digit//".op"//sdigit//"-s33.grd"
 
-       ! convert to c standard
-       j=INDEX(fn11," ")
-       fn11(j:j)=char(0)
-       fn12(j:j)=char(0)
-       fn13(j:j)=char(0)
-       fn22(j:j)=char(0)
-       fn23(j:j)=char(0)
-       fn33(j:j)=char(0)
-
        ALLOCATE(temp11(ns1,ns2),temp12(ns1,ns2),temp13(ns1,ns2), &
                 temp22(ns1,ns2),temp23(ns1,ns2),temp33(ns1,ns2),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate temporary array for GRD slip export."
@@ -579,7 +380,6 @@ CONTAINS
        ! ymin is the lowest coordinates (positive northward in GMT)
        ymin=-MAXVAL(slippatch(:,:)%lz)
 
-       ! call the c function "writegrd_"
        CALL writegrd(temp11,ns1,ns2,ymin,xmin,dx3,dx2,rland,rdum,title,fn11)
        CALL writegrd(temp12,ns1,ns2,ymin,xmin,dx3,dx2,rland,rdum,title,fn12)
        CALL writegrd(temp13,ns1,ns2,ymin,xmin,dx3,dx2,rland,rdum,title,fn13)
@@ -685,10 +485,6 @@ END SUBROUTINE exportplanestress
 !#_ifdef GRD_EXPORTEIGENSTRAIN
        outfilegrd=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".estrain.grd"
 
-       ! convert to c standard
-       j=INDEX(outfilegrd," ")
-       outfilegrd(j:j)=char(0)
-
        ALLOCATE(temp(ns1,ns2),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate temporary array for GRD slip export."
 
@@ -703,7 +499,6 @@ END SUBROUTINE exportplanestress
        ! ymin is the lowest coordinates (positive northward in GMT)
        ymin=-MAXVAL(slippatch(:,:)%lz)
 
-       ! call the c function "writegrd_"
        CALL writegrd(temp,ns1,ns2,ymin,xmin,dx3,dx2, &
                      rland,rdum,title,outfilegrd)
 
@@ -910,14 +705,6 @@ END SUBROUTINE exportcreep_asc
        file2=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".slip-strike.grd"
        file3=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".slip.grd"
 
-       ! convert to c standard
-       j=INDEX(file1," ")
-       file1(j:j)=char(0)
-       j=INDEX(file2," ")
-       file2(j:j)=char(0)
-       j=INDEX(file3," ")
-       file3(j:j)=char(0)
-
        DO i2=1,ns2
           DO i1=1,ns1
              temp1(ns1+1-i1,i2)=REAL(n(k)%patch(i1,i2)%ds)
@@ -931,7 +718,6 @@ END SUBROUTINE exportcreep_asc
        ! ymin is the lowest coordinates (positive northward in GMT)
        ymin=-MAXVAL(n(k)%patch(:,:)%lz)
 
-       ! call the c function "writegrd_"
        CALL writegrd(temp1,ns1,ns2,ymin,xmin,dx3,dx2, &
                      rland,rdum,title,file1)
        CALL writegrd(temp2,ns1,ns2,ymin,xmin,dx3,dx2, &
@@ -942,14 +728,6 @@ END SUBROUTINE exportcreep_asc
        file1=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".vel-strike.grd"
        file2=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".vel-dip.grd"
        file3=wdir(1:pos-1)//"/"//digit//".s"//sdigit//".vel.grd"
-
-       ! convert to c standard
-       j=INDEX(file1," ")
-       file1(j:j)=char(0)
-       j=INDEX(file2," ")
-       file2(j:j)=char(0)
-       j=INDEX(file3," ")
-       file3(j:j)=char(0)
 
        DO i2=1,ns2
           DO i1=1,ns1
@@ -964,7 +742,6 @@ END SUBROUTINE exportcreep_asc
        ! ymin is the lowest coordinates (positive northward in GMT)
        ymin=-MAXVAL(n(k)%patch(:,:)%lz)
 
-       ! call the c function "writegrd_"
        CALL writegrd(temp1,ns1,ns2,ymin,xmin,dx3,dx2, &
                      rland,rdum,title,file1)
        CALL writegrd(temp2,ns1,ns2,ymin,xmin,dx3,dx2, &
@@ -1157,6 +934,7 @@ END SUBROUTINE exportcreep_vtk
     INTEGER :: iostatus,k,pos,conv
     REAL*8 :: xmin,ymin
     CHARACTER(256) :: file1,file2,file3
+    CHARACTER(256) :: title1,title2,title3
     CHARACTER(3) :: digit
 
     IF (PRESENT(convention)) THEN
@@ -1175,13 +953,13 @@ END SUBROUTINE exportcreep_vtk
     ! mem copy of (sx1+2)*sx2 points at index k=int(oz/dx3)
     CALL cuexportspatial (cutemp1, cutemp2, cutemp3, %VAL(int(oz/dx3)))
  
-    CALL exportspatial(cutemp1,sx1,sx2,temp1,doflip=.true.)
-    CALL exportspatial(cutemp2,sx1,sx2,temp2,doflip=.true.)
-    CALL exportspatial(cutemp3,sx1,sx2,temp3,doflip=.true.)
+    CALL exportspatial(cutemp1,sx1,sx2,temp1,doflip=.TRUE.)
+    CALL exportspatial(cutemp2,sx1,sx2,temp2,doflip=.TRUE.)
+    CALL exportspatial(cutemp3,sx1,sx2,temp3,doflip=.TRUE.)
 #else
-    CALL exportspatial(c1(:,:,int(oz/dx3)+1),sx1,sx2,temp1,doflip=.true.)
-    CALL exportspatial(c2(:,:,int(oz/dx3)+1),sx1,sx2,temp2,doflip=.true.)
-    CALL exportspatial(c3(:,:,int(oz/dx3)+1),sx1,sx2,temp3,doflip=.true.)
+    CALL exportspatial(c1(:,:,int(oz/dx3)+1),sx1,sx2,temp1,doflip=.TRUE.)
+    CALL exportspatial(c2(:,:,int(oz/dx3)+1),sx1,sx2,temp2,doflip=.TRUE.)
+    CALL exportspatial(c3(:,:,int(oz/dx3)+1),sx1,sx2,temp3,doflip=.TRUE.)
 #endif
 
     pos=INDEX(wdir," ")
@@ -1193,6 +971,10 @@ END SUBROUTINE exportcreep_vtk
        file2=wdir(1:pos-1) // "/" // digit // "-east.grd"
        file3=wdir(1:pos-1) // "/" // digit // "-up.grd"
 
+       title1=digit // "-north"
+       title2=digit // "-east"
+       title3=digit // "-up"
+
        ! positive up
        temp3=-temp3
     
@@ -1200,6 +982,10 @@ END SUBROUTINE exportcreep_vtk
        file1=wdir(1:pos-1) // "/" // digit // "-relax-north.grd"
        file2=wdir(1:pos-1) // "/" // digit // "-relax-east.grd"
        file3=wdir(1:pos-1) // "/" // digit // "-relax-up.grd"
+
+       title1=digit // "-relax-north"
+       title2=digit // "-relax-east"
+       title3=digit // "-relax-up"
 
        ! positive up
        temp3=-temp3
@@ -1209,6 +995,10 @@ END SUBROUTINE exportcreep_vtk
        file2=wdir(1:pos-1) // "/" // digit // "-eqbf-east.grd"
        file3=wdir(1:pos-1) // "/" // digit // "-eqbf-up.grd"
 
+       title1=digit // "-eqbf-north"
+       title2=digit // "-eqbf-east"
+       title3=digit // "-eqbf-up"
+
        ! positive up
        temp3=-temp3
     
@@ -1216,41 +1006,51 @@ END SUBROUTINE exportcreep_vtk
        file1=wdir(1:pos-1) // "/" // digit // "-s11.grd"
        file2=wdir(1:pos-1) // "/" // digit // "-s12.grd"
        file3=wdir(1:pos-1) // "/" // digit // "-s13.grd"
+
+       title1=digit // "-s11"
+       title2=digit // "-s12"
+       title3=digit // "-s13"
+
     CASE (5) ! equivalent body forces
        file1=wdir(1:pos-1) // "/" // digit // "-s22.grd"
        file2=wdir(1:pos-1) // "/" // digit // "-s23.grd"
        file3=wdir(1:pos-1) // "/" // digit // "-s33.grd"
 
+       title1=digit // "-s22"
+       title2=digit // "-s23"
+       title3=digit // "-s33"
+
     CASE (6) ! transient strain 
        file1=wdir(1:pos-1) // "/" // digit // "-e11.grd"
        file2=wdir(1:pos-1) // "/" // digit // "-e12.grd"
        file3=wdir(1:pos-1) // "/" // digit // "-e13.grd"
+
+       title1=digit // "-e11"
+       title2=digit // "-e12"
+       title3=digit // "-e13"
+
     CASE (7) ! transient strain 
        file1=wdir(1:pos-1) // "/" // digit // "-e22.grd"
        file2=wdir(1:pos-1) // "/" // digit // "-e23.grd"
        file3=wdir(1:pos-1) // "/" // digit // "-e33.grd"
+
+       title1=digit // "-e22"
+       title2=digit // "-e23"
+       title3=digit // "-e33"
+
     END SELECT
     
-    ! convert to c standard
-    k=INDEX(file1," ")
-    file1(k:k)=char(0)
-    k=INDEX(file2," ")
-    file2(k:k)=char(0)
-    k=INDEX(file3," ")
-    file3(k:k)=char(0)
-
     ! xmin is the lowest coordinates (positive eastward)
     xmin=origy-sx2/2*dx2
     ! ymin is the lowest coordinates (positive northward)
     ymin=origx-sx1/2*dx1
 
-    ! call the c function "writegrd_"
     CALL writegrd(temp1,sx2,sx1,ymin,xmin,dx1,dx2, &
-         rland,rdum,file1,file1)
+         rland,rdum,title1,file1)
     CALL writegrd(temp2,sx2,sx1,ymin,xmin,dx1,dx2, &
-         rland,rdum,file2,file2)
+         rland,rdum,title2,file2)
     CALL writegrd(temp3,sx2,sx1,ymin,xmin,dx1,dx2, &
-         rland,rdum,file3,file3)
+         rland,rdum,title3,file3)
 
     DEALLOCATE(temp1,temp2,temp3)
 

@@ -15,7 +15,7 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-OMP_NUM_THREADS=2 time relax --no-proj-output --no-txt-output --no-stress-output $* <<EOF | tee $WDIR/in.param
+OMP_NUM_THREADS=2 time relax --no-txt-output --no-stress-output $* <<EOF | tee $WDIR/in.param
 # grid size (sx1,sx2,sx3)
 512 512 512
 # sampling size, smoothing & nyquist (dx1,dx2,dx3,beta,nq)

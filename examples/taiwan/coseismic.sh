@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # 1999 Mw 7.6 Chi Chi coseismic displacements
+# geographic origin (longitude, latitude, UTM zone)
+# 120.982 23.772 51
 
 FLT=faults/chichi.flt
 # output directory based on script name.
@@ -18,8 +20,6 @@ time relax $* <<EOF | tee $WDIR/in.param
 0.7 0.7 0.7 0.2 1
 # origin position (x0,y0) and rotation
 0 0 0
-# geographic origin (longitude, latitude, UTM zone, unit)
-120.982 23.772 51 1e3
 # observation depth (displacement and stress)
 0 5
 # output directory

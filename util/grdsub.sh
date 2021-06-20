@@ -45,9 +45,9 @@ else
 	else
 		echo $self": subtracting to files $(basename $GRDFILEC1), $(basename $GRDFILEC2), $(basename $GRDFILEC3)"
 
-		grdmath $GRDFILEA1 $GRDFILEB1 SUB = $GRDFILEC1
-		grdmath $GRDFILEA2 $GRDFILEB2 SUB = $GRDFILEC2
-		grdmath $GRDFILEA3 $GRDFILEB3 SUB = $GRDFILEC3
+		gmt grdmath $GRDFILEA1 $GRDFILEB1 SUB = $GRDFILEC1
+		gmt grdmath $GRDFILEA2 $GRDFILEB2 SUB = $GRDFILEC2
+		gmt grdmath $GRDFILEA3 $GRDFILEB3 SUB = $GRDFILEC3
 	fi
 fi
 

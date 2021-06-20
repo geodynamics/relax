@@ -31,7 +31,6 @@
 #
 # type map.sh for a description of command-line options.
 #
-# the conversion to geographic is cancelled (--no-proj-output) and 
 # the stress component are not exported (--no-stress-output)
 #
 # TIP:
@@ -86,7 +85,7 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-time relax --no-proj-output --no-stress-output $* <<EOF | tee $WDIR/in.param
+time relax --no-stress-output $* <<EOF | tee $WDIR/in.param
 # grid size (sx1,sx2,sx3)
 256 256 256 
 # sampling size, smoothing & nyquist (dx1,dx2,dx3,beta,nq)

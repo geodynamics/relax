@@ -33,12 +33,6 @@ OMP_NUM_THREADS=12 relax <<EOF
 0.05 0.05 0.05 0.2 2
 # origin position & rotation
 0 0 0
-# geographic origin (longitude and latitude), UTM zone and real length unit (usually m or km)
-# displacements and stress are converted to lon/lat geographic coordinates
-# unit corresponds to a scaling from dx1,dx2,dx3 to real unit
-# use unit = 1   if dimensions are described in units of m
-# use unit = 1e3 if dimensions are described in units of km
-#120 22 51 1e3
 # observation depth for displacement and for stress (stress in only exported in GRD)
 0 0.5
 # output directory (all output written here)

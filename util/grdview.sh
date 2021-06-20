@@ -31,7 +31,7 @@ usage(){
         echo "         -r reverse the y-axis"
         echo "         -s step sets the distance between vectors"
         echo "         -u defines the color scale unit"
-        echo "         -v vertical exxageration"
+        echo "         -v vertical exaggeration"
 	echo "         -t tick interval"
 	echo "         -T title header"
 	echo "         -x do not display map (only create .ps file)"
@@ -135,7 +135,7 @@ while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrE:G:HN:O:J:S:X:Y:" flag; do
 	t) tset=1;tickx=$OPTARG;ticky=$OPTARG;tickz=$OPTARG;;
 	T) Tset=1;title=$OPTARG;;
 	u) uset=1;unit=$OPTARG;;
-	v) vset=1;verticalexxageration=$OPTARG;;
+	v) vset=1;verticalexaggeration=$OPTARG;;
 	x) xset=1;;
 	E) Eset="-E$OPTARG";;
 	G) Gset="-G$OPTARG";;
@@ -148,12 +148,7 @@ while getopts "b:c:e:ghi:o:p:v:s:t:T:u:xrE:G:HN:O:J:S:X:Y:" flag; do
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
 done
-for item in $bset $cset $iset $oset $pset $sset $tset $vset $Tset $uset $Sset $Xset $Yset $Eset $Gset $Nset $Oset $Jset $EXTRA;do
-	shift;shift
-done
-for item in $gset $hset $xset $rset $Hset;do
-	shift;
-done
+shift $((OPTIND -1))
 
 #-------------------------------------------------------- 
 # DEFAULTS
@@ -161,7 +156,7 @@ done
 
 if [ "$vset" != "1" ]; then
 	# unused value but preserve the number of elements in call to subroutine
-	verticalexxageration=1
+	verticalexaggeration=1
 fi
 
 # size of plot
@@ -205,7 +200,6 @@ if [ $# -lt "1" -a "$Oset" != "1" ] || [ "$hset" == "1" ] ; then
 else
 	echo $self: using colorfile $cptfile
 fi
-
 
 # loop over grd files
 while [ "$#" != "0" -o "$Oset" == "1" ];do
@@ -282,7 +276,7 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 				else
 					HEIGHT="8i"
 				fi
-				SCALE=`echo $bds | awk -F "/" -v s=$verticalexxageration '{printf("%f\n",5/($2-$1)*s)}'`
+				SCALE=`echo $bds | awk -F "/" -v s=$verticalexaggeration '{printf("%f\n",5/($2-$1)*s)}'`
 				if [ "$rset" != "1" ]; then
 					PROJ="-JX5i/"$HEIGHT
 					PROJZ=-Jz$SCALE
@@ -298,7 +292,10 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 			# geographic coordinates
 			HEIGHT=5i
 			PROJ="-JM$HEIGHT"
-		        AXIS=-B${tickx}:"":/${ticky}:""::."$title":WSne
+			SCALE=`echo $bds | awk -F "/" -v s=$verticalexaggeration '{printf("%f\n",5/($2-$1)*s)}'`
+			PROJZ="-Jz"$SCALE
+		        #AXIS=-B${tickx}:"":/${ticky}:""::."$title":
+			AXIS=-Bf${tickxf}a${tickx}:"x":/f${tickyf}a${ticky}:"y":/f${tickzf}a${tickz}:"z"::."$title":
 		fi
 
 		echo $self": z-min/z-max for "$U3": "`grdinfo -C $U3 | awk '{print $6,$7}'`
@@ -339,7 +336,7 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 				else
 					HEIGHT="7i"
 				fi
-				SCALE=`echo $bds | awk -F "/" -v v=$verticalexxageration -v s=$SIZE '{printf("%f\n",s/($2-$1)*v)}'`
+				SCALE=`echo $bds | awk -F "/" -v v=$verticalexaggeration -v s=$SIZE '{printf("%f\n",s/($2-$1)*v)}'`
 				if [ "$rset" != "1" ]; then
 					PROJ=-JX${SIZE}i/$HEIGHT
 					PROJZ=-Jz$SCALE

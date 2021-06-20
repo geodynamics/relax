@@ -1,3 +1,4 @@
+# reference point: -122.55 37.75
 #  Song, S., Beroza, G.C., and P. Segall 2008. A unified source model for the 1906 San Francisco earthquake. Bull. Seis. Soc. Am 98(2): 823-831. 
 #  n   slip       x1       x2       x3 length width strike  dip  rake
 0001  0.257 -103.912   80.863    0.000   10.0  12.0  325.0 90.0 180.0

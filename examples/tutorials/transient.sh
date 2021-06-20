@@ -14,7 +14,6 @@
 #
 # type map.sh for a description of command-line options.
 #
-# the output projected in geographical coordinates is cancelled (--no-proj-output)
 
 WDIR=./transient
 
@@ -23,7 +22,7 @@ if [ ! -e $WDIR ]; then
 	mkdir $WDIR
 fi
 
-OMP_NUM_THREADS=2 time relax --no-proj-output --with-transient $* <<EOF | tee $WDIR/in.param
+OMP_NUM_THREADS=2 time relax --with-transient $* <<EOF | tee $WDIR/in.param
 # nonlinear viscoelastic relaxation (power exponent n=3)
 # following slip on a strike-slip fault
 #
