@@ -49,9 +49,9 @@ $WDIR
 # number of events
 1
 # number of coseismic shear-slip segments (ns)
-`grep -v "#" $FLT | wc | awk '{print $1}'`
+$(grep -cv "#" "$FLT")
 # no.     slip       xs       ys       zs  length   width strike   dip   rake
-`grep -v "#" $FLT`
+$(grep -v "#" "$FLT")
 # number of tensile cracks 
 0
 # number of mogi source

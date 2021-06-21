@@ -35,9 +35,9 @@ $WDIR
 # number of observation planes
 0
 # number of observation points
-`grep -v "#" $GPS | wc -l`
+$(grep -cv "#" "$GPS")
 # index NAME x1 x2 x3
-`cat $GPS`
+$(cat "$GPS")
 # number of Coulomb patches
 0
 # number of prestress interfaces
@@ -62,9 +62,9 @@ $WDIR
 # number of coseismic events
 1
 # number of shear dislocations
-`grep -v "#" $FLT | wc`
+$(grep -cv "#" "$FLT")
 # no slip     x1         x2        x3  length width strike dip rake
-`grep -v "#" $FLT`
+$(grep -v "#" "$FLT")
 # number of tensile cracks
 0
 # number of dilatation sources

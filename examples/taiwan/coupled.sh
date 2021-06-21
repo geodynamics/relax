@@ -39,9 +39,9 @@ $WDIR
 # no. x1  x2 x3 length width strike dip
     1 30 -60  0    100    50    120  90
 # number of observation points
-`grep -v "#" $OBS | wc`
+$(grep -cv "#" "$OBS")
 # no NAME x1 x2 x3
-`grep -v "#" $OBS`
+$(grep -v "#" "$OBS")
 # number of Coulomb planes
 0
 # number of prestress interfaces
@@ -72,9 +72,9 @@ $WDIR
 # number of events
 1
 # number of coseismic shear-slip segments (ns)
-`grep -v "#" $FLT | wc `
+$(grep -cv "#" "$FLT")
 # no.     slip       xs       ys       zs  length   width strike   dip   rake
-`grep -v "#" $FLT`
+$(grep -v "#" "$FLT")
 # number of tensile cracks 
 0
 # number of mogi source

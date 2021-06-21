@@ -72,9 +72,9 @@ $WDIR
 # number of coseismic events (when slip distribution is prescribed)
 1
 # number of shear dislocations (strike-slip and dip-slip faulting)
-`grep -v "#" $FLT | wc `
+$(grep -cv "#" "$FLT")
 # no slip x1 x2 x3 length width strike dip rake
-`grep -v "#" $FLT`
+$(grep -v "#" "$FLT")
 # number of tensile cracks
 0
 # number of dilatation sources

@@ -35,9 +35,9 @@ $WDIR
 # number of observation planes
 0
 # number of observation points
-`grep -v "#" $GPS | wc -l`
+$(grep -cv "#" "$GPS")
 # index NAME x1 x2 x3
-`cat $GPS`
+$(cat $GPS)
 # number of Coulomb patches
 0
 # number of prestress interfaces
@@ -49,9 +49,9 @@ $WDIR
     2 220.0      10.5718      0.0
     3 220.0       0.02114     0.0
 # number of linear ductile zones
-`grep -v "#" faults/kuril.flt | wc`
+$(grep -cv "#" faults/kuril.flt)
 # nb dgammadot0   x1   x2   x3   length   width   thickness   strike   dip 
-`grep -v "#" faults/kuril.flt | awk '{print NR,-10,$2,$3,$4,$5,42,$6,$7,$8+90}'`
+$(grep -v "#" faults/kuril.flt | awk '{print NR,-10,$2,$3,$4,$5,42,$6,$7,$8+90}')
 # number of powerlaw viscous interfaces
 0
 # number of friction faults
@@ -62,9 +62,9 @@ $WDIR
 # number of coseismic events
 1
 # number of shear dislocations
-`grep -v "#" $FLT | wc`
+$(grep -cv "#" "$FLT")
 # no slip     x1         x2        x3  length width strike dip rake
-`grep -v "#" $FLT`
+$(grep -v "#" "$FLT")
 # number of tensile cracks
 0
 # number of dilatation sources
