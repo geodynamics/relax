@@ -208,25 +208,25 @@ CONTAINS
     IF (in%isoutputtxt) THEN
        PRINT '("#     * export to TXT format")'
     ELSE
-       PRINT '("#     * export to TXT format cancelled                     (--",a,")")', trim(opts(3)%name)
+       PRINT '("#     * export to TXT format cancelled                     (--",a,")")', TRIM(opts(3)%name)
     END IF
     IF (in%isoutputstress) THEN
        PRINT '("#     * export stress")'
     ELSE
-       PRINT '("#     * stress export cancelled                            (--",a,")")', trim(opts(7)%name)
+       PRINT '("#     * stress export cancelled                            (--",a,")")', TRIM(opts(7)%name)
     END IF
 #ifdef GRD
     IF (in%isoutputgrd) THEN
        PRINT '("#     * export to GRD format")'
     ELSE
-       PRINT '("#     * export to GRD format cancelled                     (--",a,")")', trim(opts(5)%name)
+       PRINT '("#     * export to GRD format cancelled                     (--",a,")")', TRIM(opts(5)%name)
     END IF
 #endif
 #ifdef XYZ
     IF (in%isoutputxyz) THEN
        PRINT '("#     * export to XYZ format")'
     ELSE
-       PRINT '("#     * export to XYZ format cancelled                     (--",a,")")', trim(opts(6)%name)
+       PRINT '("#     * export to XYZ format cancelled                     (--",a,")")', TRIM(opts(6)%name)
     END IF
 #endif
 #endif
@@ -234,10 +234,10 @@ CONTAINS
     IF (in%isoutputvtk) THEN
        PRINT '("#     * export to VTK format")'
     ELSE
-       PRINT '("#     * export to VTK format cancelled                     (--",a,")")', trim(opts(4)%name)
+       PRINT '("#     * export to VTK format cancelled                     (--",a,")")', TRIM(opts(4)%name)
     END IF
     IF (in%isoutputvtkrelax) THEN
-       PRINT '("#     * export relaxation component to VTK format   (--",a,")")', trim(opts(10)%name)
+       PRINT '("#     * export relaxation component to VTK format   (--",a,")")', TRIM(opts(10)%name)
     END IF
 #endif
     PRINT 2000
@@ -275,12 +275,12 @@ CONTAINS
     CALL getdata(iunit,dataline)
     READ (dataline,'(a)') in%wdir
 
-    in%reporttimefilename=trim(in%wdir)//"/time.txt"
-    in%reportfilename=trim(in%wdir)//"/report.txt"
+    in%reporttimefilename=TRIM(in%wdir)//"/time.txt"
+    in%reportfilename=TRIM(in%wdir)//"/report.txt"
 #ifdef TXT
-    PRINT '(" ",a," (report: ",a,")")', trim(in%wdir),trim(in%reportfilename)
+    PRINT '(" ",a," (report: ",a,")")', TRIM(in%wdir),TRIM(in%reportfilename)
 #else
-    PRINT '(" ",a," (time report: ",a,")")', trim(in%wdir),trim(in%reporttimefilename)
+    PRINT '(" ",a," (time report: ",a,")")', TRIM(in%wdir),TRIM(in%reporttimefilename)
 #endif
 
     ! test write permissions on output directory
@@ -288,14 +288,14 @@ CONTAINS
             IOSTAT=iostatus,FORM="FORMATTED")
     IF (iostatus>0) THEN
        WRITE_DEBUG_INFO
-       WRITE (0,'("unable to access ",a)') trim(in%reporttimefilename)
+       WRITE (0,'("unable to access ",a)') TRIM(in%reporttimefilename)
        STOP 1
     END IF
     CLOSE(14)
     ! end test
 
 #ifdef VTK
-    filename=trim(in%wdir)//"/cgrid.vtp"
+    filename=TRIM(in%wdir)//"/cgrid.vtp"
     CALL exportvtk_grid(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3,filename)
 #endif
 
@@ -306,7 +306,7 @@ CONTAINS
 
     PRINT '("# time interval, (positive time step) or (negative skip, scaling)")'
     CALL getdata(iunit,dataline)
-    PRINT '(2x,a)', trim(dataline)
+    PRINT '(2x,a)', TRIM(dataline)
     READ  (dataline,*) in%interval, in%odt
 
     IF (in%odt .LT. 0.) THEN
@@ -391,7 +391,7 @@ CONTAINS
        END DO
 
        ! export the lits of observation points for display
-       filename=trim(in%wdir)//"/opts.dat"
+       filename=TRIM(in%wdir)//"/opts.dat"
        CALL exportoptsdat(in%npts,in%opts,in%ptsname,filename)
 
     END IF
@@ -445,7 +445,7 @@ CONTAINS
        END DO
 
        ! export patches to vtk/vtp
-       filename=trim(in%wdir)//"/rfaults-dsigma-0000.vtp"
+       filename=TRIM(in%wdir)//"/rfaults-dsigma-0000.vtp"
        CALL exportvtk_rfaults_stress(in%sx1,in%sx2,in%sx3,in%dx1,in%dx2,in%dx3, &
                                      in%nsop,in%sop,filename,convention=1)
 
@@ -534,7 +534,7 @@ CONTAINS
           ! export the viscous layer in VTK format
           WRITE (digit,'(I3.3)') k
 
-          rffilename=trim(in%wdir)//"/linearlayer-"//digit//".vtp"
+          rffilename=TRIM(in%wdir)//"/linearlayer-"//digit//".vtp"
           CALL exportvtk_rectangle(0.d0,0.d0,in%linearlayer(k)%z, &
                                    DBLE(in%sx2)*in%dx2,DBLE(in%sx1)*in%dx1, &
                                    0._8,1.5708d0,rffilename)
@@ -552,7 +552,7 @@ CONTAINS
           ALLOCATE(in%linearweakzone(in%nlwz),in%linearweakzonec(in%nlwz),STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the linear weak zones"
           PRINT 2000
-          PRINT '("# n dgammadot0     x1       x2       x3  length   width thickn. strike   dip")'
+          PRINT '("#  n dgammadot0     x1       x2       x3  length   width thickn. strike   dip")'
           PRINT 2000
           DO k=1,in%nlwz
              CALL getdata(iunit,dataline)
@@ -564,7 +564,7 @@ CONTAINS
           
              in%linearweakzonec(k)=in%linearweakzone(k)
              
-             PRINT '(I3.3,4ES9.2E1,3ES8.2E1,f7.1,f6.1)',k,&
+             PRINT '(I4.4,4ES9.2E1,3ES8.2E1,f7.1,f6.1)',k,&
                   in%linearweakzone(k)%dgammadot0, &
                   in%linearweakzone(k)%x,in%linearweakzone(k)%y,in%linearweakzone(k)%z, &
                   in%linearweakzone(k)%length,in%linearweakzone(k)%width, &
@@ -588,20 +588,20 @@ CONTAINS
 
 #ifdef VTK
              ! export the ductile zone in VTK format
-             !rffilename=trim(in%wdir)//"/weakzone-"//digit//".vtp"
+             !rffilename=TRIM(in%wdir)//"/weakzone-"//digit//".vtp"
              !CALL exportvtk_brick(in%linearweakzone(k)%x,in%linearweakzone(k)%y,in%linearweakzone(k)%z, &
              !                     in%linearweakzone(k)%length,in%linearweakzone(k)%width,in%linearweakzone(k)%thickness, &
              !                     in%linearweakzone(k)%strike,in%linearweakzone(k)%dip,rffilename)
 #endif
              ! export the ductile zone in GMT .xy format
-             rffilename=trim(in%wdir)//"/weakzone-"//digit//".xy"
+             rffilename=TRIM(in%wdir)//"/weakzone-"//digit//".xy"
              CALL exportxy_brick(in%linearweakzone(k)%x,in%linearweakzone(k)%y,in%linearweakzone(k)%z, &
                                  in%linearweakzone(k)%length,in%linearweakzone(k)%width,in%linearweakzone(k)%thickness, &
                                  in%linearweakzone(k)%strike,in%linearweakzone(k)%dip,rffilename)
           END DO
 #ifdef VTK
           ! export the ductile zone in VTK format
-          rffilename=trim(in%wdir)//"/weakzones-linear.vtp"
+          rffilename=TRIM(in%wdir)//"/weakzones-linear.vtp"
           CALL exportvtk_allbricks(in%nlwz,in%linearweakzone,rffilename)
 #endif
        END IF
@@ -653,7 +653,7 @@ CONTAINS
           WRITE (digit,'(I3.3)') k
 
           ! export the viscous layer in VTK format
-          rffilename=trim(in%wdir)//"/nonlinearlayer-"//digit//".vtp"
+          rffilename=TRIM(in%wdir)//"/nonlinearlayer-"//digit//".vtp"
           CALL exportvtk_rectangle(0.d0,0.d0,in%nonlinearlayer(k)%z, &
                                    DBLE(in%sx2)*in%dx2,DBLE(in%sx1)*in%dx1, &
                                    0._8,1.57d0,rffilename)
@@ -707,7 +707,7 @@ CONTAINS
 
 #ifdef VTK
                   ! export the ductile zone in VTK format
-                  !rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".vtp"
+                  !rffilename=TRIM(in%wdir)//"/weakzone-nl-"//digit//".vtp"
                   !CALL exportvtk_brick(in%nonlinearweakzone(k)%x, &
                   !                     in%nonlinearweakzone(k)%y, &
                   !                     in%nonlinearweakzone(k)%z, &
@@ -718,7 +718,7 @@ CONTAINS
                   !                     in%nonlinearweakzone(k)%dip,rffilename)
 #endif
                   ! export the ductile zone in GMT .xy format
-                  rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".xy"
+                  rffilename=TRIM(in%wdir)//"/weakzone-nl-"//digit//".xy"
                   CALL exportxy_brick(in%nonlinearweakzone(k)%x, &
                                        in%nonlinearweakzone(k)%y, &
                                        in%nonlinearweakzone(k)%z, &
@@ -730,7 +730,7 @@ CONTAINS
           END DO
 #ifdef VTK
           ! export the ductile zone in VTK format
-          rffilename=trim(in%wdir)//"/weakzones-nonlinear.vtp"
+          rffilename=TRIM(in%wdir)//"/weakzones-nonlinear.vtp"
           CALL exportvtk_allbricks(in%nnlwz,in%nonlinearweakzone,rffilename)
 #endif
        END IF
@@ -783,7 +783,7 @@ CONTAINS
              WRITE (digit,'(I3.3)') k
 
              ! export the viscous layer in VTK format
-             rffilename=trim(in%wdir)//"/ltransientlayer-"//digit//".vtp"
+             rffilename=TRIM(in%wdir)//"/ltransientlayer-"//digit//".vtp"
              CALL exportvtk_rectangle(0.d0,0.d0,in%ltransientlayer(k)%z, &
                                       DBLE(in%sx2)*in%dx2,DBLE(in%sx1)*in%dx1, &
                                       0._8,1.57d0,rffilename)
@@ -801,7 +801,7 @@ CONTAINS
              ALLOCATE(in%ltransientweakzone(in%nltwz),in%ltransientweakzonec(in%nltwz),STAT=iostatus)
              IF (iostatus>0) STOP "could not allocate the nonlinear weak zones"
              PRINT 2000
-             PRINT '("# n dgammadot0     x1       x2       x3  length   width thickn. strike   dip")'
+             PRINT '("#  n dgammadot0     x1       x2       x3  length   width thickn. strike   dip")'
              PRINT 2000
              DO k=1,in%nltwz
                 CALL getdata(iunit,dataline)
@@ -813,7 +813,7 @@ CONTAINS
              
                 in%ltransientweakzonec(k)=in%ltransientweakzone(k)
                 
-                PRINT '(I3.3,4ES9.2E1,3ES8.2E1,f7.1,f6.1)',k,&
+                PRINT '(I4.4,4ES9.2E1,3ES8.2E1,f7.1,f6.1)',k,&
                      in%ltransientweakzone(k)%dgammadot0, &
                      in%ltransientweakzone(k)%x,in%ltransientweakzone(k)%y,in%ltransientweakzone(k)%z, &
                      in%ltransientweakzone(k)%length,in%ltransientweakzone(k)%width, &
@@ -837,7 +837,7 @@ CONTAINS
 
 #ifdef VTK
                      ! export the ductile zone in VTK format
-                     !rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".vtp"
+                     !rffilename=TRIM(in%wdir)//"/weakzone-nl-"//digit//".vtp"
                      !CALL exportvtk_brick(in%ltransientweakzone(k)%x, &
                      !                     in%ltransientweakzone(k)%y, &
                      !                     in%ltransientweakzone(k)%z, &
@@ -848,7 +848,7 @@ CONTAINS
                      !                     in%ltransientweakzone(k)%dip,rffilename)
 #endif
                      ! export the ductile zone in GMT .xy format
-                     rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".xy"
+                     rffilename=TRIM(in%wdir)//"/weakzone-nl-"//digit//".xy"
                      CALL exportxy_brick(in%ltransientweakzone(k)%x, &
                                           in%ltransientweakzone(k)%y, &
                                           in%ltransientweakzone(k)%z, &
@@ -860,7 +860,7 @@ CONTAINS
              END DO
 #ifdef VTK
              ! export the ductile zone in VTK format
-             rffilename=trim(in%wdir)//"/weakzones-nonlinear.vtp"
+             rffilename=TRIM(in%wdir)//"/weakzones-nonlinear.vtp"
              CALL exportvtk_allbricks(in%nnlwz,in%ltransientweakzone,rffilename)
 #endif
           END IF
@@ -912,7 +912,7 @@ CONTAINS
              WRITE (digit,'(I3.3)') k
 
              ! export the viscous layer in VTK format
-             rffilename=trim(in%wdir)//"/nltransientlayer-"//digit//".vtp"
+             rffilename=TRIM(in%wdir)//"/nltransientlayer-"//digit//".vtp"
              CALL exportvtk_rectangle(0.d0,0.d0,in%nltransientlayer(k)%z, &
                                       DBLE(in%sx2)*in%dx2,DBLE(in%sx1)*in%dx1, &
                                       0._8,1.57d0,rffilename)
@@ -931,7 +931,7 @@ CONTAINS
              ALLOCATE(in%nltransientweakzone(in%nnltwz),in%nltransientweakzonec(in%nnltwz),STAT=iostatus)
              IF (iostatus>0) STOP "could not allocate the nonlinear weak zones"
              PRINT 2000
-             PRINT '("# n dgammadot0     x1       x2       x3  length   width thickn. strike   dip")'
+             PRINT '("#  n dgammadot0     x1       x2       x3  length   width thickn. strike   dip")'
              PRINT 2000
              DO k=1,in%nnltwz
                 CALL getdata(iunit,dataline)
@@ -943,7 +943,7 @@ CONTAINS
              
                 in%nltransientweakzonec(k)=in%nltransientweakzone(k)
                 
-                PRINT '(I3.3,4ES9.2E1,3ES8.2E1,f7.1,f6.1)',k,&
+                PRINT '(I4.4,4ES9.2E1,3ES8.2E1,f7.1,f6.1)',k,&
                      in%nltransientweakzone(k)%dgammadot0, &
                      in%nltransientweakzone(k)%x,in%nltransientweakzone(k)%y,in%nltransientweakzone(k)%z, &
                      in%nltransientweakzone(k)%length,in%nltransientweakzone(k)%width, &
@@ -967,7 +967,7 @@ CONTAINS
 
 #ifdef VTK
                      ! export the ductile zone in VTK format
-                     !rffilename=trim(in%wdir)//"/weakzone-nl-"//digit//".vtp"
+                     !rffilename=TRIM(in%wdir)//"/weakzone-nl-"//digit//".vtp"
                      !CALL exportvtk_brick(in%nltransientweakzone(k)%x, &
                      !                     in%nltransientweakzone(k)%y, &
                      !                     in%nltransientweakzone(k)%z, &
@@ -978,7 +978,7 @@ CONTAINS
                      !                     in%nltransientweakzone(k)%dip,rffilename)
 #endif
                      ! export the ductile zone in GMT .xy format
-                     rffilename=trim(in%wdir)//"/weakzone-nltr-"//digit//".xy"
+                     rffilename=TRIM(in%wdir)//"/weakzone-nltr-"//digit//".xy"
                      CALL exportxy_brick(in%nltransientweakzone(k)%x, &
                                           in%nltransientweakzone(k)%y, &
                                           in%nltransientweakzone(k)%z, &
@@ -990,7 +990,7 @@ CONTAINS
              END DO
 #ifdef VTK
              ! export the ductile zone in VTK format
-             rffilename=trim(in%wdir)//"/weakzones-nonlinear-transient.vtp"
+             rffilename=TRIM(in%wdir)//"/weakzones-nonlinear-transient.vtp"
              CALL exportvtk_allbricks(in%nnlwz,in%nltransientweakzone,rffilename)
 #endif
           END IF
@@ -1102,7 +1102,7 @@ CONTAINS
              ! export the afterslip segment in VTK format
              WRITE (digit4,'(I4.4)') k
 
-             rffilename=trim(in%wdir)//"/aplane-"//digit4//".vtp"
+             rffilename=TRIM(in%wdir)//"/aplane-"//digit4//".vtp"
              CALL exportvtk_rectangle(in%n(k)%x,in%n(k)%y,in%n(k)%z, &
                                       in%n(k)%length,in%n(k)%width, &
                                       in%n(k)%strike,in%n(k)%dip,rffilename)
@@ -1130,7 +1130,7 @@ CONTAINS
        ALLOCATE(in%inter%s(in%inter%ns),in%inter%sc(in%inter%ns),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate the source list"
        PRINT 2000
-       PRINT '("# n  slip/time  xs ys zs  length width  strike dip rake")'
+       PRINT '("#  n  slip/time  xs ys zs  length width  strike dip rake")'
        PRINT 2000
        DO k=1,in%inter%ns
           CALL getdata(iunit,dataline)
@@ -1143,7 +1143,7 @@ CONTAINS
           ! copy the input format for display
           in%inter%sc(k)=in%inter%s(k)
              
-          PRINT '(I3.3,4ES9.2E1,2ES8.2E1,f7.1,f6.1,f7.1)',i, &
+          PRINT '(I4.4,4ES9.2E1,2ES8.2E1,f7.1,f6.1,f7.1)',i, &
                in%inter%sc(k)%slip,&
                in%inter%sc(k)%x,in%inter%sc(k)%y,in%inter%sc(k)%z, &
                in%inter%sc(k)%length,in%inter%sc(k)%width, &
@@ -1195,7 +1195,7 @@ CONTAINS
        ALLOCATE(in%inter%ts(in%inter%nt),in%inter%tsc(in%inter%nt),STAT=iostatus)
        IF (iostatus>0) STOP "could not allocate the tensile source list"
        PRINT 2000
-       PRINT '("n  opening       xs       ys       ","zs  length   width strike   dip")'
+       PRINT '("#  n  opening       xs       ys       ","zs  length   width strike   dip")'
        PRINT 2000
        DO k=1,in%inter%nt
           CALL getdata(iunit,dataline)
@@ -1208,7 +1208,7 @@ CONTAINS
           ! copy the input format for display
           in%inter%tsc(k)=in%inter%ts(k)
           
-          PRINT '(I3.3,4ES9.2E1,2ES8.2E1,f7.1,f6.1)', i, &
+          PRINT '(I4.4,4ES9.2E1,2ES8.2E1,f7.1,f6.1)', i, &
                in%inter%tsc(k)%opening, &
                in%inter%tsc(k)%x,in%inter%tsc(k)%y,in%inter%tsc(k)%z, &
                in%inter%tsc(k)%length,in%inter%tsc(k)%width, &
@@ -1294,7 +1294,7 @@ CONTAINS
                STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the source list"
           PRINT 2000
-          PRINT '("# n     slip       xs       ys       zs  length   width strike   dip   rake")'
+          PRINT '("#  n     slip       xs       ys       zs  length   width strike   dip   rake")'
           PRINT 2000
           DO k=1,in%events(e)%ns
              CALL getdata(iunit,dataline)
@@ -1322,7 +1322,7 @@ CONTAINS
              in%events(e)%sc(k)=in%events(e)%s(k)
              
              IF (iostatus.NE.0) THEN
-                PRINT '(I3.3,4ES9.2E1,2ES8.2E1,f7.1,f6.1,f7.1)',i, &
+                PRINT '(I4.4,4ES9.2E1,2ES8.2E1,f7.1,f6.1,f7.1)',i, &
                      in%events(e)%sc(k)%slip,&
                      in%events(e)%sc(k)%x,in%events(e)%sc(k)%y,in%events(e)%sc(k)%z, &
                      in%events(e)%sc(k)%length,in%events(e)%sc(k)%width, &
@@ -1330,7 +1330,7 @@ CONTAINS
                      in%events(e)%sc(k)%rake
              ELSE
                 ! print the smoothing value for this patch
-                PRINT '(I3.3,4ES9.2E1,2ES8.2E1,f7.1,f6.1,f7.1,f6.1)',i, &
+                PRINT '(I4.4,4ES9.2E1,2ES8.2E1,f7.1,f6.1,f7.1,f6.1)',i, &
                      in%events(e)%sc(k)%slip,&
                      in%events(e)%sc(k)%x,in%events(e)%sc(k)%y,in%events(e)%sc(k)%z, &
                      in%events(e)%sc(k)%length,in%events(e)%sc(k)%width, &
@@ -1376,10 +1376,10 @@ CONTAINS
           ! export the fault segments in VTK format for the current event
           WRITE (digit,'(I3.3)') e
 
-          rffilename=trim(in%wdir)//"/rfaults-"//digit//".vtp"
+          rffilename=TRIM(in%wdir)//"/rfaults-"//digit//".vtp"
           CALL exportvtk_rfaults(in%events(e),rffilename)
 #endif
-          rffilename=trim(in%wdir)//"/rfaults-"//digit//".xy"
+          rffilename=TRIM(in%wdir)//"/rfaults-"//digit//".xy"
           CALL exportxy_rfaults(in%events(e),in%x0,in%y0,rffilename)
 
           PRINT 2000
@@ -1397,7 +1397,7 @@ CONTAINS
                STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the tensile source list"
           PRINT 2000
-          PRINT '("# n  opening       xs       ys       zs  length   width strike   dip")'
+          PRINT '("#  n  opening       xs       ys       zs  length   width strike   dip")'
           PRINT 2000
           DO k=1,in%events(e)%nt
 
@@ -1412,7 +1412,7 @@ CONTAINS
              ! copy the input format for display
              in%events(e)%tsc(k)=in%events(e)%ts(k)
              
-             PRINT '(I3.3,4ES9.2E1,2ES8.2E1,f7.1,f6.1)',k, &
+             PRINT '(I4.4,4ES9.2E1,2ES8.2E1,f7.1,f6.1)',k, &
                   in%events(e)%tsc(k)%opening,&
                   in%events(e)%tsc(k)%x,in%events(e)%tsc(k)%y,in%events(e)%tsc(k)%z, &
                   in%events(e)%tsc(k)%length,in%events(e)%tsc(k)%width, &
@@ -1447,10 +1447,10 @@ CONTAINS
           ! export the fault segments in VTK format for the current event
           WRITE (digit,'(I3.3)') e
 
-          rffilename=trim(in%wdir)//"/rdykes-"//digit//".vtp"
+          rffilename=TRIM(in%wdir)//"/rdykes-"//digit//".vtp"
           CALL exportvtk_rfaults(in%events(e),rffilename)
 #endif
-          rffilename=trim(in%wdir)//"/rdykes-"//digit//".xy"
+          rffilename=TRIM(in%wdir)//"/rdykes-"//digit//".xy"
           CALL exportxy_rfaults(in%events(e),in%x0,in%y0,rffilename)
 
           PRINT 2000
@@ -1468,7 +1468,7 @@ CONTAINS
                STAT=iostatus)
           IF (iostatus>0) STOP "could not allocate the mogi source list"
           PRINT 2000
-          PRINT '("# n strain (positive for extension) xs ys zs")'
+          PRINT '("#  n strain (positive for extension) xs ys zs")'
           PRINT 2000
           DO k=1,in%events(e)%nm
              CALL getdata(iunit,dataline)
@@ -1477,7 +1477,7 @@ CONTAINS
              ! copy the input format for display
              in%events(e)%mc(k)=in%events(e)%m(k)
              
-             PRINT '(I3.3,4ES9.2E1)',k, &
+             PRINT '(I4.4,4ES9.2E1)',k, &
                   in%events(e)%mc(k)%slip,&
                   in%events(e)%mc(k)%x,in%events(e)%mc(k)%y,in%events(e)%mc(k)%z
              
@@ -1566,7 +1566,7 @@ CONTAINS
                 WRITE (digit,'(I3.3)') k
 
                 ! export the cuboid eigenstrain in GMT .xy format
-                !rffilename=trim(in%wdir)//"/cuboid-"//digit//".xy"
+                !rffilename=TRIM(in%wdir)//"/cuboid-"//digit//".xy"
                 !CALL exportxy_brick(in%events(e)%cuboid(k)%x, &
                 !                    in%events(e)%cuboid(k)%y, &
                 !                    in%events(e)%cuboid(k)%z, &
@@ -1578,7 +1578,7 @@ CONTAINS
              END DO
 #ifdef VTK
              ! export the cuboid eigenstrain in VTK format
-             rffilename=trim(in%wdir)//"/cuboid.vtp"
+             rffilename=TRIM(in%wdir)//"/cuboid.vtp"
              CALL exportvtk_allbricks(in%events(e)%ncuboid,in%events(e)%cuboid,rffilename)
 #endif
              PRINT 2000
@@ -1684,7 +1684,7 @@ CONTAINS
           PRINT 2000
           PRINT '("# t3 in units of force/surface, positive down")'
           PRINT '("# T>0 for t3 sin(2pi/T+phi), T<=0 for t3 H(t)")'
-          PRINT '("# n       xs       ys   length    width       t3        T      phi")'
+          PRINT '("#  n       xs       ys   length    width       t3        T      phi")'
           PRINT 2000
           DO k=1,in%events(e)%nl
              CALL getdata(iunit,dataline)
@@ -1712,14 +1712,14 @@ CONTAINS
              in%events(e)%lc(k)=in%events(e)%l(k)
 
              IF (iostatus.EQ.0) THEN
-                PRINT '(I3.3,9ES9.2E1)',k, &
+                PRINT '(I4.4,9ES9.2E1)',k, &
                      in%events(e)%lc(k)%x,in%events(e)%lc(k)%y, &
                      in%events(e)%lc(k)%length,in%events(e)%lc(k)%width, &
                      in%events(e)%lc(k)%slip, &
                      in%events(e)%lc(k)%period,in%events(e)%lc(k)%phase, &
                      in%events(e)%lc(k)%beta
              ELSE
-                PRINT '(I3.3,8ES9.2E1)',k, &
+                PRINT '(I4.4,8ES9.2E1)',k, &
                      in%events(e)%lc(k)%x,in%events(e)%lc(k)%y, &
                      in%events(e)%lc(k)%length,in%events(e)%lc(k)%width, &
                      in%events(e)%lc(k)%slip, &
