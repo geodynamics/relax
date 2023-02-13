@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 # linear transient viscoelastic relaxation with Burgers rheology
-# following slip on a strike-slip fault
+# following slip on a strike-slip fault.
 #
 # output every two computational steps (Dt = -2). 
 # The time step is computed automatically and the value unchanged (scale = 1)
