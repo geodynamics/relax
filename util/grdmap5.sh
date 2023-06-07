@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # script grdmap.sh
@@ -97,25 +97,16 @@ my_gmt(){
 	# plotting vectors
 	if [ -e "$U1" ]; then
 
-		#echo $self": found "$U1": plotting vectors"
 		echo $self": Using VECTOR="$VECTOR", STEP="$ADX
 
 		if [ "" != "$lset" ]; then
 			gmt psclip -O -K -J${PROJ} -R$bds -m $clip >> $PSFILE
 		fi
 
-		# arrowwidth/headlength/headwidth
-		# grdvector crashes with wrong sampling
-		#	-Q0.51c/0.8c/0.7cn1.0c \
-	        #	-Q0.3c/0.5c/0.4cn1.0c \
-		#	-Q0.05/0.2/0.08n0.3c \
-		#	-S$VECTOR -W0.24p/0/0/0 \
-			#-Q0.04i/0.2/0.05n0.3c \
-		gmt grdvector $U1 $U2 -K -J${PROJ} -O -R$bds -I$ADX/$ADX \
-			-Q0.1i+e+jb+gwhite+n0.5c \
-			-G255/255/255 \
+		gmt grdvector $U1 $U2 -K -J${PROJ} -O -R$bds -Ix$ADX \
+			-Q0.1i+e+h0.5+jb+gblack+n0.5c \
+			-W1.0p,3/3/3 \
 			-S$VECTOR \
-			-W0.23p,2/2/2 \
 			 >> $PSFILE
 
 		if [ "" != "$lset" ]; then
@@ -158,13 +149,9 @@ EOF
 
 }
 
-gmt gmtset LABEL_FONT_SIZE 12p
-#gmt gmtset HEADER_FONT_SIZE 12p
+gmt gmtset FONT_LABEL 12p
 gmt gmtset FONT_ANNOT_PRIMARY 12p 
-#gmt gmtset COLOR_BACKGROUND 0/0/0
-#gmt gmtset COLOR_FOREGROUND 255/255/255
-#gmt gmtset COLOR_NAN 255/255/255
-gmt gmtset PAPER_MEDIA archA
+gmt gmtset PS_MEDIA archA
 
 libdir=$(dirname $0)/../share
 EXTRA=""
@@ -197,12 +184,7 @@ do
 	Y) Yset=1;Yshift=$OPTARG;;
 	esac
 done
-for item in $bset $cset $iset $lset $oset $pset $vset $sset $tset $Tset $uset $Yset $Cset $Lset $Oset $Jset $EXTRA;do
-	shift;shift
-done
-for item in $dset $gset $hset $xset $rset $Hset;do
-	shift;
-done
+shift $((OPTIND -1))
 
 #-------------------------------------------------------- 
 # DEFAULTS
@@ -317,7 +299,7 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 				VECTOR=$SIZE"c"
 			fi
 			if [ "$sset" != "1" ]; then
-				ADX=`gmt grdinfo $U2 -C | awk '{printf "5*%11.9f\n", $8}' | bc`
+				ADX=5
 			fi
 		fi
 	
@@ -418,10 +400,7 @@ while [ "$#" != "0" -o "$Oset" == "1" ];do
 	echo $self": Converted to pdf file "$PDFFILE
 
 	if [ "$xset" != "1" ]; then
-		#display -trim $PSFILE &
-		#gv -geometry +0+0 -spartan -scale=0.5 $PSFILE &
-		#xpdf -geometry +0+0 -paper "archA" $PDFFILE -z 100 -g 630x850 -z width >& /dev/null &
-		xpdf $PDFFILE >& /dev/null &
+		xpdf -open "$PDFFILE" >& /dev/null &
 	fi
 	
 	if [ "$#" != "0" ];then
