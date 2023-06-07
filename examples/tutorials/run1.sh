@@ -86,7 +86,7 @@ $WDIR
 # elastic parameters and gamma = (1-nu) rho g / mu = 8.33e-7 /m = 8.33e-4 /km
 30 30 8.33e-4
 # integration time (in unit of time), step (negative for automatic) and scaling of computed value
-0 -1 1
+2 -1 1
 # number of observation planes
 1
 # no x1 x2 x3 length width strike dip
